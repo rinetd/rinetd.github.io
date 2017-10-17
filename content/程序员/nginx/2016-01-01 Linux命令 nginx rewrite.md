@@ -6,6 +6,61 @@ categories: [Linux基础]
 tags: [nginx]
 ---
 
+1.
+```
+server {
+
+  listen 8000;
+
+  server_name project.example.com;
+
+  root   /path/to/www;
+
+  #Matches the path project.example.com only (mind there is a =)
+
+  location = / {
+
+    #the rewrite statement will forward the project.example.com to project.example.com/project (which must be handled internally)
+
+    rewrite / /project;
+
+  }
+
+
+
+  #Matches every path (mind: there is no =)
+
+  location / {
+
+    #the rewrite statement with "permanent" at the end will visibly forward every link on the subdomain to the main domain
+
+   rewrite ^(.+)$ http://www.example.be$request_uri? permanent;
+
+  }
+
+  ... #php handling code
+```
+
+
+
+`rewrite ^/(ask|forum|qa)/(.*)$ http://forum.site.com/$2 permanent;`
+
+2. redirect URL subdirectory to subdomain
+```
+server {
+    server_name  www.mydomain.com mydomain.com;
+    rewrite ^(.*) http://mysite.mydomain.com$1 permanent;
+}
+
+server {
+listen :80;
+server_name mysite.mydomain.com;
+root /var/www/mydomain.com/mysite;
+......
+}
+
+```
+
 nginx通过ngx_http_rewrite_module模块支持url重写、支持if条件判断，但不支持else。
 
 该模块需要PCRE支持，应在编译nginx时指定PCRE源码目录, nginx安装方法。

@@ -70,9 +70,9 @@ $ ： 匹配字符串的介绍
 rewrite regex replacement [flag];
 
 三．rewrite指令的最后一项参数为flag标记，四种flag标记：
-
+注: 这里的地址栏url不变，只是针对站内的url地址而言，只要是url重写必定改变地址栏
 1. 为空 - 地址栏url不变，但是内容已经变化，也是永久性的重定向。地址栏url不变
-2. last - url重写后，停止处理后续rewrite指令集马上发起一个新的请求，再次进入server块，重试location匹配，超过10次匹配不到报500错误，地址栏url不变
+2. last - url重写后，停止处理后续rewrite指令集马上发起一个新的请求，再次进入server块，重试location匹配，超过10次匹配不到报500错误，地址栏url不变 ;内部跳转,只对站内url重写有效
 3. break - url重写后，停止处理后续rewrite指令集，并不在重新查找,直接使用当前资源，不再执行location里余下的语句，完成本次请求，地址栏url不变
 4. redirect - 返回302临时重定向，url会跳转，爬虫不会更新url。 地址栏url重写
 5. permanent - 返回301永久重定向。url会跳转。爬虫会更新url。 地址栏url重写
