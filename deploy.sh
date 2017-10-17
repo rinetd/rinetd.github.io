@@ -10,7 +10,7 @@
 
 echo "Deleting old publication"
 rm -rf public
-mkdir public
+# mkdir public
 git worktree prune
 rm -rf .git/worktrees/public/
 git remote add upstream git@github.com:rinetd/rinetd.github.io
