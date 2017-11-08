@@ -8,6 +8,8 @@ tags: [Docker]
 
 
 # Install docker-machine
+sudo curl -C - -Lk  --socks5 127.0.0.1:1080 https://github.com/docker/machine/releases/download/v0.11.0/docker-machine-`uname -s`-`uname -m` -o /usr/local/bin/docker-machine 
+
 `sudo curl -C - -Lkx 127.0.0.1:8087 https://github.com/docker/machine/releases/download/v0.11.0/docker-machine-`uname -s`-`uname -m` -o /usr/local/bin/docker-machine && \
   sudo chmod +x /usr/local/bin/docker-machine`
 

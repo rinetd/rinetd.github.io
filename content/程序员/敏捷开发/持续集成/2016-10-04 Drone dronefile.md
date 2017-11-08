@@ -11,6 +11,7 @@ tags:
 对于每个.drone.yml来说，pipeline的每个步骤经过drone解析后就对应一个dockerfile文件
 
 对dronefile 来说只有4个主模式 [workspace pipeline services matrix]:
+0.7 以后
 # I 变量
 #变量使用
 commands:
@@ -32,6 +33,19 @@ script:
 
 ## 变量的传递 通过-e参数带入环境变量
 `docker run -e DOCKER_PASSWORD=correct-horse-battery-staple busybox`
+
+变量只会传递到 docker 容器中 比如
+${DRONE_COMMIT_MESSAGE}
+${PLUGIN_KEY}
+等变量 是无法传递到 .drone.yaml中只能在容器中使用
+
+但是有部分变量是可以在 .drone.yaml中使用的
+如果想传递到远程主机 通过 export命令
+- export DRONE_REPO=${DRONE_REPO}
+- export DRONE_BRANCH=${DRONE_BRANCH}
+- export DRONE_REPO_NAME=${DRONE_REPO_NAME}
+- export DRONE_COMMIT_MESSAGE=${DRONE_COMMIT_MESSAGE}
+
 
 ## 加密变量 image repo
 
@@ -129,7 +143,7 @@ when:
 2. event: [push, pull_request, tag, deployment]
 3. status:  [ failure, changed, success ]
 4. platform: [ linux/amd64, windows/amd64, linux/* ]
-5. environment: production
+5. environment: stating production
 
 全局分支控制 branches: dev
 

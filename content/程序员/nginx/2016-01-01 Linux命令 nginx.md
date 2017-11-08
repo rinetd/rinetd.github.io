@@ -219,10 +219,12 @@ apt-get remove nginx*
 mkdir Nginx && cd ~/Nginx/
 
 [Nginx官网](http://nginx.org/)
-  wget http://nginx.org/download/nginx-1.9.12.tar.gz
-  tar zxvf nginx-1.9.12.tar.gz
 
-  `git clone git@github.com:nginx/nginx.git`
+1. 下载
+`git clone git@github.com:nginx/nginx.git`
+2. 配置
+`./configure --help`
+
 ###############################################################################
 
 sudo apt-get -y install autoconf automake build-essential libass-dev libgpac-dev libsdl1.2-dev libtheora-dev libtool libvdpau-dev libvorbis-dev libx11-dev libxext-dev libxfixes-dev pkg-config texi2html zlib1g-dev libssl-dev
