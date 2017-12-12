@@ -5,7 +5,7 @@ update: 2016-01-01
 categories: [Linux基础]
 tags: [nginx]
 ---
-
+X-Forwarded-For: 203.0.113.195, 70.41.3.18, 150.172.238.178
 
 ```
 location / {

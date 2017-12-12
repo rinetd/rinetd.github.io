@@ -29,7 +29,8 @@ for log in $logs
                 cat /dev/null > $log  
         done  
   ```
-
+## docker 查看日志文件
+`docker inspect tomcat -f "{{.LogPath}}"`
 # 修复docker0网桥
 方法1： ip
 `service docker stop`           //关闭docker服务  

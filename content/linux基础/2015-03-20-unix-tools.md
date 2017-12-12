@@ -1,16 +1,12 @@
 ---
----
 title: UNIX那些实用工具
+date: 2016-01-07T16:46:14+08:00
 update: 2016-01-01
-layout: post
-category: Linux使用
+categories: [Linux基础]
+tags:
 ---
 
 # UNIX那些实用工具 #
-
-    :author: Jiqing Wu
-    :email: jollywing@foxmail.com
-    :update: 2015-03-20 Fri
 
 ## 用户 ##
 

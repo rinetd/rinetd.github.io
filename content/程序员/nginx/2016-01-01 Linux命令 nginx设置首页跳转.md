@@ -5,6 +5,15 @@ update: 2016-01-01
 categories: [Linux基础]
 tags: [nginx]
 ---
+```
+<html>
+<meta http-equiv="refresh" content="0;url=http://www.baidu.com/">
+</html>
+```
+
+
+
+
 location /wmb {
  if ( $request_uri = "/wmb/" ) {
       rewrite "/wmb/" /wmb/weibo.html break;

@@ -11,6 +11,32 @@ tags: [MariaDB]
 [Mysql创建及删除用户命令](http://www.bitscn.com/pdb/mysql/201407/226089.html)
 [MariaDB/MySQL之用户管理及忘记数据管理员密码解决办法](http://www.it165.net/database/html/201404/6158.html)
 [MySQL——修改root密码的4种方法](http://www.jb51.net/article/39454.htm)
+[](https://tinpont.com/2017/fix-yum-download-mariadb-slow/)
+## 镜像解决方案
+
+    创建并编辑MariaDB的源配置
+
+sudo vi /etc/yum.repos.d/MariaDB.repo
+
+写入配置文件
+
+# MariaDB 10.1 CentOS repository list - created 2016-12-31 08:44 UTC
+# http://downloads.mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.1/centos7-amd64
+gpgkey = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck = 1
+
+执行安装命令
+
+sudo yum install mariadb-server
+
+如果在用阿里云的服务器，可以将上述配置中的域名替换成
+
+    http://mirrors.aliyun.com/
+
+以上yum配置经修改后同样的适用于其他源，详细内容请往下看
 sudo apt-get install mariadb-client
 yum -y install MariaDB-server MariaDB-client  
 sudo apt-get install mariadb-galera-server galera
@@ -20,6 +46,22 @@ sudo apt-get install mariadb-galera-server galera
 `select [name],count(*) from [data] group by [name] order by count(*) DESC limit 10`
 `SELECT ktitle,COUNT(*) FROM `ultrax`.`pre_fx_vote_log` group by ktitle order by count(*) DESC limit 15
 `
+## 开启 mysql 查询日志
+
+| general_log                               | ON                                                                                                           |
+| general_log_file                          | /var/log/mysql/mysql.log
+
+mysql>set global general_log_file='/tmp/general.log';
+
+mysql>set global general_log=on;
+
+mysql>set global general_log=off;
+```
+# 	 && sed -i -e "s/^#general_log_file/general_log_file/" /etc/mysql/my.cnf\
+# 	 && sed -i -e "s/^#general_log/general_log/" /etc/mysql/my.cnf\
+# 	 && sed -i -e "s/^#log_slow_queries/log_slow_queries/" /etc/mysql/my.cnf\
+# 	 && sed -i -e "s/^#long_query_time.*/long_query_time = 1/" /etc/mysql/my.cnf
+```
 ## mysql 配置超时时间
 show global variables like '%timeout%';
 
@@ -29,10 +71,10 @@ show global variables like '%timeout%';
 修改配置文件/etc/my.cnf.d/server.conf
         在 [mysqld]下添加
             wait_timeout=86400
-
+```
             sed -i 's/^interactive-timeout.*/interactive-timeout = 86400/' /etc/my.cnf
             sed -i 's/^wait-timeout.*/wait-timeout = 86400/' /etc/my.cnf
-
+```
 # mysql 编码问题
 解决: 保持mariadb 版本一致  mariadb:5.5
 如下脚本创建数据库yourdbname，并制定默认的字符集是utf8: `CREATE DATABASE IF NOT EXISTS yourdbname DEFAULT CHARSET utf8 COLLATE utf8_general_ci;`
@@ -95,6 +137,19 @@ docker exec -i mariadb mysqldump -t --default-character-set=utf8 -uroot -pLinyiB
 在 [mysqld] 节点下，加入一行： `lower_case_table_names=1`
 重启 MySQL 即可；
 
+GRANT SELECT, INSERT, UPDATE, REFERENCES, DELETE, CREATE, DROP, ALTER, INDEX, TRIGGER, CREATE VIEW, SHOW VIEW, EXECUTE, ALTER ROUTINE, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, EVENT
+ ON `wechat`.* TO 'wechat';
+
+GRANT GRANT OPTION ON `wechat`.* TO 'wechat';
+
+grant select, insert, update, delete, create, drop, references, index, alter,
+        create temporary tables, lock tables, create view, show view, create routine,
+        alter routine, execute, trigger       
+on `Sample`.* to 'acme-manager'@'%';
+
+grant create,select,insert,update,create view,show view,event,alter,trigger,index,alter on fgg.* to 'allen2016'@'%' identified by
+'allen2016soft*88' with grant option;
+flush privileges;
 
 
 ## 执行命令
@@ -730,3 +785,12 @@ done
     super 	 
     update 	 
     usage 	无访问权限
+
+
+
+## destoon 修复会员资料未认证
+1. destoon 通过edittime 是否大于0 来判断是否完善资料
+update destoon_member a inner join destoon_company b on a.userid=b.userid and b.validated=1 and a.edittime=0 set a.edittime='1511576804';
+
+select count(edittime) from destoon_member where edittime>0;
+select count(company) from destoon_company where validated = 1;

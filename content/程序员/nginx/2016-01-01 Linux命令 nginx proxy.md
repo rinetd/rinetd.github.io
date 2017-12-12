@@ -8,11 +8,54 @@ tags: [nginx]
 [【译】Ngnix实现一个缓存和缩略处理的反向代理服务器 - QueenKing - SegmentFault](https://segmentfault.com/a/1190000004604380)
 [Linux 运维 » Nginx 代理 配置详解](http://www.mylinuxer.com/?p=281)
 
+proxy_rediect 用于修改[nginx代理服务器] 发给->[浏览器客户端] Header的 location 和 Refresh
+
+proxy_set_header 用于添加[nginx代理服务器] 发给-> [web应用服务器] 请求数据时Header信息,通过添加Header头信息Host，来指定请求的域名，后端web服务器才能识别该反向代理访问请求由哪个虚拟主机来处理。
+
+
+## Nginx配置proxy_pass转发的/路径问题
+
+在nginx中配置proxy_pass时，如果是按照^~匹配路径时,要注意proxy_pass后的url最后的/
+1. 当加上了/，相当于是绝对根路径，则nginx不会把location中匹配的路径部分代理走;
+2. 如果没有/，则会把匹配的路径部分也给代理走。
+
+location ^~ /static_js/
+{
+proxy_cache js_cache;
+proxy_set_header Host js.test.com;
+proxy_pass http://js.test.com/;
+}
+
+如上面的配置，如果请求的url是http://127.0.0.1/static_js/test.html
+会被代理成http://js.test.com/test.html
+当然，我们可以用如下的rewrite来实现/的功能
+
+location ^~ /static_js/
+{
+proxy_cache js_cache;
+proxy_set_header Host js.test.com;
+rewrite /static_js/(.+)$ /$1 break;
+proxy_pass http://js.test.com;
+
+}
+
+而如果这么配置
+
+location ^~ /static_js/
+{
+proxy_cache js_cache;
+proxy_set_header Host js.test.com;
+proxy_pass http://js.test.com;
+}
+
+则会被代理到http://js.test.com/static_js/test.htm
+
+
 # nginx proxy_pass 后面的url 加与不加/的区别
 
 注：
 
-1. 是否添加 / 是在proxy_pass 后面,而不是 location后面。
+1. [是不是带 / ] 是在proxy_pass 指令后面,而不是 location后面，location后面的/对proxy_pass没有影响
 2. proxy_pass 后是否有 / 决定代理结果 url是否加上匹配的 location
 
 在nginx中配置proxy_pass时，当在后面的url加上了/，相当于是绝对根路径，则nginx向proxy请求时不会把location中匹配的路径部分代理走;，但是浏览器url中是带location路径的
@@ -20,22 +63,22 @@ tags: [nginx]
 
 下面四种情况分别用GET  进行访问。
 
-浏览器请求url都是一致的: http://linyibr.com/proxy/test.html
+浏览器请求url都是一致的: http://linyibr.com/proxy/index.html
 ```
-# location后面的/对proxy_pass没有影响
+# location后面的/对proxy_pass没有影响 只决定匹配的是文件还是目录
 location  /proxy {
       proxy_pass http://127.0.0.1:81;
-      #代理url:   http://127.0.0.1:81/proxy/test.html
+      #代理url:   http://127.0.0.1:81/proxy/index.html
 
       # 技巧：在配置子目录做为子站点的时候增加'/'非常好用
       proxy_pass http://127.0.0.1:81/;
-      #代理url:   http://127.0.0.1:81/test.html
+      #代理url:   http://127.0.0.1:81/index.html
 
       proxy_pass http://127.0.0.1:81/ftlynx;
-      #代理url:   http://127.0.0.1:81/ftlynxtest.html
+      #代理url:   http://127.0.0.1:81/ftlynxindex.html
 
       proxy_pass http://127.0.0.1:81/ftlynx/;
-      #代理url:   http://127.0.0.1:81/ftlynx/test.html
+      #代理url:   http://127.0.0.1:81/ftlynx/index.html
 
 }
 ```
@@ -48,7 +91,7 @@ location  /proxy {
 
 1.16
 ## proxy_rediect 用于修改被代理服务器返回 Header的 location 和 Refresh
-proxy_redirect将修改 服务器返回被代理服务器的响应头中的location字段进行修改后返回给客户端
+proxy_redirect会将应用服务器返回[nginx代理服务器]的响应头中的location字段进行修改后返回给客户端
 
 proxy_redirect http://localhost:8000/two/ http://frontend/one/;
 将Location字段重写为http://frontend/one/some/uri/。
@@ -131,8 +174,6 @@ proxy_pass_request_body on|off;
 1.5
 proxy_pass_request_headers on|off;
 设置是否将客户端请求的请求头发送给代理服务器，默认设置为开启on
-
-
 
 1.7
 proxy_set_body value;

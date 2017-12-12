@@ -5,6 +5,22 @@ update: 2017-01-01
 categories: [linux_base]
 tags: [rsync]
 ---
+rsync 主要定义符及含义
+ # %h远程主机名
+ # %a远程IP地址
+ # %l文件长度字符数
+ # %p该次rsync会话的进程id
+ # %o操作类型："send"或"recv"
+ # %f文件名
+ # %P模块路径
+ # %m模块名
+ # %t当前时间
+ # %u认证的用户名(匿名时是null)
+ # %b实际传输的字节数
+ # %c当发送文件时，该字段记录该文件的校验码
+ #默认log格式为："%o %h [%a] %m (%u) %f %l"，一般来说,在每行的头上会添加"%t [%p] "。
+ log format=%o %h [%a] %m (%u) %f %l
+
 [rsync 备份备忘 — » Kumu's Blog](http://blog.opskumu.com/rsync.html)
 ssh root@keyicloud.com
 `rsync -avzH /var/www qubuluo.com:/keyi/`
@@ -13,6 +29,13 @@ rsync -avzH /var/www/mysql/yiming/ yimengapp.com:/var/www/yimeng/mysql/
 
 `rsync -e "ssh -p 222" -avzH . root@yimengapp.com:nginx`          复制本地文件夹到服务器
 `rsync -e "ssh -p 222" -avzH git.yimengapp.com:docker/ ~/docker/` 复制服务器文件夹到本地
+
+##  允许修改权限
+`--super --perms --chmod=0777`
+##  允许修改所有者 默认修改为本地执行者身份
+`--owner --group --chown=www-data:www-data`
+rsync --perms  --chmod=0777  --owner --group--chown=www-data:www-data -e "ssh -p 3009" --rsync-path="sudo rsync" echo.sh root@d1:
+
 
 rsync 自动创建目录  -R
 ssh user@host mkdir -p `dirname $path` && rsync ...

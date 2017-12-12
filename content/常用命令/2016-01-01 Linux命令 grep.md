@@ -1,5 +1,5 @@
 ---
-BRtitle: Linux命令 grep
+title: Linux命令 grep
 date: 2016-01-06T16:46:14+08:00
 update: 2016-01-01
 categories: [linux_base]
@@ -12,7 +12,7 @@ tags: [grep]
 -o, --only-matching       只显示匹配PATTERN 部分的行
 -v, --invert-match        匹配取反   输出不匹配的内容 选中不匹配的行
 
-grep -insER 
+grep -insER
 # 指定文件查找字符
 grep -E -i 'PidFile' /etc/ssh/sshd_config
 

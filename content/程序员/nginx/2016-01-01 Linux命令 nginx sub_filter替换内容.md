@@ -53,9 +53,7 @@ location / {
 当然方式可以更灵活，比如插入 google analytics 代码等等。
 
 但如果后端返回的文件是已经 gzip 压缩过的文件，因为需要解压缩，然后再压缩，sub_filter 不支持gzip。为了避免此种情况，我们需要后端不压缩文件，做法就是去除 HTTP 请求头中的 压缩头，指导后端不压缩：
-proxy_set_header Accept-Encoding &quot;&quot;;
-1
 
-proxy_set_header Accept-Encoding &quot;&quot;;
+`proxy_set_header Accept-Encoding "";`
 
 当然，为了保证到浏览器的数据是压缩的，sub_filter 前端还是需要配置 gzip on 的

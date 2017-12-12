@@ -27,7 +27,7 @@ HASH算法：MD5，SHA1，SHA256
  用CA的公钥解开数字证书，就可以拿到B真实的公钥了，然后就能证明"数字签名"是否真的是鲍勃签的
  ![](http://files.jb51.net/file_images/article/201212/2012121714270132.png)
 
-
+## [证书格式转换](https://csr.chinassl.net/convert-ssl.html)
 
  一些概念
 
@@ -39,25 +39,38 @@ HASH算法：MD5，SHA1，SHA256
  申请ssl证书需要用到openssl，linux系统中默认会安装，手动安装openssl：
 
  yum install -y openssl openssl-devel
- 一.生成私钥
+
+# 一.生成私钥
 
  私钥是SSL安全性的基础，使用RSA算法生成，只有证书申请者持有，即使CA也没有对私钥的访问权限，应妥善保管。私钥长度决定其安全性，2009年768位RSA已被破解，1024位RSA短期内是安全的，但随着计算机越来越快，已不足以抵御攻击，为了安全起见应尽量使用2048位RSA，生成2048位私钥：
 
  openssl genrsa -out 52os.net.key 2048
+
  如果对安全性要求较高，可以用密码加密密钥文件，每次读取密钥都需输入密码：
 
  openssl genrsa -des3 -out 52os.net.key 2048
+
+### 如何去除私钥密码保护
+
+  如果您的密钥已经加载密码保护，可以通过 OpenSSL 工具 运行以下命令去掉密码保护：
+
+  `openssl rsa -in encryedprivate.key -out unencryed.key`
+
+    encryedprivate.key 是带密码保护的私钥文件。
+    unencryed.key 是去掉了密码的私钥文件，扩展名为 key 或者 pem 均可。
+
  二.生成CSR
 
  证书签名请求文件（CSR）中包含了公钥和证书的详细信息，将CSR发送给CA认证后就会得到数字证书或证书链，生成CSR文件：
 
- openssl req -new -sha256 -key 52os.net.key -out 52os.net.csr
+` openssl req -new -sha256 -key 52os.net.key -out 52os.net.csr`
  按照提示输入：国家、省份、城市、组织名、部门、公共名称、邮件地址等，最后的extra信息不要填写，个人用户也可以使用默认或留空，只需注意‘Common Name’是要使用ssl证书的域名，根据实际情况，可以写单域名，多个域名，或使用*通配域名
  验证CSR文件信息：
 
-
  openssl req -noout -text -in  52os.net.csr
  确认信息正确就可以提交给ca进行认证，CA会根据你的CSR文件进行签名，之后颁发数字证书，该数字证书和私钥就可以部署到服务器了；通常ca认证需付费，普通ssl证书不贵，也有一些提供免费的证书的ca，如startssl、Let's Encrypt等
+
+### 如何制作阿里云CSR文件?
 
  三.自签名
 
@@ -74,10 +87,10 @@ HASH算法：MD5，SHA1，SHA256
  使用上面生成的私钥签发证书：
 
 
- openssl x509 -req -days 365 -in 52os.net.csr -extensions v3_ca -signkey  52os.net.key  -out 52os.net365.crt
+ `openssl x509 -req -days 365 -in 52os.net.csr -extensions v3_ca -signkey  52os.net.key  -out 52os.net365.crt`
  或者直接生成私钥和证书：
 
- openssl  req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout 52os.net.key -out 52os.net.crt
+ `openssl  req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout 52os.net.key -out 52os.net.crt`
  可以使用chrome浏览器导出证书并安装到windows信任证书中，安装后浏览器地址栏的https就会变成绿色。导出方法：访问https网站，点击地址栏上有红色叉的锁型图标，点击详细信息，点击查看证书，在弹出的证书窗口中点击详细信息选项卡，点击复制到文件，之后按证书导出向导的提示即可导出
 
  3.2 使用ca签名
@@ -86,10 +99,10 @@ HASH算法：MD5，SHA1，SHA256
 
 
  openssl genrsa -out CA.key 2048
- openssl req -new -x509 -key CA.key -out CA.cer -days 36500 -subj /CN='52os CA'
+` openssl req -new -x509 -key CA.key -out CA.cer -days 36500 -subj /CN='52os CA'`
  使用ca签发证书：
 
- openssl x509 -req -in 52os.net.csr -extensions v3_usr -CA CA.cer  -CAkey CA.key  -CAcreateserial -out 52os.net.crt
+` openssl x509 -req -in 52os.net.csr -extensions v3_usr -CA CA.cer  -CAkey CA.key  -CAcreateserial -out 52os.net.crt`
  为了更好的兼容浏览器，还需：
 
  cat CA.cer >> 52os.net.crt
@@ -225,12 +238,21 @@ mitmproxy-ca-cert.pem Unix平台使用证书(certificate)格式 文本格式
 mitmproxy-ca-cert.cer 与mitmproxy-ca-cert.pem相同，android上使用证书(certificate)格式 文本格式
 mitmproxy-ca-cert.p12 windows上使用证书(certificate)格式 文本格式
 ```
-为了安全起见，修改cakey.pem私钥文件权限为600或400，也可以使用子shell生成( umask 077;
+为了安全起见，修改cakey.pem私钥文件权限为600或400，也可以使用子shell生成( umask 077);
+一、证书制作
+## 1、制作CA证书：
 
-1. 创建根证书的私匙CA.key：
-`openssl genrsa -out ca.key 2048`
+1. 制作 根证书CA的私匙CA.key (私钥)：
+`openssl genrsa -out ca.key 2048` ``
 网上很多是使用了1024，我这里强度加强到了2048。
-2. 利用ca.key私钥创建根证书ca.crt：
+
+2. 制作解密后的CA私钥（一般无此必要）：
+   此步骤可以跳过 `openssl rsa -in ca.key -out ca_decrypted.key`
+
+3. 利用ca.key私钥 创建根证书ca.crt (公钥)：
+`openssl req -new -x509 -days 36500 -key ca.key -out ca.crt -subj \
+"/C=CN/ST=Shandong/L=Linyi/O=Hangruan/OU=Symantec Corporation"
+`
 `openssl req -new -x509 -days 36500 -key ca.key -out ca.crt -subj \
 "/C=CN/ST=Jiangsu/L=Yangzhou/O=Your Company Name/OU=Your Root CA"
 `
@@ -242,31 +264,40 @@ mitmproxy-ca-cert.p12 windows上使用证书(certificate)格式 文本格式
 这里/C表示国家(Country)，只能是国家字母缩写，如CN、US等；/ST表示州或者省(State/Provice)；/L表示城市或者地区(Locality)；/O表示组织名(Organization Name)；/OU其他显示内容，一般会显示在颁发者这栏。
 
 到这里根证书就已经创建完毕了，
+## 2、制作生成网站的证书并用CA签名认证
+下面介绍建立网站SSL证书的步骤： 假设网站域名为 hangruan.cn
+3. 创建SSL证书  (私匙)
+`openssl genrsa -out server.key 2048` `openssl genrsa -des3 -out hangruan.pem 2048`
+4. 制作解密后的证书私钥：
+  此步骤可以跳过：`openssl rsa -in hangruan.pem -out hangruan.key`
+5. 生成签名请求：利用刚才的私匙建立SSL证书：CSR
+`openssl req -new -key server.key -out server.csr -subj \
+"/C=CN/ST=Shandong/L=Linyi/O=Hangruan/OU=hangruan.cn/CN=hangruan.cn"`
 
-下面介绍建立网站SSL证书的步骤：
-3. 创建SSL证书私匙，这里加密强度仍然选择2048：
-`openssl genrsa -out server.key 2048`位
-4. 利用刚才的私匙建立SSL证书：
 `openssl req -new -key server.key -out server.csr -subj \
 "/C=CN/ST=Jiangsu/L=Yangzhou/O=Your Company Name/OU=wangye.org/CN=wangye.org"`
 
-
 这里需要注意的是后三项，/O字段内容必须与刚才的CA根证书相同；/CN字段为公用名称(Common Name)，必须为网站的域名(不带www)；/OU字段最好也与为网站域名，当然选择其他名字也没关系。
+/CN 也可以使用泛域名如*.hangruan.com来生成所有二级域名可用的网站证书。
 
-备注: CSR（证书签名请求，你需要发送给CA，等待CA批准） `openssl req -sha256 -new -key server.pem -out csr.pem`
-
-`openssl x509 -req -days 365 -in csr.pem -signkey server.pem -out my-certificate.pem`
-注：用一行命令同时生成一对密钥+证书 `openssl req -nodes -new -x509 -keyout server.key -out server.cert`
+    备注: CSR（证书签名请求，你需要发送给CA，等待CA批准） openssl req -sha256 -new -key server.pem -out csr.pem
+        openssl x509 -req -days 365 -in csr.pem -signkey server.pem -out my-certificate.pem
+    备注：用一行命令同时生成一对密钥+证书 `openssl req -nodes -new -x509 -keyout server.key -out server.cert`
 5. 做些准备工作：
+```
 mkdir demoCA
 cd demoCA
 mkdir newcerts
 touch index.txt
 echo '01' > serial
 cd ..
+```
 注意cd ..，利用ls命令检查一下是不是有个demoCA的目录。
-6. 用CA根证书签署SSL自建证书：
-`openssl ca -in server.csr -out server.crt -cert ca.crt -keyfile ca.key`
+6. 用CA根证书签署SSL自建证书 ：
+`openssl ca -cert ca.crt -keyfile ca.key -in server.csr -out server.crt`
+`openssl ca -days 1460 -cert ca.crt -keyfile ca.key -in server.csr -out server.crt`
+7. 最后，把ca.crt的内容粘贴到server.crt后面。这个比较重要！因为不这样做，可能会有某些浏览器不支持
+
 接下来有一段提示，找到Sign the certificate? [y/n]这句，打入y并回车，然后出现out of 1 certificate requests certified, commit? [y/n]，同样y回车。
 好了，现在目录下有两个服务器需要的SSL证书及相关文件了，分别是server.crt和server.key，接下来就可以利用它们配置你的服务器软件了。
 需要注意的是由于是自签名证书，所以客户端需要安装根证书，将刚才第2步创建的根证书ca.crt下载到客户端，然后双击导入，否则会提示不受信任的证书发布商问题。
@@ -278,6 +309,80 @@ server.key  网站私钥                         [服务端 ssl_certificate_key 
 server.csr  网站SSL私钥 -> SSL证书            [用于生成server.crt]
 server.crt  SSL证书+CA证书+CA私钥 -> 网站证书  [服务端 ssl_certificate      /etc/nginx/server.crt;]
 ```
+
+证书格式转换：
+
+
+#IE浏览器需要p12证书，所以需要签发p12证书，用于IE签发:
+openssl pkcs12 -export -clcerts -in client.crt -inkey client.key -out client.p12
+
+#IOS 证书签发格式
+openssl x509 -in client.crt -out client.cer
+
+#Android 证书签发格式
+openssl pkcs12 -export -in client.crt -inkey client.key -out  client.pfx
+
+#pem格式证书
+openssl pkcs12 -export -in ddmdd_a.pfx -out client.pem
+
+#删除私钥密码
+openssl rsa -in client.key -out client_open.key
+
+
+证书撤销：
+
+echo 01 >  crlnumber
+openssl ca -keyfile ca.key -cert ca.crt -revoke  client.crt  #从CA中撤销证书client.crt
+openssl ca -gencrl -keyfile ca.key -cert ca.crt -out client.crl  #生成或更新撤销列表
+
+
+查看证书信息：
+openssl x509 -in client.pem -noout -text
+
+
+client 浏览器需要使用的文件: ca.crt,client.crt,client.key,client.pfx
+
+  server 端使用的文件有:     ca.crt, server.crt,server.key
+
+
+  7.  配置Nginx SSL
+
+
+server {
+      listen          443 ssl;
+      server_name     smsapi.chunbo.com;
+      root            /var/www/smsapi.david.com;
+
+      ssl on;
+      ssl_certificate         /etc/nginx/conf.d/server.crt;
+      ssl_certificate_key     /etc/nginx/conf.d/server.key;
+      ssl_client_certificate  /etc/nginx/conf.d/ca.crt;
+
+      ssl_verify_client       off;
+      ssl_session_timeout     5m;
+      ssl_protocols   SSLv2 SSLv3 TLSv1;
+      ssl_ciphers     HIGH:!aNULL:!MD5;
+      ssl_prefer_server_ciphers   on;
+
+      location / {
+          index index.php index.html;
+      }
+
+      location ~ \.php$ {
+          include         /etc/nginx/fastcgi_params;
+          if (-f $request_filename) {
+              fastcgi_pass   127.0.0.1:9000;
+          }
+          fastcgi_index  index.php;
+          fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+      }
+}
+
+## 错误处理
+index.txt
+另外，如果要清空index.txt的话，一定要清空到字节0，里面有一个字节都会导致openssl ca错误：
+wrong number of fields on line 1 (looking for field 6, got 1, '' left)
+
 ################################################################################
 
 7.1. openssl 命令参数
@@ -906,3 +1011,164 @@ Verifying - Enter PEM pass phrase:
 openssl x509 -inform der -in certificate.cer -out certificate.pem
 转换PEM文件到DER文件
 openssl x509 -outform der -in certificate.pem -out certificate.der
+
+
+
+## Openssl格式转换
+Certificate 和 key 可以存成多种格式, 常见的有 DER , PEM , PFX
+
+DER
+
+將 certificate 或 key 用 DER ASN.1 编码的原始格式, certificate 就是依照X.509的方式编码, key 則是又能分為PKCS#1 和PKCS#8
+
+PEM
+
+把 DER 格式的 certificate 或 key 使用 base64-encoded编码后在头尾上资料标明档案类型
+
+Certificate
+
+-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----
+
+
+RSA private key (PKCS#1)
+
+-----BEGIN RSA PRIVATE KEY-----
+-----END RSA PRIVATE KEY-----
+
+
+RSA public key (PKCS#1)
+
+-----BEGIN RSA PUBLIC KEY-----
+...
+-----END RSA PUBLIC KEY-----
+
+
+RSA private key (PKCS#8, key 沒加密 )
+
+-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----
+
+
+RSA public key (PKCS#8)
+
+-----BEGIN PUBLIC KEY-----
+...
+-----END PUBLIC KEY-----
+
+
+RSA private key (PKCS#8, key 有加密 )
+
+-----BEGIN ENCRYPTED PRIVATE KEY-----
+...
+-----END ENCRYPTED PRIVATE KEY-----
+
+
+
+
+PKCS#7
+
+
+
+这个格式用来传递签署或加密的资料,档案里可以包含整个用到的 certificate chain
+
+
+
+PKCS#12 (PFX)
+
+
+
+这个格式可以把 private key和整个 certificate chain 存程一个档案
+
+
+格式转换
+
+openssl 预设输入输出的格式都是PEM, 要转换格式很简单,搭配 inform, outform 参数就可以了
+
+
+Certificate PEM 转 DER
+
+openssl x509 -in cert.pem -outform der -out cert.der
+
+
+Certificate DER转 PEM
+
+openssl x509 -inform der -in cert.der -outform der -out cert.pem
+
+
+RSA key 的转换比较多一些, 有 private/public key, PKCS#1/PKCS#8, DER/PEM, 以下只都是用 PEM 格式, 要转成 DER 只要加入inform, outform 参数就可以了
+
+输出 public key 指令
+
+从 certificate 输出
+
+openssl x509 -in cert.pem -pubkey -noout > public.pem
+
+
+从 private key 输出
+
+openssl rsa -in private.pem -pubout -out public.pem
+
+
+PKCS#1/PKCS#8转换
+openssl 有多个指令会产生 private key,genpkey会产生PKCS#8格式genrsa会产生PKCS#1格式,
+上面兩个输出 public key的指令都是PKCS#8格式
+
+Public key 格式转换,主要是搭配 RSAPublicKey_in,RSAPublicKey_out, 這兩个参数, rsa command的 help沒有显示这两个参数,说明文件才有
+
+Public key: PKCS#8 -> PKCS#1
+
+openssl rsa -pubin -in public.pem -RSAPublicKey_out -out public_pkcs1.pem
+
+
+Public key: PKCS#1 -> PKCS#8
+
+openssl rsa  -RSAPublicKey_in -in public_pkcs1.pem  -out public_pkcs8.pem
+
+
+也可以在从 private key 输出時直接设定输出格式
+
+openssl rsa -in private.pem -RSAPublicKey_out -out public_pkcs1.pem
+
+
+Private key 格式转换,主要是用pkcs8指令,搭配topk8参数作转换,若不加密就再加上nocrypt
+
+Private key: PKCS#1 -> PKCS#8
+
+openssl pkcs8 -in private_pkcs1.pem -topk8 -nocrypt -out private_pkcs8.pem
+
+
+Private key: PKCS#8 -> PKCS#1
+
+openssl pkcs8 -in private_pkcs8.pem -nocrypt -out private_pkcs1.pem
+
+用OpenSSL 0.9.8可以,之后的版本用pkcs8这个指令输出都是PKCS#8,這指令只是用於0.9.8
+
+
+用0.9.8之后的版本直接用rsa转换即可
+
+openssl rsa -in private_pkcs8.pem -out private_pkcs1.pem
+
+
+
+从PKCS#7 输出 certificate
+目前最常遇到的是 DOCSIS secure upgrade 用的 Code File, 前面會有一段 DER 编码的资料, 包含1～2张CVC
+
+openssl pkcs7 -in code.p7b -print_certs -out certs.pem
+
+
+
+从 PKCS#12(PFS)输出 certificate 和 private key
+
+openssl pkcs12 -in key_cert.pfx -nodes -out key_cert.pem
+
+打完指令会要求输入 pfx file 的密码,若上述指令没加入nodes,会再要求输入输出的 private key 要用的密碼
+
+把 private key 和 certificate 以及 CA 打包成 PKCS#12
+者功能我是用来制作 FreeRADIUS client 端,给 windows 用的懒人包,输入的 private key (client.key), certificate (client.crt), certificate-chain(cert-chain.crt) 都是用 PEM 格式
+
+openssl pkcs12 -export -out client.p12 -inkey client.key -in client.crt -certfile cert-chain.crt
+
+打完指令会要求输入 pfx file 的密码, 之後在 windows下直接开启 client.p12 敲完密码,下一步到底,凭证就会放到对的地方了

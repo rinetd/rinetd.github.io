@@ -5,6 +5,8 @@ update: 2017-11-07T14:55:34+08:00
 categories: [Linux基础]
 tags:
 ---
+采用source 而不是bash 命令 可以将环境变量传递过去
+
 本教程分为入门篇，命令篇和实战篇，结合平时工作中使用Shell的经验编写。以实例为主，侧重于应用，总结了一些实用的技巧。
 
 以下为本教程的《入门篇》，适于初学者快速入门以及老手查缺补漏。
@@ -112,13 +114,13 @@ fi
 
 |运算符|描述|示例|
 |---|---|---|
-|-e filename|如果 filename 存在，则为真|[ -e /var/log/syslog ]|
-|-d filename|如果 filename 为目录，则为真|[ -d /tmp/mydir ]|
+|-e filename|如果 filename 存在，则为真     |[ -e /var/log/syslog ]|
+|-d filename|如果 filename 为目录，则为真   |[ -d /tmp/mydir ]|
 |-f filename|如果 filename 为常规文件，则为真|[ -f /usr/bin/grep ]|
 |-L filename|如果 filename 为符号链接，则为真|[ -L /usr/bin/grep ]|
-|-r filename|如果 filename 可读，则为真|[ -r /var/log/syslog ]|
-|-w filename|如果 filename 可写，则为真|[ -w /var/mytmp.txt ]|
-|-x filename|如果 filename 可执行，则为真|[ -x /usr/bin/grep ]|
+|-r filename|如果 filename 可读，则为真     |[ -r /var/log/syslog ]|
+|-w filename|如果 filename 可写，则为真     |[ -w /var/mytmp.txt ]|
+|-x filename|如果 filename 可执行，则为真   |[ -x /usr/bin/grep ]|
 |filename1 -nt filename2|如果 filename1 比 filename2 新，则为真|[ /tmp/install/etc/services -nt /etc/services ]|
 |filename1 -ot filename2|如果 filename1 比 filename2 旧，则为真|[ /boot/bzImage -ot arch/i386/boot/bzImage ]|
 

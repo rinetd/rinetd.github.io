@@ -17,6 +17,8 @@ tags: [ssh,sftp]
 4. 登陆
   `sftp -P 3009 sftp@ `
 
+## jbw
+useradd -o -r -u 33 -g www-data -c sftp -d /docker/php5/jbw/public/uploads -s /usr/sbin/nologin sftp_jbw
 --------------------------------------------------------------------------------
 系统内开启ssh服务和sftp服务都是通过/usr/sbin/sshd这个后台程序监听22端口，而sftp服务作为一个子服务，是通过/etc/ssh/sshd_config配置文件中的Subsystem实现的，如果没有配置Subsystem参数，则系统是不能sftp访问的。
 

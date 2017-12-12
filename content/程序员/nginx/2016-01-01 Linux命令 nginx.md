@@ -24,8 +24,38 @@ tags: [nginx]
 
 [Web服务器Nginx多方位优化策略 - 运维生存时间](http://www.ttlsa.com/nginx/web-server-nginx-optimization/)
 ######
+## HSTS
+`add_header Strict-Transport-Security max-age=2592000;`
+
 nginx 仅通过检查请求首部中的 “HOST” 字段来决定让哪个虚拟主机处理访问请求
 
+1. 要配置访问 /aa 到  /var/www/hello.test.com/index.html ，你应该使用 alias 而不是 root
+2. 要配置访问 /aa 到  /var/www/hello.test.com/aa/index.html 则使用root 会将匹配路径带入URI
+3. 配置子目录应该闭合，不要使用 /aa ，应该使用 /aa/ ; /aa 用于文件匹配
+4. alias后面必须要用“/”结束，否则会找不到文件的;而root则可有可无
+5. 在 / 中配置root，在 /other 中配置alias是一个好习惯。
+
+```
+index index.html index.htm;
+
+location  /html {
+   alias /usr/share/nginx/;      ## /usr/share/nginx/
+   autoindex on;
+   autoindex_localtime on;
+   autoindex_exact_size off;
+}
+location /download/ {
+    root /etc/nginx;              ## /etc/nginx/download
+    index index.html index.htm;
+}
+
+```
+```
+# 禁用php脚本解析
+location ~* ^/uploads/.*.(php|php5)$ {
+      deny all;
+}
+```
 
 https://regexper.com
 . ： 匹配除换行符以外的任意字符
@@ -43,13 +73,14 @@ $ ： 匹配字符串的介绍
 [a-z] ： 匹配a-z小写字母的任意一个
 
 # location匹配规则
-优先级
-`(=) > (^~) > (~,~*) > ( ) > (/)`
+1. 语法规则（按优先级）`(=) > (^~) > (~,~*) > ( ) > (/)`
 
     =     精确匹配
     ^~    url路径匹配 一般用来匹配目录,nginx不对url做编码，因此请求为/static/20%/aa，可以被规则^~ /static/ /aa匹配到（注意是空格）
-    ~,~*  正则匹配
-          ~    区分大小写    ~*   不区分大小写
+    ~     区分大小写的正则匹配
+    ~*    不区分大小写的正则匹配
+    !~    区分大小写不匹配的正则
+    !~*   不区分大小写不匹配的正则
     ' '   普通匹配
     @     命名的 location，使用在内部定向时，例如 error_page, try_files
     /  通用匹配，任何请求都会匹配到。
@@ -115,6 +146,7 @@ binary_remote_addr        客户端ip（二进制)
 remote_port               客户端port，如：50472
 remote_user               已经经过Auth Basic Module验证的用户名
 host                       请求主机头字段，否则为服务器名称，如:dwz.stamhe.com
+`rewrite ^(.*)$	https://$host$1	permanent;` 强制跳转到https
 request                    用户请求信息，如：GET /?_a=index&_m=show&count=10 HTTP/1.1
 request_filename         当前请求的文件的路径名，由root或alias和URI request组合而成，如：/webserver/htdocs/dwz/index.php
 status                        请求的响应状态码,如:200
