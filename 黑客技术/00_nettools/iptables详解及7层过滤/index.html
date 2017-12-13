@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+  <base href="//">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+  <title>Linux命令 iptable - Pytool</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="iptables 详解及7层过滤 2013-07-04 16:03:59 标签：防火墙 iptables 七层过滤 原创作品，允许转载，转载时请务必以超链接形式标明文章 原始出处 、作者信息和本声明。否则将追究法律责任">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Linux命令 iptable - Pytool">
+<meta itemprop="description" content="iptables 详解及7层过滤 2013-07-04 16:03:59 标签：防火墙 iptables 七层过滤 原创作品，允许转载，转载时请务必以超链接形式标明文章 原始出处 、作者信息和本声明。否则将追究法律责任">
+<meta itemprop="image" content="//public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux命令 iptable - Pytool" />
+<meta property="og:description" content="iptables 详解及7层过滤 2013-07-04 16:03:59 标签：防火墙 iptables 七层过滤 原创作品，允许转载，转载时请务必以超链接形式标明文章 原始出处 、作者信息和本声明。否则将追究法律责任">
+<meta property="og:image" content="//public/avatar.png" />
+<meta property="og:url" content="/%E9%BB%91%E5%AE%A2%E6%8A%80%E6%9C%AF/00_nettools/iptables%E8%AF%A6%E8%A7%A3%E5%8F%8A7%E5%B1%82%E8%BF%87%E6%BB%A4/" />
+
+
+
+  <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+  <link rel="canonical" href="/%E9%BB%91%E5%AE%A2%E6%8A%80%E6%9C%AF/00_nettools/iptables%E8%AF%A6%E8%A7%A3%E5%8F%8A7%E5%B1%82%E8%BF%87%E6%BB%A4/">
+  <link rel='shortlink' href="/%E9%BB%91%E5%AE%A2%E6%8A%80%E6%9C%AF/00_nettools/iptables%E8%AF%A6%E8%A7%A3%E5%8F%8A7%E5%B1%82%E8%BF%87%E6%BB%A4/"/>
+  <link rel="shortcut icon" href="//public/favicon.ico"/>
+  
+<link rel="stylesheet" id="human-style-css" href="./wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="./wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="./wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="./wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="./public/highlight/styles/github.css">
+<script src="./public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<link rel="stylesheet" id="human-style-css3" href="./wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="./public/font/hack/css/hack.min.css">
+
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="./assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="./assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="./assets/js/myblog.js"></script>
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//" class="nav-cs-icon">
+        <img width="40" height="40" src="/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/">首页</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/linux%e5%9f%ba%e7%a1%80/">Linux基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">Post</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%a5%87%e7%9c%9f%e5%bc%82%e5%ae%9d/">奇真异宝</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b5%8c%e5%85%a5%e5%bc%8f%e5%bc%80%e5%8f%91/">嵌入式开发</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4/">常用命令</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%b7%a5%e5%85%b7/">常用工具</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e6%96%87%e6%9c%ac%e7%bc%96%e8%be%91%e5%99%a8/">文本编辑器</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%a8%8b%e5%ba%8f%e5%91%98/">程序员</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%bc%96%e7%a8%8b%e5%9f%ba%e7%a1%80/">编程基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e8%bd%ac%e8%bd%bd/">转载</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e9%bb%91%e5%ae%a2%e6%8a%80%e6%9c%af/">黑客技术</a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">归档</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//" rel="home">
+              <img style="border-radius: 50%;width:72px;height:72px;margin:0 auto;" alt="rinetd" src="/public/avatar.png"></img>
+              Pytool
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="/categories/linux%E5%9F%BA%E7%A1%80/" rel="category tag">Linux基础</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Linux命令 iptables</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年01月06日 16:46:14 · 13229 Words ·
+                    ~27min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/%e9%bb%91%e5%ae%a2%e6%8a%80%e6%9c%af/00_nettools/iptables%e8%af%a6%e8%a7%a3%e5%8f%8a7%e5%b1%82%e8%bf%87%e6%bb%a4.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      <p><img src="http://blog.51cto.com/image/skin/artType01.jpg" alt="" /> iptables 详解及7层过滤</p>
+
+<p><span class="artTime">2013-07-04 16:03:59</span></p>
+
+<p>标签：<a href="http://blog.51cto.com/tag-防火墙.html" class="operlink">防火墙</a> <a href="http://blog.51cto.com/tag-iptables.html" class="operlink">iptables</a> <a href="http://blog.51cto.com/tag-七层过滤.html" class="operlink">七层过滤</a></p>
+
+<p>原创作品，允许转载，转载时请务必以超链接形式标明文章 <a href="http://freeloda.blog.51cto.com/2033581/1241545">原始出处</a> 、作者信息和本声明。否则将追究法律责任。<a href="http://freeloda.blog.51cto.com/2033581/1241545">http://freeloda.blog.51cto.com/2033581/1241545</a></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">大纲</span></p>
+
+<blockquote>
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">一、防火墙简介
+二、防火墙分类
+三、防火墙在企业中的部署
+四、IPTABLES的简介
+五、IPTABLES的表和链
+六、IPTABLES的几个状态
+七、IPTABLES的命令及使用
+八、IPTABLES的脚本编写
+九、IPTABLES的7层过滤</span></p>
+</blockquote>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">注：本文的测试环境（CentOS 5.5 X86_64）</span></p>
+
+<p><span style="font-size:14px;">
+</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">一、防火墙简介</span></p>
+
+<blockquote>
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">防火墙其实就是一个加固主机或网络安全的一个设备或者软件而已,通过防火墙可以隔离风险区域与安全区域的连接,同时不会妨碍风险区域的访问。当然需要注意的是世界上没有绝对的安全,防火墙也只是启到一定的安全防护。大多数的安全风险还是在内网当中！</span></p>
+</blockquote>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">二、防火墙的分类</span></p>
+
+<blockquote>
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">(1).从特点上分类</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">第一种，软件防火墙,软件防火墙需要运行在特定的计算机上,而且需要计算机的操作系统的支持。</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">第二种，硬件防火墙,硬件防火墙其实就是一个普通pc机的架构,然后上面跑有专门的操作系统。</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">第三种，芯片级的防火墙,这种防火墙基于专门的硬件平台,没有操作系统,专有的ASIC芯片使它们比其他类的防火墙速度更快,处理能力极强,性能更高,但是价格却极其昂贵。</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">(2).从技术上分类</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">第一种，包过滤型防火墙,这类的防火墙主要是工作在网络层,根据事先设定好的规则进行检查,检查结果根据事先设定好的处理机制进行处理。</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">第二种，应用层防火墙,它是工作在TCP/IP模型中的最高层应用层,相比较来说速度要慢一点。</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">第三种，状态监视器,状态监视做为防火墙其安全性为最佳,但配置比较复杂,且网络速度较慢。</span></p>
+</blockquote>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">三、防火墙在企业中的部署</span></p>
+
+<blockquote>
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">(1). 单宿主堡垒主机：是单台服务器有防火墙,只为单台服务器防护。</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">(2). 双宿主堡垒主机：双宿主堡垒主机是一台装有两块网卡的堡垒主机,一般这台堡垒主机应用在网关,防护局域网跟广域网之间通信等安全。</span></p>
+
+<p><a href="http://img1.51cto.com/attachment/201307/215737476.png"><img src="http://img1.51cto.com/attachment/201307/215737476.png" alt="" title="l1.PNG" /></a></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">(3).三宿主堡垒主机：三宿主堡垒主机是一台装有三块网卡的堡垒主机,那么他将外网,内网,DMZ 三个区域隔离开来,同时保护内网已经DMZ区域的安全等。</span></p>
+
+<p><a href="http://img1.51cto.com/attachment/201307/215753300.png"><img src="http://img1.51cto.com/attachment/201307/215753300.png" alt="" title="l2.PNG" /></a></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">(4).背靠背型，如下图：</span></p>
+
+<p><a href="http://img1.51cto.com/attachment/201307/215806800.png"><img src="http://img1.51cto.com/attachment/201307/215806800.png" alt="" title="l3.PNG" /></a></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">不用解释一看图就知道是怎么回事了,实际上前端防火墙是防护外网到DMZ区域以及到内网,后端防火墙是防护内网到DMZ区域的安全。好了说了这么多，下面我们说说iptables在linux中的应用！</span></p>
+</blockquote>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">四、IPTABLES的简介</span></p>
+
+<blockquote>
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">IPTABLES/netfilter(</span><a href="http://www.netfilter.org/"><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">官方网站，http://www.netfilter.org</span></a><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">) 其实大多数人都认为iptables是linux系统上的一个服务,其实不是的. 我们linux系统上的服务比如说httpd服务在启动起来的时候,是不是在后台启动一个相应的服务进程且在网卡上监听一个端口,而iptables却不然,那么iptables到底是什么呢？其实iptables只是一个工具而已.我们的linux系统有用户空间,和内核空间,而iptables有两个组件,一是netfilter,  netfilter组件只是用来过滤防火墙规则,及作出相应的处理机制的,它是集成在内核中的一部分,也就是说它是工作在内核空间的,那么大家都知道用户是不可能直接跟内核空间打交道的,那么netfilter只是工作在内核空间对规则进行处理的,那么规则从何而来呢? 是从iptables的第二个组件iptables而来的,我们上面说了IPTABLES只是一个工作在用户空间的一个工具而已,那么用户就使用这个工具的一个命令来跟工作在内核空间中的netfiter组件打交道的.其实IPTABLES防火墙就是这样的。</span></p>
+</blockquote>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">五、IPTABLES的表和链</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">IPTABLES常用的表和链有三个，分别为 filter表 nat表 mangle表, 和五个链 INPUT链 OUTPUT链 FORWARE链 POSTROUTING链 PREROUTING链,下面来介绍下它们的各个功能，
+1.filter表
+      filter表主要是过滤数据包的,IPTABLES几乎所有的数据包过滤都在此表中实现的,filter表也是IPTABLES中默认的表,此表中还包含三个链如下：
+(1).INPUT链
+       过滤所有的目标地址是本机的数据包
+(2).OUTPUT链
+         过滤所有从本机出去的数据包
+(3).FORWORD链
+         过滤所有从本机路过的数据包
+2.nat表
+      nat表主要是用于做网络地址转换的(NAT),在IPTABLES中可以做SNAT(源地址转换),DNAT(目标地址转换),PANT(即跟SNAT差不多,不一样的是SNAT的源地址是固定的,而PNAT的源地址是不固定的,当使用ppp或pppoe的方式连接互联网的时候一般适应这个) nat表中包含两个链如下：
+(1).PREROUTING链
+   在数据包到达防火墙的时候改变目标地址 DNAT应用于此链.
+(2).OUTPUT链
+         可以改变本地产生的数据包的目标地址
+(3).POSTROUTING链
+         在数据包离开防火墙的时候改变源地址,SNAT应用于次链
+3.mangle表
+       mangle表主要是修改数据包头部信息的,此表中包含以下5条链:
+(1).PREROUTING链,
+         在数据包进入防火墙之后,也称为路由前,
+(2).POSTROUTING链,
+          在数据包确定目标地址后,也称为路由后,
+(3).OUTPUT链
+          从本机出去的时间包路由前
+(4).INPUT链
+          数据包进入本机后,路由后
+(5).FORWARD链
+          第一次路由判断之后,最后一次路由判断之前改变数据包</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">4.数据包过滤匹配流程</span></p>
+
+<p><a href="http://img1.51cto.com/attachment/201307/173142806.png"><img src="http://img1.51cto.com/attachment/201307/173142806.png" alt="" title="数据流.PNG" /></a></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">六、IPTABLES的几个状态</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">IPTABLES的状态跟踪连接有4种,分别是,NEW,ESTABLISHED,RELATED,INVALID,除了从本机出去的数据包有NAT表的OUTPUT链处理外,其他所有的状态跟踪都在NAT表中的PREROUTING链中处理,下面来说下4种状态是什么， </span></p>
+
+<blockquote>
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">1.NEW状态
+       NEW状态的数据包说明这个数据包是收到的第一个数据包。
+2.ESTABLISHED状态
+      只要发送并接到应答,一个数据包的状态就从NEW变为ESTABLEISHED,而且该状态会继续匹配这个连接后继数据包。
+3.RELATED状态
+      当一个数据包的状态处于ESTABLSHED状态的连接有关系的时候,就会被认为是RELATED,也就是说一个链接想要是RELATED状态,首先要有一个ESTABLISHED的连接。
+4.INVALID状态
+      不能被识别属于哪个连接状态或没有任何关系的状态,一般这中数据包要被拒绝的。</span></p>
+</blockquote>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">七、IPTABLES的命令及使用</span></p>
+
+<blockquote>
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">iptables在CentOS或RHEL的系统上默认安装的, IPTABLES的命令选项主要分为这么几大类,规则管理,链管理,默认规则管理,查看,匹配条件,处理动作等，下面我们就来说明一下，</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">1.规则管理</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">&gt; iptables -A    添加一条新规则
+&gt; iptables -I    插入一条新规则 -I 后面加一数字表示插入到哪行
+&gt; iptables -D    删除一条新规则 -D 后面加一数字表示删除哪行
+&gt; iptables -R    替换一条新规则 -R 后面加一数字表示替换哪行
+&gt; ```
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;2.链管理&lt;/span&gt;
+&gt;
+&gt; ``` brush:bash;toolbar:false;
+&gt; iptables -F    清空链中的所有规则
+&gt; iptables -N    新建一个链
+&gt; iptables -X    删除一个自定义链,删除之前要保证次链是空的,而且没有被引用
+&gt; iptables -E    重命名链
+&gt; ```
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;3.默认规则管理&lt;/span&gt;
+&gt;
+&gt; ``` brush:bash;toolbar:false;
+&gt; iptables -P    设置默认规则
+&gt; ```
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;4.查看&lt;/span&gt;
+&gt;
+&gt; ``` brush:bash;toolbar:false;
+&gt; iptables -L    查看规则 –L 还有几个子选项如下
+&gt; iptables -L -n 以数字的方式显示
+&gt; iptables -L -v 显示详细信息
+&gt; iptables -L -x 显示精确信息
+&gt; iptables -L --line-numbers 显示行号
+&gt; ```
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;5.条件匹配&lt;/span&gt;
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;(1).基本匹配&lt;/span&gt;
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;条件匹配也可以使用 ! 取反 &lt;/span&gt;
+&gt;
+&gt; ``` brush:bash;toolbar:false;
+&gt; -s    源地址
+&gt; -d    目标地址
+&gt; -p    协议{tcp|udp|icmp}
+&gt; -i    从哪个网络接口进入,比如 -i eth0
+&gt; -o    从哪个网络接口出去,比如 -o eth0
+&gt; ```
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;(2).扩展匹配&lt;/span&gt;
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;隐含扩展匹配&lt;/span&gt;
+&gt;
+&gt; ``` brush:bash;toolbar:false;
+&gt; -p {tcp|udp} --sport   指定源端口
+&gt; -p {tcp|udp} --dport   指定目标端口
+&gt; ```
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;显示扩展匹配&lt;/span&gt;
+&gt;
+&gt; ``` brush:bash;toolbar:false;
+&gt; -m state --state   匹配状态的
+&gt; -m mutiport --source-port   端口匹配 ,指定一组端口
+&gt; -m limit --limit 3/minute   每三分种一次
+&gt; -m limit --limit-burst  5   只匹配5个数据包
+&gt; -m string --string --algo bm|kmp --string &quot;xxxx&quot;  匹配字符串
+&gt; -m time --timestart 8:00 --timestop 12:00  表示从哪个时间到哪个时间段
+&gt; -m time --days    表示那天
+&gt; -m mac --mac-source xx:xx:xx:xx:xx:xx 匹配源MAC地址
+&gt; -m layer7 --l7proto qq   表示匹配腾讯qq的 当然也支持很多协议,这个默认是没有的,需要我们给内核打补丁并重新编译内核及iptables才可以使用 -m layer7 这个显示扩展匹配
+&gt; ```
+&gt;
+&gt; &lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;6.处理动作&lt;/span&gt;
+&gt;
+&gt; ``` brush:bash;toolbar:false;
+&gt; -j ACCEPT   允许
+&gt; -j REJECT    拒绝
+&gt; -j DROP       拒绝并提示信息
+&gt; -j SNAT       源地址转换
+&gt; -j DNAT       目标地址转换
+&gt; -j REDIRECT   重定向
+&gt; -j MASQUERAED  地址伪装
+&gt; -j LOG --log-prefix &quot;说明信息,自己随便定义&quot;      记录日志
+&gt; ```
+
+&lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;八、IPTABLES的脚本编写&lt;/span&gt;
+
+&lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;IPTABLES 脚本里面其实就是敲的一系列命令而已下面给个例子,介绍下iptables命令的使用及IPTABLES脚本的编写 &lt;/span&gt;
+
+&lt;span style=&quot;font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;&quot;&gt;1.IPTABLES脚本实例
+&lt;/span&gt;
+
+``` brush:bash;toolbar:false;
+#vim iptables.sh
+#!/bin/bash
+#
+#定义变量
+mynet=192.168.10.0/24
+myip=192.168.10.100
+IPT=/sbin/iptables
+#加载ftp模块
+modprobe ip_conntrack-ftp
+modprobe ip_nat_ftp
+#开启路由转发功能
+echo &quot;1&quot; /proc/sys/net/ipv4/ip_forward
+#清空所有表中的规则
+$IPT -F
+$IPT -t nat –F
+$IPT -t mangle –F
+#删除所有自定义链
+$IPT -X
+$IPT -t nat -X
+$IPT -t mangle –X
+#设置默认策略
+$IPT -P INPUT DROP
+$IPT -P OUTPUT DROP
+$IPT -P FORWARD ACCEPT
+#允许状态为ESTABLISHED,RELATED的访问本机,及状态为NEW的从本机出去
+$IPT -A INOUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+#允许本地环回口访问
+$IPT -A INPUT -i lo -j ACCEPT
+$IPT -A OUTPUT -o lo -j ACCEPT
+#允许管理员主机访问本地ssh服务
+$IPT -A INPUT -s $myip -m state --state NEW -p tcp --dport 22 -j ACCEPT
+$IPT -A OUTPUT -d $myip -p tcp --sport 22 -j ACCEPT
+#允许局域网的ping请求
+$IPT -A INPUT -s $mynet -p icmp --icmp-type 8 -j ACCEPT
+$IPT -A OUTPUT -d $mynet -p icmp --icmp-type 0 -j ACCEPT
+#为局域网做SNAT
+$IPT -t nat -A POSTROUTING -s $mynet -j SNAT --to-source 222.95.1.97
+#为局域网内部的web服务器做DNAT
+$IPT -t nat -A PREROUTING -d 222.95.1.97 -p tcp --dport 80 -j DNAT --to-destination 192.168.10.1
+</code></pre>
+</blockquote>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">2.让下次开机自动加载脚本 </span>
+<span style="font-size:14px;"></span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost ~]# echo &quot;/bin/bash /root/shell/iptables.sh&quot; &gt;&gt; /etc/rc.local
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">九、IPTABLES的7层过滤</span>
+<span style="font-size:14px;"></span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">说明：为网络管理员,对P2P,QQ,酷狗,等软件是又爱又恨,大多数公司,为了提高工作效率禁止公司员工上QQ,看视频等,  在市场上买专门的上网行为管理设备,随便都是好几W,而使用linux来做网关,一样可以禁止qq,酷狗等软件,成本才几千块,下面将介绍下怎么实现的！</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">1.简介</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">      在Linux的防火墙体系</span><a href="http://netfilter.org/"><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">Netfilter</span></a><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">下有一个独立的模块</span><a href="http://downloads.sourceforge.net/project/l7-filter/"><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">L7 filter</span></a><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;"> 。从字面上看Netfilter是对网络数据的过滤，L7 filter是基于数据流应用层内容的过滤。不过实际上 L7 filter的本职工作不是对数据流进行过滤而是对数据流进行分类。它使用模式匹配算法把进入设备的数据包应用层内容与事先定义好的协议规则进行比对，如果匹配成功就说明这个数据包属于某种协议。</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">L7 filter是基于数据流工作的，建立在Netfilter connstrack功能之上。因为一个数据流或者说一个连接的所有数据都是属于同一个应用的，所以L7 filter没有必要对所以的数据包进行模式匹配，而只匹配一个流的前面几个数据包 （比如5或10个数据包）。当一个流的前面几个数据包包含了某种应用层协议的特征码时 （比如QQ），则这个数据流被L7 filter识别；当前面几个数据包的内容没有包含某种应用层协议的特征码时，则L7 filter放弃继续做模式匹配，这个数据流也就没有办法被识别。</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">2.下载相关软件</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">7层过滤首先需要内核支持，现在最新的</span><a href="http://www.kernel.org/"><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">内核</span></a><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">是3.10(</span><strong><a href="https://www.kernel.org/" title="https://www.kernel.org/"><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">https://www.kernel.org/</span></a></strong><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">）但是L7 filter的支持列表只更新到2.6.30.5而且有部份的功能未经测试，而所有经过测试的版本的内核是2.6.28(</span><a href="http://l7-filter.sourceforge.net/kernelcompat"><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">http://l7-filter.sourceforge.net/kernelcompat</span></a><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">)，为了保证其稳定所以决定将内核升级为2.6.28!</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost src]# wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.28.tar.bz2
+[root@localhost src]# wget http://netfilter.org/projects/iptables/files/iptables-1.4.7.tar.bz2
+[root@localhost src]# wget http://downloads.sourceforge.net/project/l7-filter/Protocol%20definitions/2009-05-28/l7-protocols-2009-05-28.tar.gz?use_mirror=nchc
+[root@localhost src]# wget http://downloads.sourceforge.net/project/l7-filter/l7-filter%20kernel%20version/2.22/netfilter-layer7-v2.22.tar.gz?use_mirror=nchc
+[root@localhost src]# ll
+total 52264
+-rw-r--r-- 1 root root   462420 Jan  3  2012 iptables-1.4.7.tar.bz2
+-rw-r--r-- 1 root root   142050 May 29  2009 l7-protocols-2009-05-28.tar.gz
+-rw-r--r-- 1 root root 52665364 Dec 25  2008 linux-2.6.28.tar.bz2
+-rw-r--r-- 1 root root   174853 Jul 14  2009 netfilter-layer7-v2.22.tar.gz
+[root@localhost src]#
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">3.卸载系统自带的 iptables</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">在卸载之前，我们先把iptables的启动脚本及脚本配置文件拷贝到/root目录下待会有用 </span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost src]# cp /etc/init.d/iptables /root
+[root@localhost src]# cp /etc/sysconfig/iptables-config /root
+[root@localhost src]# rpm -qa | grep iptables
+iptables-1.3.5-5.3.el5_4.1
+iptables-ipv6-1.3.5-5.3.el5_4.1
+[root@localhost src]# rpm -e --nodeps  `rpm -qa | grep iptables`
+warning: /etc/sysconfig/iptables-config saved as /etc/sysconfig/iptables-config.rpmsave
+[root@localhost src]#
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">4.给新内核加入Layer 7补丁</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost src]# tar xf linux-2.6.28.tar.bz2 -C /usr/src
+[root@localhost src]# tar xf netfilter-layer7-v2.22.tar.gz -C /usr/src
+[root@localhost src]# cd /usr/src/
+[root@localhost src]# ls
+debug  kernels  linux-2.6.28  netfilter-layer7-v2.22  redhat
+[root@localhost src]# ln -sv linux-2.6.28/ linux
+create symbolic link `linux' to `linux-2.6.28/'
+[root@localhost src]# ls
+debug  kernels  linux  linux-2.6.28  netfilter-layer7-v2.22  redhat
+[root@localhost src]# cd /usr/src/linux
+[root@localhost linux]# patch -p1 &lt; ../netfilter-layer7-v2.22/kernel-2.
+kernel-2.4-layer7-2.22.patch            kernel-2.6.25-2.6.28-layer7-2.22.patch
+[root@localhost linux]# patch -p1 &lt; ../netfilter-layer7-v2.22/kernel-2.6.25-2.6.28-layer7-2.22.patch
+patching file net/netfilter/Kconfig
+patching file net/netfilter/Makefile
+patching file net/netfilter/xt_layer7.c
+patching file net/netfilter/regexp/regexp.c
+patching file net/netfilter/regexp/regexp.h
+patching file net/netfilter/regexp/regmagic.h
+patching file net/netfilter/regexp/regsub.c
+patching file net/netfilter/nf_conntrack_core.c
+patching file net/netfilter/nf_conntrack_standalone.c
+patching file include/net/netfilter/nf_conntrack.h
+patching file include/linux/netfilter/xt_layer7.h
+[root@localhost linux]# cp /boot/config-2.6.18-194.el5 /usr/src/linux/.config
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">5.编译内核</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">说明：（需要增加的编译模块）</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">Networking support → Networking Options → Network packet filtering framework → Core Netfilter Configuration
+&lt;M&gt;  Netfilter connection tracking support
+&lt;M&gt;  &rdquo;layer7&rdquo; match support
+&lt;M&gt;  &rdquo;string&rdquo; match support
+&lt;M&gt;  &rdquo;time&rdquo;  match support
+&lt;M&gt;  &rdquo;iprange&rdquo;  match support
+&lt;M&gt;  &rdquo;connlimit&rdquo;  match support
+&lt;M&gt;  &rdquo;state&rdquo;  match support
+&lt;M&gt;  &rdquo;conntrack&rdquo;  connection  match support
+&lt;M&gt;  &rdquo;mac&rdquo;  address  match support
+&lt;M&gt;  &rdquo;multiport&rdquo; Multiple port match support</span></p>
+
+<p><span style="font-size:14px;">
+</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">Networking support → Networking Options →Network packet filtering framework → IP Netfilter Configuration
+</span></p>
+
+<p><span style="color:#000000;font-family:arial, helvetica, sans-serif;font-size:14px;">&lt;M&gt; IPv4 connection tracking support (required for NAT) </span></p>
+
+<p><span style="color:#000000;font-family:arial, helvetica, sans-serif;font-size:14px;">&lt;M&gt; Full NA</span></p>
+
+<p><span style="color:#000000;font-family:arial, helvetica, sans-serif;font-size:14px;">&lt;M&gt; MASQUERADE target support</span></p>
+
+<p><span style="color:#000000;font-family:arial, helvetica, sans-serif;font-size:14px;">&lt;M&gt; NETMAP target support                             </span></p>
+
+<p><span style="color:#000000;font-family:arial, helvetica, sans-serif;font-size:14px;">&lt;M&gt; REDIRECT target support
+</span></p>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">具体操作：</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost linux]#make  menuconfig
+  HOSTCC  scripts/basic/fixdep
+  HOSTCC  scripts/basic/docproc
+  HOSTCC  scripts/basic/hash
+  HOSTCC  scripts/kconfig/conf.o
+  HOSTCC  scripts/kconfig/kxgettext.o
+  HOSTCC  scripts/kconfig/lxdialog/checklist.o
+  HOSTCC  scripts/kconfig/lxdialog/inputbox.o
+  HOSTCC  scripts/kconfig/lxdialog/menubox.o
+  HOSTCC  scripts/kconfig/lxdialog/textbox.o
+  HOSTCC  scripts/kconfig/lxdialog/util.o
+  HOSTCC  scripts/kconfig/lxdialog/yesno.o
+  HOSTCC  scripts/kconfig/mconf.o
+  SHIPPED scripts/kconfig/zconf.tab.c
+  SHIPPED scripts/kconfig/lex.zconf.c
+  SHIPPED scripts/kconfig/zconf.hash.c
+  HOSTCC  scripts/kconfig/zconf.tab.o
+  HOSTLD  scripts/kconfig/mconf
+scripts/kconfig/mconf arch/x86/Kconfig
+.config:1359:warning: symbol value 'm' invalid for FIXED_PHY
+.config:1659:warning: symbol value 'm' invalid for ISDN
+.config:2765:warning: symbol value 'm' invalid for RTC_INTF_SYSFS
+.config:2766:warning: symbol value 'm' invalid for RTC_INTF_PROC
+.config:2767:warning: symbol value 'm' invalid for RTC_INTF_DEV
+.config:2789:warning: symbol value 'm' invalid for DMA_ENGINE
+.config - Linux Kernel v2.6.28 Configuration
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ┌─────────────────────────────────────────── Linux Kernel Configuration ────────────────────────────────────────────┐
+  │  Arrow keys navigate the menu.  &lt;Enter&gt; selects submenus ---&gt;.  Highlighted letters are hotkeys.  Pressing &lt;Y&gt;    │
+  │  includes, &lt;N&gt; excludes, &lt;M&gt; modularizes features.  Press &lt;Esc&gt;&lt;Esc&gt; to exit, &lt;?&gt; for Help, &lt;/&gt; for Search.       │
+  │  Legend: [*] built-in  [ ] excluded  &lt;M&gt; module  &lt; &gt; module capable                                               │
+  │                                                                                                                   │
+  │ ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────┐ │
+  │ │                        General setup  ---&gt;                                                                    │ │
+  │ │                    [*] Enable loadable module support  ---&gt;                                                   │ │
+  │ │                    -*- Enable the block layer  ---&gt;                                                           │ │
+  │ │                        Processor type and features  ---&gt;                                                      │ │
+  │ │                        Power management and ACPI options  ---&gt;                                                │ │
+  │ │                        Bus options (PCI etc.)  ---&gt;                                                           │ │
+  │ │                        Executable file formats / Emulations  ---&gt;                                             │ │
+  │ │                    -*- Networking support  ---&gt;                                                               │ │
+  │ │                        Device Drivers  ---&gt;                                                                   │ │
+  │ │                        Firmware Drivers  ---&gt;                                                                 │ │
+  │ │                        File systems  ---&gt;                                                                     │ │
+  │ │                        Kernel hacking  ---&gt;                                                                   │ │
+  │ │                        Security options  ---&gt;                                                                 │ │
+  │ │                    -*- Cryptographic API  ---&gt;                                                                │ │
+  │ │                    [*] Virtualization (NEW)  ---&gt;                                                             │ │
+  │ │                        Library routines  ---&gt;                                                                 │ │
+  │ │                    ---                                                                                        │ │
+  │ │                        Load an Alternate Configuration File                                                   │ │
+  │ │                        Save an Alternate Configuration File                                                   │ │
+  │ └───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘ │
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │                                         &lt;Select&gt;    &lt; Exit &gt;    &lt; Help &gt;                                          │
+  └───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+.config - Linux Kernel v2.6.28 Configuration
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ┌─────────────────────────────────────────── Linux Kernel Configuration ────────────────────────────────────────────┐
+  │  Arrow keys navigate the menu.  &lt;Enter&gt; selects submenus ---&gt;.  Highlighted letters are hotkeys.  Pressing &lt;Y&gt;    │
+  │  includes, &lt;N&gt; excludes, &lt;M&gt; modularizes features.  Press &lt;Esc&gt;&lt;Esc&gt; to exit, &lt;?&gt; for Help, &lt;/&gt; for Search.       │
+  │  Legend: [*] built-in  [ ] excluded  &lt;M&gt; module  &lt; &gt; module capable                                               │
+  │                                                                                                                   │
+  │ ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────┐ │
+  │ │                        General setup  ---&gt;                                                                    │ │
+  │ │                    [*] Enable loadable module support  ---&gt;                                                   │ │
+  │ │                    -*- Enable the block layer  ---&gt;                                                           │ │
+  │ │                        Processor type and features  ---&gt;                                                      │ │
+  │ │                        Power management and ACPI options  ---&gt;                                                │ │
+  │ │                        Bus options (PCI etc.)  ---&gt;                                                           │ │
+  │ │                        Executable file formats / Emulations  ---&gt;                                             │ │
+  │ │                    -*- Networking support  ---&gt;                                                               │ │
+  │ │                        Device Drivers  ---&gt;                                                                   │ │
+  │ │                        Firmware Drivers  ---&gt;                                                                 │ │
+  │ │                        File systems  ---&gt;                                                                     │ │
+  │ │                        Kernel hacking  ---&gt;                                                                   │ │
+  │ │                        Security options  ---&gt;                                                                 │ │
+  │ │                    -*- Cryptographic API  ---&gt;                                                                │ │
+  │ │                    [*] Virtualization (NEW)  ---&gt;                                                             │ │
+  │ │                        Library routines  ---&gt;                                                                 │ │
+  │ │                    ---                                                                                        │ │
+  │ │                        Load an Alternate Configuration File                                                   │ │
+  │ │                        Save an Alternate Configuration File                                                   │ │
+  │ └───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘ │
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │                                         &lt;Select&gt;    &lt; Exit &gt;    &lt; Help &gt;                                          │
+  └───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+.config - Linux Kernel v2.6.28 Configuration
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ┌─────────────────────────────────────────────── Networking support ────────────────────────────────────────────────┐
+  │  Arrow keys navigate the menu.  &lt;Enter&gt; selects submenus ---&gt;.  Highlighted letters are hotkeys.  Pressing &lt;Y&gt;    │
+  │  includes, &lt;N&gt; excludes, &lt;M&gt; modularizes features.  Press &lt;Esc&gt;&lt;Esc&gt; to exit, &lt;?&gt; for Help, &lt;/&gt; for Search.       │
+  │  Legend: [*] built-in  [ ] excluded  &lt;M&gt; module  &lt; &gt; module capable                                               │
+  │                                                                                                                   │
+  │ ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────┐ │
+  │ │                    --- Networking support                                                                     │ │
+  │ │                          Networking options  ---&gt;                                                             │ │
+  │ │                    [ ]   Amateur Radio support  ---&gt;                                                          │ │
+  │ │                    &lt; &gt;   CAN bus subsystem support (NEW)  ---&gt;                                                │ │
+  │ │                    &lt; &gt;   IrDA (infrared) subsystem support  ---&gt;                                              │ │
+  │ │                    &lt;M&gt;   Bluetooth subsystem support  ---&gt;                                                    │ │
+  │ │                    &lt; &gt;   RxRPC session sockets (NEW)                                                          │ │
+  │ │                    &lt; &gt;   Phonet protocols family (NEW)                                                        │ │
+  │ │                    [*]   Wireless (NEW)  ---&gt;                                                                 │ │
+  │ │                    {M}   RF switch subsystem support  ---&gt;                                                    │ │
+  │ │                    &lt; &gt;   Plan 9 Resource Sharing Support (9P2000) (Experimental) (NEW)  ---&gt;                  │ │
+  │ │                                                                                                               │ │
+  │ │                                                                                                               │ │
+  │ │                                                                                                               │ │
+  │ │                                                                                                               │ │
+  │ │                                                                                                               │ │
+  │ │                                                                                                               │ │
+  │ │                                                                                                               │ │
+  │ │                                                                                                               │ │
+  │ └───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘ │
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │                                         &lt;Select&gt;    &lt; Exit &gt;    &lt; Help &gt;                                          │
+  └───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+.config - Linux Kernel v2.6.28 Configuration
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+┌─────────────────────────────────────────────── Networking options ────────────────────────────────────────────────┐
+│  Arrow keys navigate the menu.  &lt;Enter&gt; selects submenus ---&gt;.  Highlighted letters are hotkeys.  Pressing &lt;Y&gt;    │
+│  includes, &lt;N&gt; excludes, &lt;M&gt; modularizes features.  Press &lt;Esc&gt;&lt;Esc&gt; to exit, &lt;?&gt; for Help, &lt;/&gt; for Search.       │
+│  Legend: [*] built-in  [ ] excluded  &lt;M&gt; module  &lt; &gt; module capable                                               │
+│                                                                                                                   │
+│ ┌────────────────────↑(-)───────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │                    &lt;M&gt;   IP: ESP transformation                                                               │ │
+│ │                    &lt;M&gt;   IP: IPComp transformation                                                            │ │
+│ │                    &lt;M&gt;   IP: IPsec transport mode                                                             │ │
+│ │                    &lt;M&gt;   IP: IPsec tunnel mode                                                                │ │
+│ │                    &lt;*&gt;   IP: IPsec BEET mode (NEW)                                                            │ │
+│ │                    {*}   Large Receive Offload (ipv4/tcp)                                                     │ │
+│ │                    &lt;M&gt;   INET: socket monitoring interface                                                    │ │
+│ │                    [*]   TCP: advanced congestion control  ---&gt;                                               │ │
+│ │                    [ ]   TCP: MD5 Signature Option support (RFC2385) (EXPERIMENTAL) (NEW)                     │ │
+│ │                    &lt;M&gt;   The IPv6 protocol  ---&gt;                                                              │ │
+│ │                    [*]   NetLabel subsystem support                                                           │ │
+│ │                    -*- Security Marking                                                                       │ │
+│ │                    [*] Network packet filtering framework (Netfilter)  ---&gt;                                   │ │
+│ │                    &lt;M&gt; The DCCP Protocol (EXPERIMENTAL)  ---&gt;                                                 │ │
+│ │                    -M- The SCTP Protocol (EXPERIMENTAL)  ---&gt;                                                 │ │
+│ │                    &lt;M&gt; The TIPC Protocol (EXPERIMENTAL)  ---&gt;                                                 │ │
+│ │                    &lt;M&gt; Asynchronous Transfer Mode (ATM)                                                       │ │
+│ │                    &lt;M&gt;   Classical IP over ATM                                                                │ │
+│ │                    [ ]     Do NOT send ICMP if no neighbour                                                   │ │
+│ └────────────────────↓(+)───────────────────────────────────────────────────────────────────────────────────────┘ │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                         &lt;Select&gt;    &lt; Exit &gt;    &lt; Help &gt;                                          │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+.config - Linux Kernel v2.6.28 Configuration
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+┌───────────────────────────────── Network packet filtering framework (Netfilter) ──────────────────────────────────┐
+│  Arrow keys navigate the menu.  &lt;Enter&gt; selects submenus ---&gt;.  Highlighted letters are hotkeys.  Pressing &lt;Y&gt;    │
+│  includes, &lt;N&gt; excludes, &lt;M&gt; modularizes features.  Press &lt;Esc&gt;&lt;Esc&gt; to exit, &lt;?&gt; for Help, &lt;/&gt; for Search.       │
+│  Legend: [*] built-in  [ ] excluded  &lt;M&gt; module  &lt; &gt; module capable                                               │
+│                                                                                                                   │
+│ ┌───────────────────────────────────────────────────────────────────────────────────────────────────────────────┐ │
+│ │                    --- Network packet filtering framework (Netfilter)                                         │ │
+│ │                    [ ]   Network packet filtering debugging                                                   │ │
+│ │                    [*]   Advanced netfilter configuration (NEW)                                               │ │
+│ │                    [*]     Bridged IP/ARP packets filtering                                                   │ │
+│ │                          Core Netfilter Configuration  ---&gt;                                                   │ │
+│ │                    &lt;M&gt;   IP virtual server support  ---&gt;                                                      │ │
+│ │                          IP: Netfilter Configuration  ---&gt;                                                    │ │
+│ │                          IPv6: Netfilter Configuration  ---&gt;                                                  │ │
+│ │                    &lt;M&gt;   Ethernet Bridge tables (ebtables) support  ---&gt;                                      │ │
+│ │                                                                                                               │ │
+│ │                                                                                                               │ │
+│ │                                                                                                               │ │
+│ │                                                                                                               │ │
+│ │                                                                                                               │ │
+│ │                                                                                                               │ │
+│ │                                                                                                               │ │
+│ │                                                                                                               │ │
+│ │                                                                                                               │ │
+│ │                                                                                                               │ │
+│ └───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘ │
+├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                         &lt;Select&gt;    &lt; Exit &gt;    &lt; Help &gt;                                          │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+.config - Linux Kernel v2.6.28 Configuration
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ┌────────────────────────────────────────── Core Netfilter Configuration ───────────────────────────────────────────┐
+  │  Arrow keys navigate the menu.  &lt;Enter&gt; selects submenus ---&gt;.  Highlighted letters are hotkeys.  Pressing &lt;Y&gt;    │
+  │  includes, &lt;N&gt; excludes, &lt;M&gt; modularizes features.  Press &lt;Esc&gt;&lt;Esc&gt; to exit, &lt;?&gt; for Help, &lt;/&gt; for Search.       │
+  │  Legend: [*] built-in  [ ] excluded  &lt;M&gt; module  &lt; &gt; module capable                                               │
+  │                                                                                                                   │
+  │ ┌────────────────────↑(-)───────────────────────────────────────────────────────────────────────────────────────┐ │
+  │ │                    &lt;M&gt;   &quot;multiport&quot; Multiple port match support                                              │ │
+  │ │                    &lt;M&gt;   &quot;owner&quot; match support                                                                │ │
+  │ │                    &lt;M&gt;   IPsec &quot;policy&quot; match support                                                         │ │
+  │ │                    &lt;M&gt;   &quot;physdev&quot; match support                                                              │ │
+  │ │                    &lt;M&gt;   &quot;pkttype&quot; packet type match support                                                  │ │
+  │ │                    &lt;M&gt;   &quot;quota&quot; match support                                                                │ │
+  │ │                    &lt;M&gt;   &quot;rateest&quot; match support                                                              │ │
+  │ │                    &lt;M&gt;   &quot;realm&quot; match support                                                                │ │
+  │ │                    &lt;M&gt;   &quot;recent&quot; match support                                                               │ │
+  │ │                    [*]     Enable obsolete /proc/net/ipt_recent                                               │ │
+  │ │                    &lt;M&gt;   &quot;sctp&quot; protocol match support (EXPERIMENTAL)                                         │ │
+  │ │                    &lt;M&gt;   &quot;state&quot; match support                                                                │ │
+  │ │                    &lt;M&gt;   &quot;layer7&quot; match support                                                               │ │
+  │ │                    [*]     Layer 7 debugging output                                                           │ │
+  │ │                    &lt;M&gt;   &quot;statistic&quot; match support                                                            │ │
+  │ │                    &lt;M&gt;   &quot;string&quot; match support                                                               │ │
+  │ │                    &lt;M&gt;   &quot;tcpmss&quot; match support                                                               │ │
+  │ │                    &lt;M&gt;   &quot;time&quot; match support                                                                 │ │
+  │ │                    &lt;M&gt;   &quot;u32&quot; match support                                                                  │ │
+  │ └───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘ │
+  ├───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │                                         &lt;Select&gt;    &lt; Exit &gt;    &lt; Help &gt;                                          │
+  └───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+                               ┌──────────────────────────────────────────────────────────┐
+                               │  Do you wish to save your new kernel configuration?      │
+                               │  &lt;ESC&gt;&lt;ESC&gt; to continue.                                 │
+                               ├──────────────────────────────────────────────────────────┤
+                               │                   &lt; Yes &gt;      &lt;  No  &gt;                  │
+                               └──────────────────────────────────────────────────────────┘
+#
+# configuration written to .config
+#
+*** End of Linux kernel configuration.
+*** Execute 'make' to build the kernel or try 'make help'.
+[root@localhost linux]# make
+[root@localhost linux]# make modules_install
+[root@localhost linux]# make install
+[root@localhost linux]# vim /boot/grub/grub.conf #更改启动项
+  # grub.conf generated by anaconda
+  #
+  # Note that you do not have to rerun grub after making changes to this file
+  # NOTICE:  You have a /boot partition.  This means that
+  #          all kernel and initrd paths are relative to /boot/, eg.
+  #          root (hd0,0)
+  #          kernel /vmlinuz-version ro root=/dev/sda2
+  #          initrd /initrd-version.img
+  #boot=/dev/sda
+  default=1 #修改为0
+  timeout=5
+  splashimage=(hd0,0)/grub/splash.xpm.gz
+  hiddenmenu
+  title CentOS (2.6.28l7)
+          root (hd0,0)
+          kernel /vmlinuz-2.6.28l7 ro root=LABEL=/
+          initrd /initrd-2.6.28l7.img
+  title CentOS (2.6.18-194.el5)
+          root (hd0,0)
+          kernel /vmlinuz-2.6.18-194.el5 ro root=LABEL=/
+          initrd /initrd-2.6.18-194.el5.img
+[root@localhost linux]# reboot #重新启动
+[root@localhost ~]# uname  -r #查看编译好的内核
+2.6.28l7
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">6.编译安装iptables并支持Layer 7</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost ~]# tar xf iptables-1.4.7.tar.bz2 -C /usr/src
+[root@localhost ~]# cd /usr/src/linux
+[root@localhost linux]# cp /usr/src/netfilter-layer7-v2.22/iptables-1.4.3forward-for-kernel-2.6.20forward/* extensions/
+[root@localhost linux]#./configure --prefix=/usr --with-ksource=/usr/src/linux
+[root@localhost linux]# make &amp;&amp; make install
+[root@localhost linux]# iptables –V
+[root@localhost ~]# cp iptables-config /etc/sysconfig/ #复制配置文件
+[root@localhost ~]# cp iptables /etc/init.d/ #复制sysV脚本
+[root@localhost ~]# chmod +x /etc/init.d/iptables
+[root@localhost ~]# which iptables
+/usr/sbin/iptables
+[root@localhost ~]#vim /etc/init.d/iptables #把所有/sbin/$IPTABLES替换为/usr/sbin/$IPTABLES   在vim命令模式下:%s@/sbin/$IPTABLES@/usr/sbin/$IPTABLES@g  然后保存退出
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">修改后的配置</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">#!/bin/sh
+#
+# iptables  Start iptables firewall
+#
+# chkconfig: 2345 08 92
+# description:  Starts, stops and saves iptables firewall
+#
+# config: /etc/sysconfig/iptables
+# config: /etc/sysconfig/iptables-config
+# Source function library.
+. /etc/init.d/functions
+IPTABLES=iptables
+IPTABLES_DATA=/etc/sysconfig/$IPTABLES
+IPTABLES_CONFIG=/etc/sysconfig/${IPTABLES}-config
+IPV=${IPTABLES%tables} # ip for ipv4 | ip6 for ipv6
+PROC_IPTABLES_NAMES=/proc/net/${IPV}_tables_names
+VAR_SUBSYS_IPTABLES=/var/lock/subsys/$IPTABLES
+if [ ! -x /usr/sbin/$IPTABLES ]; then
+    echo -n $&quot;/usr/sbin/$IPTABLES does not exist.&quot;; warning; echo
+    exit 0
+fi
+if lsmod 2&gt;/dev/null | grep -q ipchains ; then
+    echo -n $&quot;ipchains and $IPTABLES can not be used together.&quot;; warning; echo
+    exit 1
+fi
+# Old or new modutils
+/sbin/modprobe --version 2&gt;&amp;1 | grep -q module-init-tools \
+    &amp;&amp; NEW_MODUTILS=1 \
+    || NEW_MODUTILS=0
+# Default firewall configuration:
+IPTABLES_MODULES=&quot;&quot;
+IPTABLES_MODULES_UNLOAD=&quot;yes&quot;
+IPTABLES_SAVE_ON_STOP=&quot;no&quot;
+IPTABLES_SAVE_ON_RESTART=&quot;no&quot;
+IPTABLES_SAVE_COUNTER=&quot;no&quot;
+IPTABLES_STATUS_NUMERIC=&quot;yes&quot;
+IPTABLES_SYSCTL_LOAD_LIST=&quot;&quot;
+# Load firewall configuration.
+[ -f &quot;$IPTABLES_CONFIG&quot; ] &amp;&amp; . &quot;$IPTABLES_CONFIG&quot;
+rmmod_r() {
+    # Unload module with all referring modules.
+    # At first all referring modules will be unloaded, then the module itself.
+    local mod=$1
+    local ret=0
+    local ref=
+    # Get referring modules.
+    # New modutils have another output format.
+    [ $NEW_MODUTILS = 1 ] \
+    &amp;&amp; ref=`lsmod | awk &quot;/^${mod}/ { print \\\$4; }&quot; | tr ',' ' '` \
+    || ref=`lsmod | grep ^${mod} | cut -d &quot;[&quot; -s -f 2 | cut -d &quot;]&quot; -s -f 1`
+    # recursive call for all referring modules
+    for i in $ref; do
+    rmmod_r $i
+    let ret+=$?;
+    done
+    # Unload module.
+    # The extra test is for 2.6: The module might have autocleaned,
+    # after all referring modules are unloaded.
+    if grep -q &quot;^${mod}&quot; /proc/modules ; then
+    modprobe -r $mod &gt; /dev/null 2&gt;&amp;1
+    let ret+=$?;
+    fi
+    return $ret
+}
+flush_n_delete() {
+    # Flush firewall rules and delete chains.
+    [ -e &quot;$PROC_IPTABLES_NAMES&quot; ] || return 1
+    # Check if firewall is configured (has tables)
+tables=`cat $PROC_IPTABLES_NAMES 2&gt;/dev/null`
+    [ -z &quot;$tables&quot; ] &amp;&amp; return 1
+    echo -n $&quot;Flushing firewall rules: &quot;
+ret=0
+    # For all tables
+    for i in $tables; do
+        # Flush firewall rules.
+    $IPTABLES -t $i -F;
+    let ret+=$?;
+        # Delete firewall chains.
+    $IPTABLES -t $i -X;
+    let ret+=$?;
+    # Set counter to zero.
+    $IPTABLES -t $i -Z;
+    let ret+=$?;
+    done
+    [ $ret -eq 0 ] &amp;&amp; success || failure
+    echo
+    return $ret
+}
+set_policy() {
+    # Set policy for configured tables.
+policy=$1
+    # Check if iptable module is loaded
+    [ ! -e &quot;$PROC_IPTABLES_NAMES&quot; ] &amp;&amp; return 1
+    # Check if firewall is configured (has tables)
+tables=`cat $PROC_IPTABLES_NAMES 2&gt;/dev/null`
+    [ -z &quot;$tables&quot; ] &amp;&amp; return 1
+    echo -n $&quot;Setting chains to policy $policy: &quot;
+ret=0
+    for i in $tables; do
+    echo -n &quot;$i &quot;
+    case &quot;$i&quot; in
+        raw)
+        $IPTABLES -t raw -P PREROUTING $policy \
+            &amp;&amp; $IPTABLES -t raw -P OUTPUT $policy \
+            || let ret+=1
+        ;;
+        filter)
+                $IPTABLES -t filter -P INPUT $policy \
+            &amp;&amp; $IPTABLES -t filter -P OUTPUT $policy \
+            &amp;&amp; $IPTABLES -t filter -P FORWARD $policy \
+            || let ret+=1
+        ;;
+        nat)
+        $IPTABLES -t nat -P PREROUTING $policy \
+            &amp;&amp; $IPTABLES -t nat -P POSTROUTING $policy \
+            &amp;&amp; $IPTABLES -t nat -P OUTPUT $policy \
+            || let ret+=1
+        ;;
+        mangle)
+            $IPTABLES -t mangle -P PREROUTING $policy \
+            &amp;&amp; $IPTABLES -t mangle -P POSTROUTING $policy \
+            &amp;&amp; $IPTABLES -t mangle -P INPUT $policy \
+            &amp;&amp; $IPTABLES -t mangle -P OUTPUT $policy \
+            &amp;&amp; $IPTABLES -t mangle -P FORWARD $policy \
+            || let ret+=1
+        ;;
+        *)
+            let ret+=1
+        ;;
+        esac
+    done
+    [ $ret -eq 0 ] &amp;&amp; success || failure
+    echo
+    return $ret
+}
+load_sysctl() {
+    # load matched sysctl values
+    if [ -n &quot;$IPTABLES_SYSCTL_LOAD_LIST&quot; ]; then
+        echo -n $&quot;Loading sysctl settings: &quot;
+ret=0
+        for item in $IPTABLES_SYSCTL_LOAD_LIST; do
+            fgrep $item /etc/sysctl.conf | sysctl -p - &gt;/dev/null
+            let ret+=$?;
+        done
+        [ $ret -eq 0 ] &amp;&amp; success || failure
+        echo
+    fi
+    return $ret
+}
+start() {
+    # Do not start if there is no config file.
+    [ -f &quot;$IPTABLES_DATA&quot; ] || return 1
+    echo -n $&quot;Applying $IPTABLES firewall rules: &quot;
+OPT=
+    [ &quot;x$IPTABLES_SAVE_COUNTER&quot; = &quot;xyes&quot; ] &amp;&amp; OPT=&quot;-c&quot;
+    $IPTABLES-restore $OPT $IPTABLES_DATA
+    if [ $? -eq 0 ]; then
+    success; echo
+    else
+    failure; echo; return 1
+    fi
+    # Load additional modules (helpers)
+    if [ -n &quot;$IPTABLES_MODULES&quot; ]; then
+    echo -n $&quot;Loading additional $IPTABLES modules: &quot;
+ret=0
+    for mod in $IPTABLES_MODULES; do
+        echo -n &quot;$mod &quot;
+        modprobe $mod &gt; /dev/null 2&gt;&amp;1
+        let ret+=$?;
+    done
+    [ $ret -eq 0 ] &amp;&amp; success || failure
+    echo
+    fi
+    # Load sysctl settings
+    load_sysctl
+    touch $VAR_SUBSYS_IPTABLES
+    return $ret
+}
+stop() {
+    # Do not stop if iptables module is not loaded.
+    [ -e &quot;$PROC_IPTABLES_NAMES&quot; ] || return 1
+    flush_n_delete
+    set_policy ACCEPT
+    if [ &quot;x$IPTABLES_MODULES_UNLOAD&quot; = &quot;xyes&quot; ]; then
+    echo -n $&quot;Unloading $IPTABLES modules: &quot;
+ret=0
+    rmmod_r ${IPV}_tables
+    let ret+=$?;
+    rmmod_r ${IPV}_conntrack
+    let ret+=$?;
+    [ $ret -eq 0 ] &amp;&amp; success || failure
+    echo
+    fi
+    rm -f $VAR_SUBSYS_IPTABLES
+    return $ret
+}
+save() {
+    # Check if iptable module is loaded
+    [ ! -e &quot;$PROC_IPTABLES_NAMES&quot; ] &amp;&amp; return 1
+    # Check if firewall is configured (has tables)
+tables=`cat $PROC_IPTABLES_NAMES 2&gt;/dev/null`
+    [ -z &quot;$tables&quot; ] &amp;&amp; return 1
+    echo -n $&quot;Saving firewall rules to $IPTABLES_DATA: &quot;
+OPT=
+    [ &quot;x$IPTABLES_SAVE_COUNTER&quot; = &quot;xyes&quot; ] &amp;&amp; OPT=&quot;-c&quot;
+ret=0
+TMP_FILE=`/bin/mktemp -q /tmp/$IPTABLES.XXXXXX` \
+    &amp;&amp; chmod 600 &quot;$TMP_FILE&quot; \
+    &amp;&amp; $IPTABLES-save $OPT &gt; $TMP_FILE 2&gt;/dev/null \
+    &amp;&amp; size=`stat -c '%s' $TMP_FILE` &amp;&amp; [ $size -gt 0 ] \
+    || ret=1
+    if [ $ret -eq 0 ]; then
+    if [ -e $IPTABLES_DATA ]; then
+        cp -f $IPTABLES_DATA $IPTABLES_DATA.save \
+        &amp;&amp; chmod 600 $IPTABLES_DATA.save \
+        || ret=1
+    fi
+    if [ $ret -eq 0 ]; then
+        cp -f $TMP_FILE $IPTABLES_DATA \
+        &amp;&amp; chmod 600 $IPTABLES_DATA \
+            || ret=1
+    fi
+    fi
+    [ $ret -eq 0 ] &amp;&amp; success || failure
+    echo
+    rm -f $TMP_FILE
+    return $ret
+}
+status() {
+tables=`cat $PROC_IPTABLES_NAMES 2&gt;/dev/null`
+    # Do not print status if lockfile is missing and iptables modules are not
+    # loaded.
+    # Check if iptable module is loaded
+    if [ ! -f &quot;$VAR_SUBSYS_IPTABLES&quot; -a -z &quot;$tables&quot; ]; then
+    echo $&quot;Firewall is stopped.&quot;
+    return 1
+    fi
+    # Check if firewall is configured (has tables)
+    if [ ! -e &quot;$PROC_IPTABLES_NAMES&quot; ]; then
+    echo $&quot;Firewall is not configured. &quot;
+    return 1
+    fi
+    if [ -z &quot;$tables&quot; ]; then
+    echo $&quot;Firewall is not configured. &quot;
+    return 1
+    fi
+NUM=
+    [ &quot;x$IPTABLES_STATUS_NUMERIC&quot; = &quot;xyes&quot; ] &amp;&amp; NUM=&quot;-n&quot;
+VERBOSE=
+    [ &quot;x$IPTABLES_STATUS_VERBOSE&quot; = &quot;xyes&quot; ] &amp;&amp; VERBOSE=&quot;--verbose&quot;
+COUNT=
+    [ &quot;x$IPTABLES_STATUS_LINENUMBERS&quot; = &quot;xyes&quot; ] &amp;&amp; COUNT=&quot;--line-numbers&quot;
+    for table in $tables; do
+    echo $&quot;Table: $table&quot;
+    $IPTABLES -t $table --list $NUM $VERBOSE $COUNT &amp;&amp; echo
+    done
+    return 0
+}
+reload() {
+IPTABLES_MODULES_UNLOAD=&quot;no&quot;
+    restart
+}
+restart() {
+    [ &quot;x$IPTABLES_SAVE_ON_RESTART&quot; = &quot;xyes&quot; ] &amp;&amp; save
+    stop
+    start
+}
+case &quot;$1&quot; in
+    start)
+    stop
+    start
+RETVAL=$?
+    ;;
+    stop)
+    [ &quot;x$IPTABLES_SAVE_ON_STOP&quot; = &quot;xyes&quot; ] &amp;&amp; save
+    stop
+RETVAL=$?
+    ;;
+    reload)
+    [ -e &quot;$VAR_SUBSYS_IPTABLES&quot; ] &amp;&amp; reload
+    ;;
+    restart)
+    restart
+RETVAL=$?
+    ;;
+    condrestart)
+    [ -e &quot;$VAR_SUBSYS_IPTABLES&quot; ] &amp;&amp; restart
+    ;;
+    status)
+    status
+RETVAL=$?
+    ;;
+    panic)
+    flush_n_delete
+    set_policy DROP
+RETVAL=$?
+        ;;
+    save)
+    save
+RETVAL=$?
+    ;;
+    *)
+    echo $&quot;Usage: $0 {start|stop|reload|restart|condrestart|status|panic|save}&quot;
+    exit 1
+    ;;
+esac
+exit $RETVAL
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">7.安装Layer 7协议</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost src]# tar xf l7-protocols-2009-05-28.tar.gz -C /usr/src
+[root@localhost src]# cd /usr/src/l7-protocols-2009-05-28/
+[root@localhost l7-protocols-2009-05-28]# make install
+mkdir -p /etc/l7-protocols
+cp -R * /etc/l7-protocols
+[root@localhost l7-protocols-2009-05-28]#
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">8.测试</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost l7-protocols-2009-05-28]# iptables -m layer7 –help #查看帮助信息
+iptables v1.4.7
+Usage: iptables -[AD] chain rule-specification [options]
+       iptables -I chain [rulenum] rule-specification [options]
+       iptables -R chain rulenum rule-specification [options]
+       iptables -D chain rulenum [options]
+       iptables -[LS] [chain [rulenum]] [options]
+       iptables -[FZ] [chain] [options]
+       iptables -[NX] chain
+       iptables -E old-chain-name new-chain-name
+       iptables -P chain target [options]
+       iptables -h (print this help information)
+Commands:
+Either long or short options are allowed.
+  --append  -A chain            Append to chain
+  --delete  -D chain            Delete matching rule from chain
+  --delete  -D chain rulenum
+                                Delete rule rulenum (1 = first) from chain
+  --insert  -I chain [rulenum]
+                                Insert in chain as rulenum (default 1=first)
+  --replace -R chain rulenum
+                                Replace rule rulenum (1 = first) in chain
+  --list    -L [chain [rulenum]]
+                                List the rules in a chain or all chains
+  --list-rules -S [chain [rulenum]]
+                                Print the rules in a chain or all chains
+  --flush   -F [chain]          Delete all rules in  chain or all chains
+  --zero    -Z [chain [rulenum]]
+                                Zero counters in chain or all chains
+  --new     -N chain            Create a new user-defined chain
+  --delete-chain
+            -X [chain]          Delete a user-defined chain
+  --policy  -P chain target
+                                Change policy on chain to target
+  --rename-chain
+            -E old-chain new-chain
+                                Change chain name, (moving any references)
+Options:
+[!] --proto     -p proto        protocol: by number or name, eg. `tcp'
+[!] --source    -s address[/mask][...]
+                                source specification
+[!] --destination -d address[/mask][...]
+                                destination specification
+[!] --in-interface -i input name[+]
+                                network interface name ([+] for wildcard)
+--jump -j target
+                                target for rule (may load target extension)
+  --goto      -g chain
+                              jump to chain with no return
+  --match       -m match
+                                extended match (may load extension)
+  --numeric     -n              numeric output of addresses and ports
+[!] --out-interface -o output name[+]
+                                network interface name ([+] for wildcard)
+  --table       -t table        table to manipulate (default: `filter')
+  --verbose     -v              verbose mode
+  --line-numbers                print line numbers when listing
+  --exact       -x              expand numbers (display exact values)
+[!] --fragment  -f              match second or further fragments only
+  --modprobe=&lt;command&gt;          try to insert modules using this command
+  --set-counters PKTS BYTES     set the counter during insert/append
+[!] --version   -V              print package version.
+layer7 match options:
+    --l7dir &lt;directory&gt; : Look for patterns here instead of /etc/l7-protocols/
+                          (--l7dir must be specified before --l7proto if used)
+[!] --l7proto &lt;name&gt;: Match named protocol using /etc/l7-protocols/.../name.pat
+[root@localhost l7-protocols-2009-05-28]#
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">9.重新启动iptables </span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost ~]# service iptables restart
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">10.封qq,酷狗,迅雷等</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">封QQ
+[root@localhost ~]# iptables -A FORWARD -s 192.168.10.0/24 -m layer7 --l7proto qq -j DROP
+封酷狗
+[root@localhost ~]# iptables -A FORWARD -s 192.168.10.0/24 -m layer7 --l7proto kugoo -j DROP
+封迅雷
+[root@localhost ~]# iptables -A FORWARD -s 192.168.10.0/24 -m layer7 --l7proto xunlei -j DROP
+</code></pre>
+
+<p><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">11.查看支持的协议</span></p>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost ~]# ls /etc/l7-protocols/protocols/
+100bao.pat                doom3.pat                 jabber.pat            radmin.pat        teamfortress2.pat
+aim.pat                   edonkey.pat               kugoo.pat             rdp.pat           teamspeak.pat
+aimwebcontent.pat         fasttrack.pat             live365.pat           replaytv-ivs.pat  telnet.pat
+applejuice.pat            finger.pat                liveforspeed.pat      rlogin.pat        tesla.pat
+ares.pat                  freenet.pat               lpd.pat               rtp.pat           tftp.pat
+armagetron.pat            ftp.pat                   mohaa.pat             rtsp.pat          thecircle.pat
+battlefield1942.pat       gkrellm.pat               msn-filetransfer.pat  runesofmagic.pat  tonghuashun.pat
+battlefield2142.pat       gnucleuslan.pat           msnmessenger.pat      shoutcast.pat     tor.pat
+battlefield2.pat          gnutella.pat              mute.pat              sip.pat           tsp.pat
+bgp.pat                   goboogy.pat               napster.pat           skypeout.pat      unknown.pat
+biff.pat                  gopher.pat                nbns.pat              skypetoskype.pat  unset.pat
+bittorrent.pat            guildwars.pat             ncp.pat               smb.pat           uucp.pat
+chikka.pat                h323.pat                  netbios.pat           smtp.pat          validcertssl.pat
+cimd.pat                  halflife2-deathmatch.pat  nntp.pat              snmp.pat          ventrilo.pat
+ciscovpn.pat              hddtemp.pat               ntp.pat               socks.pat         vnc.pat
+citrix.pat                hotline.pat               openft.pat            soribada.pat      whois.pat
+counterstrike-source.pat  http.pat                  pcanywhere.pat        soulseek.pat      worldofwarcraft.pat
+cvs.pat                   http-rtsp.pat             poco.pat              ssdp.pat          x11.pat
+dayofdefeat-source.pat    ident.pat                 pop3.pat              ssh.pat           xboxlive.pat
+dazhihui.pat              imap.pat                  pplive.pat            ssl.pat           xunlei.pat
+dhcp.pat                  imesh.pat                 qq.pat                stun.pat          yahoo.pat
+directconnect.pat         ipp.pat                   quake1.pat            subspace.pat      zmaap.pat
+dns.pat                   irc.pat                   quake-halflife.pat    subversion.pat
+[root@localhost ~]#
+</code></pre>
+
+<pre><code class="language-brush:bash;toolbar:false;">[root@localhost ~]#ls /etc/l7-protocols/protocols/ | wc -l
+114
+</code></pre>
+
+<p><span style="color:#000000;font-family:arial, helvetica, sans-serif;font-size:14px;">大家可以看到，可以支持114个协议，嘿嘿！</span><span style="font-size:14px;color:#000000;font-family:arial, helvetica, sans-serif;">至此所有演示全部结束，^_^ ……</span></p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="/%E9%BB%91%E5%AE%A2%E6%8A%80%E6%9C%AF/00_nettools/iptables%E8%AF%A6%E8%A7%A3%E5%8F%8A7%E5%B1%82%E8%BF%87%E6%BB%A4/">/%E9%BB%91%E5%AE%A2%E6%8A%80%E6%9C%AF/00_nettools/iptables%E8%AF%A6%E8%A7%A3%E5%8F%8A7%E5%B1%82%E8%BF%87%E6%BB%A4/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+  (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+  		if (window.location.hostname === '127.0.0.1') return;
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'rinetd';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="/%E9%BB%91%E5%AE%A2%E6%8A%80%E6%9C%AF/00_nettools/iptables%E7%9A%84recent%E6%A8%A1%E5%9D%97/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Linux命令 iptables</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/front-end/">Front-End</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux_base/">Linux_base</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Fstm32/">嵌入式stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%9C%B4%E7%B4%A0linux/">朴素linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%AD%A3%E5%88%99/">正则</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="/%E9%BB%91%E5%AE%A2%E6%8A%80%E6%9C%AF/00_nettools/linux%E9%98%B2%E7%81%AB%E5%A2%99iptables%E5%B8%B8%E7%94%A8%E8%A7%84%E5%88%99/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux命令 iptables</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+</body>
+</html>
+

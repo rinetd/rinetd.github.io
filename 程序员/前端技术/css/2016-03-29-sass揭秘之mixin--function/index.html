@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+  <base href="//">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+  <title>sass揭秘之@mixin，%，@function - Pytool</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="因为文章内含有很多sass代码，如需自己动手查看编译结果，推荐使用sassmeister这款在线编译工具，方便你阅读学习。 在阅读本文章之前，">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="sass揭秘之@mixin，%，@function - Pytool">
+<meta itemprop="description" content="因为文章内含有很多sass代码，如需自己动手查看编译结果，推荐使用sassmeister这款在线编译工具，方便你阅读学习。 在阅读本文章之前，">
+<meta itemprop="image" content="//public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="sass揭秘之@mixin，%，@function - Pytool" />
+<meta property="og:description" content="因为文章内含有很多sass代码，如需自己动手查看编译结果，推荐使用sassmeister这款在线编译工具，方便你阅读学习。 在阅读本文章之前，">
+<meta property="og:image" content="//public/avatar.png" />
+<meta property="og:url" content="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/css/2016-03-29-sass%E6%8F%AD%E7%A7%98%E4%B9%8Bmixin--function/" />
+
+
+
+  <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+  <link rel="canonical" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/css/2016-03-29-sass%E6%8F%AD%E7%A7%98%E4%B9%8Bmixin--function/">
+  <link rel='shortlink' href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/css/2016-03-29-sass%E6%8F%AD%E7%A7%98%E4%B9%8Bmixin--function/"/>
+  <link rel="shortcut icon" href="//public/favicon.ico"/>
+  
+<link rel="stylesheet" id="human-style-css" href="./wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="./wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="./wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="./wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="./public/highlight/styles/github.css">
+<script src="./public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<link rel="stylesheet" id="human-style-css3" href="./wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="./public/font/hack/css/hack.min.css">
+
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="./assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="./assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="./assets/js/myblog.js"></script>
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//" class="nav-cs-icon">
+        <img width="40" height="40" src="/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/">首页</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/linux%e5%9f%ba%e7%a1%80/">Linux基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">Post</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%a5%87%e7%9c%9f%e5%bc%82%e5%ae%9d/">奇真异宝</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b5%8c%e5%85%a5%e5%bc%8f%e5%bc%80%e5%8f%91/">嵌入式开发</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4/">常用命令</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%b7%a5%e5%85%b7/">常用工具</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e6%96%87%e6%9c%ac%e7%bc%96%e8%be%91%e5%99%a8/">文本编辑器</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%a8%8b%e5%ba%8f%e5%91%98/">程序员</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%bc%96%e7%a8%8b%e5%9f%ba%e7%a1%80/">编程基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e8%bd%ac%e8%bd%bd/">转载</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e9%bb%91%e5%ae%a2%e6%8a%80%e6%9c%af/">黑客技术</a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">归档</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//" rel="home">
+              <img style="border-radius: 50%;width:72px;height:72px;margin:0 auto;" alt="rinetd" src="/public/avatar.png"></img>
+              Pytool
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">sass揭秘之@mixin，%，@function</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年03月29日 20:57:24 · 9707 Words ·
+                    ~20min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/%e7%a8%8b%e5%ba%8f%e5%91%98/%e5%89%8d%e7%ab%af%e6%8a%80%e6%9c%af/CSS/2016-03-29%20sass%e6%8f%ad%e7%a7%98%e4%b9%8b@mixin-%25-@function.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      <p>因为文章内含有很多sass代码，如需自己动手查看编译结果，推荐使用sassmeister这款在线编译工具，方便你阅读学习。</p>
+
+<p>在阅读本文章之前，请先确认你已经阅读了上篇文章sass揭秘之变量，不然会给你带来疑惑的感觉。</p>
+
+<p>其实很多人之所以对sass或less感兴趣，就是因为他们能使用变量和这个@mixin功能，而后面的%和@function知道的人就比较少了。所以说@mixin这个东西还是很有诱惑力的，没办法，广告做得好啊，大明星。这里之所以把%和@function和@mixin放在一起，当然并非无缘无故，一看@mixin和@function就是兄弟，长得那么像，而%这个后起之秀，更是在一定程度上抢了@mixin的不少风头。</p>
+
+<p>这里先说@mixin和%，谁让它们有竞争关系呢，哈哈。@function这个家伙一看就是函数，先闪一边去。 首先@mixin可以传递参数，而%不行；然后@mixin的调用方式是@include，而%的调用方式是@extend；最后@include产生的样式是以复制拷贝的方式存在的，而@extend产生的样式是以组合申明的方式存在的。概念简单讲解完毕，现在进入代码实例，上战场才是真理。</p>
+
+<p>为了方面测试，我们先约定建立一个_mixin.scss文件，下面所有的有关@mixin，%和@function的一些定义全部写在这里，再建立一个style.scss来调用我们的_mixin.scss文件，所以在style的里面先写上一句@import &lsquo;mixin&rsquo;;
+@mixin</p>
+
+<p>先来一段无参数简单版本的@mixin（@mixin，%，@function全部放在_mixin.scss文件中）：</p>
+
+<p>// block得有宽度margin左右为auto才能居中
+@mixin center-block {
+  margin-left: auto;
+  margin-right: auto;
+}</p>
+
+<p>这应该是最简单版本的@mixin了，不但没有参数，连样式都只有两条，不过还是很实用的。接下来我们来调用下（调用的全部放在style.scss文件中，先导入_mixin文件）：</p>
+
+<p>@import &lsquo;mixin&rsquo;;<br />
+#header{
+    width:1000px;
+    @include center-block;
+}
+.gallery{
+    width:600px;
+    @include center-block;
+}</p>
+
+<p>解析成的css：</p>
+
+<p>#header {
+  width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.gallery {
+  width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}</p>
+
+<p>很显然，上面两个margin左右为auto在各自的选择器中，当然运行是没有问题的，但是如果把这两个一样样式提出来组合申明下多好啊，一看质量就不一样了吗，高端大气上档次了哈哈。这个问题稍后留给我们的%来解决，我们继续@mxixin。</p>
+
+<p>再来个无参数版的，但是包含浏览器兼容方面的：</p>
+
+<p>$lte7:true !default;//是否兼容ie6,7</p>
+
+<p>// inline-block
+// ie6-7 *display: inline;*zoom:1;
+@mixin inline-block {
+  display: inline-block;
+  @if $lte7 {
+    *display: inline;*zoom:1;
+  }
+}</p>
+
+<p>上面的代码，有个$lte7全局变量，我们把这个变量提到_mixin.scss文件的最上面。注意这里@mixin里面有个@if判断，这是为ie6,7对inline-block部分不兼容的一个处理，默认$lte7为true，意思是需要兼容ie6,7，那么就会输出判断里面的代码*display: inline;*zoom:1;，当我们不需要兼容的时候呢，话说高富帅搞的就是搞ie8+的，那设置$lte7为false就没*display: inline;*zoom:1;这两个家伙的事了，直接宣布其斩立决了。代码为证：</p>
+
+<p>$lte7:false;<br />
+@import &lsquo;mixin&rsquo;;</p>
+
+<p>.inline-block{
+    @include inline-block;
+}</p>
+
+<p>这里注意：因为我们要重设$lte7为false，所以在@import &lsquo;mixin&rsquo;;之前先定义下$lte7:false;，这涉及到变量默认值的使用，如果你不了解请先查阅sass揭秘之变量</p>
+
+<p>解析成的css：</p>
+
+<p>.inline-block{
+    display:inline-block;
+}</p>
+
+<p>当然如果没有$lte7:false;这个提前申明变量，那么解析成的css应该是这样的：</p>
+
+<p>.inline-block{
+    display:inline-block;
+    *display: inline;*zoom:1;
+}</p>
+
+<p>从上面可以看出，如果@mixin里面放点判断，对浏览器的兼容还可以做点有意义的事，不用每次都写一大坨，同时还为以后升级带来一个暗门，直接改变下变量的值重新解析下就ok了，那些为兼容处理的代码统统消失，这比较爽。测试完这个之后，请把$lte7:false;删掉，因为后面还要用到其值true。</p>
+
+<p>现在来个参数简单版的：</p>
+
+<p>@mixin float($float:left) {
+  float: $float;
+  @if $lte7 {
+    display: inline;
+  }
+}</p>
+
+<p>够简单吧，float人人皆知啊。这里$float参数有默认值为left，我们调用下：</p>
+
+<p>.fl{
+    @include float;
+}
+.fr{
+    @include float(right);
+}</p>
+
+<p>解析成的css：</p>
+
+<p>.fl{
+    float:left;
+    display: inline;
+}
+.fr{
+    float:right;
+    display: inline;
+}</p>
+
+<p>因为在传参数的时候$float设置了一个默认值为left，所以调用的时候@include float;和@include float(left);能产生一样的代码。这里先说下我琢磨出来的一个经验，如果某个@mixin无法设置默认的参数，那么这个@mixin要么可以用%来取代，要么就是个鸡肋@mixin，所以请定义@mixin的时候参考这两点判断是否有必要，特殊情况除外。</p>
+
+<p>关于鸡肋@mixin等下再说，我们接着说下多个参数的@mixin：</p>
+
+<p>// 禁用样式，加!important
+@mixin disabled($bgColor:#e6e6e6,$textColor:#ababab){
+  background-color: $bgColor !important;
+  color: $textColor !important;
+  cursor: not-allowed !important;
+}</p>
+
+<p>两个参数，一个为背景色，一个为文本色，两个冒号后面的分别为默认值，直接调用@include diasbled;使用的就是默认值，虽然简单，我们还是调用下吧。</p>
+
+<p>.disabled{
+    @include disabled;
+}</p>
+
+<p>解析后的css：</p>
+
+<p>.disabled {
+  background-color: #e6e6e6 !important;
+  color: #ababab !important;
+  cursor: not-allowed !important;
+}</p>
+
+<p>接着下一个实例，一个属性可以有多个属性值的，写到这里，看过sass揭秘之变量的人就想起来了，原来是传参的时候变量得加&hellip;:</p>
+
+<p>//错误定义方法
+@mixin box-shadow($shadow){
+    -webkit-box-shadow:$shadow;
+    -moz-box-shadow:$shadow;
+    box-shadow:$shadow;
+}</p>
+
+<p>为了给人说明这&hellip;，有必要先搞个错误的东西，那样你就会恍然大悟了。我们来调用下上面的错误定义方法：</p>
+
+<p>.shadow1{
+    @include box-shadow(0 0 5px rgba(0,0,0,.3));//这个可以运行
+}
+.shadow2{
+    @include box-shadow(0 0 5px rgba(0,0,0,.3),inset 0 0 3px rgba(255,255,255,.5));//这个不可运行
+}</p>
+
+<p>上面两个代码，我们先运行第一个，会成功解析出css，而第二个就不行了，它就是孙猴子派来捣乱的。</p>
+
+<p>第一个运行解析成的css为：</p>
+
+<p>.shadow1{
+    -webkit-box-shadow:0 0 5px rgba(0,0,0,.3);
+    -moz-box-shadow:0 0 5px rgba(0,0,0,.3);<br />
+    box-shadow:0 0 5px rgba(0,0,0,.3);<br />
+}</p>
+
+<p>为什么第二个不行呢，因为第二个我们给box-shadow设置了两个值，一个外阴影一个内阴影，并且是以，分开的。实际情况是，我们对box-shadow可以设置很多个值，随我们高兴，没有一定的。这个时候就有了为css3这些妖孽而生的传递的参数后面加&hellip;了，上代码：</p>
+
+<p>//正确定义方法
+@mixin box-shadow($shadow&hellip;){
+    -webkit-box-shadow:$shadow;
+    -moz-box-shadow:$shadow;
+    box-shadow:$shadow;
+}</p>
+
+<p>正确的东西得来总是那么不容易，话说一开始研究别人代码的时候，还以为这&hellip;是随便加上去好玩的呢。然后我写css3的@mixin的时候把&hellip;统统去掉，结果，结果就悲剧了，可以有多个属性值的，只能设置一个属性值，然后就是满天找bug了。注意这里只在传参的时候变量后面添加&hellip;，而在大括号内引用的时候是不用加&hellip;，接着你可以回过头测试下上面那两个代码了，保准ok！</p>
+
+<p>看完&hellip;这个为css3而生的之后，我们再看一个为css3而成的东西@content，之所以提起来，是因为它也是应用在@mixin里面的。按常规来说，我们所有的样式都是在@mixin里面定义好的，然后使用的时候@include就拷贝了这段样式，但是@content改变了这一惯例，它其实没有定义样式，它是定义好了选择器，然后@include的时候，就是选择器定了，你写的样式都放在这个选择器里面。光文字介绍是不能解决问题的，还是实例比较有营养：</p>
+
+<p>@mixin header{
+    #header{
+        @content;
+    }
+}</p>
+
+<p>我们来简单调用下：</p>
+
+<p>@include header{
+    width:1000px;
+    height:200px;
+    .logo{
+        width:200px;
+    }
+}</p>
+
+<p>解析后的css：</p>
+
+<p>#header {
+  width: 1000px;
+  height: 200px;
+}
+#header .logo {
+  width: 200px;
+}</p>
+
+<p>看到没，这个选择器以#header为基础，然后@include header里面写的任何样式，都是在这个基础上的。明白@content与上面的其他的区别不，其他的@mixin调用的时候是这样的@include mixin-name($var1,$var2,&hellip;,$varn)，而这个@content的调用的时候是这样的@include mixin-name{},大括号里面就是@content表示的内容，里面css样式随便你写啊。</p>
+
+<p>当然上面的@content实例是闲得蛋疼的为简单说明而写的，其实没有什么使用价值的，@content的使用价值其实体现在css3的media-queries，animation的keyframes定义，还有为浏览器兼容的定义。下面实例说明：</p>
+
+<p>//定义media-queries的最小最大宽度
+@mixin screen($res-min, $res-max){
+  @media screen and ( min-width: $res-min ) and ( max-width: $res-max ){
+    @content;
+  }
+}</p>
+
+<p>//定义animation的keyframes
+@mixin keyframes($name){
+    @keyframes #{$name} {
+      @content;
+    }
+}</p>
+
+<p>//定义所有不支持圆角的浏览器使用背景图片
+//得使用<a href="http://modernizr.com/">modernizr</a>来检测，在html上加class
+@mixin no-border-radius{
+    .no-border-radius{
+        @content
+    }
+}</p>
+
+<p>又到调用这步了，没办法，不验证下，产生点css，还是有点迷惑：</p>
+
+<p>#header{
+    @include screen(780px,1000px){
+        color:red;
+    }
+}</p>
+
+<p>@include screen(780px,1000px){
+    body{
+        font-size:14px;
+    }
+}</p>
+
+<p>@include keyframes(show){
+    0% {
+        opacity:0;
+    }
+    100% {
+        opacity:1;
+    }
+}</p>
+
+<p>//注意下面这两个的区别
+@include no-border-radius{
+    .box{
+        background:url(round-bg.gif) no-repeat;
+    }
+}
+.box{
+    @include no-border-radius{
+        background:url(round-bg.gif) no-repeat;
+    }
+}</p>
+
+<p>解析后的css：</p>
+
+<p>@media screen and (min-width: 780px) and (max-width: 1000px) {
+  #header {
+    color: red;
+  }
+}
+@media screen and (min-width: 780px) and (max-width: 1000px) {
+  body {
+    font-size: 14px;
+  }
+}
+@keyframes show {
+  0% {
+    opacity: 0;
+  }</p>
+
+<p>100% {
+    opacity: 1;
+  }
+}
+.no-border-radius .box {
+  background: url(round-bg.gif) no-repeat;
+}
+.box .no-border-radius {
+  background: url(round-bg.gif) no-repeat;
+}</p>
+
+<p>上面那个@include screen我们使用了两种方法去调用，第一种在选择器里面调用，第二种直接调用，两者生成的css是一样的，既然生成的样式没有什么区别，那如何使用呢？其实第一种方式强调的是以选择器为主，当screen是什么时候是什么值，而第二种调用方法强调以media-queries条件为主，可以方便组织所有在这个条件中的都写在一起。如果做响应式布局我们建议使用第二种方法，以断点为主来写样式，把某个断点下的样式全部写在一起。</p>
+
+<p>为了表示media-queries的特殊，我们举了个反例，同样以两种方法调用@include no-border-radius，结果可以看到完全不一样啊，大家千万别以为是@include no-border-radius错了，其实它才是正确的。而media-queries是个为了大家方便使用的特殊案例。</p>
+
+<p>@mixin说到这里，其主要的知识点也说完了，相信大家也收获不少了，为了表示对@mixin的敬意，我再挑几个@mixin来分析。</p>
+
+<p>先来个我们常用的用border生成三角形的@mixin:</p>
+
+<p>// triangle
+@mixin triangle($direction, $size, $borderColor ) {
+  content:&ldquo;&rdquo;;
+  height: 0;
+  width: 0;</p>
+
+<p>@if $direction == top {
+    border-bottom:$size solid $borderColor;
+    border-left:$size dashed transparent;
+    border-right:$size dashed transparent;
+  }
+  @else if $direction == right {
+    border-left:$size solid $borderColor;
+    border-top:$size dashed transparent;
+    border-bottom:$size dashed transparent;
+  }
+  @else if $direction == bottom {
+    border-top:$size solid $borderColor;
+    border-left:$size dashed transparent;
+    border-right:$size dashed transparent;
+  }
+  @else if $direction == left {
+    border-right:$size solid $borderColor;
+    border-top:$size dashed transparent;
+    border-bottom:$size dashed transparent;
+  }
+}</p>
+
+<p>这个@mixin主要有三个变量：第一个是方向的，因为三角形根据箭头朝向有四种方向，我们对应常用的css属性top,right,bottom,left；第二个表示三角形的大小；第三个表示颜色。当然你可以挑你常用的那个设置为变量的默认值，那样调用常用的那个就比较简单了，直接@include triangle;就ok了。</p>
+
+<p>下面我们再来个关于css3的神来之笔的@mixin，在说这个之前，先说下前面的那个box-shadow的@mixin，我们里面的样式是一条一条写的，如-webkit-box-shadow:$shadow;-moz-box-shadow:$shadow;box-shadow:$shadow;，这得多山炮啊，一条一条来，不简洁，不科学。下面欢迎我们的prefixer这个@mixin，它对css3的前缀定义有画龙点睛之妙。</p>
+
+<p>//是否支持某个浏览器的前缀，如果你不想支持，可以设置为false
+//&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-
+$prefix-for-webkit: true !default;
+$prefix-for-mozilla: true !default;
+$prefix-for-microsoft: true !default;
+$prefix-for-opera: true !default;
+$prefix-for-spec: true !default; // 标准版</p>
+
+<p>// prefixer
+//&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;-
+@mixin prefixer ($property, $value, $prefixes) {
+  @each $prefix in $prefixes {</p>
+
+<pre><code>@if $prefix == webkit and $prefix-for-webkit == true {
+  -webkit-#{$property}: $value;
+}
+@else if $prefix == moz and $prefix-for-mozilla == true {
+  -moz-#{$property}: $value;
+}
+@else if $prefix == ms and $prefix-for-microsoft == true {
+  -ms-#{$property}: $value;
+}
+@else if $prefix == o and $prefix-for-opera == true {
+  -o-#{$property}: $value;
+}
+@else if $prefix == spec and $prefix-for-spec == true {
+  #{$property}: $value;
+}
+@else {
+  @warn &quot;Unrecognized prefix: #{$prefix}&quot;;
+}
+</code></pre>
+
+<p>}
+}</p>
+
+<p>看到没，判断循环输出啊，到这里也许你还是不明白的，我们来调用它来构建css3的一些@mixin，你就明白了。</p>
+
+<p>//webki和标准
+@mixin box-shadow($shadow&hellip;) {
+    @include prefixer(box-shadow, $shadow, webkit spec);
+}</p>
+
+<p>//webkit moz 和标准
+@mixin box-sizing($type:border-box) {
+  // border-box | padding-box | content-box
+  @include prefixer(box-sizing, $type, webkit moz spec);
+}</p>
+
+<p>//webkit moz o 和标准
+@mixin transform($property&hellip;) {
+  @include prefixer(transform, $property, webkit moz o spec);
+}</p>
+
+<p>现在来分析下上面的那个@mixin prefixer，第一个参数$property是属性，第二个参数$value是值，第三个参数$prefixes就是我们需要添加前缀的组合，因为目前来说前缀包括webkit,moz,o,ms，所以它就是这些值再加上一个标准spec的随意组合。里面对$prefixes进行循环判断，根据不同的值，为属性添加不同的前缀，精彩啊。突然觉得天空一下晴朗多了，爽吧。我们来调用下：</p>
+
+<p>.box{
+    @include box-shadow(0 0 5px rgba(0,0,0,.3));
+    @include box-sizing;
+    @include transform(scale(2));
+}</p>
+
+<p>解析后的css：</p>
+
+<p>.box {
+  -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  -webkit-transform: scale(2);
+  -moz-transform: scale(2);
+  -o-transform: scale(2);
+  transform: scale(2);
+}</p>
+
+<p>说完神来之笔，最后我们再来一段我认为的一个优秀的鸡肋@mixin：</p>
+
+<p>//设置宽高，默认为auto
+@mixin size($size&hellip;) {
+  $size: if(length($size) &gt; 0, $size, auto);
+  $width: nth($size, 1);
+  $height: nth($size, length($size));</p>
+
+<p>@if $width != auto {
+    $width: if(unitless($width), $width + px, $width);
+  }
+  @if $height != auto {
+    $height: if(unitless($height), $height + px, $height);
+  }</p>
+
+<p>width: $width;
+  height: $height;
+}</p>
+
+<p>先说下这里面涉及到的一些sass知识点：length($var)表示获取变量的长度，nth($var,index)获取变量第几个位置的值，unitless判断是否无单位，而这段if(unitless($width), $width + px, $width)其实是个三目判断，第一个是条件，第二个是条件为真的时候的值，第三个是条件为假的时候的值，这里面总共用了三个三目判断，哈哈。</p>
+
+<p>其实上面的代码是很优秀的，条理清晰逻辑性很强，而且里面通过判断也有默认值为auto，但是为什么是鸡肋呢，原因很简单：第一，样式就两条太简单，按速度来说，用emmet写丝毫都不逊色于这个，第二，不能变通为%，组合申明样式。如我们上面的center-block虽然也很简单，但可以变通为%申明，提供两种调用方式，可以组合申明样式。其实这个@mixin还少了个单独设置width:auto或height:auto。</p>
+
+<p>@mixin该休息下了，后面的%板凳都坐穿了，再不让它上场，它得拂袖而去告老师了。
+%</p>
+
+<p>%在这里不是做单位用的，而是作为占位选择器来用的，什么是占位选择器呢，打个比方说，它就是占着茅坑不拉屎，但是如果你要拉屎它马上就给你让位。这么恶心的我们就不说了。简单来说，就是先定义好一段样式，但是这个样式默认是不会解析出来的，等到你通过@extend调用了才会解析在css文件中，避免了生成冗余浪费的css代码。</p>
+
+<p>接上面的那个@mixin center-block，因为它没有参数，而我们又想要组合申明，那么该%登场了：</p>
+
+<p>%center-block {
+    @include center-block;
+}</p>
+
+<p>下面我们再来给#header,.gallery调用下：</p>
+
+<p>#header{
+    width:1000px;
+    @extend %center-block;
+}
+.gallery{
+    width:600px;
+    @extend %center-block;
+}</p>
+
+<p>解析成的css：</p>
+
+<p>#header, .gallery {
+  margin-left: auto;
+  margin-right: auto;
+}
+#header {
+  width: 1000px;
+}
+.gallery {
+  width: 600px;
+}</p>
+
+<p>实现了我们刚才说的组合申明的需求，完美！说到这里请把目光都从@mixin转到%来，我们要趁热打铁，继续深入%，其实刚才我们是在@mixin center-block的基础上定义了一个%center-block，并在里面调用@extend center-block，那样其实我们暴露了两种方式供选择调用，你要组合申明就使用@extend %center-block，你想单独拷贝进你的选择器就用@include center-block。当然你也可以如下这样直接定义%，而不是使用@include来调用一个已经定义好的@mixin，代码如下：</p>
+
+<p>$lte7:true;</p>
+
+<p>%clearfix {
+  @if $lte7 {
+    *zoom: 1;
+  }
+  &amp;:before,
+  &amp;:after {
+    content: &ldquo;&rdquo;;
+    display: table;
+    font: 0/0 a;
+  }
+  &amp;:after {
+    clear: both;
+  }
+}</p>
+
+<p>clearfix大家熟悉吧，以前每次使用都要在我们的html结构上加个class.clearfix来调用，现在好了，如果哪个要调用这个，直接@extend：</p>
+
+<p>.wrap{
+    @extend %clearfix;
+}
+.row{
+    @extend %clearfix;
+}</p>
+
+<p>解析成的css：</p>
+
+<p>.wrap, .row {
+  *zoom: 1;
+}
+.wrap:before, .row:before, .wrap:after, .row:after {
+  content: &ldquo;&rdquo;;
+  display: table;
+  font: 0/0 a;
+}
+.wrap:after, .row:after {
+  clear: both;
+}</p>
+
+<p>到这里，可能有人就会说你怎么不说下用class定义的样式，也可以用@extend来调用啊。下面说下这两个的区别，上代码：</p>
+
+<p>.fl{
+    float:left;
+}
+%fr{
+    float:right;
+}</p>
+
+<p>这段代码我们去解析下，得到的是如下的css：</p>
+
+<p>.fl {
+  float: left;
+}</p>
+
+<p>我们可以看到，class方式申明的.fl本来就是css，肯定输出出来了，而%fr一点样式都没有输出。</p>
+
+<p>现在我们再用@extend来分别调用下：</p>
+
+<p>#main{
+    @extend .fl;
+    width:700px;
+}
+#aside_second{
+    @extend %fr;
+    width:300px;
+}</p>
+
+<p>解析成的css：</p>
+
+<p>.fl, #main {
+  float: left;
+}
+#aside_second {
+  float: right;
+}
+#main {
+  width: 700px;
+}
+#aside_second {
+  width: 300px;
+}</p>
+
+<p>到这里我们发现%定义的比用class定义的确实要胜一筹啊，做到了只有调用才产生样式，不调用就是个小乖乖，完全不添麻烦，不显摆。当然也许还有人会说，那个.fl我可以对应html结构里面的fl这个class。如果你这么说的话，我再给你来段解释：其实写sass的时候，我们需要一些基础的文件，这些基础文件包括的范围可能比较多，不一定每次都能把所有的用上，但是得有这么一个功能在哪里，我需要就直接调用，而不是每次都根据自己的实际需求去写个基础的东西。这其实跟我们使用jquery库的道理是一样的，也许你用的其实就是它的选择器功能，然后添加改变些class，或animate个东西，ajax都没用到，但是ajax这个功能就在哪里，你会有需要的时候。你如果用class来定义些@extend的东西，不可能每个项目都可以用到全部，那样对于这个项目来说用不到的就是多余的无用代码了，所以从现在开始，把@extend的东西都用%来定义吧。</p>
+
+<p>好，现在问题又来了，那哪些我的html结构上用了.fl这个class的怎么办？这个请在你的具体项目中添加这个class，请看代码：</p>
+
+<p>.fl{
+    @extend %fl;
+}</p>
+
+<p>哈哈，居然是直接在具体的项目中调用%就ok了，别气得吐血啊，虽然得到的代码一样，但是这两种是有本质区别的，代码的好坏就在这里了。</p>
+
+<p>当然其实%比class的定义优势不只是在这里，而是在各种复杂环境中，class的@extend直接会解析出令人发指的疯狂代码哈哈，这也是为什么%被创造的原因之一吧。如果你想了解这个发指的情况，可以打开理解SASS的嵌套，@extend，%Placeholders和Mixins，然后在里面搜索“强大的%placeholders”，然后上面一点就是那些糟糕的令人发指的代码了。</p>
+
+<p>这里有几点需要再次提醒下：</p>
+
+<pre><code>首先%定义的占位选择器样式不能传递参数。当然请注意不能传递参数，不代表样式里面不能使用变量。
+然后@extend调用%申明的东西时，必须要把%带上，@extend %clearfix正确，而@extend clearfix是错误的调用。
+最后%定义的样式，如果不调用是不会产生任何样式的，这也是用%定义样式比用原先的class方法定义样式高明的一方面。
+</code></pre>
+
+<p>为了表示这“揭秘”的含量，我们对第一点补充下，再搞一段代码：</p>
+
+<p>//变量依次为：字体大小，边框颜色，focus时边框颜色，圆角大小
+$simpleForm: 12px $gray #52a8ec $baseRadius  !default;</p>
+
+<p>%simple-form-basic{
+  border: 1px solid nth($simpleForm,2);
+  padding: 4px;</p>
+
+<p>@if not(unitless(nth($simpleForm,4))){
+    border-radius:nth($simpleForm,4);
+  }
+  &amp;:focus{
+    outline: 0 none;
+  }
+}</p>
+
+<p>//ie6,7 zoom组合申明
+%zoom{
+  @if $lte7 {
+    *zoom:1;
+  }
+}</p>
+
+<p>//通过先定义@mixin，然后在%调用@mixin来实现传递变量
+@mixin float($float:left) {
+  float: $float;
+  @if $lte7 {
+    display: inline;
+  }
+}
+%float-right{
+  @include float(right);
+}</p>
+
+<p>第一段代码其实是sassCore里面为form元素定义的一些border和radius，%simple-form-basic没有传递参数，但是里面的样式照样可以引用外面的变量，说明下里面有个比较有意思的判断，就是当圆角值有单位的时候才会输出border-radius，因为写0的时候我们是不带单位的，而且写0的时候，除非是覆盖以前的圆角，不然我们是不想有border-radius:0;这段代码的。第二个就简单了，对于ie6,7加个*zoom:1;，这多好，把*zoom:1;放在一起组合申明了。第三段代码其实就是变相的实现传递参数，主要就是先定义一个@mixin，在%里面调用@mixin。</p>
+
+<p>好了，%就这么说完了，简单好用。休息下，活动下胳膊和腿，我们再来到下一个主题@function。
+@function</p>
+
+<p>@function与@mixin，%这两者的第一点不同在于sass本身就有一些内置的函数，方便我们调用，如强大的color函数；其次就是它返回的是一个值，而不是一段css样式代码什么的。</p>
+
+<p>sass本身内置函数的地址为：sass functions</p>
+
+<p>先说第一个问题，@function返回一个值和上面的@mixin，%有什么不同呢？我们先来用内置的darken函数做个例子：</p>
+
+<p>//如果在scss里直接这样写错误的
+darken($f00,50%);</p>
+
+<p>因为它返回的是一个值，而值只有放在变量或作为属性值，来段正确的：</p>
+
+<p>//作为变量值
+$redDark:darken($f00,50%) !default;</p>
+
+<p>//作为属性值
+p{
+    color:darken($f00,70%);
+}</p>
+
+<p>这下大概能明白吧，作为新手其实是很容易犯上面的那个错误的。</p>
+
+<p>下面我们介绍几个常用的内置函数，按照官网上面地址上的顺序来。
+rgba</p>
+
+<p>分为两种：rgba($red, $green, $blue, $alpha)和rgba($color, $alpha)。</p>
+
+<p>第一种跟css3一样，不介绍，第二种对我们有点用，实例：</p>
+
+<p>rgba(#102030, 0.5) =&gt; rgba(16, 32, 48, 0.5)
+rgba(blue, 0.2)    =&gt; rgba(0, 0, 255, 0.2)</p>
+
+<p>ie-hex-str</p>
+
+<p>ie-hex-str($color)</p>
+
+<p>这个函数将一个颜色格式化成ie滤镜使用，在做css3使用滤镜兼容的时候用得上，实例：</p>
+
+<p>ie-hex-str(#abc) =&gt; #FFAABBCC
+ie-hex-str(#3322BB) =&gt; #FF3322BB
+ie-hex-str(rgba(0, 255, 0, 0.5)) =&gt; #8000FF00</p>
+
+<p>darken</p>
+
+<p>darken($color,$amount)</p>
+
+<p>第一个参数是颜色，第二参数是百分数介于0%-100%，表示将某个颜色变暗多少个百分比。</p>
+
+<p>darken(hsl(25, 100%, 80%), 30%) =&gt; hsl(25, 100%, 50%)
+darken(#800, 20%) =&gt; #200</p>
+
+<p>lighten</p>
+
+<p>lighten($color,$amount)</p>
+
+<p>第一个参数是颜色，第二参数是百分数介于0%-100%，表示将某个颜色变亮多少个百分比。</p>
+
+<p>lighten(hsl(0, 0%, 0%), 30%) =&gt; hsl(0, 0, 30)
+lighten(#800, 20%) =&gt; #e00</p>
+
+<p>percentage</p>
+
+<p>percentage($value)</p>
+
+<p>将一个没有单位的数字转成百分比形式</p>
+
+<p>percentage(0.2) =&gt; 20%
+percentage(100px / 50px) =&gt; 200%</p>
+
+<p>length</p>
+
+<p>length($list)</p>
+
+<p>返回一个列表的长度</p>
+
+<p>length(10px) =&gt; 1
+length(#514721 #FFF6BF #FFD324) =&gt; 3</p>
+
+<p>nth</p>
+
+<p>nth($list, $n);</p>
+
+<p>返回列表里面第n个位置的值</p>
+
+<p>nth(10px 20px 30px, 1) =&gt; 10px
+nth((Helvetica, Arial, sans-serif), 3) =&gt; sans-serif</p>
+
+<p>unit</p>
+
+<p>unit($number)</p>
+
+<p>得到这个数的单位</p>
+
+<p>unit(100) =&gt; &ldquo;&rdquo;
+unit(100px) =&gt; &ldquo;px&rdquo;
+unit(3em) =&gt; &ldquo;em&rdquo;
+unit(10px * 5em) =&gt; &ldquo;em*px&rdquo;
+unit(10px * 5em / 30cm / 1rem) =&gt; &ldquo;em*px/cm*rem&rdquo;</p>
+
+<p>unitless</p>
+
+<p>unitless($number)</p>
+
+<p>返回这个数是否没有单位</p>
+
+<p>unitless(100) =&gt; true
+unitless(100px) =&gt; false</p>
+
+<p>三目判断</p>
+
+<p>if($condition, $if-true, $if-false)</p>
+
+<p>第一个表示条件，第二个表示条件为真的值，第三个表示为假的值</p>
+
+<p>if(true, 1px, 2px) =&gt; 1px
+if(false, 1px, 2px) =&gt; 2px</p>
+
+<p>可能上面的都提不起你的兴趣，一时记不住也没有关系，大概有个印象，用的时候知道sass可以提供这个函数功能，或者不清楚再去查下它的官方函数。再次提醒刚开始sass的话，注意函数是返回一个值，不能直接放到sass里面直接去运行的，会报错。你可以把这些用在判断或者属性值里面，那么就是一级棒。</p>
+
+<p>下面我们来搞点自己定义的函数吧，先来个简单的：</p>
+
+<p>// px转em
+@function pxToEm($px, $base: 16) {
+  @return ($px / $base) * 1em;
+}</p>
+
+<p>调用下：</p>
+
+<p>p{
+    font-size:pxToEm(20);
+}</p>
+
+<p>解析后的css：</p>
+
+<p>p {
+  font-size: 1.25em;
+}</p>
+
+<p>估计这点小罗罗，是上不了大场面的，@mixin都有一个那么神来之笔，@function怎能没有呢，下面介绍网格布局的一个计算宽度的神来之笔，来自blankwork。</p>
+
+<p>//960网格布局
+$_columns: 12 !default;      // 总列数
+$_column-width: 60px !default;   // 单列宽
+$_gutter: 20px !default;     // 间隔</p>
+
+<p>@function get_width($columns:$_columns, $onlyInnerWidth: true, $_subtract:0){
+  // 默认返回值
+  $return: ($_column-width + $_gutter) * $columns - $_subtract !default;</p>
+
+<p>@if $onlyInnerWidth == true{
+    //如果$onlyInnerWidth为true，那么减掉一个间隔$_gutter
+    $return: ($_column-width + $_gutter) * $columns - $_gutter - $_subtract;
+  }</p>
+
+<p>@return $return;
+}</p>
+
+<p>首先，你得对960的网格系统比较熟悉，不然你可能有点迷惑。如果你不了解960网格系统，建议你先在w3cplus里面找找。当然也许你还没有感受它的神来之笔，别急，先来调用下：</p>
+
+<p>#container{
+    width:get_width(12,false);//960px
+}
+.col-four{
+    @extend %clearfix;
+    .col{
+        @include float;
+        margin:0 $_gutter / 2;
+        width:get_width(3); //220px</p>
+
+<pre><code>    h2{
+        padding-left:10px
+        width:get_width(3,true,10px); //210px
+    }
+}
+</code></pre>
+
+<p>}</p>
+
+<p>看到没，向那些.span1,.span2,&hellip;, .span12说88，想要几个格子就传递数字几，当然还有些特别需求，要不了刚好的网格，比喻比4个格子要少30px，看到上面的get_width的第三个参数不，专门负责搞定这些额外需求的，get_width(4,true,30px)得到的就是270px。</p>
+
+<p>所以说这个计算宽度有三种调用形式：第一种默认的如get_width(3)得到220px；第二种不需要左右margin的如get_width(3，false)得到240px；第三种可以灵活缩小点宽度如get_width(3,true,10px)得到210px。</p>
+
+<p>当然计算宽度只是第一步，还有设置column的浮动，然后wrap的闭合子元素的浮动等，都是基于这个函数，一个网格系统就在这个基础上构建成功，它的这个功能应该可以和css3的那个prefixer的@mixin媲美吧。</p>
+
+<p>最后说一下，其实到最后所有的的@mixin，%，@function都是为解析后的css样式服务的，如果你不能带来以下这些优势那么可以考虑不要定义这个东西：</p>
+
+<pre><code>化繁为简；
+样式可以组合申明；
+浏览器兼容样式判断；
+灵活实现一些基础常用功能的属性值的改变，如颜色，大小等；
+</code></pre>
+
+<p>sass揭秘的第二篇文章就到此为止。如果你对sass比较感兴趣但是还不会，可以试试我们的sassGuide教程，如果已经开始使用sass了，欢迎试用sassCore这个库。</p>
+
+<p>顺便说下，本人的面向熟悉sass人员开发的tobe即将上线，欢迎关注，也欢迎到时拍砖。</p>
+
+<p>如需转载，烦请注明出处：<a href="http://www.w3cplus.com/preprocessor/sass-mixins-function-placeholder.html">http://www.w3cplus.com/preprocessor/sass-mixins-function-placeholder.html</a></p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/css/2016-03-29-sass%E6%8F%AD%E7%A7%98%E4%B9%8Bmixin--function/">/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/css/2016-03-29-sass%E6%8F%AD%E7%A7%98%E4%B9%8Bmixin--function/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+  (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+  		if (window.location.hostname === '127.0.0.1') return;
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'rinetd';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/2016-03-29-restful/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>restful</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/front-end/">Front-End</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux_base/">Linux_base</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Fstm32/">嵌入式stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%9C%B4%E7%B4%A0linux/">朴素linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%AD%A3%E5%88%99/">正则</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/css/2016-03-29-media%E8%AE%A9%E7%BD%91%E9%A1%B5%E6%9B%B4%E5%A5%BD%E7%9A%84%E6%94%AF%E6%8C%81%E7%A7%BB%E5%8A%A8%E8%AE%BE%E5%A4%87/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>“Media”让网页更好的支持移动设备</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+</body>
+</html>
+

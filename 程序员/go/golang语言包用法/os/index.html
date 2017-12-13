@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+  <base href="//">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+  <title>golang中os包用法 - Pytool</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="chenbaoke的专栏 golang中os包用法 os包中实现了平台无关的接口，设计向Unix风格，但是错误处理是go风格，当os包使用时，如">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="golang中os包用法 - Pytool">
+<meta itemprop="description" content="chenbaoke的专栏 golang中os包用法 os包中实现了平台无关的接口，设计向Unix风格，但是错误处理是go风格，当os包使用时，如">
+<meta itemprop="image" content="//public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="golang中os包用法 - Pytool" />
+<meta property="og:description" content="chenbaoke的专栏 golang中os包用法 os包中实现了平台无关的接口，设计向Unix风格，但是错误处理是go风格，当os包使用时，如">
+<meta property="og:image" content="//public/avatar.png" />
+<meta property="og:url" content="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/os/" />
+
+
+
+  <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+  <link rel="canonical" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/os/">
+  <link rel='shortlink' href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/os/"/>
+  <link rel="shortcut icon" href="//public/favicon.ico"/>
+  
+<link rel="stylesheet" id="human-style-css" href="./wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="./wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="./wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="./wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="./public/highlight/styles/github.css">
+<script src="./public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<link rel="stylesheet" id="human-style-css3" href="./wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="./public/font/hack/css/hack.min.css">
+
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="./assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="./assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="./assets/js/myblog.js"></script>
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//" class="nav-cs-icon">
+        <img width="40" height="40" src="/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/">首页</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/linux%e5%9f%ba%e7%a1%80/">Linux基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">Post</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%a5%87%e7%9c%9f%e5%bc%82%e5%ae%9d/">奇真异宝</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b5%8c%e5%85%a5%e5%bc%8f%e5%bc%80%e5%8f%91/">嵌入式开发</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4/">常用命令</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%b7%a5%e5%85%b7/">常用工具</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e6%96%87%e6%9c%ac%e7%bc%96%e8%be%91%e5%99%a8/">文本编辑器</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%a8%8b%e5%ba%8f%e5%91%98/">程序员</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%bc%96%e7%a8%8b%e5%9f%ba%e7%a1%80/">编程基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e8%bd%ac%e8%bd%bd/">转载</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e9%bb%91%e5%ae%a2%e6%8a%80%e6%9c%af/">黑客技术</a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">归档</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//" rel="home">
+              <img style="border-radius: 50%;width:72px;height:72px;margin:0 auto;" alt="rinetd" src="/public/avatar.png"></img>
+              Pytool
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="/categories/golang/" rel="category tag">golang</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">golang中os包用法</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年10月04日 04:15:26 · 7184 Words ·
+                    ~15min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/%e7%a8%8b%e5%ba%8f%e5%91%98/Go/golang%e8%af%ad%e8%a8%80%e5%8c%85%e7%94%a8%e6%b3%95/os.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<h2 id="chenbaoke的专栏-http-blog-csdn-net-chenbaoke"><a href="http://blog.csdn.net/chenbaoke">chenbaoke的专栏</a></h2>
+
+<p><a href="/chenbaoke/article/details/42494851">golang中os包用法</a></p>
+
+<p>os包中实现了平台无关的接口，设计向Unix风格，但是错误处理是go风格，当os包使用时，如果失败之后返回错误类型而不是错误数量．</p>
+
+<p>os包中函数设计方式和Unix类似，下面来看一下．</p>
+
+<p>func Chdir(dir string) error   //chdir将当前工作目录更改为dir目录．</p>
+
+<p>func Getwd() (dir string, err error)    //获取当前目录，类似linux中的pwd</p>
+
+<p>func Chmod(name string, mode FileMode) error     //更改文件的权限（读写执行，分为三类：all-group-owner）
+func Chown(name string, uid, gid int) error  //更改文件拥有者owner
+func Chtimes(name string, atime time.Time, mtime time.Time) error    //更改文件的访问时间和修改时间，atime表示访问时间，mtime表示更改时间
+func Clearenv()    //清除所有环境变量（<span style="color:#FF0000">慎用</span>）
+func Environ() []string  //返回所有环境变量
+func Exit(code int)     //系统退出，并返回code，其中０表示执行成功并退出，非０表示错误并退出，其中<span style="color:#FF0000">执行Exit后程序会直接退出，defer函数不会执行．</span></p>
+
+<p>func Expand(s string, mapping func(string) string) string   //Expand用mapping 函数指定的规则替换字符串中的<span style="background-color:rgb(255,0,0)">${var}或者$var</span>（注：变量之前必须有$符号）。比如，os.ExpandEnv(s)等效于os.Expand(s, os.Getenv)。</p>
+
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;os&quot;
+)
+
+func main() {
+    mapping := func(key string) string {
+        m := make(map[string]string)
+        m = map[string]string{
+            &quot;world&quot;: &quot;kitty&quot;,
+            &quot;hello&quot;: &quot;hi&quot;,
+        }
+        if m[key] != &quot;&quot; {
+            return m[key]
+        }
+        return key
+    }
+    s := &quot;hello,world&quot;            //  hello,world，由于hello world之前没有$符号，则无法利用map规则进行转换
+    s1 := &quot;$hello,$world $finish&quot; //  hi,kitty finish，finish没有在map规则中，所以还是返回原来的值
+    fmt.Println(os.Expand(s, mapping))
+    fmt.Println(os.Expand(s1, mapping))
+
+}
+</code></pre>
+
+<p>func ExpandEnv(s string) string  //ExpandEnv根据当前环境变量的值来替换字符串中的${var}或者$var。如果引用变量没有定义，则用空字符串替换。</p>
+
+<pre><code class="language-go">func main() {
+    s := &quot;hello $GOROOT&quot;
+    fmt.Println(os.ExpandEnv(s)) // hello /home/work/software/go，$GOROOT替换为环境变量的值，而h没有环境变量可以替换，返回空字符串
+}
+</code></pre>
+
+<p>func Getenv(key string) string  //获取系统key的环境变量，如果没有环境变量就返回空
+  fmt.Println(os.Getenv(&ldquo;GOROOT&rdquo;)) // /home/software/go</p>
+
+<p>func Geteuid() int  //获取调用者用户id</p>
+
+<p>func Getgid() int   //获取调用者的组id</p>
+
+<pre><code class="language-go">fmt.Println(os.Getgid()) //  1000
+</code></pre>
+
+<p>func Getgroups() ([]int, error)  //返回调用者属于的group，其和chown配合使用，改变文件属于的group．</p>
+
+<pre><code class="language-go">func main() {
+
+    fmt.Println(os.Getgroups())　　　　　//获取调用者属于的组  [4 24 27 30 46 108 124 1000]
+    fmt.Println(os.Getgid())　　　　　　　//获取调用者当前所在的组　1000
+    fmt.Println(os.Chown(&quot;tmp.txt&quot;, 1000, 46))  //更改文件所在的组
+}
+</code></pre>
+
+<p>func Getpagesize() int　　　//获取底层系统内存页的数量
+func Getpid() int　　　　//获取进程id
+func Getppid() int             //获取调用者进程父id
+func Hostname() (name string, err error)    //获取主机名
+func IsExist(err error) bool    　　　　　 //返回一个布尔值，它指明<code>err</code>错误是否报告了一个文件或者目录已经存在。它被ErrExist和其它系统调用满足。
+func IsNotExist(err error) bool　　　　　//返回一个布尔值，它指明<code>err</code>错误是否报告了一个文件或者目录不存在。它被ErrNotExist 和其它系统调用满足。
+func IsPathSeparator(c uint8) bool         //判断c是否是一个路径分割符号，是的话返回true,否则返回false</p>
+
+<pre><code class="language-go">fmt.Println(os.IsPathSeparator('/')) //true
+fmt.Println(os.IsPathSeparator('|')) //false
+</code></pre>
+
+<p>func IsPermission(err error) bool   //判定<code>err</code>错误是否是权限错误。它被ErrPermission 和其它系统调用满足。
+func Lchown(name string, uid, gid int) error　　　//改变了文件的<code>gid</code>和<code>uid</code>。如果文件是一个符号链接，它改变的链接自己。如果出错，则会是*PathError类型。
+func Link(oldname, newname string) error       //创建一个从oldname指向newname的<span style="color:#FF0000">硬连接</span>，对一个进行操作，则另外一个也会被修改．
+func Mkdir(name string, perm FileMode) error　//创建一个新目录，该目录具有FileMode权限，<span style="color:#FF0000">当创建一个已经存在的目录时会报错</span></p>
+
+<pre><code class="language-go">func main() {
+    var path string
+    if os.IsPathSeparator('\\') {
+        path = &quot;\\&quot;
+    } else {
+        path = &quot;/&quot;
+    }
+    pwd, _ := os.Getwd()
+    err := os.Mkdir(pwd+path+&quot;tmp&quot;, os.ModePerm)
+    if err != nil {
+        fmt.Println(err)　　
+    }
+}
+</code></pre>
+
+<p>func MkdirAll(path string, perm FileMode) error　//创建一个新目录，该目录是利用路径（包括绝对路径和相对路径）进行创建的，如果需要创建对应的父目录，也一起进行创建，如果已经有了该目录，则不进行新的创建，<span style="color:#FF0000">当创建一个已经存在的目录时，不会报错.</span>
+func NewSyscallError(syscall string, err error) error    //NewSyscallError返回一个SyscallError 错误，带有给出的系统调用名字和详细的错误信息。也就是说，如果err为空，则返回空</p>
+
+<pre><code class="language-go">func main() {
+    a := os.NewSyscallError(&quot;mkdir&quot;, nil)
+    fmt.Println(a) // nil
+    a = os.NewSyscallError(&quot;mkdir&quot;, errors.New(&quot;bad error&quot;))
+    fmt.Println(a) //mkdir: bad error
+}
+</code></pre>
+
+<p>func Readlink(name string) (string, error)         //返回符号链接的目标。如果出错，将会是 *PathError类型。
+func Remove(name string) error           //删除文件或者目录
+func RemoveAll(path string) error　　//删除目录以及其子目录和文件，如果path不存在的话，返回nil</p>
+
+<pre><code class="language-go">func main() {
+    err := os.MkdirAll(&quot;./a&quot;, os.ModePerm)
+    os.Chdir(&quot;./a&quot;)
+    os.Create(&quot;file.txt&quot;)
+    fmt.Println(err)//成功创建文件file.txt，返回nil
+    os.Chdir(&quot;../&quot;)
+    err = os.RemoveAll(&quot;./a&quot;)
+    fmt.Println(err)//成功删除目录a，返回nil
+}
+</code></pre>
+
+<p>func Rename(oldpath, newpath string) error　　//重命名文件，如果oldpath不存在，则报错no such file or directory
+func SameFile(fi1, fi2 FileInfo) bool　　　　　　//查看f1和f2这两个是否是同一个文件，如果再Unix系统，这意味着底层结构的device和inode完全一致，在其他系统上可能是基于文件绝对路径的．SameFile只适用于本文件包stat返回的状态，其他情况下都返回false
+func Setenv(key, value string) error           //设定环境变量，经常与Getenv连用，用来设定环境变量的值</p>
+
+<pre><code class="language-go">func main() {
+    err := os.Setenv(&quot;goenv&quot;, &quot;go environment&quot;)
+    a := os.Getenv(&quot;goenv&quot;)
+    fmt.Println(err, a) //  &lt;nil&gt; go environment
+}
+</code></pre>
+
+<p>func Symlink(oldname, newname string) error　　　//<span style="color:#FF0000">创建一个newname作为oldname的符号连接，这是一个符号连接（Link是硬连接）</span>，与link的硬连接不同，利用Link创建的硬连接，则newname和oldname的file互不影响，一个文件删除，另外一个文件不受影响；但是利用SymLink创建的符号连接，其newname只是一个指向oldname文件的符号连接，当oldname　file删除之后，则newname的文件也就不能够继续使用．
+func TempDir() string　　　　　　　　//创建临时目录用来存放临时文件，这个临时目录一般为/tmp
+func Truncate(name string, size int64) error     //按照指定长度size将文件截断，如果这个文件是一个符号链接，则同时也改变其目标连接的长度，如果有错误，则返回一个错误．</p>
+
+<p><span style="font-size:18px">文件操作：</span></p>
+
+<p>type File</p>
+
+<pre><code>type File struct {
+    // contains filtered or unexported fields
+}
+</code></pre>
+
+<p>File表示打开的文件描述符</p>
+
+<p>func Create(name string) (file *File, err error)　　//创建一个文件，文件mode是0666(读写权限)，如果文件已经存在，则重新创建一个，原文件被覆盖，创建的新文件具有读写权限，能够备用与i/o操作．其相当于OpenFile的快捷操作，等同于OpenFile(name string, O_CREATE,0666)
+func NewFile(fd uintptr, name string) *File　　　//根据文件描述符和名字创建一个新的文件</p>
+
+<pre><code class="language-go">   Stdin  = NewFile(uintptr(syscall.Stdin), &quot;/dev/stdin&quot;)
+    Stdout = NewFile(uintptr(syscall.Stdout), &quot;/dev/stdout&quot;)
+    Stderr = NewFile(uintptr(syscall.Stderr), &quot;/dev/stderr&quot;)
+</code></pre>
+
+<pre><code> func Open(name string) (file *File, err error)　　　//打开一个文件，返回文件描述符，该文件描述符只有只读权限．他相当于OpenFile(name string,O_RDWR,0)
+</code></pre>
+
+<p>func OpenFile(name string, flag int, perm FileMode) (file *File, err error)　//指定文件权限和打开方式打开name文件或者create文件，其中flag标志如下:</p>
+
+<p><strong>打开标记：</strong></p>
+
+<p>O_RDONLY：只读模式(read-only)
+O_WRONLY：只写模式(write-only)
+O_RDWR：读写模式(read-write)
+O_APPEND：追加模式(append)
+O_CREATE：文件不存在就创建(create a new file if none exists.)
+O_EXCL：与 O_CREATE 一起用，构成一个新建文件的功能，它要求文件必须不存在(used with O_CREATE, file must not exist)
+O_SYNC：同步方式打开，即不使用缓存，直接写入硬盘
+O_TRUNC：打开并清空文件
+至于操作权限perm，除非创建文件时才需要指定，不需要创建新文件时可以将其设定为０.虽然go语言给perm权限设定了很多的常量，但是习惯上也可以直接使用数字，如0666(具体含义和Unix系统的一致).</p>
+
+<p>func Pipe() (r *File, w *File, err error)        //返回一对连接的文件，从r中读取写入w中的数据，即首先向w中写入数据，此时从r中变能够读取到写入w中的数据，Pipe()函数返回文件和该过程中产生的错误．</p>
+
+<pre><code class="language-go">func main() {
+    r, w, _ := os.Pipe()
+    w.WriteString(&quot;hello,world!&quot;)
+    var s = make([]byte, 20)
+    n, _ := r.Read(s)
+    fmt.Println(string(s[:n])) //  hello,world!
+}
+</code></pre>
+
+<p>func (f *File) Chdir() error　　　　　　　//改变工作目录到f，其中f必须为一个目录，否则便会报错</p>
+
+<pre><code class="language-go">func main() {
+    dir, _ := os.Getwd()
+    fmt.Println(dir)
+    f, _ := os.Open(&quot;tmp.txt&quot;)
+    err := f.Chdir()
+    if err != nil {
+        fmt.Println(err)　　　//chdir tmp.txt: not a directory，因为tmp.txt不是目录，所以报错
+    }
+    f, _ = os.Open(&quot;develop&quot;)
+    err = f.Chdir()
+    if err != nil {
+        fmt.Println(err)
+    }
+    dir1, _ := os.Getwd()
+    fmt.Println(dir1)　　　 //home/work/develop，因为develop是工作目录，所以变切换到该目录
+}
+</code></pre>
+
+<p>func (f *File) Chmod(mode FileMode) error　　　//更改文件权限，其等价与os.Chmod(name string,mode FileMode)error
+func (f *File) Chown(uid, gid int) error                     //更改文件所有者，与os.Chown等价
+func (f *File) Close() error　　　　　　　　　　//关闭文件，使其不能够再进行i/o操作，其经常和defer一起使用，用在创建或者打开某个文件之后，这样在程序退出前变能够自己关闭响应的已经打开的文件．
+func (f *File) Fd() uintptr　　　//返回系统文件描述符，也叫做文件句柄．
+func (f *File) Name() string　　//返回文件名字，与file.Stat().Name()等价
+func (f *File) Read(b []byte) (n int, err error)　//将len(b)的数据从f中读取到b中，如果无错，则返回n和nil,否则返回读取的字节数n以及响应的错误
+func (f *File) ReadAt(b []byte, off int64) (n int, err error)　//和Read类似，不过ReadAt指定开始读取的位置offset
+func (f *File) Readdir(n int) (fi []FileInfo, err error)           </p>
+
+<p>Readdir读取file指定的目录的内容，然后返回一个切片，它最多包含<code>n</code>个FileInfo值，这些值可能是按照目录顺序的Lstat返回的。接下来调用相同的文件会产生更多的FileInfos。</p>
+
+<p>如果n&gt;0，Readdir返回最多<code>n</code>个FileInfo结构。在这种情况下，如果Readdir返回一个空的切片，它将会返回一个非空的错误来解释原因。在目录的结尾，错误将会是io.EOF。</p>
+
+<p>如果n&lt;=0，Readdir返回目录的所有的FileInfo，用一个切片表示。在这种情况下，如果Readdir成功（读取直到目录的结尾），它会返回切片和一个空的错误。如果它在目录的结尾前遇到了一个错误，Readdir返回直到当前所读到的FIleInfo和一个非空的错误。</p>
+
+<p>func (f *File) Readdirnames(n int) (names []string, err error)</p>
+
+<p>Readdirnames读取并返回目录<code>f</code>里面的文件的名字切片。</p>
+
+<p>如果n&gt;0，Readdirnames返回最多n个名字。在这种情况下，如果Readdirnames返回一个空的切片，它会返回一个非空的错误来解释原因。在目录的结尾，错误为EOF。</p>
+
+<p>如果n&lt;0，Readdirnames返回目录下所有的文件的名字，用一个切片表示。在这种情况下，如果用一个切片表示成功（读取直到目录结尾），它返回切片和一个空的错误。如果在目录结尾之前遇到了一个错误，Readdirnames返回直到当前所读到的<code>names</code>和一个非空的错误。</p>
+
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;os&quot;
+)
+
+func main() {
+    file, err := os.Open(&quot;/home/chenbaoke&quot;)
+    if err != nil {
+        fmt.Println(err)
+    }
+    fileslice, err := file.Readdir(5)
+    if err != nil {
+        fmt.Println(err)
+    }
+    for _, f := range fileslice {
+        fmt.Println(f.Name())       //输出５个文件的名字
+    }
+
+    filename, err := file.Readdirnames(-1)
+    if err != nil {
+        fmt.Println(err)
+    }
+    for _, f := range filename {
+        fmt.Println(f)　　　　　//输出所有文件的名字
+    }
+}
+</code></pre>
+
+<p>func (f *File) Seek(offset int64, whence int) (ret int64, err error)　　　　//Seek设置下一次读或写操作的偏移量<code>offset</code>，根据<code>whence</code>来解析：0意味着相对于文件的原始位置，1意味着相对于当前偏移量，2意味着相对于文件结尾。它返回新的偏移量和错误（如果存在）。</p>
+
+<pre><code class="language-go">func main() {
+    s := make([]byte, 10)
+    file, _ := os.Open(&quot;tmp.txt&quot;)
+    defer file.Close()
+    file.Seek(-12, 2)        // 从离最后位置12的地方开始
+    n, _ := file.Read(s)
+    fmt.Println(string(s[:n]))
+}
+</code></pre>
+
+<p>func (f *File) Stat() (fi FileInfo, err error)　　//返回文件描述相关信息，包括大小，名字等．等价于os.Stat(filename string)
+func (f *File) Sync() (err error)                        //同步操作，将当前存在内存中的文件内容写入硬盘．
+func (f *File) Truncate(size int64) error        //类似  os.Truncate(name, size),，将文件进行截断
+func (f *File) Write(b []byte) (n int, err error)　　//将b中的数据写入f文件
+func (f *File) WriteAt(b []byte, off int64) (n int, err error)　//将b中数据写入f文件中，写入时从offset位置开始进行写入操作
+func (f *File) WriteString(s string) (ret int, err error)　　　//将字符串s写入文件中</p>
+
+<pre><code class="language-go">func main() {
+    file, _ := os.Create(&quot;tmp.txt&quot;)
+    a := &quot;hellobyte&quot;
+    file.WriteAt([]byte(a), 10)      //在文件file偏移量10处开始写入hellobyte
+    file.WriteString(&quot;string&quot;)　　//在文件file偏移量0处开始写入string
+    file.Write([]byte(a))                //在文件file偏移量string之后开始写入hellobyte，这个时候就会把开始利用WriteAt在offset为10处开始写入的hellobyte进行部分覆盖
+    b := make([]byte, 20)
+    file.Seek(0, 0)          　　　　//file指针指向文件开始位置
+    n, _ := file.Read(b)
+    fmt.Println(string(b[:n]))  //stringhellobytebyte，这是由于在写入过程中存在覆盖造成的
+}
+</code></pre>
+
+<p>type FileInfo</p>
+
+<pre><code class="language-go">type FileInfo interface {
+    Name() string       //文件名字
+    Size() int64        // length in bytes for regular files; system-dependent for others，文件大小
+    Mode() FileMode     // file mode bits，文件权限
+    ModTime() time.Time // modification time　文件更改时间
+    IsDir() bool        // abbreviation for Mode().IsDir()　文件是否为目录
+    Sys() interface{}   // underlying data source (can return nil)　　基础数据源
+}
+</code></pre>
+
+<p>FileInfo经常被Stat和Lstat返回来描述一个文件</p>
+
+<p>func Lstat(name string) (fi FileInfo, err error)      //返回描述文件的FileInfo信息。如果文件是符号链接，返回的FileInfo描述的符号链接。Lstat不会试着去追溯link。如果出错，将是 *PathError类型。
+func Stat(name string) (fi FileInfo, err error)       //返回描述文件的FileInfo信息。如果出错，将是 *PathError类型。</p>
+
+<p>type FileMode</p>
+
+<pre><code class="language-go">type FileMode uint32
+</code></pre>
+
+<p>FileMode代表文件的模式和权限标志位。标志位在所有的操作系统有相同的定义，因此文件的信息可以从一个操作系统移动到另外一个操作系统。不是所有的标志位是用所有的系统。唯一要求的标志位是目录的ModeDir。</p>
+
+<pre><code class="language-go">const (
+    // The single letters are the abbreviations
+    // used by the String method's formatting.
+    ModeDir        FileMode = 1 &lt;&lt; (32 - 1 - iota) // d: is a directory
+    ModeAppend                                     // a: append-only
+    ModeExclusive                                  // l: exclusive use
+    ModeTemporary                                  // T: temporary file (not backed up)
+    ModeSymlink                                    // L: symbolic link
+    ModeDevice                                     // D: device file
+    ModeNamedPipe                                  // p: named pipe (FIFO)
+    ModeSocket                                     // S: Unix domain socket
+    ModeSetuid                                     // u: setuid
+    ModeSetgid                                     // g: setgid
+    ModeCharDevice                                 // c: Unix character device, when ModeDevice is set
+    ModeSticky                                     // t: sticky
+
+    // Mask for the type bits. For regular files, none will be set.
+    ModeType = ModeDir | ModeSymlink | ModeNamedPipe | ModeSocket | ModeDevice
+
+    ModePerm FileMode = 0777 // permission bits
+)
+</code></pre>
+
+<p>所定义的文件标志位最重要的位是FileMode。9个次重要的位是标准Unix rwxrwxrwx权限。这些位的值应该被认为公开API的一部分，可能用于连接协议或磁盘表示：它们必须不能被改变，尽管新的标志位有可能增加。</p>
+
+<p>FileModel的方法主要用来进行判断和输出权限
+func (m FileMode) IsDir() bool              //判断m是否是目录，也就是检查文件是否有设置的ModeDir位
+func (m FileMode) IsRegular() bool　　//判断m是否是普通文件，也就是说检查m中是否有设置mode type
+func (m FileMode) Perm() FileMode　　//返回m的权限位
+func (m FileMode) String() string　　　　//返回m的字符串表示</p>
+
+<pre><code class="language-go">func main() {
+    fd, err := os.Stat(&quot;tmp.txt&quot;)
+    if err != nil {
+        fmt.Println(err)
+    }
+    fm := fd.Mode()
+    fmt.Println(fm.IsDir())     //false
+    fmt.Println(fm.IsRegular()) //true
+    fmt.Println(fm.Perm())      //-rwxrwxrwx
+    fmt.Println(fm.String())    //-rwxrwxrwx
+}
+</code></pre>
+
+<p>type LinkError</p>
+
+<pre><code>type LinkError struct {
+    Op  string
+    Old string
+    New string
+    Err error
+}
+</code></pre>
+
+<p>func (e *LinkError) Error() string　　　　//LinkError记录了一个在链接或者符号连接或者重命名的系统调用中发生的错误和引起错误的文件的路径。</p>
+
+<p>type PathError</p>
+
+<pre><code class="language-go">type PathError struct {
+Op string
+Path string
+Err error
+}
+</code></pre>
+
+<p>func (e *PathError) Error() string　　//返回一个有操作者，路径以及错误组成的字符串形式</p>
+
+<p><span style="font-size:18px">进程相关操作</span>：</p>
+
+<p>type ProcAttr</p>
+
+<pre><code class="language-go">type ProcAttr struct {
+    Dir   string               //如果dir不是空，子进程在创建之前先进入该目录
+    Env   []string　　　//如果Env不是空，则将里面的内容赋值给新进程的环境变量，如果他为空，则使用默认的环境变量
+    Files []*File　　　  //Files指定新进程打开文件，前三个实体分别为标准输入，标准输出和标准错误输出，可以添加额外的实体，这取决于底层的操作系统，当进程开始时，文
+　　　　　　　　　　//件对应的空实体将被关闭
+    Sys   *syscall.SysProcAttr  //操作系统特定进程的属性，设置该值也许会导致你的程序在某些操作系统上无法运行或者编译
+}
+</code></pre>
+
+<p>ProcAttr包含属性，这些属性将会被应用在被StartProcess启动的新进程上type Process</p>
+
+<p>Process存储了通过StartProcess创建的进程信息。</p>
+
+<pre><code class="language-go">type Process struct {
+    Pid int
+     handle uintptr 　　//处理指针
+      isdone uint32        // 如果进程正在等待则该值非０，没有等待该值为０
+ }
+</code></pre>
+
+<p>func FindProcess(pid int) (p *Process, err error)　　　　//通过进程pid查找运行的进程，返回相关进程信息及在该过程中遇到的errorfunc StartProcess(name string, argv []string, attr *ProcAttr) (*Process, error)  //StartProcess启动一个新的进程，其传入的<code>name</code>、<code>argv</code>和<code>addr</code>指定了程序、参数和属性；StartProcess是一个低层次的接口。os/exec包提供了高层次的接口；如果出错，将会是*PathError错误。func (p *Process) Kill() error　　　　　　　　　　　//杀死进程并直接退出func (p *Process) Release() error　　　　　　　　//释放进程p的所有资源，之后进程p便不能够再被使用，只有Wati没有被调用时，才需要调用Release释放资源</p>
+
+<pre><code class="language-go">func main() {
+    attr := &amp;os.ProcAttr{
+        Files: []*os.File{os.Stdin, os.Stdout, os.Stderr}, //其他变量如果不清楚可以不设定
+    }
+    p, err := os.StartProcess(&quot;/usr/bin/vim&quot;, []string{&quot;/usr/bin/vim&quot;, &quot;tmp.txt&quot;}, attr) //vim 打开tmp.txt文件
+    if err != nil {
+        fmt.Println(err)
+    }
+    fmt.Println(p)                  //&amp;{5488 240 0}
+    pro, _ := os.FindProcess(p.Pid) //查找进程
+    fmt.Println(pro)                //&amp;{5488 240 0}
+
+    err = p.Kill() 　　　　　//杀死进程但不释放进程相关资源
+    fmt.Println(err)
+
+    err = p.Release() 　　　//&lt;span style=&quot;color:#FF0000;&quot;&gt;释放进程相关资源，因为资源释放凋之后进程p就不能进行任何操作，此后进程Ｐ的任何操作都会被报错&lt;/span&gt;
+    fmt.Println(err)
+}
+</code></pre>
+
+<p>func (p *Process) Signal(sig Signal) error　　　　//发送一个信号给进程p, 在windows中没有实现发送中断interrupt
+func (p *Process) Wait() (*ProcessState, error)　　//Wait等待进程退出，并返回进程状态和错误。Wait释放进程相关的资源。在大多数的系统上，进程p必须是当前进程的子进程，否则会返回一个错误。</p>
+
+<pre><code class="language-go">func main() {
+    attr := &amp;os.ProcAttr{
+        Files: []*os.File{os.Stdin, os.Stdout, os.Stderr}, //其他变量如果不清楚可以不设定
+    }
+    p, err := os.StartProcess(&quot;/usr/bin/vim&quot;, []string{&quot;/usr/bin/vim&quot;, &quot;tmp.txt&quot;}, attr) //vim 打开tmp.txt文件
+    if err != nil {
+        fmt.Println(err)
+    }
+    go func() {
+        p.Signal(os.Kill) //kill process
+    }()
+
+    pstat, err := p.Wait()
+    if err != nil {
+        fmt.Println(err)
+    }
+
+    fmt.Println(pstat) //signal: killed
+}
+</code></pre>
+
+<p>type ProcessState     //ProcessState存储了Wait函数报告的进程信息</p>
+
+<pre><code class="language-go">type ProcessState struct {
+    pid    int                
+    status syscall.WaitStatus
+    rusage *syscall.Rusage
+}
+</code></pre>
+
+<p>func (p *ProcessState) Exited() bool　　　　　　// 判断程序是否<span style="color:#FF0000">已经退出</span>
+func (p *ProcessState) Pid() int                                //返回退出进程的pid
+func (p *ProcessState) String() string                     //获取进程状态的字符串表示
+func (p *ProcessState) Success() bool                    //判断程序是否<span style="color:#FF0000">成功退出，而Exited则仅仅只是判断其是否退出</span>
+func (p *ProcessState) Sys() interface{}                //返回有关进程的系统独立的退出信息。并将它转换为恰当的底层类型（比如Unix上的syscall.WaitStatus），主要用来获取进程退出相关资源。
+func (p *ProcessState) SysUsage() interface{}         //SysUsage返回关于退出进程的系统独立的资源使用信息。主要用来获取进程使用系统资源
+func (p *ProcessState) SystemTime() time.Duration      //获取退出进程的内核态cpu使用时间
+func (p *ProcessState) UserTime() time.Duration     //返回退出进程和子进程的用户态CPU使用时间</p>
+
+<pre><code class="language-go">func main() {
+    attr := &amp;os.ProcAttr{
+        Files: []*os.File{os.Stdin, os.Stdout, os.Stderr}, //其他变量如果不清楚可以不设定
+    }
+    p, err := os.StartProcess(&quot;/usr/bin/vim&quot;, []string{&quot;/usr/bin/vim&quot;, &quot;tmp.txt&quot;}, attr) //vim 打开tmp.txt文件
+    if err != nil {
+        fmt.Println(err)
+    }
+    ps, _ := p.Wait()　　//当关闭vim打开的tmp.txt时，进程就结束了
+    fmt.Println(ps) 　　//exit status 0
+    if ps.Exited() {
+        fmt.Println(ps.Pid())        //536
+        fmt.Println(ps.String())     // exit status 0
+        fmt.Println(ps.Success())    //true
+        fmt.Println(ps.Sys())        //0
+        fmt.Println(ps.SysUsage())   //&amp;{{0 313157} {0 42898} 29164 0 0 0 7745 41 0 10736 240 0 0 0 1238 143}
+        fmt.Println(ps.SystemTime()) // 42.898ms
+        fmt.Println(ps.UserTime())   //313.157ms
+    }
+}
+</code></pre>
+
+<p>type Signal</p>
+
+<pre><code class="language-go">type Signal interface {
+    String() string
+    Signal() // 同其他字符串做区别
+}
+</code></pre>
+
+<p>代表操作系统的信号．底层的实现是操作系统独立的：在Unix中是syscal.Signal．</p>
+
+<pre><code class="language-go">var (
+    Interrupt Signal = syscall.SIGINT
+    Kill      Signal = syscall.SIGKILL
+)
+</code></pre>
+
+<p>在所有系统中都能够使用的是interrupe,给进程发送一个信号，强制杀死该进程
+type SyscallError　//SyscallError记录了一个特定系统调用的错误，主要用来返回SyscallError的字符串表示</p>
+
+<pre><code class="language-go">type SyscallError struct {
+    Syscall string
+    Err     error
+}
+</code></pre>
+
+<p>func (e *SyscallError) Error() string　　　//返回SyscallError的字符串表示</p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/os/">/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/os/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+  (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+  		if (window.location.hostname === '127.0.0.1') return;
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'rinetd';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/os_user/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>golang中os/user包用法</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/front-end/">Front-End</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux_base/">Linux_base</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Fstm32/">嵌入式stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%9C%B4%E7%B4%A0linux/">朴素linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%AD%A3%E5%88%99/">正则</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/sort/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>golang中sort包用法</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+</body>
+</html>
+

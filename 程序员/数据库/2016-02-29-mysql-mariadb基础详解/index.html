@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+  <base href="//">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+  <title>Linux之MariaDB基础详解 - Pytool</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="Linux之MariaDB基础详解 MariaDB中文手册 远程登录 MySQL / MariaDB数据库配置教程 Mysql创建及删除用户命令 MariaDB/">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Linux之MariaDB基础详解 - Pytool">
+<meta itemprop="description" content="Linux之MariaDB基础详解 MariaDB中文手册 远程登录 MySQL / MariaDB数据库配置教程 Mysql创建及删除用户命令 MariaDB/">
+<meta itemprop="image" content="//public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux之MariaDB基础详解 - Pytool" />
+<meta property="og:description" content="Linux之MariaDB基础详解 MariaDB中文手册 远程登录 MySQL / MariaDB数据库配置教程 Mysql创建及删除用户命令 MariaDB/">
+<meta property="og:image" content="//public/avatar.png" />
+<meta property="og:url" content="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E6%95%B0%E6%8D%AE%E5%BA%93/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/" />
+
+
+
+  <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+  <link rel="canonical" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E6%95%B0%E6%8D%AE%E5%BA%93/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/">
+  <link rel='shortlink' href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E6%95%B0%E6%8D%AE%E5%BA%93/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/"/>
+  <link rel="shortcut icon" href="//public/favicon.ico"/>
+  
+<link rel="stylesheet" id="human-style-css" href="./wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="./wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="./wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="./wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="./public/highlight/styles/github.css">
+<script src="./public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<link rel="stylesheet" id="human-style-css3" href="./wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="./public/font/hack/css/hack.min.css">
+
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="./assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="./assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="./assets/js/myblog.js"></script>
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//" class="nav-cs-icon">
+        <img width="40" height="40" src="/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/">首页</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/linux%e5%9f%ba%e7%a1%80/">Linux基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">Post</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%a5%87%e7%9c%9f%e5%bc%82%e5%ae%9d/">奇真异宝</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b5%8c%e5%85%a5%e5%bc%8f%e5%bc%80%e5%8f%91/">嵌入式开发</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4/">常用命令</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%b7%a5%e5%85%b7/">常用工具</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e6%96%87%e6%9c%ac%e7%bc%96%e8%be%91%e5%99%a8/">文本编辑器</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%a8%8b%e5%ba%8f%e5%91%98/">程序员</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%bc%96%e7%a8%8b%e5%9f%ba%e7%a1%80/">编程基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e8%bd%ac%e8%bd%bd/">转载</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e9%bb%91%e5%ae%a2%e6%8a%80%e6%9c%af/">黑客技术</a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">归档</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//" rel="home">
+              <img style="border-radius: 50%;width:72px;height:72px;margin:0 auto;" alt="rinetd" src="/public/avatar.png"></img>
+              Pytool
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="category tag">数据库</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Linux之MariaDB基础详解</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年02月26日 15:30:01 · 8103 Words ·
+                    ~17min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/%e7%a8%8b%e5%ba%8f%e5%91%98/%e6%95%b0%e6%8d%ae%e5%ba%93/2016-02-29%20mysql%20MariaDB%e5%9f%ba%e7%a1%80%e8%af%a6%e8%a7%a3.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<p><a href="http://www.jianshu.com/p/e59afa955a2d">Linux之MariaDB基础详解</a>
+<a href="http://www.zhdba.com/mysqlops/2013/08/16/mariadb-cn_1001/">MariaDB中文手册</a>
+<a href="http://www.111cn.net/database/MongoDB/93332.htm">远程登录 MySQL / MariaDB数据库配置教程</a>
+<a href="http://www.bitscn.com/pdb/mysql/201407/226089.html">Mysql创建及删除用户命令</a>
+<a href="http://www.it165.net/database/html/201404/6158.html">MariaDB/MySQL之用户管理及忘记数据管理员密码解决办法</a>
+<a href="http://www.jb51.net/article/39454.htm">MySQL——修改root密码的4种方法</a>
+[](<a href="https://tinpont.com/2017/fix-yum-download-mariadb-slow/">https://tinpont.com/2017/fix-yum-download-mariadb-slow/</a>)</p>
+
+<h2 id="镜像解决方案">镜像解决方案</h2>
+
+<pre><code>创建并编辑MariaDB的源配置
+</code></pre>
+
+<p>sudo vi /etc/yum.repos.d/MariaDB.repo</p>
+
+<p>写入配置文件</p>
+
+<h1 id="mariadb-10-1-centos-repository-list-created-2016-12-31-08-44-utc">MariaDB 10.1 CentOS repository list - created 2016-12-31 08:44 UTC</h1>
+
+<h1 id="http-downloads-mariadb-org-mariadb-repositories"><a href="http://downloads.mariadb.org/mariadb/repositories/">http://downloads.mariadb.org/mariadb/repositories/</a></h1>
+
+<p>[mariadb]
+name = MariaDB
+baseurl = <a href="https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.1/centos7-amd64">https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.1/centos7-amd64</a>
+gpgkey = <a href="https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB">https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB</a>
+gpgcheck = 1</p>
+
+<p>执行安装命令</p>
+
+<p>sudo yum install mariadb-server</p>
+
+<p>如果在用阿里云的服务器，可以将上述配置中的域名替换成</p>
+
+<pre><code>http://mirrors.aliyun.com/
+</code></pre>
+
+<p>以上yum配置经修改后同样的适用于其他源，详细内容请往下看
+sudo apt-get install mariadb-client
+yum -y install MariaDB-server MariaDB-client<br />
+sudo apt-get install mariadb-galera-server galera</p>
+
+<h2 id="统计">统计</h2>
+
+<p><code>SELECT ktitle,COUNT(*) FROM</code>ultrax<code>.</code>pre_fx_vote_log<code>WHERE</code>kid<code>= '89'</code></p>
+
+<h2 id="mysql查询数据表中某字段重复出现的次数-并按照次数排序">Mysql查询数据表中某字段重复出现的次数，并按照次数排序</h2>
+
+<p><code>select [name],count(*) from [data] group by [name] order by count(*) DESC limit 10</code>
+<code>SELECT ktitle,COUNT(*) FROM</code>ultrax<code>.</code>pre_fx_vote_log<code>group by ktitle order by count(*) DESC limit 15
+</code></p>
+
+<h2 id="开启-mysql-查询日志">开启 mysql 查询日志</h2>
+
+<p>| general_log                               | ON                                                                                                           |
+| general_log_file                          | /var/log/mysql/mysql.log</p>
+
+<p>mysql&gt;set global general_log_file=&lsquo;/tmp/general.log&rsquo;;</p>
+
+<p>mysql&gt;set global general_log=on;</p>
+
+<p>mysql&gt;set global general_log=off;</p>
+
+<pre><code># 	 &amp;&amp; sed -i -e &quot;s/^#general_log_file/general_log_file/&quot; /etc/mysql/my.cnf\
+# 	 &amp;&amp; sed -i -e &quot;s/^#general_log/general_log/&quot; /etc/mysql/my.cnf\
+# 	 &amp;&amp; sed -i -e &quot;s/^#log_slow_queries/log_slow_queries/&quot; /etc/mysql/my.cnf\
+# 	 &amp;&amp; sed -i -e &quot;s/^#long_query_time.*/long_query_time = 1/&quot; /etc/mysql/my.cnf
+</code></pre>
+
+<h2 id="mysql-配置超时时间">mysql 配置超时时间</h2>
+
+<p>show global variables like &lsquo;%timeout%&rsquo;;</p>
+
+<p>设置超时时间，临时生效（以秒为单位）：
+  msyql&gt; set global wait_timeout=86400;
+  msyql&gt; set global interactive_timeout=86400;
+修改配置文件/etc/my.cnf.d/server.conf
+        在 [mysqld]下添加
+            wait_timeout=86400</p>
+
+<pre><code>            sed -i 's/^interactive-timeout.*/interactive-timeout = 86400/' /etc/my.cnf
+            sed -i 's/^wait-timeout.*/wait-timeout = 86400/' /etc/my.cnf
+</code></pre>
+
+<h1 id="mysql-编码问题">mysql 编码问题</h1>
+
+<p>解决: 保持mariadb 版本一致  mariadb:5.5
+如下脚本创建数据库yourdbname，并制定默认的字符集是utf8: <code>CREATE DATABASE IF NOT EXISTS yourdbname DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</code>
+COLLATE utf8_general_ci:  数据库校对规则。该三部分分别为数据库字符集、通用、区分大小写。
+utf8_unicode_ci比较准确，utf8_general_ci速度比较快。通常情况下 utf8_general_ci的准确性就够我们用的了，在我看过很多程序源码后，发现它们大多数也用的是utf8_general_ci，所以新建数据 库时一般选用utf8_general_ci就可以了。
+如果要创建默认gbk字符集的数据库可以用下面的sql:<code>create database yourdb DEFAULT CHARACTER SET gbk COLLATE gbk_chinese_ci;</code></p>
+
+<h1 id="error-1045-28000-access-denied-for-user-root-172-17-0-4-using-password-yes">ERROR 1045 (28000): Access denied for user &lsquo;root&rsquo;@&lsquo;172.17.0.4&rsquo; (using password: YES)</h1>
+
+<p>解决方法：密码输入错误，仔细检查密码</p>
+
+<h1 id="权限问题-do-you-already-have-another-mysqld-server-running-on-socket-var-run-mysqld-mysqld-sock">权限问题 Do you already have another mysqld server running on socket: /var/run/mysqld/mysqld.sock ?</h1>
+
+<pre><code>`id mysql`
+`uid=27(mysql) gid=27(mysql) groups=27(mysql)`
+`uid=33(www-data) gid=33(www-data) groups=33(www-data)`
+</code></pre>
+
+<ol>
+<li><code>sudo userdel mysql</code></li>
+<li><code>sudo groupadd -r -g 999 mysql &amp;&amp; sudo useradd -r -u 999  -c mysql -g mysql -d /var/lib/mysql -s /usr/sbin/nologin mysql</code></li>
+<li><code>sudo gpasswd -a ${USER} mysql</code></li>
+<li><code>sudo chown -R mysql:mysql /var/lib/mysql /var/run/mysqld</code></li>
+<li><code>docker run -d --name mysql -v $PWD/database/mysql:/var/lib/mysql -v /var/run/mysqld:/var/run/mysqld -e MYSQL_ROOT_PASSWORD=root mysql</code></li>
+<li><code>docker exec -it mysql bash</code>
+<code>usermod -u 999 mysql</code>
+<code>groupmod -g 999 mysql</code>
+find / -user 1005 -exec chown -h foo {} \;
+find / -group 2000 -exec chgrp -h foo {} \;</li>
+</ol>
+
+<h1 id="docker">docker</h1>
+
+<p><code>sudo chown -R 999:999 /var/run/mysqld</code></p>
+
+<p><code>docker run -d --restart=always --name mariadb -p 3306:3306 -e MYSQL_ROOT_PASSWORD=LinyiBR@2017 -v /docker/mysql:/var/lib/mysql rinetd/mariadb</code></p>
+
+<h1 id="mysql数据库从gbk转换到utf-8最简单解决方案">MySQL数据库从GBK转换到UTF-8最简单解决方案</h1>
+
+<p>&ndash;default-character-set=utf8 指定导出sql文件编码utf8格式</p>
+
+<p>1、使用mysqldump导出 [表结构]，如：
+      mysqldump -d -u root -p 数据库名 &gt;/root/struct.sql</p>
+
+<p>2、使用mysqldump以[指定utf8编码]导出[表数据]（其中&ndash;default-character-set=utf8 为所需编码，可按需修改），如：</p>
+
+<pre><code>  mysqldump --default-character-set=utf8 -t -u root -p 数据库名 &gt;/root/data.sql
+</code></pre>
+
+<p>3、打开表结构转存（/root/struct.sql），将所有CREATE TABLE中的编码替换为所需编码；
+     <code>DEFAULT CHARSET=gbk; =&gt;   DEFAULT CHARSET=utf8 ;</code></p>
+
+<p>4、进入MySQL控制台，执行：
+      source /root/struct.sql
+      source /root/data.sql
+     即可完成。</p>
+
+<p>导出表时，如果出现1044错误，添加   &ndash;skip-lock-tables  可以解决：
+mysqldump -d -u root -p 数据库名 &ndash;skip-lock-tables &gt;/root/struct.sql
+mysqldump &ndash;default-character-set=utf8 -t -u root -p 数据库名 &ndash;skip-lock-tables &gt;/root/data.sql</p>
+
+<h2 id="dedecms-gbk-转-utf8">dedecms GBK 转 UTF8</h2>
+
+<p>docker exec -i mariadb mysqldump -d -uroot -pLinyiBR@2017 guoan &gt;guoanstuct.sql
+docker exec -i mariadb mysqldump -t &ndash;default-character-set=utf8 -uroot -pLinyiBR@2017 guoan &gt;guoan.sql</p>
+
+<p>##MySQL 如何设置不区分表名大小写。
+一般情况下 Linux 服务器默认安装 MySQL 的数据库表名是区分大小写的，如果 ECS 上安装的 MySQL 不支持表名区分大小下，则按照如下方法操作即可：</p>
+
+<p>用 root 登录，修改 /etc/my.cnf （注意：以实际 my.cnf 配置文件路径为准）
+在 [mysqld] 节点下，加入一行： <code>lower_case_table_names=1</code>
+重启 MySQL 即可；</p>
+
+<p>GRANT SELECT, INSERT, UPDATE, REFERENCES, DELETE, CREATE, DROP, ALTER, INDEX, TRIGGER, CREATE VIEW, SHOW VIEW, EXECUTE, ALTER ROUTINE, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, EVENT
+ ON <code>wechat</code>.* TO &lsquo;wechat&rsquo;;</p>
+
+<p>GRANT GRANT OPTION ON <code>wechat</code>.* TO &lsquo;wechat&rsquo;;</p>
+
+<p>grant select, insert, update, delete, create, drop, references, index, alter,
+        create temporary tables, lock tables, create view, show view, create routine,
+        alter routine, execute, trigger<br />
+on <code>Sample</code>.* to &lsquo;acme-manager&rsquo;@&lsquo;%&rsquo;;</p>
+
+<p>grant create,select,insert,update,create view,show view,event,alter,trigger,index,alter on fgg.* to &lsquo;allen2016&rsquo;@&lsquo;%&rsquo; identified by
+&lsquo;allen2016soft*88&rsquo; with grant option;
+flush privileges;</p>
+
+<h2 id="执行命令">执行命令</h2>
+
+<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;show databases;&quot;</code>
+<code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;show databases; select user,host from mysql.user;&quot;</code>`</p>
+
+<h2 id="创建数据库">创建数据库</h2>
+
+<p><code>CREATE DATABASE IF NOT EXISTS</code>tpcms<code>DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci</code>
+<code>CREATE DATABASE IF NOT EXISTS</code>guoan<code>DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci</code></p>
+
+<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;CREATE DATABASE IF NOT EXISTS ytjxc DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci&quot;</code>
+<code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;CREATE DATABASE IF NOT EXISTS ytjxc DEFAULT CHARACTER SET utf8 &quot;</code></p>
+
+<h2 id="创建并授权用户">创建并授权用户</h2>
+
+<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'XXXX' WITH GRANT OPTION; FLUSH PRIVILEGES;&quot;</code></p>
+
+<h1 id="docker-有个坑-内网ip不一定都是172-0-0-x-还有可能是192-0-0-x-所以-user-1-2-保险起见用-user">docker 有个坑 内网ip不一定都是172.0.0.x 还有可能是192.0.0.x 所以 &lsquo;user&rsquo;@&lsquo;1_2.%&rsquo; 保险起见用 &lsquo;user&rsquo;@&lsquo;%&rsquo;</h1>
+
+<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;GRANT ALL PRIVILEGES  ON *.* TO 'user'@'1_2.%' IDENTIFIED BY 'XXXX'; FLUSH PRIVILEGES;&quot;</code></p>
+
+<h2 id="备份全部数据库">备份全部数据库</h2>
+
+<p><code>docker exec -it mariadb mysqldump -uroot -proot --all-databases &gt;bak.sql</code></p>
+
+<h2 id="备份指定数据库">备份指定数据库</h2>
+
+<p><code>docker exec -it mariadb mysqldump -uroot -proot chengzhi &gt;bak.sql</code></p>
+
+<p>#恢复指定数据库
+<code>docker exec -i wuye_mysql mysql -uroot -ptoor sanyang &lt;sanyang2016-4-28.sql</code></p>
+
+<h2 id="mariadb-无法启动-用户-权限">mariadb 无法启动 [用户 + 权限]</h2>
+
+<p><code>sudo chown -R 999:999 mysql</code>
+ <code>rm -f /var/lib/mysql/aria_log*</code>
+ <code>rm -f /var/lib/mysql/ib_logfile*</code></p>
+
+<h2 id="mysql-执行shell命令">mysql 执行shell命令</h2>
+
+<p>mysql&gt; <code>system ifconfig -a</code></p>
+
+<h2 id="修复mariadb-数据库">修复mariadb 数据库</h2>
+
+<p><code>mysql_upgrade -u root -p</code></p>
+
+<h2 id="初始化数据">初始化数据</h2>
+
+<p><code>mysql_install_db --defaults-file=/etc/mysql/my.cnf --datadir=/var/data/db/mariadb/ --user=mysql</code></p>
+
+<h2 id="登录数据库">登录数据库</h2>
+
+<p><code>mysql -h127.0.0.1 -P3306 -uroot  -proot -e 'show databases;'</code>
+<code>mysql -S /var/run/mysqld/mysqld.sock -uroot -p</code></p>
+
+<h2 id="mariadb-允许远程访问方式">mariadb 允许远程访问方式</h2>
+
+<p><code>mysql -h 139.129.108.163 -u kyxx -p</code></p>
+
+<h2 id="创建数据库-1">创建数据库</h2>
+
+<p>CREATE DATABASE IF NOT EXISTS yourdbname DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</p>
+
+<p>create database yourdb DEFAULT CHARACTER SET gbk COLLATE gbk_chinese_ci;</p>
+
+<h2 id="创建用户并授权">创建用户并授权</h2>
+
+<p>//把所有用户的权限授予username@&lsquo;hostname&rsquo;,密码是your_passwd
+  <code>mysql&gt;grant all on *.* to username@'hostname' indentified by [password]'your_passwd'</code></p>
+
+<p>命令:GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo;
+  privileges - 用户的操作权限,如 SELECT INSERT UPDATE   DELETE 等.如果要授予所的权限则使用ALL.;
+                select,insert,update,delete,create,drop,index,alter,grant,references,reload,shutdown,process,file
+  databasename - 数据库名,
+  tablename-表名,如果要授予该用户对所有数据库和表的相应操作权限则可用<em>表示, 如</em>.*</p>
+
+<p>例子:
+  GRANT SELECT, INSERT ON test.user TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;
+  GRANT ALL ON <em>.</em> TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;</p>
+
+<p>注意:用以上命令授权的用户不能给其它用户授权,如果想让该用户可以授权,用以下命令:
+  GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo; WITH GRANT OPTION;
+  <code>GRANT ALL PRIVILEGES ON *.* TO 'kyxx'@'123.132.%.%' IDENTIFIED BY '888888' WITH GRANT OPTION; FLUSH PRIVILEGES;</code>
+  #root可从任何IP登陆，注意修改密码:&lsquo;888888&rsquo;
+  <code>GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '888888' WITH GRANT OPTION;</code>
+  #root可从指定IP登陆，注意修改密码:&lsquo;888888&rsquo;、IP:&lsquo;192.168.1.188&rsquo;
+  <code>GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.168.1.188' IDENTIFIED BY '888888' WITH GRANT OPTION;</code>
+  GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER ON <em>.</em> TO &lsquo;huijin&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &lsquo;Huijin2017@!&rsquo;; FLUSH PRIVILEGES;</p>
+
+<h2 id="数据库备份恢复">数据库备份恢复</h2>
+
+<p><code>show databases;</code>
+  <code>mysqldump -uroot -p database &gt;bak.sql</code>
+  <code>mysqldump -uroot -p -A &gt;bak.sql</code>
+  <code>show variables like 'open%';</code></p>
+
+<p>mysql&gt; source /var/lib/mysql/ghost.sql</p>
+
+<p>关于导入导出docker中的mysql数据库
+2.执行导出（备份）数据库命令
+由第一步的结果可知，我们的mysql运行在一个叫mysql-online的docker容器中。而我们要备份的数据库就在里面，叫做test_db。mysql的用户名密码均为root，我们将文件备份到/opt/sql_bak文件夹下。
+    docker exec -it mysql-online mysqldump -uroot -proot test_db &gt; /opt/sql_bak/test_db.sql
+3.执行导入（恢复）数据库命令：
+目的：由第二步导出的sql文件，复制一个数据库。
+首先我们进去，创建一个空白的数据库：
+    docker exec -it mysql-online mysql -uroot -proot
+    create database test_db_copy;</p>
+
+<p>然后我们将sql文件导入：
+    docker exec -i mysql-online mysql -uroot -proot test_db_copy &lt; /opt/sql_bak/test_db.sql</p>
+
+<h2 id="注意-这里需要将参数-it-更换为-i-否则会报错-cannot-enable-tty-mode-on-non-tty-input">注意：这里需要将参数 -it 更换为 -i ，否则会报错：&rdquo;cannot enable tty mode on non tty input&rdquo;</h2>
+
+<h2 id="查询用户">查询用户</h2>
+
+<pre><code>0. ` show databases; `
+1. ` show tables from mysql; `
+2. ` show columns from mysql.user; `
+3. ` select user,host,authentication_string from mysql.user; `
+</code></pre>
+
+<p>show grants;
+1. show tables或show tables from database_name; &ndash; 显示当前数据库中所有表的名称。
+2. show databases; &ndash; 显示mysql中所有数据库的名称。
+3. show columns from table_name from database_name; 或show columns from database_name.table_name; &ndash; 显示表中列名称。
+4. show grants for user_name; &ndash; 显示一个用户的权限，显示结果类似于grant 命令。
+5. show index from table_name; &ndash; 显示表的索引。
+6. show status; &ndash; 显示一些系统特定资源的信息，例如，正在运行的线程数量。
+7. show variables; &ndash; 显示系统变量的名称和值。
+8. show processlist; &ndash; 显示系统中正在运行的所有进程，也就是当前正在执行的查询。大多数用户可以查看他们自己的进程，但是如果他们拥有process权限，就可以查看所有人的进程，包括密码。
+9. show table status; &ndash; 显示当前使用或者指定的database中的每个表的信息。信息包括表类型和表的最新更新时间。
+10. show privileges; &ndash; 显示服务器所支持的不同权限。
+11. show create database database_name; &ndash; 显示create database 语句是否能够创建指定的数据库。
+12. show create table table_name; &ndash; 显示create database 语句是否能够创建指定的数据库。
+13. show engines; &ndash; 显示安装以后可用的存储引擎和默认引擎。
+14. show innodb status; &ndash; 显示innoDB存储引擎的状态。
+15. show logs; &ndash; 显示BDB存储引擎的日志。
+16. show warnings; &ndash; 显示最后一个执行的语句所产生的错误、警告和通知。
+17. show errors; &ndash; 只显示最后一个执行语句所产生的错误。
+18. show [storage] engines; &ndash;显示安装后的可用存储引擎和默认引擎。</p>
+
+<p>################################################################################
+##MySQL——修改root密码的N种方法
+1. MySQL忘记管理员密码的解决办法
+ /etc/init.d/mysql stop
+  mysqld_safe &ndash;user=mysql &ndash;skip-grant-tables &ndash;skip-networking &amp;
+mysqld &ndash;skip-grant-tables &amp;
+mysql -u root mysql
+mysql&gt;use mysql
+mysql&gt;update user set password=password(&ldquo;toor&rdquo;) where user=&ldquo;root&rdquo;;
+mysql&gt;flush privileges;</p>
+
+<ol>
+<li><p>用SET PASSWORD命令
+首先登录MySQL。
+格式：mysql&gt; set password for 用户名@localhost = password(&lsquo;新密码&rsquo;);
+例子：mysql&gt; set password for root@localhost = password(&lsquo;123&rsquo;);</p></li>
+
+<li><p>用mysqladmin
+格式：mysqladmin -u用户名 -p旧密码 password 新密码
+例子：mysqladmin -uroot -p123456 password 123
+修改root密码
+<code>mysqladmin -u root password 'root'</code></p></li>
+
+<li><p>用UPDATE直接编辑user表
+首先登录MySQL。
+mysql&gt; use mysql;
+mysql&gt; update user set password=password(&lsquo;123&rsquo;) where user=&lsquo;root&rsquo; and host=&lsquo;localhost&rsquo;;
+mysql&gt; flush privileges;</p></li>
+</ol>
+
+<p>/etc/init.d/mysql restart
+mysql -uroot -p
+###############################################################################
+创建用户
+CREATE USER foo;
+INSERT INTO user(User, Host, Password) VALUES(&lsquo;foo&rsquo;, &lsquo;%&rsquo;, Password(&lsquo;hello&rsquo;));
+SELECT User, Host, Password FROM user WHERE User = &lsquo;foo&rsquo;;</p>
+
+<p>删除用户
+DROP USER A;
+drop user &lsquo;kyxx&rsquo;@&lsquo;123.132.226.%&rsquo;;
+DELETE FROM user WHERE User = &lsquo;FOO&rsquo;;</p>
+
+<p>创建备份用户
+CREATE USER &lsquo;backupuser&rsquo;@&lsquo;localhost&rsquo; IDENTIFIED BY &lsquo;password&rsquo;;
+GRANT SELECT,SHOW VIEW,LOCK TABLES,RELOAD,REPLICATION CLIENT ON <em>.</em> TO &lsquo;backupuser&rsquo;@&lsquo;localhost&rsquo;;
+FLUSH PRIVILEGES;</p>
+
+<p>用户设置密码
+SET PASSWORD FOR A = Password(&lsquo;hello&rsquo;);</p>
+
+<p>重命名用户
+RENAME USER a TO A;
+UPDATE user SET User = &lsquo;FOO&rsquo; WHERE User = &lsquo;foo&rsquo;;
+SELECT User, Host, Password FROM user WHERE User = &lsquo;FOO&rsquo;;</p>
+
+<p>查看用户权限
+SHOW GRANTS FOR A;</p>
+
+<p>修改用户权限
+GRANT SELECT ON crashcourse.* TO A;
+grant all on <em>.</em> to homestead;
+解除用户权限
+REVOKE SELECT ON crashcourse.* FROM A;</p>
+
+<h2 id="一-用户授权">一、用户授权</h2>
+
+<p>1、我们可以直接创建用户账：
+//使用password关键字的话，可以加密密码
+<code>mysql&gt;create user username@'hostname' [identified by [password]'your_passwd']</code></p>
+
+<p>命令:CREATE USER &lsquo;username&rsquo;@&lsquo;host&rsquo; IDENTIFIED BY &lsquo;password&rsquo;;
+说明:
+username - 你将创建的用户名, host - 指定该用户在哪个主机上可以登陆,如果是本地用户可用localhost, 如果想让该用户可以从任意远程主机登陆,可以使用通配符%.
+password - 该用户的登陆密码,密码可以为空,如果为空则该用户可以不需要密码登陆服务器.
+例子:
+CREATE USER &lsquo;root&rsquo;@&lsquo;localhost&rsquo; IDENTIFIED BY &lsquo;123456&rsquo;;
+CREATE USER &lsquo;username&rsquo;@&lsquo;192.168.1.10_&rsquo; IDENDIFIED BY &lsquo;123456&rsquo;;
+CREATE USER &lsquo;username&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &lsquo;123456&rsquo;;
+CREATE USER &lsquo;username&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &ldquo;;
+CREATE USER &lsquo;username&rsquo;@&lsquo;%&rsquo;;</p>
+
+<p>2、也可以在授权的时候创建用户帐户：
+//把所有用户的权限授予username@&lsquo;hostname&rsquo;,密码是your_passwd
+<code>mysql&gt;grant all on *.* to username@'hostname' indentified by [password]'your_passwd'</code></p>
+
+<p>命令:GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo;
+privileges - 用户的操作权限,如 SELECT INSERT UPDATE DELETE 等.如果要授予所的权限则使用ALL.;
+databasename - 数据库名,
+tablename-表名,如果要授予该用户对所有数据库和表的相应操作权限则可用<em>表示, 如</em>.*</p>
+
+<p>例子:
+GRANT SELECT, INSERT ON test.user TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;
+GRANT ALL ON <em>.</em> TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;</p>
+
+<p>注意:用以上命令授权的用户不能给其它用户授权,如果想让该用户可以授权,用以下命令:
+GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo; WITH GRANT OPTION;</p>
+
+<p>3、如果需要更改用户名和密码的话：
+//更改用户名
+<code>mysql&gt;rename user old_name@'old_host' to new_name@'new_host'</code>
+//修改密码
+<code>mysql&gt;set password for user_name@'host'=password（'new_passwd'）</code></p>
+
+<p>命令:
+SET PASSWORD FOR &lsquo;username&rsquo;@&lsquo;host&rsquo; = PASSWORD(&lsquo;newpassword&rsquo;);
+如果是当前登陆用户用SET PASSWORD = PASSWORD(&ldquo;newpassword&rdquo;);
+例子: SET PASSWORD FOR &lsquo;username&rsquo;@&lsquo;%&rsquo; = PASSWORD(&ldquo;123456&rdquo;);</p>
+
+<p>4.撤销用户权限
+命令: REVOKE privilege ON databasename.tablename FROM &lsquo;username&rsquo;@&lsquo;host&rsquo;;
+说明: privilege, databasename, tablename - 同授权部分.
+例子: REVOKE SELECT ON <em>.</em> FROM &lsquo;username&rsquo;@&lsquo;%&rsquo;;
+注意: 假如你在给用户&rsquo;username&rsquo;@&lsquo;%&lsquo;授权的时候是这样的(或类似的):GRANT SELECT ON test.user TO &lsquo;username&rsquo;@&lsquo;%&rsquo;, 则在使用REVOKE SELECT ON <em>.</em> FROM &lsquo;username&rsquo;@&lsquo;%&rsquo;;命令并不能撤销该用户对test数据库中user表的SELECT 操作.相反,如果授权使用的是GRANT SELECT ON <em>.</em> TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;则REVOKE SELECT ON test.user FROM &lsquo;username&rsquo;@&lsquo;%&rsquo;;命令也不能撤销该用户对test数据库中user表的Select 权限.
+具体信息可以用命令SHOW GRANTS FOR &lsquo;username&rsquo;@&lsquo;%&rsquo;; 查看.</p>
+
+<p>五.删除用户
+命令: DROP USER &lsquo;username&rsquo;@&lsquo;host&rsquo;;</p>
+
+<p>##SQL测试</p>
+
+<pre><code>1.新建用户。
+//登录MYSQL
+@&gt;mysql -u root -p
+@&gt;密码
+//创建用户
+mysql&gt; mysql&gt; insert into mysql.user(Host,User,Password,ssl_cipher,x509_issuer,x509_sub
+ject) values(&quot;localhost&quot;,&quot;phplamp&quot;,password(&quot;1234&quot;),'','','');
+这样就创建了一个名为：phplamp 密码为：1234 的用户。
+然后登录一下。
+mysql&gt;exit;
+@&gt;mysql -u phplamp -p
+@&gt;输入密码
+mysql&gt;登录成功
+2.为用户授权。
+//登录MYSQL（有ROOT权限）。我里我以ROOT身份登录.
+@&gt;mysql -u root -p
+@&gt;密码
+//首先为用户创建一个数据库(phplampDB)
+mysql&gt;create database phplampDB;
+//授权phplamp用户拥有phplamp数据库的所有权限。
+&gt;grant all privileges on phplampDB.* to phplamp@localhost identified by '1234';
+//刷新系统权限表
+mysql&gt;flush privileges;
+mysql&gt;其它操作
+/*
+如果想指定部分权限给一用户，可以这样来写:
+mysql&gt;grant select,update on phplampDB.* to phplamp@localhost identified by '1234';
+//刷新系统权限表。
+mysql&gt;flush privileges;
+*/
+3.删除用户。
+@&gt;mysql -u root -p
+@&gt;密码
+mysql&gt;Delete FROM user Where User=&quot;phplamp&quot; and Host=&quot;localhost&quot;;
+mysql&gt;flush privileges;
+//删除用户的数据库
+mysql&gt;drop database phplampDB;
+4.修改指定用户密码。
+@&gt;mysql -u root -p
+@&gt;密码
+mysql&gt;update mysql.user set password=password('新密码') where User=&quot;phplamp&quot; and Host=&quot;localhost&quot;;
+mysql&gt;flush privileges;
+5.列出所有数据库
+mysql&gt;show database;
+6.切换数据库
+mysql&gt;use '数据库名';
+7.列出所有表
+mysql&gt;show tables;
+8.显示数据表结构
+mysql&gt;describe 表名;
+9.删除数据库和数据表
+mysql&gt;drop database 数据库名;
+
+</code></pre>
+
+<hr />
+
+<p>&ndash; 查看MySQL的状态<br />
+status;<br />
+&ndash; 显示支持的引擎<br />
+show engines;<br />
+&ndash; 显示所有数据库<br />
+show databases;<br />
+&ndash; 切换数据库上下文,即设置当前会话的默认数据库<br />
+use mysql;<br />
+&ndash; 显示本数据库所有的表<br />
+show tables;<br />
+&ndash; 显示表中列名称
+show columns from table_name from database_name;
+show columns from database_name.table_name;
+&ndash; 显示一个用户的权限，显示结果类似于grant 命令
+show grants for user_name;
+&ndash; 显示表的索引
+show index from table_name;
+&ndash; 显示变量
+show variables;
+&ndash; 显示插件
+show plugins;</p>
+
+<p>&ndash; 查第一条
+select * from table_name limit 1;
+&ndash; 查询最后一条
+select day from table_name order by id desc limit 1;
+&ndash; 查询前30条记录
+select * from table_name limit 0,30</p>
+
+<p>&ndash; 简单查询<br />
+select id,userId from t_test  where userId=&lsquo;admin&rsquo; ;
+&ndash; 创建一个表<br />
+CREATE TABLE t_test (<br />
+  id int(11) UNSIGNED NOT NULL AUTO_INCREMENT,<br />
+  userId char(36),<br />
+  lastLoginTime timestamp,<br />
+  PRIMARY KEY (id)<br />
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;</p>
+
+<p>&ndash; 插入测试数据<br />
+insert into t_test(userId)<br />
+    values<br />
+(&lsquo;admin&rsquo;)<br />
+,(&lsquo;haha&rsquo;)<br />
+;</p>
+
+<p>##修改数据存放目录</p>
+
+<h1 id="停止数据库">停止数据库</h1>
+
+<p>service mysql stop</p>
+
+<h1 id="创建目录-假设没有的话">创建目录,假设没有的话</h1>
+
+<p>mkdir /usr/local/ieternal/mysql_data</p>
+
+<h1 id="拷贝默认数据库到新的位置">拷贝默认数据库到新的位置</h1>
+
+<h1 id="a-命令是将文件属性一起拷贝-否则各种问题">-a 命令是将文件属性一起拷贝,否则各种问题</h1>
+
+<p>cp -a /var/lib/mysql /usr/local/ieternal/mysql_data</p>
+
+<h1 id="备份原来的数据">备份原来的数据</h1>
+
+<p>cp -a /etc/my.cnf /etc/my.cnf_original</p>
+
+<h1 id="其实查看-etc-my-cnf-文件可以发现">其实查看 /etc/my.cnf 文件可以发现</h1>
+
+<h1 id="mariadb-的此文件之中只有一个包含语句">MariaDB 的此文件之中只有一个包含语句</h1>
+
+<h1 id="所以需要修改的配置文件为-etc-my-cnf-d-server-cnf">所以需要修改的配置文件为 /etc/my.cnf.d/server.cnf</h1>
+
+<p>cp /etc/my.cnf.d/server.cnf /etc/my.cnf.d/server.cnf_original<br />
+vim /etc/my.cnf.d/server.cnf</p>
+
+<h1 id="在文件的-mysqld-节下添加内容">在文件的 mysqld 节下添加内容</h1>
+
+<pre><code>[mysqld]  
+datadir=/usr/local/ieternal/mysql_data/mysql  
+socket=/var/lib/mysql/mysql.sock  
+#default-character-set=utf8  
+character_set_server=utf8  
+slow_query_log=on  
+slow_query_log_file=/usr/local/ieternal/mysql_data/slow_query_log.log  
+long_query_time=2  
+</code></pre>
+
+<p>其中,也只有 datadir 和 socket 比较重要; 而 default-character-set 是 mysql 自己认识的,而 mariadb5.5 就不认识,相当于变成了 character_set_server</p>
+
+<p>服务器操作系统：CentOS 7
+Web 服务器 IP 地址：192.168.33.61
+数据库服务器 IP 地址：192.168.33.63</p>
+
+<h2 id="允许外网访问">允许外网访问</h2>
+
+<p>第一步：编辑 my.cnf
+vi /etc/my.cnf
+vi /etc/my.cnf.d/server.cnf
+在 [mysqld] 这个区域的下面，找到 bind-address ，如果没有，就去添加一行：
+[mysqld]
+bind-address=192.168.33.63</p>
+
+<p>service mariadb restart
+systemctl restart mariadb
+sudo /etc/init.d/mysql start</p>
+
+<h2 id="第二步-添加远程用户">第二步：添加远程用户</h2>
+
+<p><code>CREATE USER 'username'@'host' IDENTIFIED BY 'password';</code>
+现在数据库服务可以接受远程的连接，不过目前还没有用户拥有远程连接的权限，你需要再手工去添加一个远程用户，先用 root 用户登录到数据库服务：
+mysql -u root -p
+然后去创建一个数据库：
+create database drupal;
+再创建一个新的用户，注意这个用户是在 Web 服务器上可以使用的用户，所以需要指定一个 Web 服务器的 IP 地址：
+<code>create user 'drupal'@'192.168.33.61' identified by 'drupal'</code>;
+也就是，drupal 这个用户，只能在 192.168.33.61 这个 IP 地址的服务器上连接到数据库服务器。再去给这个用户分配权限：
+<code>grant all privileges on drupal.* to ' drupal'@'192.168.33.61';</code>
+立即生效，再执行：
+<code>flush privileges;</code>
+##第三步：远程连接</p>
+
+<p>在 Web 服务器上，试着去登录一下数据库服务器上的数据库系统：
+mysql -u drupal -h 192.168.33.63 -p
+这里我们用 -h 选择，指定了一下要登录到的服务器的 IP 地址。这个 IP 地址就是数据库服务器的 IP 地址。
+如果你发看到类似下面这样的错误：
+ERROR 2003 (HY000): Can&rsquo;t connect to MySQL server on &lsquo;192.168.33.63&rsquo; (113 &ldquo;No route to host&rdquo;)
+很有可能是在数据库服务器上的防火墙的配置原因，配置一下 CentOS 7 自带的防火墙 Firewalld ：
+firewall-cmd &ndash;zone=public &ndash;add-port=3306/tcp
+完成以后，重新再到 Web 服务器上尝试连接数据库服务器。
+补充:## mariaDB 创建用户</p>
+
+<blockquote>
+<p>我假定你已经做完初始化数据库的操作了（禁掉root的远程访问）,然后在本地用root帐号连接数据库了。</p>
+</blockquote>
+
+<h2 id="mysql-u-root-p-mysql">mysql -u root -p mysql</h2>
+
+<p>a. 准备数据目录
+    以/mydata/data为例；
+b. 配置mariadb
+                    # groupadd -r -g 306 mysql
+                    # useradd -r -g 306 -u 306 mysql
+                    # tar xf mariadb-VERSION.tar.xz -C /usr/local
+                    # ln -sv mariadb-version mysql
+                    # cd /usr/local/mysql
+                    # chown -R root:mysql ./*
+                    # scripts/mysql_install_db &ndash;datadir=/mydata/data &ndash;user=mysql
+                    # cp supper-files/mysql.server /etc/rc.d/init.d/mysqld
+                    # chkconfig &ndash;add mysqld
+c. 准备配置文件
+    配置格式：类ini格式，为各程序均通过单个配置文件提供配置信息；
+    [prog_name]</p>
+
+<p>能用二进制格式安装,配置文件查找次序：
+/etc/my.cnf &ndash;&gt; /etc/mysql/my.cnf &ndash;&gt; &ndash;default-extra-file=/PATH/TO/CONF_FILE &ndash;&gt; ~/.my.cnf</p>
+
+<p>OS提供的mariadb rpm包安装的配置文件查找次序:
+/etc/mysql/my.cnf &ndash;&gt; /etc/my.cnf &ndash;&gt; &ndash;default-extra=/PATH/TO/conf_file &ndash;&gt; ~/my.cnf</p>
+
+<p>以上两者越靠后就是最后生效的.</p>
+
+<p># mkdir /etc/mysql
+  # cp support-files/my-large.cnf /etc/mysql/my.cnf</p>
+
+<p>添加三个选项：
+      [mysqld]
+      datadir = /mydata/data
+      innodb_file_per_table = on
+      skip_name_resolve = on</p>
+
+<h2 id="maridb程序的组成">MariDB程序的组成</h2>
+
+<p>MariaDB-client  客户端工具像mysql CLI,mysqldump,和其它
+MariaDB-common  符集文件和/etc/my.cnf
+MariaDB-compat  客户端旧共享库,可能老版本的MariaDB或MySQL客户端需要
+MariaDB-devel   开发header和静态库。
+MariaDB-server  服务器和服务器工具,像myisamchk和mysqlhotcopy都在这里
+MariaDB-shared  动态客户端库
+MariaDB-test    mysql-client-test可执行和mysql-test框架进行测试
+Client
+    mysql : CLI交互式客户端程序
+    mysqldump : 备份工具
+    mysqladmin: 管理工具
+    mysqlbinlog : 查看二进制日志工具
+Server
+    mysqld: 服务端进程
+    mysqld_safe : 服务端进程,默认也是运行的此进程
+    mysqld_multi : 服务端进程, 多实例
+    mysql_upgrade : 升级工具</p>
+
+<pre><code>          服务端监听的两种socket地址
+
+              ip socket
+                  监听在3306/tcp,支持远程通信
+              unix socket
+                  监听在sock文件上(/tmp/mysql.sock, /var/lib/mysql/mysql.sock),仅支持本地通信,通信主机为localhost,127.0.0.1都基于unix socket文件通信
+</code></pre>
+
+<h2 id="命令行交互式客户端程序-mysql工具">命令行交互式客户端程序&mdash;mysql工具</h2>
+
+<p><code>mysql -h127.0.0.1 -uroot  -proot1234569 -e 'show databases;'</code>
+    -uUSERNAME : 用户名,默认为root
+    -pPASSWD : 用户的密码
+    -hHOST : 服务器主机,默认为localhost
+      DB_NAME: 连接到服务端之后,指明默认数据库
+    -e &lsquo;SCRIPT&rsquo; : 连接至MYSQL运行某命令后,直接退出,并返回结果</p>
+
+<p>注意: mysql的用户帐号由两部分组成,&lsquo;username&rsquo;@&lsquo;hostname&rsquo;,其中host用于限制此用户可通过哪些主机连接当前的MSYQL服务器</p>
+
+<pre><code>  支持通配符:
+      % : 匹配任意长度的任意字符
+      172.16.%.%
+      _ : 匹配任意单个字符
+  内置命令
+      \u DB_NAME : 设定哪个库为默认数据库
+      \q : 退出
+      \d CHAR : 设定新的语句结束符
+      \g : 语句通用结束标记
+      \G : 语句结束标记,但以竖排方式显示
+      \s : 返回客户端与服务端的连接状态
+      \c : 取消命令运行
+</code></pre>
+
+<p>通过mysql协议发往服务器执行并取回结果,每个命令都必须有结束符,默认为&rdquo;;&ldquo;,示例如下:</p>
+
+<p>for i in {1..100};
+    do AGE=$[$RANDOM%100];
+    mysql -uroot -pM8T9cw -e &ldquo;insert mydb.student(id,name,age) value ($i,\&ldquo;stu$i\&ldquo;,$AGE);&rdquo;;
+done</p>
+
+<p>获取命令帮助
+    help</p>
+
+<pre><code>grant 普通数据用户，查询、插入、更新、删除 数据库中所有表数据的权利。
+
+grant select on testdb.* to common_user@’%’
+
+grant insert on testdb.* to common_user@’%’
+
+grant update on testdb.* to common_user@’%’
+
+grant delete on testdb.* to common_user@’%’
+
+或者，用一条 MySQL 命令来替代：
+
+grant select, insert, update, delete on testdb.* to common_user@’%’
+
+9&gt;.grant 数据库开发人员，创建表、索引、视图、存储过程、函数。。。等权限。
+
+grant 创建、修改、删除 MySQL 数据表结构权限。
+
+grant create on testdb.* to developer@’192.168.0.%’;
+
+grant alter on testdb.* to developer@’192.168.0.%’;
+
+grant drop on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 外键权限。
+
+grant references on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 临时表权限。
+
+grant create temporary tables on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 索引权限。
+
+grant index on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 视图、查看视图源代码 权限。
+
+grant create view on testdb.* to developer@’192.168.0.%’;
+
+grant show view on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 存储过程、函数 权限。
+
+grant create routine on testdb.* to developer@’192.168.0.%’; -- now, can show procedure status
+
+grant alter routine on testdb.* to developer@’192.168.0.%’; -- now, you can drop a procedure
+
+grant execute on testdb.* to developer@’192.168.0.%’;
+
+10&gt;.grant 普通 DBA 管理某个 MySQL 数据库的权限。
+
+grant all privileges on testdb to dba@’localhost’
+
+其中，关键字 “privileges” 可以省略。
+
+11&gt;.grant 高级 DBA 管理 MySQL 中所有数据库的权限。
+
+grant all on *.* to dba@’localhost’
+
+12&gt;.MySQL grant 权限，分别可以作用在多个层次上。
+
+1. grant 作用在整个 MySQL 服务器上：
+
+grant select on *.* to dba@localhost; -- dba 可以查询 MySQL 中所有数据库中的表。
+
+grant all on *.* to dba@localhost; -- dba 可以管理 MySQL 中的所有数据库
+
+2. grant 作用在单个数据库上：
+
+grant select on testdb.* to dba@localhost; -- dba 可以查询 testdb 中的表。
+
+3. grant 作用在单个数据表上：
+
+grant select, insert, update, delete on testdb.orders to dba@localhost;
+
+4. grant 作用在表中的列上：
+
+grant select(id, se, rank) on testdb.apache_log to dba@localhost;
+
+5. grant 作用在存储过程、函数上：
+
+grant execute on procedure testdb.pr_add to ’dba’@’localhost’
+
+grant execute on function testdb.fn_add to ’dba’@’localhost’
+注意：修改完权限以后 一定要刷新服务，或者重启服务，刷新服务用：FLUSH PRIVILEGES。
+
+
+权限表
+权限  说明
+all      
+alter    
+alter routine   使用alter procedure 和drop procedure
+create   
+create routine  使用create  procedure
+create temporary tables     使用create temporary table
+create  user     
+create view      
+delete   
+drop     
+execute     使用call和存储过程
+file    使用select into outfile  和load data infile
+grant option    可以使用grant和revoke
+index   可以使用create index 和drop index
+insert   
+lock tables     锁表
+process     使用show full processlist
+reload     使用flush
+replication client  服务器位置访问
+replocation slave   由复制从属使用
+select   
+show databases   
+show view    
+shutdown    使用mysqladmin shutdown 来关闭mysql
+super    
+update   
+usage   无访问权限
+</code></pre>
+
+<h2 id="destoon-修复会员资料未认证">destoon 修复会员资料未认证</h2>
+
+<ol>
+<li>destoon 通过edittime 是否大于0 来判断是否完善资料
+update destoon_member a inner join destoon_company b on a.userid=b.userid and b.validated=1 and a.edittime=0 set a.edittime=&lsquo;1511576804&rsquo;;</li>
+</ol>
+
+<p>select count(edittime) from destoon_member where edittime&gt;0;
+select count(company) from destoon_company where validated = 1;</p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E6%95%B0%E6%8D%AE%E5%BA%93/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/">/%E7%A8%8B%E5%BA%8F%E5%91%98/%E6%95%B0%E6%8D%AE%E5%BA%93/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+  (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+  		if (window.location.hostname === '127.0.0.1') return;
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'rinetd';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E6%B5%81%E5%AA%92%E4%BD%93/2016-02-29-easydarwin%E9%85%8D%E7%BD%AE/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>EasyDarwin 配置</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/front-end/">Front-End</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux_base/">Linux_base</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Fstm32/">嵌入式stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%9C%B4%E7%B4%A0linux/">朴素linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%AD%A3%E5%88%99/">正则</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/nginx/2016-01-01-linux%E5%91%BD%E4%BB%A4-nginx-upload/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux命令 Nginx</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+</body>
+</html>
+

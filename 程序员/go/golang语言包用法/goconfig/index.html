@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+  <base href="//">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+  <title>golang中goconfig包使用解析 - Pytool</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="chenbaoke的专栏 golang中goconfig包使用解析 注意事项 本博客隶属于 goconfig - 课时 1：goconfig 使用解析 请注意配套使用。 本博">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="golang中goconfig包使用解析 - Pytool">
+<meta itemprop="description" content="chenbaoke的专栏 golang中goconfig包使用解析 注意事项 本博客隶属于 goconfig - 课时 1：goconfig 使用解析 请注意配套使用。 本博">
+<meta itemprop="image" content="//public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="golang中goconfig包使用解析 - Pytool" />
+<meta property="og:description" content="chenbaoke的专栏 golang中goconfig包使用解析 注意事项 本博客隶属于 goconfig - 课时 1：goconfig 使用解析 请注意配套使用。 本博">
+<meta property="og:image" content="//public/avatar.png" />
+<meta property="og:url" content="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/goconfig/" />
+
+
+
+  <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+  <link rel="canonical" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/goconfig/">
+  <link rel='shortlink' href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/goconfig/"/>
+  <link rel="shortcut icon" href="//public/favicon.ico"/>
+  
+<link rel="stylesheet" id="human-style-css" href="./wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="./wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="./wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="./wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="./public/highlight/styles/github.css">
+<script src="./public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<link rel="stylesheet" id="human-style-css3" href="./wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="./public/font/hack/css/hack.min.css">
+
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="./assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="./assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="./assets/js/myblog.js"></script>
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//" class="nav-cs-icon">
+        <img width="40" height="40" src="/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/">首页</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/linux%e5%9f%ba%e7%a1%80/">Linux基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">Post</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%a5%87%e7%9c%9f%e5%bc%82%e5%ae%9d/">奇真异宝</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b5%8c%e5%85%a5%e5%bc%8f%e5%bc%80%e5%8f%91/">嵌入式开发</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4/">常用命令</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%b7%a5%e5%85%b7/">常用工具</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e6%96%87%e6%9c%ac%e7%bc%96%e8%be%91%e5%99%a8/">文本编辑器</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%a8%8b%e5%ba%8f%e5%91%98/">程序员</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%bc%96%e7%a8%8b%e5%9f%ba%e7%a1%80/">编程基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e8%bd%ac%e8%bd%bd/">转载</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e9%bb%91%e5%ae%a2%e6%8a%80%e6%9c%af/">黑客技术</a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">归档</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//" rel="home">
+              <img style="border-radius: 50%;width:72px;height:72px;margin:0 auto;" alt="rinetd" src="/public/avatar.png"></img>
+              Pytool
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="/categories/golang/" rel="category tag">golang</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">golang中goconfig包使用解析</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年10月04日 04:15:26 · 2725 Words ·
+                    ~6min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/%e7%a8%8b%e5%ba%8f%e5%91%98/Go/golang%e8%af%ad%e8%a8%80%e5%8c%85%e7%94%a8%e6%b3%95/goconfig.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<h2 id="chenbaoke的专栏-http-blog-csdn-net-chenbaoke"><a href="http://blog.csdn.net/chenbaoke">chenbaoke的专栏</a></h2>
+
+<p><a href="/chenbaoke/article/details/41683601">golang中goconfig包使用解析</a></p>
+
+<p><strong>注意事项</strong></p>
+
+<p>本博客隶属于 <a href="https://github.com/Unknwon/go-rock-libraries-showcases/tree/master/lectures/01-goconfig#%E8%AF%BE%E6%97%B6-1goconfig-%E4%BD%BF%E7%94%A8%E8%A7%A3%E6%9E%90">goconfig - 课时 1：goconfig 使用解析</a> 请注意配套使用。</p>
+
+<p>本博文为 <a href="https://github.com/Unknwon/goconfig">goconfig</a> - Go 语言 INI 解析器的配套博客，旨在通过文字结合代码示例对该库的使用方法和案例进行讲解，便于各位同学更好地使用和深入了解。</p>
+
+<h2 id="库简介">库简介</h2>
+
+<p>goconfig 是一个由 Go 语言开发的针对 Windows 下常见的 INI 格式的配置文件解析器。该解析器在涵盖了所有 INI 文件操作的基础上，又针对 Go 语言实际开发过程中遇到的一些需求进行了扩展。相对于其它 INI 文件解析器而言，该解析器最大的优势在于对注释的极佳支持；除此之外，支持多个配置文件覆盖加载也是非常特别但好用的功能。</p>
+
+<h2 id="下载安装">下载安装</h2>
+
+<p>您可以通过以下两种方式下载安装 goconfig：</p>
+
+<pre><code>gopm get github.com/Unknwon/goconfig
+</code></pre>
+
+<p>或</p>
+
+<pre><code>go get github.com/Unknwon/goconfig
+</code></pre>
+
+<h3 id="api-文档">API 文档</h3>
+
+<p>请移步 <a href="http://gowalker.org/github.com/Unknwon/goconfig">Go Walker</a>。</p>
+
+<h2 id="基本使用方法">基本使用方法</h2>
+
+<p><a href="https://github.com/Unknwon/go-rock-libraries-showcases/tree/master/lectures/01-goconfig/class1/sample1">示例代码</a></p>
+
+<p>一般来说，INI 格式的文件均以 <code>.ini</code> 为后缀，但您可以使用任意后缀，这并不影响您使用该库进行解析。在本例中，我们使用 <code>conf.ini</code> 作为我们的配置文件。</p>
+
+<h3 id="加载配置文件">加载配置文件</h3>
+
+<p>要操作某个配置文件，需要先将其加载到内存中，我们需要调用 <code>LoadConfigFile</code> 函数来完成该操作：</p>
+
+<pre><code>cfg, err := goconfig.LoadConfigFile(&quot;conf.ini&quot;)
+</code></pre>
+
+<p>配置文件的文件名可以写相对路径或绝对路径，该函数返回值分别为 <code>ConfigFile</code> 和 error 类型。如果加载操作发生错误，则变量 <code>cfg</code> 为 nil；否则 <code>err</code> 为 nil。加载完成之后，我们就可以通过操作变量 <code>cfg</code> 来对配置文件的数据进行操作。要注意的是，加载完成后所有数据均已存入内存，任何对文件的修改操作都不会影响到已经获取到的对象。也就是说，此时对文件的修改是不会影响到 <code>cfg</code> 这个对象里的数据的。</p>
+
+<h3 id="基本读写操作">基本读写操作</h3>
+
+<p>通过 <code>GetValue</code> 方法可实现最基本的读取操作。在本例中，键 <code>key_default</code> 属于未命名的分区（section），则 goconfig 在解析器将它直接归于名为 <code>DEFAULT</code> 的分区。当我们想要获取它的值的时候，可以进行如下操作：</p>
+
+<pre><code>value, err := cfg.GetValue(goconfig.DEFAULT_SECTION, &quot;key_default&quot;)
+</code></pre>
+
+<p>第一个返回值为 string 类型，即取到的值；第二个返回值为 error 类型，当发生错误时不为 nil。</p>
+
+<p>除了读取之外，还可以进行设置值操作：</p>
+
+<pre><code>isInsert := cfg.SetValue(goconfig.DEFAULT_SECTION, &quot;key_default&quot;, &quot;这是新的值&quot;)
+</code></pre>
+
+<p>该方法返回值类型为 bool 类型，表示是否为插入操作。如果值为 true，表明该键之前未存在，现在插入成功；否则表示该键之前已经存在，它的值现在被重写了。</p>
+
+<p>如果您觉得每次都调用 <code>goconfig.DEFAULT_SECTION</code> 来表示 <code>DEFAULT</code> 分区非常繁琐，您也可以直接使用空白字符串来代表 <code>DEFAULT</code> 分区：</p>
+
+<pre><code>value, err = cfg.GetValue(&quot;&quot;, &quot;key_default&quot;)
+</code></pre>
+
+<p>以上代码也可以达到相同的效果。</p>
+
+<p>除了使用等号作为键值之间的分隔符之外，冒号也是允许的：</p>
+
+<pre><code>key_super2 : 测试值
+</code></pre>
+
+<h3 id="注释读写操作">注释读写操作</h3>
+
+<p>虽然大多数情况下程序都只从 INI 文件进行数据的读取操作，但偶尔会需要实现写入到文件的操作。此时，其余所有的解析器都会将注释给过滤掉；当注释是配置文件各项说明的重要依据时，这种做法显然是不可取的。因此，完整地保存文件中的注释，并提供在程序中对注释进行操作的 API 不可谓不是 goconfig 的一大特色。</p>
+
+<p>goconfig 允许您的配置文件以分号 <code>;</code> 或井号 <code>#</code> 为开头在单独的一行作为注释：</p>
+
+<pre><code>; 以分号开头的均为注释行
+# 以井号开头的也为注释行
+</code></pre>
+
+<p>但不可以在某一行的中间：</p>
+
+<pre><code>key_default = 默认节的一个键 # 注释必须单独占行，此处的注释无效
+</code></pre>
+
+<p>通过 goconfig 提供的 API，您可以操作某个分区或键的注释。</p>
+
+<p>获取某个分区的注释：</p>
+
+<pre><code>comment := cfg.GetSectionComments(&quot;super&quot;)
+</code></pre>
+
+<p>获取某个键的注释：</p>
+
+<pre><code>comment = cfg.GetKeyComments(&quot;super&quot;, &quot;key_super&quot;)
+</code></pre>
+
+<p>这两个方法均返回 string 类型的返回值。</p>
+
+<p>设置某个键的注释：</p>
+
+<pre><code>v := cfg.SetKeyComments(&quot;super&quot;, &quot;key_super&quot;, &quot;# 这是新的键注释&quot;)
+</code></pre>
+
+<p>设置某个分区的注释：</p>
+
+<pre><code>v = cfg.SetSectionComments(&quot;super&quot;, &quot;# 这是新的分区注释&quot;)
+</code></pre>
+
+<p>上面两个方法的返回值都是 bool 类型。若为 true 表示注释被插入或删除（当传入的参数为空字符串时）；为 false 表示注释已存在，现在被重写。</p>
+
+<h3 id="类型转换读取">类型转换读取</h3>
+
+<p>goconfig 提供以类型命名的一些方法，例如 <code>Int</code>、<code>Int64</code> 和 <code>Bool</code> 等等，这些方法会返回非 string 类型的值以及一个 error 类型的返回值表示是否发生错误：</p>
+
+<pre><code>vInt, err := cfg.Int(&quot;must&quot;, &quot;int&quot;)
+</code></pre>
+
+<p>第一个返回值为 int 类型，第二个返回值为 error 类型。</p>
+
+<h3 id="must-系列方法">Must 系列方法</h3>
+
+<p>Must 系列方法是用于避免检查 error 类型所造成的代码臃肿，简化数据获取流程。这些方法均已 <code>Must</code> 字符开头，如 <code>MustInt</code>、<code>MustInt64</code> 和 <code>MustBool</code> 等等。这些方法一定会返回指定类型的值，若发生错误，则返回零值，不会发生错误：</p>
+
+<pre><code>vBool := cfg.MustBool(&quot;must&quot;, &quot;bool&quot;)
+</code></pre>
+
+<p>该方法返回值为 bool 类型。</p>
+
+<h3 id="删除指定键值">删除指定键值</h3>
+
+<p>当您想要抛弃某个键时，可以通过 <code>DeleteKey</code> 方法来删除某个键：</p>
+
+<pre><code>ok := cfg.DeleteKey(&quot;must&quot;, &quot;string&quot;)
+</code></pre>
+
+<p>该方法返回值为 bool 类型，用于表示删除操作是否成功（若键不存在则会表示为不成功）。</p>
+
+<h3 id="保存配置文件">保存配置文件</h3>
+
+<p>当完成操作需要将数据写回硬盘时，可以使用 <code>SaveConfigFile</code> 函数来将 <code>ConfigFile</code> 对象以字符串的形式保存到文件系统中：</p>
+
+<pre><code>err = goconfig.SaveConfigFile(cfg, &quot;conf_save.ini&quot;)
+</code></pre>
+
+<p>您需要指定要保存的对象和文件名，该方法返回一个 error 类型的值。</p>
+
+<h2 id="高级使用技巧">高级使用技巧</h2>
+
+<p><a href="https://github.com/Unknwon/go-rock-libraries-showcases/tree/master/lectures/01-goconfig/class1/sample2">示例代码</a></p>
+
+<p>上一小结展示了如果使用 goconfig 完成常见的 INI 文件操作，本小节则将着重介绍 goconfig 库为大家带来的一些扩展功能。</p>
+
+<h3 id="多文件覆盖加载">多文件覆盖加载</h3>
+
+<p>函数 <code>LoadConfigFile</code> 其实可以接受多个 string 类型的参数来表示要加载的多个配置文件名，并根据次序进行覆盖式地加载：</p>
+
+<pre><code>cfg, err := goconfig.LoadConfigFile(&quot;conf.ini&quot;, &quot;conf2.ini&quot;)
+</code></pre>
+
+<p>在本例中，如果 <code>conf.ini</code> 和 <code>conf2.ini</code> 中同时出现相同分区和键名时，则只会获取到 <code>conf2.ini</code> 文件中的值。</p>
+
+<p>如果在程序运行途中发现需要增加配置文件，则可通过方法 <code>AppendFiles</code> 实现追加操作：</p>
+
+<pre><code>err = cfg.AppendFiles(&quot;conf3.ini&quot;)
+</code></pre>
+
+<h3 id="配置文件重载">配置文件重载</h3>
+
+<p>若外部文件发生修改，可通过调用方法进行快速重载：</p>
+
+<pre><code>err = cfg.Reload()
+</code></pre>
+
+<p>该方法返回一个 error 类型的值表示操作是否成功。</p>
+
+<h3 id="为-must-系列方法设置缺省值">为 Must 系列方法设置缺省值</h3>
+
+<p>借助 Go 语言变参的功能，当 Must 系列方法拥有三个参数时，则第三个参数即为获取失败时的默认值：</p>
+
+<pre><code>vBool := cfg.MustBool(&quot;must&quot;, &quot;bool404&quot;, true)
+</code></pre>
+
+<p>本例中键名为 <code>bool404</code> 根本不存在，则会采用 true 作为返回值。</p>
+
+<h3 id="递归读取键值">递归读取键值</h3>
+
+<p>在文件 <code>conf3.ini</code> 中，默认分区有两个键如下：</p>
+
+<pre><code>google=www.google.com
+search=http://%(google)s
+</code></pre>
+
+<p>当您使用 <code>%(&lt;key&gt;)s</code> 包含某个键名来作为值的时候，goconfig 会去寻找相应的键的值进行替换；如果被替换的键的值还有这样的嵌套，则会递归执行替换。该操作最多允许 200 层的嵌套。此时，键 <code>search</code> 真正的值为 <code>http://www.google.com</code>。要注意的是，被包含的键可以是位于 <code>DEFAULT</code> 分区或同一分区的，出现顺序任意。</p>
+
+<h3 id="子孙分区覆盖读取">子孙分区覆盖读取</h3>
+
+<p>在文件 <code>conf3.ini</code> 中，有如下配置：</p>
+
+<pre><code>[parent]
+name=john
+relation=father
+sex=male
+age=32
+
+[parent.child]
+age=3
+</code></pre>
+
+<p>当我们获取 <code>parent.child</code> 分区中的键 <code>age</code> 时，我们会得到 <code>3</code>；但当我们想要获取 <code>sex</code> 时，正常情况下应该为获取失败，不过，goconfig 会发现 <code>parent.child</code> 还有父分区 <code>parent</code>，因为 <code>parent.child</code> 使用了半角符号 <code>.</code> 来实现分级。这时候，获取 <code>sex</code> 会得到 <code>male</code>。</p>
+
+<h3 id="自增键名获取">自增键名获取</h3>
+
+<p>在文件 <code>conf3.ini</code> 中，有如下配置：</p>
+
+<pre><code>[auto increment]
+-=hello
+-=go
+-=config
+</code></pre>
+
+<p>由于使用 <code>-</code> 作为键名，则 goconfig 在解析时，会将它翻译成自增数字，从 1 开始。在本例中，上面的键在对象中会被保存为：</p>
+
+<pre><code>#1: hello
+#2: go
+#3: config
+</code></pre>
+
+<p>要注意的是，计数只在同个分区内有效，新的分区又会从 1 开始重新计数。</p>
+
+<h3 id="获取整个分区">获取整个分区</h3>
+
+<p>如果您想要直接操作某个分区，可通过方法 <code>GetSection</code> 来返回一个类型为 map[string]string 的值，其包含了相应分区的所有键值对：</p>
+
+<pre><code>sec, err := cfg.GetSection(&quot;auto increment&quot;)
+</code></pre>
+
+<h2 id="总结">总结</h2>
+
+<p>goconfig 包的 API 提供非常全面，用法非常简单，但核心代码并不多，各位同学有兴趣的可以阅读其源代码。</p>
+
+<h2 id="使用案例">使用案例</h2>
+
+<ul>
+<li><a href="https://github.com/gpmgo/gopm">gopm</a></li>
+<li><a href="https://github.com/beego/i18n">beego - i18n</a></li>
+<li><a href="https://github.com/beego/beeweb">beeweb</a></li>
+<li>wetalk</li>
+<li><a href="https://github.com/Unknwon/gowalker">gowalker</a></li>
+</ul>
+
+<p>注：本文转自无闻大神的博客，原文链接：<a href="http://studygolang.com/wr?u=http%3a%2f%2fwuwen.org%2farticle%2f17%2f01-goconfig-class1.html">http://studygolang.com/wr?u=http%3a%2f%2fwuwen.org%2farticle%2f17%2f01-goconfig-class1.html</a></p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/goconfig/">/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/goconfig/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+  (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+  		if (window.location.hostname === '127.0.0.1') return;
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'rinetd';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/container_ring/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>golang中container/ring包用法</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/front-end/">Front-End</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux_base/">Linux_base</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Fstm32/">嵌入式stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%9C%B4%E7%B4%A0linux/">朴素linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%AD%A3%E5%88%99/">正则</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/image_color/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>golang中image/color包的用法</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+</body>
+</html>
+

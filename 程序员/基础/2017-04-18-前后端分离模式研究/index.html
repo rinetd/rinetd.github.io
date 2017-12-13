@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+  <base href="//">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+  <title>前后端分离开发模式的 mock 平台预研 - Pytool</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="引入 *mock（模拟）: 是在项目测试中，对项目外部或不容易获取的对象/接口，**用一个虚拟的对象/接口来模拟*，以便测试。 背景 前后端分离 前后">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="前后端分离开发模式的 mock 平台预研 - Pytool">
+<meta itemprop="description" content="引入 *mock（模拟）: 是在项目测试中，对项目外部或不容易获取的对象/接口，**用一个虚拟的对象/接口来模拟*，以便测试。 背景 前后端分离 前后">
+<meta itemprop="image" content="//public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="前后端分离开发模式的 mock 平台预研 - Pytool" />
+<meta property="og:description" content="引入 *mock（模拟）: 是在项目测试中，对项目外部或不容易获取的对象/接口，**用一个虚拟的对象/接口来模拟*，以便测试。 背景 前后端分离 前后">
+<meta property="og:image" content="//public/avatar.png" />
+<meta property="og:url" content="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%9F%BA%E7%A1%80/2017-04-18-%E5%89%8D%E5%90%8E%E7%AB%AF%E5%88%86%E7%A6%BB%E6%A8%A1%E5%BC%8F%E7%A0%94%E7%A9%B6/" />
+
+
+
+  <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+  <link rel="canonical" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%9F%BA%E7%A1%80/2017-04-18-%E5%89%8D%E5%90%8E%E7%AB%AF%E5%88%86%E7%A6%BB%E6%A8%A1%E5%BC%8F%E7%A0%94%E7%A9%B6/">
+  <link rel='shortlink' href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%9F%BA%E7%A1%80/2017-04-18-%E5%89%8D%E5%90%8E%E7%AB%AF%E5%88%86%E7%A6%BB%E6%A8%A1%E5%BC%8F%E7%A0%94%E7%A9%B6/"/>
+  <link rel="shortcut icon" href="//public/favicon.ico"/>
+  
+<link rel="stylesheet" id="human-style-css" href="./wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="./wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="./wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="./wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="./public/highlight/styles/github.css">
+<script src="./public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<link rel="stylesheet" id="human-style-css3" href="./wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="./public/font/hack/css/hack.min.css">
+
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="./wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="./assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="./assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="./assets/js/myblog.js"></script>
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//" class="nav-cs-icon">
+        <img width="40" height="40" src="/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/">首页</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/linux%e5%9f%ba%e7%a1%80/">Linux基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">Post</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%a5%87%e7%9c%9f%e5%bc%82%e5%ae%9d/">奇真异宝</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b5%8c%e5%85%a5%e5%bc%8f%e5%bc%80%e5%8f%91/">嵌入式开发</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%91%bd%e4%bb%a4/">常用命令</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e5%b8%b8%e7%94%a8%e5%b7%a5%e5%85%b7/">常用工具</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e6%96%87%e6%9c%ac%e7%bc%96%e8%be%91%e5%99%a8/">文本编辑器</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%a8%8b%e5%ba%8f%e5%91%98/">程序员</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e7%bc%96%e7%a8%8b%e5%9f%ba%e7%a1%80/">编程基础</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e8%bd%ac%e8%bd%bd/">转载</a>
+        </li>
+        
+
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/%e9%bb%91%e5%ae%a2%e6%8a%80%e6%9c%af/">黑客技术</a>
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/post/">归档</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//" rel="home">
+              <img style="border-radius: 50%;width:72px;height:72px;margin:0 auto;" alt="rinetd" src="/public/avatar.png"></img>
+              Pytool
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">前后端分离开发模式的 mock 平台预研</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年03月29日 20:57:24 · 2571 Words ·
+                    ~6min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/%e7%a8%8b%e5%ba%8f%e5%91%98/%e5%9f%ba%e7%a1%80/2017-04-18%20%e5%89%8d%e5%90%8e%e7%ab%af%e5%88%86%e7%a6%bb%e6%a8%a1%e5%bc%8f%e7%a0%94%e7%a9%b6.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<h2 id="引入">引入</h2>
+
+<p>*mock（模拟）: 是在项目测试中，对项目外部或不容易获取的对象/接口，**用一个虚拟的对象/接口来模拟*<em>，以便测试。</em></p>
+
+<h2 id="背景">背景</h2>
+
+<h3 id="前后端分离">前后端分离</h3>
+
+<ul>
+<li>前后端仅仅通过异步接口(AJAX/JSONP)来编程</li>
+<li>前后端都各自有自己的开发流程，构建工具，测试集合</li>
+<li>关注点分离，前后端变得相对独立并松耦合</li>
+</ul>
+
+<p><a href="https://camo.githubusercontent.com/5e7947774b9f9ee4856a1a35e19a4ade88d425d9/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542425f6e65772e706e67"><img src="https://camo.githubusercontent.com/5e7947774b9f9ee4856a1a35e19a4ade88d425d9/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542425f6e65772e706e67" alt="前后端分离.png" /></a></p>
+
+<h3 id="开发流程">开发流程</h3>
+
+<ul>
+<li>后台编写和维护接口文档，在 API 变化时更新接口文档</li>
+<li>后台根据接口文档进行接口开发</li>
+<li>前端根据接口文档进行开发</li>
+<li>开发完成后联调和提交测试</li>
+</ul>
+
+<p><a href="https://camo.githubusercontent.com/0aa96541a2fd8e4c01effc6b839848c2bc5cd9e0/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545352542432538302545352538462539312545362542352538312545372541382538422e706e67"><img src="https://camo.githubusercontent.com/0aa96541a2fd8e4c01effc6b839848c2bc5cd9e0/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545352542432538302545352538462539312545362542352538312545372541382538422e706e67" alt="开发流程.png" /></a></p>
+
+<h3 id="面临问题">面临问题</h3>
+
+<ul>
+<li>没有统一的文档编写规范，导致文档越来越乱，无法维护和阅读</li>
+<li>开发中的接口增删改等变动，需要较大的沟通成本</li>
+<li><strong>对于一个新需求，前端开发的接口调用和自测依赖后台开发完毕</strong></li>
+<li><strong>将接口的风险后置，耽误项目时间</strong></li>
+</ul>
+
+<h3 id="解决方法">解决方法</h3>
+
+<ul>
+<li>接口文档服务器 &ndash; 解决接口文档编辑和维护的问题</li>
+<li>mock 数据 &ndash; 解决前端开发依赖真实后台接口的问题</li>
+</ul>
+
+<h2 id="接口文档服务器">接口文档服务器</h2>
+
+<h3 id="功能">功能</h3>
+
+<h4 id="接口编辑功能">接口编辑功能</h4>
+
+<ul>
+<li>类型1：根据接口描述语法书写接口，并保存为文本文件，然后使用生成工具生成在线接文档（HTML）
+&ndash; 也有一些类似 Markdown 的接口文档编辑器，参见：[There Are Four API Design Editors To Choose From Now][There Are Four API Design Editors To Choose From Now]。
+<a href="https://camo.githubusercontent.com/63eb823fcca26ee553c10ae636c9b5d389b80531/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545362538452541352545352538462541332545342542392541362545352538362539392545382542442541432545362538442541322545342542382542412545362538452541352545352538462541332545362539362538372545362541312541332e706e67"><img src="https://camo.githubusercontent.com/63eb823fcca26ee553c10ae636c9b5d389b80531/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545362538452541352545352538462541332545342542392541362545352538362539392545382542442541432545362538442541322545342542382542412545362538452541352545352538462541332545362539362538372545362541312541332e706e67" alt="接口书写转换为接口文档.png" /></a></li>
+<li>类型2：提供在线的接口编辑平台，进行可交互的接口编辑
+<a href="https://camo.githubusercontent.com/bfa3497fb6b7c6ca7703fc755a455e419f74efd2/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545362538452541352545352538462541332545362539362538372545362541312541332545362539432538442545352538412541312545352539392541382e706e67"><img src="https://camo.githubusercontent.com/bfa3497fb6b7c6ca7703fc755a455e419f74efd2/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545362538452541352545352538462541332545362539362538372545362541312541332545362539432538442545352538412541312545352539392541382e706e67" alt="接口文档服务器.png" /></a></li>
+</ul>
+
+<h4 id="接口查看功能">接口查看功能</h4>
+
+<ul>
+<li>提供友好的接口文档查看功能</li>
+</ul>
+
+<h3 id="用法">用法</h3>
+
+<ul>
+<li>后台开发人员进行接口文档编写
+&ndash; 定义接口路径、接口上传字段、接口返回字段、字段含义、字段类型、字段取值</li>
+<li>前端开发人员查看接口文档</li>
+</ul>
+
+<h3 id="优点">优点</h3>
+
+<ul>
+<li>统一管理和维护接口文档
+&ndash; 提供了接口导入、接口模块化、接口版本化、可视化编辑等功能</li>
+<li>接口文档规范，可读性强，<strong>减少前后端接口沟通成本</strong></li>
+</ul>
+
+<h2 id="前端-mock-方法回顾">前端 mock 方法回顾</h2>
+
+<p>前端开发过程中，使用 mock 数据来模拟接口的返回，对开发的代码进行业务逻辑测试。解决开发过程中对后台接口的依赖。</p>
+
+<h3 id="硬编码数据">硬编码数据</h3>
+
+<p>将 mock 数据写在代码中。</p>
+
+<h4 id="示例">示例</h4>
+
+<pre><code>// $.ajax({
+//   url: ‘https://cntchen.github.io/userInfo’,
+//   type: 'GET',
+//   success: function(dt) {
+    var dt = {
+      &quot;isSuccess&quot;: true,
+      &quot;errMsg&quot;: &quot;This is error.&quot;,
+      &quot;data&quot;: {
+        &quot;userName&quot;: &quot;Cntchen&quot;,
+        &quot;about&quot;: &quot;FE&quot;
+      },
+    };
+    if (dt.isSuccess) {
+      render(dt.data);
+    } else {
+      console.log(dt.errMsg);
+    }
+//   },
+//   fail: function() {}
+// });
+</code></pre>
+
+<h4 id="优点-1">优点</h4>
+
+<ul>
+<li>可以快速修改测试数据</li>
+</ul>
+
+<h4 id="痛点">痛点</h4>
+
+<ul>
+<li><strong>无法模拟异步的网络请求，无法测试网络异常</strong></li>
+<li>肮代码，联调前需要做较多改动，<strong>增加最终上真实环境的切换成本</strong>
+&ndash; 添加网络请求，修改接口、添加错误控制逻辑</li>
+<li>接口文档变化需要手动更新</li>
+</ul>
+
+<h3 id="请求拦截-mock-数据">请求拦截 &amp; mock 数据</h3>
+
+<p>hijack（劫持）接口的网络请求，将请求的返回替换为代码中的 mock 数据。</p>
+
+<h4 id="实例">实例</h4>
+
+<p><a href="https://github.com/jakerella/jquery-mockjax">jquery-mockjax</a></p>
+
+<blockquote>
+<p>The jQuery Mockjax Plugin provides a simple and extremely flexible interface for mocking or simulating ajax requests and responses</p>
+</blockquote>
+
+<h4 id="优点-2">优点</h4>
+
+<ul>
+<li>可以模拟异步的网络请求</li>
+<li>可以快速修改测试数据</li>
+</ul>
+
+<h4 id="痛点-1">痛点</h4>
+
+<ul>
+<li>依赖特定的框架，如<code>Jquery</code></li>
+<li>增加最终上真实环境的切换成本</li>
+<li>接口文档变换需要手动更新</li>
+</ul>
+
+<h3 id="本地-mock-服务器">本地 mock 服务器</h3>
+
+<p>将 mock 数据保存为本地文件。在前端调试的构建流中，用 node 开本地 mock 服务器，请求接口指向本地 mock 服务器，本地 mock 服务器 response mock 文件。</p>
+
+<h4 id="mock-文件">mock 文件</h4>
+
+<pre><code>.mock
+├── userInfo.json
+├── userStars.json
+├── blogs.json
+└── following.json
+
+</code></pre>
+
+<h4 id="接口调用">接口调用</h4>
+
+<p><code>https://github.com/CntChen/userInfo</code> &ndash;&gt; <code>localhost:port/userInfo</code></p>
+
+<h4 id="优点-3">优点</h4>
+
+<ul>
+<li>对代码改动较小，联调测试只需要改动接口 url</li>
+<li>可以快速修改测试数据</li>
+</ul>
+
+<h4 id="痛点-2">痛点</h4>
+
+<ul>
+<li>json 文件非常多</li>
+<li>接口文档变化需要手动更新</li>
+</ul>
+
+<h3 id="代理服务器">代理服务器</h3>
+
+<ul>
+<li>使用 <a href="http://www.charlesproxy.com/">charles</a> 或 <a href="http://www.telerik.com/fiddler">fiddler</a> 作为代理服务器</li>
+<li>使用代理服务器的 map（映射）&amp; rewrite（重写） 功能</li>
+</ul>
+
+<h4 id="map-local">map local</h4>
+
+<ul>
+<li>接口请求的返回映射为本地 mock 数据
+<code>https://github.com/CntChen/userInfo</code> &ndash;&gt; <code>localPath/userInfo</code></li>
+</ul>
+
+<p><a href="https://camo.githubusercontent.com/a62469571358b95d836a0fb1075fa5b38ef35508/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f6d61705f6c6f63616c5f7075626c69632e706e67"><img src="https://camo.githubusercontent.com/a62469571358b95d836a0fb1075fa5b38ef35508/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f6d61705f6c6f63616c5f7075626c69632e706e67" alt="map local.png" /></a></p>
+
+<ul>
+<li>编辑映射规则
+<a href="https://camo.githubusercontent.com/58de926f109d67ceca73c6a5b1e947138c645580/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f6d61705f72756c655f7075626c69632e706e67"><img src="https://camo.githubusercontent.com/58de926f109d67ceca73c6a5b1e947138c645580/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f6d61705f72756c655f7075626c69632e706e67" alt="map rule.png" /></a></li>
+</ul>
+
+<h4 id="map-remote">map remote</h4>
+
+<ul>
+<li>接口请求的返回映射为另一个远程接口的调用
+<a href="https://camo.githubusercontent.com/b37c5bec0e9ef6fa778eb1de5b900f1458c42160/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f6d61705f72656d6f74652e706e67"><img src="https://camo.githubusercontent.com/b37c5bec0e9ef6fa778eb1de5b900f1458c42160/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f6d61705f72656d6f74652e706e67" alt="map remote.png" /></a></li>
+</ul>
+
+<h4 id="rewrite">rewrite</h4>
+
+<ul>
+<li>修改接口调用的 request 或 response，添加/删除/修改 HTTP request line/response line/headers/body
+<a href="https://camo.githubusercontent.com/264805eae980514c6cae975c110f71ab16c5f2e7/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f726577726974655f646174615f7075626c69632e706e67"><img src="https://camo.githubusercontent.com/264805eae980514c6cae975c110f71ab16c5f2e7/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f726577726974655f646174615f7075626c69632e706e67" alt="rewrite data.png" /></a></li>
+<li>解决跨域问题
+使用 map 后，接口调用的 response 不带 CORS headers，跨域请求在浏览器端会报错。需要重写接口返回的 header，添加 CORS 的字段。
+<a href="https://camo.githubusercontent.com/08ec90e06f7001e383a2c2e72945a31ce387938c/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f726577726974655f636f72735f7075626c69632e706e67"><img src="https://camo.githubusercontent.com/08ec90e06f7001e383a2c2e72945a31ce387938c/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f726577726974655f636f72735f7075626c69632e706e67" alt="rewrite cors.png" /></a></li>
+</ul>
+
+<h4 id="优点-4">优点</h4>
+
+<ul>
+<li>前端直接请求真实接口，无需修改代码</li>
+<li>可以修改接口返回数据</li>
+</ul>
+
+<h4 id="痛点-3">痛点</h4>
+
+<ul>
+<li><strong>需要处理跨域问题</strong></li>
+<li><strong>一个变更需要代理服务器进行多处改动，配置效率低下</strong></li>
+<li>不支持 HTTP method 的区分
+&ndash; CORS 的 preflight 请求(OPTION)也会返回数据</li>
+<li>需要有远程接口或本地 mock 文件，与使用本地 mock 文件相同的痛点</li>
+</ul>
+
+<h3 id="mock-平台">mock 平台</h3>
+
+<h4 id="接口文档服务器-1">接口文档服务器</h4>
+
+<p>使用接口文档服务器来定义接口数据结构</p>
+
+<p><a href="https://camo.githubusercontent.com/623fc07f73990663a206da584ca952093adf5d34/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545362538452541352545352538462541332545362539432538442545352538412541312545352539392541385f6e65772e706e67"><img src="https://camo.githubusercontent.com/623fc07f73990663a206da584ca952093adf5d34/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f2545362538452541352545352538462541332545362539432538442545352538412541312545352539392541385f6e65772e706e67" alt="接口服务器.jpg" /></a></p>
+
+<h4 id="mock服务器">mock服务器</h4>
+
+<p><strong>mock 服务器根据接口文档自动生成 mock 数据</strong>，实现了接口文档即API</p>
+
+<p><a href="https://camo.githubusercontent.com/69afc5d2145aab3d8195571e77d66261f78d06fd/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f6d6f636b2545362539432538442545352538412541312545352539392541385f6e65772e706e67"><img src="https://camo.githubusercontent.com/69afc5d2145aab3d8195571e77d66261f78d06fd/68747470733a2f2f636e746368656e2e6769746875622e696f2f696d672f2545352538392538442545352539302538452545372541422541462545352538382538362545372541362542422545352542432538302545352538462539312545362541382541312545352542432538462545372539412538346d6f636b2545352542392542332545352538462542302545392541322538342545372541302539342f6d6f636b2545362539432538442545352538412541312545352539392541385f6e65772e706e67" alt="mock服务器.jpg" /></a></p>
+
+<h4 id="优点-5">优点</h4>
+
+<ul>
+<li>接口文档自动生成和更新 mock 数据</li>
+<li>前端代码联调时改动小</li>
+</ul>
+
+<h4 id="缺点">缺点</h4>
+
+<ul>
+<li><strong>可能</strong>存在跨域问题</li>
+</ul>
+
+<h2 id="业界实践">业界实践</h2>
+
+<h3 id="公司实践">公司实践</h3>
+
+<p>没有找到公司级别的框架，除了阿里的 <a href="https://github.com/thx/RAP">RAP</a>。可能原因：</p>
+
+<ul>
+<li>非关键性、开创性技术，没有太多研究价值</li>
+<li>许多大公司是小团队作战，没有统一的 mock 平台</li>
+<li>已经有一些稳定的接口，并不存在后台接口没有开发完成的问题
+&ndash; 而我们想探究的问题是：前后端<strong>同时开发时</strong>的 mock</li>
+</ul>
+
+<h3 id="github-开源库">github 开源库</h3>
+
+<ul>
+<li><a href="https://github.com/marak/Faker.js/">faker.js</a>
+随机生成固定字段的 mock 数据,如<code>email</code>，<code>date</code>，<code>images</code>等，支持国际化。</li>
+<li><a href="https://apiblueprint.org/">blueprint</a></li>
+</ul>
+
+<blockquote>
+<p>A powerful high-level API design language for web APIs.</p>
+</blockquote>
+
+<p>一种使用类markdown语法的接口编写语言，使用[json-schema][json-schema]和[mson][mson]作为接口字段描述。有<a href="https://apiblueprint.org/tools.html">完善的工具链</a>进行接口文件 Edit，Test，Mock，Parse，Converter等。</p>
+
+<ul>
+<li><a href="http://swagger.io/">swagger</a></li>
+</ul>
+
+<blockquote>
+<p>Swagger是一种 Rest API 的简单但强大的表示方式，标准的，语言无关，这种表示方式不但人可读，而且机器可读。可以作为 Rest API 的交互式文档，也可以作为 Rest API 的形式化的接口描述，生成客户端和服务端的代码。 &ndash;[Swagger：Rest API的描述语言][Swagger：Rest API的描述语言]</p>
+</blockquote>
+
+<p>定义了一套接口文档编写语法，然后可以自动生成接口文档。相关项目: <a href="https://github.com/swagger-api/swagger-editor">Swagger Editor</a> ，用于编写 API 文档。<a href="https://github.com/swagger-api/swagger-ui">Swagger UI</a> restful 接口文档在线自动生成与功能测试软件。<a href="http://petstore.swagger.io/#!/pet/addPet">点击查看Swagger-UI在线示例</a>。</p>
+
+<ul>
+<li><a href="http://wiremock.org/">wireMock</a></li>
+</ul>
+
+<blockquote>
+<p>WireMock is a simulator for HTTP-based APIs. Some might consider it a service virtualization tool or a mock server. It <strong>supports testing of edge cases and failure modes</strong> that the real API won&rsquo;t reliably produce.</p>
+</blockquote>
+
+<h3 id="商业化方案">商业化方案</h3>
+
+<ul>
+<li><a href="https://apiary.io/">apiary</a>
+商业化方案，<a href="https://apiblueprint.org/">blueprint</a>开源项目的创造者。界面化，提供mock功能，生成各编程语言的调用代码(跟 postman 的 generate code snippets类似)。</li>
+</ul>
+
+<h3 id="其他实践">其他实践</h3>
+
+<p><a href="https://apievangelist.com/">API Evangelist(API 布道者)</a></p>
+
+<h2 id="总结">总结</h2>
+
+<p>对于前后端分离开发方式，已经有比较成熟的 mock 平台，主要解决了2个问题：</p>
+
+<ul>
+<li>接口文档的编辑和维护</li>
+<li>接口 mock 数据的自动生成和更新</li>
+</ul>
+
+<h2 id="后记">后记</h2>
+
+<p>预研时间比较有限，有一些新的 mock 模式或优秀的 mock 平台没有覆盖到，欢迎补充。
+笔者所在公司选用的平台是 <a href="https://github.com/thx/RAP">RAP</a>，后续会整理一篇 RAP 实践方面的文章。
+问题来了：你开发中的 mock 方式是什么？</p>
+
+<h2 id="references">References</h2>
+
+<ul>
+<li>图解基于node.js实现前后端分离</li>
+</ul>
+
+<blockquote>
+<p><a href="http://yalishizhude.github.io/2016/04/19/front-back-separation/">http://yalishizhude.github.io/2016/04/19/front-back-separation/</a></p>
+
+<p>[图解基于node.js实现前后端分离]: <a href="http://yalishizhude.github.io/2016/04/19/front-back-separation/(http://yalishizhude.github.io/2016/04/19/front-back-separation/">http://yalishizhude.github.io/2016/04/19/front-back-separation/(http://yalishizhude.github.io/2016/04/19/front-back-separation/</a>)</p>
+</blockquote>
+
+<ul>
+<li>TestDouble(介绍 mock 相关的概念)</li>
+</ul>
+
+<blockquote>
+<p><a href="http://martinfowler.com/bliki/TestDouble.html">http://martinfowler.com/bliki/TestDouble.html</a></p>
+
+<p>[mock 相关的概念]: <a href="http://martinfowler.com/bliki/TestDouble.html(http://martinfowler.com/bliki/TestDouble.html">http://martinfowler.com/bliki/TestDouble.html(http://martinfowler.com/bliki/TestDouble.html</a>)</p>
+</blockquote>
+
+<ul>
+<li>There Are Four API Design Editors To Choose From Now</li>
+</ul>
+
+<blockquote>
+<p><a href="https://apievangelist.com/2014/11/21/there-are-four-api-design-editors-to-choose-from-now/">https://apievangelist.com/2014/11/21/there-are-four-api-design-editors-to-choose-from-now/</a></p>
+
+<p>[There Are Four API Design Editors To Choose From Now]: <a href="https://apievangelist.com/2014/11/21/there-are-four-api-design-editors-to-choose-from-now/(https://apievangelist.com/2014/11/21/there-are-four-api-design-editors-to-choose-from-now/">https://apievangelist.com/2014/11/21/there-are-four-api-design-editors-to-choose-from-now/(https://apievangelist.com/2014/11/21/there-are-four-api-design-editors-to-choose-from-now/</a>)</p>
+</blockquote>
+
+<ul>
+<li>联调之痛&ndash;契约测试</li>
+</ul>
+
+<blockquote>
+<p><a href="http://www.ituring.com.cn/article/42460">http://www.ituring.com.cn/article/42460</a></p>
+
+<p>[联调之痛]: <a href="http://www.ituring.com.cn/article/42460(http://www.ituring.com.cn/article/42460">http://www.ituring.com.cn/article/42460(http://www.ituring.com.cn/article/42460</a>)</p>
+</blockquote>
+
+<ul>
+<li>Swagger：Rest API的描述语言</li>
+</ul>
+
+<blockquote>
+<p><a href="https://zhuanlan.zhihu.com/p/21353795">https://zhuanlan.zhihu.com/p/21353795</a></p>
+
+<p>[Swagger：Rest API的描述语言]: <a href="https://zhuanlan.zhihu.com/p/21353795(https://zhuanlan.zhihu.com/p/21353795">https://zhuanlan.zhihu.com/p/21353795(https://zhuanlan.zhihu.com/p/21353795</a>)</p>
+</blockquote>
+
+<ul>
+<li>Swagger - 前后端分离后的契约</li>
+</ul>
+
+<blockquote>
+<p><a href="http://www.cnblogs.com/whitewolf/p/4686154.html">http://www.cnblogs.com/whitewolf/p/4686154.html</a></p>
+
+<p>[Swagger - 前后端分离后的契约]: <a href="http://www.cnblogs.com/whitewolf/p/4686154.html(http://www.cnblogs.com/whitewolf/p/4686154.html">http://www.cnblogs.com/whitewolf/p/4686154.html(http://www.cnblogs.com/whitewolf/p/4686154.html</a>)</p>
+</blockquote>
+
+<ul>
+<li>Swagger UI教程 API 文档神器 搭配Node使用</li>
+</ul>
+
+<blockquote>
+<p><a href="http://www.jianshu.com/p/d6626e6bd72c#">http://www.jianshu.com/p/d6626e6bd72c#</a></p>
+
+<p>[Swagger UI教程 API 文档神器 搭配Node使用]: <a href="http://www.jianshu.com/p/d6626e6bd72c#(http://www.jianshu.com/p/d6626e6bd72c#">http://www.jianshu.com/p/d6626e6bd72c#(http://www.jianshu.com/p/d6626e6bd72c#</a>)</p>
+</blockquote>
+
+<h2 id="end">END</h2>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%9F%BA%E7%A1%80/2017-04-18-%E5%89%8D%E5%90%8E%E7%AB%AF%E5%88%86%E7%A6%BB%E6%A8%A1%E5%BC%8F%E7%A0%94%E7%A9%B6/">/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%9F%BA%E7%A1%80/2017-04-18-%E5%89%8D%E5%90%8E%E7%AB%AF%E5%88%86%E7%A6%BB%E6%A8%A1%E5%BC%8F%E7%A0%94%E7%A9%B6/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+<div id="disqus_thread"></div>
+  <script type="text/javascript">
+  (function() {
+      
+      
+      if (window.location.hostname === 'localhost') return;
+  		if (window.location.hostname === '127.0.0.1') return;
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'rinetd';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+  })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/meteor/2016-03-29--%E4%BD%BF%E7%94%A8-meteor-%E8%BD%BB%E6%9D%BE%E5%BC%80%E5%8F%91%E5%AE%9E%E6%97%B6%E7%BD%91%E7%AB%99/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>使用 Meteor 轻松开发实时网站</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/front-end/">Front-End</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux_base/">Linux_base</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Fstm32/">嵌入式stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%9C%B4%E7%B4%A0linux/">朴素linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E6%AD%A3%E5%88%99/">正则</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="/%E7%A8%8B%E5%BA%8F%E5%91%98/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/2016-03-29-%E5%89%8D%E7%AB%AFjser%E8%A3%85%E9%80%BC%E6%89%8B%E5%86%8C/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>前端JSer装逼手册</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+</body>
+</html>
+
