@@ -13,712 +13,31 @@
         }
     }
   </script>
-<title>Hugo 文档处理 - 时光小栈</title>
+<title>typora - 时光小栈</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<meta name="description" content="文档排序
-
-当在列表页面展示多篇文档时，就涉及到文档先后顺序的问题了。Hugo 中文档默认是以元信息 weight 来排序，当文档未指定 weight 时，就以元信息 date 来排序，如果这两项都没有指定的话，列表页面看到的文档就是无序的。
-
-不过除了上面 weight 和 date 外，Hugo 还支持我们以更多方式来排序列表页面，我们需要在列表模板文件中使用以下一些模板变量来控制文档的排序
-
-
-按照元信息权重和日期排序（默认排序方式）
-
-
-  {{ range .Data.Pages }}
-  &lt;li&gt;
-  &lt;a href=&quot;{{ .Permalink }}&quot;&gt;{{ .Title }}&lt;/a&gt;
-  &lt;div class=&quot;meta&quot;&gt;{{ .Date.Format &quot;Mon, Jan 2, 2006&quot; }}&lt;/div&gt;
-  &lt;/li&gt;
-  {{ end }}
-
-
-
-按照元信息日期排序
-
-
-  {{ range .Data.Pages.ByDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照发布日期排序
-
-
-  {{ range .Data.Pages.ByPublishDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照失效日期排序
-
-
-  {{ range .Data.Pages.ByExpiryDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照修改日期排序
-
-
-  {{ range .Data.Pages.ByLastmod }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照文档内容长度排序
-
-
-  {{ range .Data.Pages.ByLength }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照文档标题排序
-
-
-  {{ range .Data.Pages.ByTitle }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照链接标题排序
-
-
-  {{ range .Data.Pages.ByLinkTitle }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照其它元信息排序
-
-
-  {{ range (.Date.Pages.ByParam &quot;author.last_name&quot;) }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-反转排序（以上所有排序都可反转）
-
-
-  {{ range .Data.Pages.ByTitle.Reverse }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-除此之外，文档还可以按照分类进行排序，而分类标签本身可以按照标签字母序来排序
-
-&lt;ul&gt;
-{{ $data := .Data }}
-{{ range $key, $value := .Data.Taxonomy.Alphabetical }}
-&lt;li&gt;&lt;a href=&quot;{{ .Site.LanguagePrefix }}/{{ $data.Plural }}/{{ $value.Name | urlize }}&quot;&gt; {{ $value.Name }} &lt;/a&gt; {{ $value.Count }} &lt;/li&gt;
-{{ end }}
-&lt;/ul&gt;
-
-
-或者按照关联到该分类标签的文档数量排序（即按照分类的热门程度排序）
-
-&lt;ul&gt;
-{{ $data := .Data }}
-{{ range $key, $value := .Data.Taxonomy.ByCount }}
-&lt;li&gt;&lt;a href=&quot;{{ .Site.LanguagePrefix }}/{{ $data.Plural }}/{{ $value.Name | urlize }}&quot;&gt; {{ $value.Name }} &lt;/a&gt; {{ $value.Count }} &lt;/li&gt;
-{{ end }}
-&lt;/ul&gt;
-
-
-属于某个分类的文档默认按照 weight 和 date 来排序，并且支持为文档指定分类排序时的权重，这样可以调整文档在分类中的顺序，这个功能通过文档中指定元数据 taxonomyname_weight 来实现，其中 taxonomyname 代表分类名。
-
-文档分组
-
-当在列表页面展示多篇文档时，Hugo 支持我们根据文档类型、日期或者 Section 来分组显示文档。
-
-
-按照 Section 分组
-
-
-  {{ range .Data.Pages.GroupBy &quot;Section&quot; }}
-  &lt;h3&gt;{{ .Key }}&lt;/h3&gt;
-  &lt;ul&gt;
-      {{ range .Pages }}
-      &lt;li&gt;
-      &lt;a href=&quot;{{ .Permalink }}&quot;&gt;{{ .Title }}&lt;/a&gt;
-      &lt;div class=&quot;meta&quot;&gt;{{ .Date.Format &quot;Mon, Jan 2, 2006&quot; }}&lt;/div&gt;
-      &lt;/li&gt;
-      {{ end }}
-  &lt;/ul&gt;
-  {{ end }}
-
-
-
-按照日期分组
-
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照发布日期分组
-
-
-  {{ range .Data.Pages.GroupByPublishDate &quot;2006-01&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照其它元信息分组
-
-
-  {{ range .Data.Pages.GroupByParam &quot;param_key&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-反转分组排序
-
-
-  {{ range (.Data.Pages.GroupByDate &quot;2006-01&quot;).Reverse }}
-    &lt;!-- 利用模板函数Reverse来反转 --&gt;
-  {{ end }}
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; &quot;desc&quot; }}
-    &lt;!-- 或者直接指定排序方向 --&gt;
-  {{ end }}
-
-
-
-组内文档排序
-
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; &quot;asc&quot; }}
-  &lt;h3&gt;{{ .Key }}&lt;/h3&gt;
-  &lt;ul&gt;
-      {{ range .Pages.ByTitle }}
-      &lt;!-- 可以按照之前介绍排序文档的各种方法来排序组内文档 --&gt;
-      {{ end }}
-  &lt;/ul&gt;
-  {{ end }}
-
-
-文档过滤
-
-有时候也许想要排除某些文档在列表页面显示，Hugo 支持我们在列表页面限制文档显示数量以及限制显示的文档种类。
-
-
-限制文档显示数量
-
-
-  {{ range first 10 .Data.Pages }}
-      &lt;!-- 利用模板函数first，只显示排在前面的10篇文档 --&gt;
-      {{ .Render &quot;summary&quot; }}
-  {{ end }}
-
-
-
-根据条件过滤某些文档
-
-
-  {{ range where .Data.Pages &quot;Section&quot; &quot;post&quot; }}
-     &lt;!-- 利用模板函数where，只筛选显示Section为post的文档 --&gt;
-     {{ .Content }}
-  {{ end }}
-
-  {{ range first 5 (where .Data.Pages &quot;Section&quot; &quot;post&quot;) }}
-     &lt;!-- 同时使用where和first --&gt;
-     {{ .Content }}
-  {{ end }}
-
-
-文档摘要
-
-Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存放在模板页面变量 .Summary ，同时提供模板变量 .Truncated 来记录截取的摘要是否包含了文档的全部内容。同时 Hugo 还支持我们在内容文档中明确指定将哪些内容作为该文档的摘要，具体来说需要在文档中插入一行  来标识位于该行之前的内容作为摘要，同理 Hugo 会将摘要存放在模板页面变量 .Summary ，并用模板变量 .Truncated 标识摘要是否包含了文档全部内容。">
+<meta name="description" content="sequenceDiagram Alice-&gt;&gt;Bob: Hello Bob, how are you? alt is sick Bob-&gt;&gt;Alice: Not so good :( else is well Bob-&gt;&gt;Alice: Feeling fresh like a daisy end opt Extra response Bob-&gt;&gt;Alice: Thanks for asking end  ">
 <meta name="author" content=rinetd>
 <meta name="publisher" content=rinetd@163.com>
 
-<meta itemprop="name" content="Hugo 文档处理 - 时光小栈">
-<meta itemprop="description" content="文档排序
-
-当在列表页面展示多篇文档时，就涉及到文档先后顺序的问题了。Hugo 中文档默认是以元信息 weight 来排序，当文档未指定 weight 时，就以元信息 date 来排序，如果这两项都没有指定的话，列表页面看到的文档就是无序的。
-
-不过除了上面 weight 和 date 外，Hugo 还支持我们以更多方式来排序列表页面，我们需要在列表模板文件中使用以下一些模板变量来控制文档的排序
-
-
-按照元信息权重和日期排序（默认排序方式）
-
-
-  {{ range .Data.Pages }}
-  &lt;li&gt;
-  &lt;a href=&quot;{{ .Permalink }}&quot;&gt;{{ .Title }}&lt;/a&gt;
-  &lt;div class=&quot;meta&quot;&gt;{{ .Date.Format &quot;Mon, Jan 2, 2006&quot; }}&lt;/div&gt;
-  &lt;/li&gt;
-  {{ end }}
-
-
-
-按照元信息日期排序
-
-
-  {{ range .Data.Pages.ByDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照发布日期排序
-
-
-  {{ range .Data.Pages.ByPublishDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照失效日期排序
-
-
-  {{ range .Data.Pages.ByExpiryDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照修改日期排序
-
-
-  {{ range .Data.Pages.ByLastmod }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照文档内容长度排序
-
-
-  {{ range .Data.Pages.ByLength }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照文档标题排序
-
-
-  {{ range .Data.Pages.ByTitle }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照链接标题排序
-
-
-  {{ range .Data.Pages.ByLinkTitle }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照其它元信息排序
-
-
-  {{ range (.Date.Pages.ByParam &quot;author.last_name&quot;) }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-反转排序（以上所有排序都可反转）
-
-
-  {{ range .Data.Pages.ByTitle.Reverse }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-除此之外，文档还可以按照分类进行排序，而分类标签本身可以按照标签字母序来排序
-
-&lt;ul&gt;
-{{ $data := .Data }}
-{{ range $key, $value := .Data.Taxonomy.Alphabetical }}
-&lt;li&gt;&lt;a href=&quot;{{ .Site.LanguagePrefix }}/{{ $data.Plural }}/{{ $value.Name | urlize }}&quot;&gt; {{ $value.Name }} &lt;/a&gt; {{ $value.Count }} &lt;/li&gt;
-{{ end }}
-&lt;/ul&gt;
-
-
-或者按照关联到该分类标签的文档数量排序（即按照分类的热门程度排序）
-
-&lt;ul&gt;
-{{ $data := .Data }}
-{{ range $key, $value := .Data.Taxonomy.ByCount }}
-&lt;li&gt;&lt;a href=&quot;{{ .Site.LanguagePrefix }}/{{ $data.Plural }}/{{ $value.Name | urlize }}&quot;&gt; {{ $value.Name }} &lt;/a&gt; {{ $value.Count }} &lt;/li&gt;
-{{ end }}
-&lt;/ul&gt;
-
-
-属于某个分类的文档默认按照 weight 和 date 来排序，并且支持为文档指定分类排序时的权重，这样可以调整文档在分类中的顺序，这个功能通过文档中指定元数据 taxonomyname_weight 来实现，其中 taxonomyname 代表分类名。
-
-文档分组
-
-当在列表页面展示多篇文档时，Hugo 支持我们根据文档类型、日期或者 Section 来分组显示文档。
-
-
-按照 Section 分组
-
-
-  {{ range .Data.Pages.GroupBy &quot;Section&quot; }}
-  &lt;h3&gt;{{ .Key }}&lt;/h3&gt;
-  &lt;ul&gt;
-      {{ range .Pages }}
-      &lt;li&gt;
-      &lt;a href=&quot;{{ .Permalink }}&quot;&gt;{{ .Title }}&lt;/a&gt;
-      &lt;div class=&quot;meta&quot;&gt;{{ .Date.Format &quot;Mon, Jan 2, 2006&quot; }}&lt;/div&gt;
-      &lt;/li&gt;
-      {{ end }}
-  &lt;/ul&gt;
-  {{ end }}
-
-
-
-按照日期分组
-
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照发布日期分组
-
-
-  {{ range .Data.Pages.GroupByPublishDate &quot;2006-01&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照其它元信息分组
-
-
-  {{ range .Data.Pages.GroupByParam &quot;param_key&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-反转分组排序
-
-
-  {{ range (.Data.Pages.GroupByDate &quot;2006-01&quot;).Reverse }}
-    &lt;!-- 利用模板函数Reverse来反转 --&gt;
-  {{ end }}
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; &quot;desc&quot; }}
-    &lt;!-- 或者直接指定排序方向 --&gt;
-  {{ end }}
-
-
-
-组内文档排序
-
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; &quot;asc&quot; }}
-  &lt;h3&gt;{{ .Key }}&lt;/h3&gt;
-  &lt;ul&gt;
-      {{ range .Pages.ByTitle }}
-      &lt;!-- 可以按照之前介绍排序文档的各种方法来排序组内文档 --&gt;
-      {{ end }}
-  &lt;/ul&gt;
-  {{ end }}
-
-
-文档过滤
-
-有时候也许想要排除某些文档在列表页面显示，Hugo 支持我们在列表页面限制文档显示数量以及限制显示的文档种类。
-
-
-限制文档显示数量
-
-
-  {{ range first 10 .Data.Pages }}
-      &lt;!-- 利用模板函数first，只显示排在前面的10篇文档 --&gt;
-      {{ .Render &quot;summary&quot; }}
-  {{ end }}
-
-
-
-根据条件过滤某些文档
-
-
-  {{ range where .Data.Pages &quot;Section&quot; &quot;post&quot; }}
-     &lt;!-- 利用模板函数where，只筛选显示Section为post的文档 --&gt;
-     {{ .Content }}
-  {{ end }}
-
-  {{ range first 5 (where .Data.Pages &quot;Section&quot; &quot;post&quot;) }}
-     &lt;!-- 同时使用where和first --&gt;
-     {{ .Content }}
-  {{ end }}
-
-
-文档摘要
-
-Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存放在模板页面变量 .Summary ，同时提供模板变量 .Truncated 来记录截取的摘要是否包含了文档的全部内容。同时 Hugo 还支持我们在内容文档中明确指定将哪些内容作为该文档的摘要，具体来说需要在文档中插入一行  来标识位于该行之前的内容作为摘要，同理 Hugo 会将摘要存放在模板页面变量 .Summary ，并用模板变量 .Truncated 标识摘要是否包含了文档全部内容。">
+<meta itemprop="name" content="typora - 时光小栈">
+<meta itemprop="description" content="sequenceDiagram Alice-&gt;&gt;Bob: Hello Bob, how are you? alt is sick Bob-&gt;&gt;Alice: Not so good :( else is well Bob-&gt;&gt;Alice: Feeling fresh like a daisy end opt Extra response Bob-&gt;&gt;Alice: Thanks for asking end  ">
 <meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
 
 <meta property="og:type" content="article" />
-<meta property="og:title" content="Hugo 文档处理 - 时光小栈" />
-<meta property="og:description" content="文档排序
-
-当在列表页面展示多篇文档时，就涉及到文档先后顺序的问题了。Hugo 中文档默认是以元信息 weight 来排序，当文档未指定 weight 时，就以元信息 date 来排序，如果这两项都没有指定的话，列表页面看到的文档就是无序的。
-
-不过除了上面 weight 和 date 外，Hugo 还支持我们以更多方式来排序列表页面，我们需要在列表模板文件中使用以下一些模板变量来控制文档的排序
-
-
-按照元信息权重和日期排序（默认排序方式）
-
-
-  {{ range .Data.Pages }}
-  &lt;li&gt;
-  &lt;a href=&quot;{{ .Permalink }}&quot;&gt;{{ .Title }}&lt;/a&gt;
-  &lt;div class=&quot;meta&quot;&gt;{{ .Date.Format &quot;Mon, Jan 2, 2006&quot; }}&lt;/div&gt;
-  &lt;/li&gt;
-  {{ end }}
-
-
-
-按照元信息日期排序
-
-
-  {{ range .Data.Pages.ByDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照发布日期排序
-
-
-  {{ range .Data.Pages.ByPublishDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照失效日期排序
-
-
-  {{ range .Data.Pages.ByExpiryDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照修改日期排序
-
-
-  {{ range .Data.Pages.ByLastmod }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照文档内容长度排序
-
-
-  {{ range .Data.Pages.ByLength }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照文档标题排序
-
-
-  {{ range .Data.Pages.ByTitle }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照链接标题排序
-
-
-  {{ range .Data.Pages.ByLinkTitle }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照其它元信息排序
-
-
-  {{ range (.Date.Pages.ByParam &quot;author.last_name&quot;) }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-反转排序（以上所有排序都可反转）
-
-
-  {{ range .Data.Pages.ByTitle.Reverse }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-除此之外，文档还可以按照分类进行排序，而分类标签本身可以按照标签字母序来排序
-
-&lt;ul&gt;
-{{ $data := .Data }}
-{{ range $key, $value := .Data.Taxonomy.Alphabetical }}
-&lt;li&gt;&lt;a href=&quot;{{ .Site.LanguagePrefix }}/{{ $data.Plural }}/{{ $value.Name | urlize }}&quot;&gt; {{ $value.Name }} &lt;/a&gt; {{ $value.Count }} &lt;/li&gt;
-{{ end }}
-&lt;/ul&gt;
-
-
-或者按照关联到该分类标签的文档数量排序（即按照分类的热门程度排序）
-
-&lt;ul&gt;
-{{ $data := .Data }}
-{{ range $key, $value := .Data.Taxonomy.ByCount }}
-&lt;li&gt;&lt;a href=&quot;{{ .Site.LanguagePrefix }}/{{ $data.Plural }}/{{ $value.Name | urlize }}&quot;&gt; {{ $value.Name }} &lt;/a&gt; {{ $value.Count }} &lt;/li&gt;
-{{ end }}
-&lt;/ul&gt;
-
-
-属于某个分类的文档默认按照 weight 和 date 来排序，并且支持为文档指定分类排序时的权重，这样可以调整文档在分类中的顺序，这个功能通过文档中指定元数据 taxonomyname_weight 来实现，其中 taxonomyname 代表分类名。
-
-文档分组
-
-当在列表页面展示多篇文档时，Hugo 支持我们根据文档类型、日期或者 Section 来分组显示文档。
-
-
-按照 Section 分组
-
-
-  {{ range .Data.Pages.GroupBy &quot;Section&quot; }}
-  &lt;h3&gt;{{ .Key }}&lt;/h3&gt;
-  &lt;ul&gt;
-      {{ range .Pages }}
-      &lt;li&gt;
-      &lt;a href=&quot;{{ .Permalink }}&quot;&gt;{{ .Title }}&lt;/a&gt;
-      &lt;div class=&quot;meta&quot;&gt;{{ .Date.Format &quot;Mon, Jan 2, 2006&quot; }}&lt;/div&gt;
-      &lt;/li&gt;
-      {{ end }}
-  &lt;/ul&gt;
-  {{ end }}
-
-
-
-按照日期分组
-
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照发布日期分组
-
-
-  {{ range .Data.Pages.GroupByPublishDate &quot;2006-01&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-按照其它元信息分组
-
-
-  {{ range .Data.Pages.GroupByParam &quot;param_key&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-
-
-
-反转分组排序
-
-
-  {{ range (.Data.Pages.GroupByDate &quot;2006-01&quot;).Reverse }}
-    &lt;!-- 利用模板函数Reverse来反转 --&gt;
-  {{ end }}
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; &quot;desc&quot; }}
-    &lt;!-- 或者直接指定排序方向 --&gt;
-  {{ end }}
-
-
-
-组内文档排序
-
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; &quot;asc&quot; }}
-  &lt;h3&gt;{{ .Key }}&lt;/h3&gt;
-  &lt;ul&gt;
-      {{ range .Pages.ByTitle }}
-      &lt;!-- 可以按照之前介绍排序文档的各种方法来排序组内文档 --&gt;
-      {{ end }}
-  &lt;/ul&gt;
-  {{ end }}
-
-
-文档过滤
-
-有时候也许想要排除某些文档在列表页面显示，Hugo 支持我们在列表页面限制文档显示数量以及限制显示的文档种类。
-
-
-限制文档显示数量
-
-
-  {{ range first 10 .Data.Pages }}
-      &lt;!-- 利用模板函数first，只显示排在前面的10篇文档 --&gt;
-      {{ .Render &quot;summary&quot; }}
-  {{ end }}
-
-
-
-根据条件过滤某些文档
-
-
-  {{ range where .Data.Pages &quot;Section&quot; &quot;post&quot; }}
-     &lt;!-- 利用模板函数where，只筛选显示Section为post的文档 --&gt;
-     {{ .Content }}
-  {{ end }}
-
-  {{ range first 5 (where .Data.Pages &quot;Section&quot; &quot;post&quot;) }}
-     &lt;!-- 同时使用where和first --&gt;
-     {{ .Content }}
-  {{ end }}
-
-
-文档摘要
-
-Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存放在模板页面变量 .Summary ，同时提供模板变量 .Truncated 来记录截取的摘要是否包含了文档的全部内容。同时 Hugo 还支持我们在内容文档中明确指定将哪些内容作为该文档的摘要，具体来说需要在文档中插入一行  来标识位于该行之前的内容作为摘要，同理 Hugo 会将摘要存放在模板页面变量 .Summary ，并用模板变量 .Truncated 标识摘要是否包含了文档全部内容。">
+<meta property="og:title" content="typora - 时光小栈" />
+<meta property="og:description" content="sequenceDiagram Alice-&gt;&gt;Bob: Hello Bob, how are you? alt is sick Bob-&gt;&gt;Alice: Not so good :( else is well Bob-&gt;&gt;Alice: Feeling fresh like a daisy end opt Extra response Bob-&gt;&gt;Alice: Thanks for asking end  ">
 <meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
-<meta property="og:url" content="//blog.pytool.com/blog/hugo_sort/" />
+<meta property="og:url" content="//blog.pytool.com/hugo/typora/" />
 
 <meta name="baidu-site-verification" content="pCInWQYbNT" />
 
 
 <script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
-<link rel="canonical" href="//blog.pytool.com/blog/hugo_sort/">
-<link rel='shortlink' href="//blog.pytool.com/blog/hugo_sort/"/>
+<link rel="canonical" href="//blog.pytool.com/hugo/typora/">
+<link rel='shortlink' href="//blog.pytool.com/hugo/typora/"/>
 <link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
 
 <link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
@@ -758,12 +77,6 @@ Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存�
         
           
           <li class="menu-item menu-item-type-post_type menu-item-object-page">
-            <a rel="nofollow" href="//blog.pytool.com/blog/">Blog</a>
-          
-        </li>
-        
-          
-          <li class="menu-item menu-item-type-post_type menu-item-object-page">
             <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
           
         </li>
@@ -777,6 +90,12 @@ Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存�
           
           <li class="menu-item menu-item-type-post_type menu-item-object-page">
             <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hugo/">Hugo</a>
           
         </li>
         
@@ -902,13 +221,13 @@ Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存�
                   class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
                 <div class="post-inner group">
 
-                  <h1 class="post-title">Hugo 文档处理</h1>
+                  <h1 class="post-title">typora</h1>
 
                   <p class="post-byline">
-                    by  · 2017年08月15日 10:58:08 · 1309 Words ·
-                    ~3min reading time |
+                    by  · 2017年04月01日 04:15:26 · 33 Words ·
+                    ~1min reading time |
                     
-                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Blog/hugo_sort.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/hugo/typora.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
                   </p>
 
                   <div class="clear"></div>
@@ -916,249 +235,18 @@ Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存�
                   <div class="entry">
                     <div class="entry-inner">
                       
-                      <h3 id="文档排序">文档排序</h3>
-
-<p>当在列表页面展示多篇文档时，就涉及到文档先后顺序的问题了。Hugo 中文档默认是以元信息 <code>weight</code> 来排序，当文档未指定 <code>weight</code> 时，就以元信息 <code>date</code> 来排序，如果这两项都没有指定的话，列表页面看到的文档就是无序的。</p>
-
-<p>不过除了上面 <code>weight</code> 和 <code>date</code> 外，Hugo 还支持我们以更多方式来排序列表页面，我们需要在列表模板文件中使用以下一些模板变量来控制文档的排序</p>
-
-<ul>
-<li>按照元信息权重和日期排序（默认排序方式）</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages }}
-  &lt;li&gt;
-  &lt;a href=&quot;{{ .Permalink }}&quot;&gt;{{ .Title }}&lt;/a&gt;
-  &lt;div class=&quot;meta&quot;&gt;{{ .Date.Format &quot;Mon, Jan 2, 2006&quot; }}&lt;/div&gt;
-  &lt;/li&gt;
-  {{ end }}
+                      <pre><code class="language-mermaid">sequenceDiagram
+ Alice-&gt;&gt;Bob: Hello Bob, how are you?
+    alt is sick
+    Bob-&gt;&gt;Alice: Not so good :(
+    else is well
+    Bob-&gt;&gt;Alice: Feeling fresh like a daisy
+    end
+    opt Extra response
+    Bob-&gt;&gt;Alice: Thanks for asking
+    end
 </code></pre>
 
-<ul>
-<li>按照元信息日期排序</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.ByDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照发布日期排序</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.ByPublishDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照失效日期排序</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.ByExpiryDate }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照修改日期排序</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.ByLastmod }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照文档内容长度排序</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.ByLength }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照文档标题排序</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.ByTitle }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照链接标题排序</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.ByLinkTitle }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照其它元信息排序</li>
-</ul>
-
-<pre><code>  {{ range (.Date.Pages.ByParam &quot;author.last_name&quot;) }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>反转排序（以上所有排序都可反转）</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.ByTitle.Reverse }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<p>除此之外，文档还可以按照分类进行排序，而分类标签本身可以按照标签字母序来排序</p>
-
-<pre><code>&lt;ul&gt;
-{{ $data := .Data }}
-{{ range $key, $value := .Data.Taxonomy.Alphabetical }}
-&lt;li&gt;&lt;a href=&quot;{{ .Site.LanguagePrefix }}/{{ $data.Plural }}/{{ $value.Name | urlize }}&quot;&gt; {{ $value.Name }} &lt;/a&gt; {{ $value.Count }} &lt;/li&gt;
-{{ end }}
-&lt;/ul&gt;
-</code></pre>
-
-<p>或者按照关联到该分类标签的文档数量排序（即按照分类的热门程度排序）</p>
-
-<pre><code>&lt;ul&gt;
-{{ $data := .Data }}
-{{ range $key, $value := .Data.Taxonomy.ByCount }}
-&lt;li&gt;&lt;a href=&quot;{{ .Site.LanguagePrefix }}/{{ $data.Plural }}/{{ $value.Name | urlize }}&quot;&gt; {{ $value.Name }} &lt;/a&gt; {{ $value.Count }} &lt;/li&gt;
-{{ end }}
-&lt;/ul&gt;
-</code></pre>
-
-<p>属于某个分类的文档默认按照 <code>weight</code> 和 <code>date</code> 来排序，并且支持为文档指定分类排序时的权重，这样可以调整文档在分类中的顺序，这个功能通过文档中指定元数据 <code>taxonomyname_weight</code> 来实现，其中 <code>taxonomyname</code> 代表分类名。</p>
-
-<h3 id="文档分组">文档分组</h3>
-
-<p>当在列表页面展示多篇文档时，Hugo 支持我们根据文档类型、日期或者 Section 来分组显示文档。</p>
-
-<ul>
-<li>按照 Section 分组</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.GroupBy &quot;Section&quot; }}
-  &lt;h3&gt;{{ .Key }}&lt;/h3&gt;
-  &lt;ul&gt;
-      {{ range .Pages }}
-      &lt;li&gt;
-      &lt;a href=&quot;{{ .Permalink }}&quot;&gt;{{ .Title }}&lt;/a&gt;
-      &lt;div class=&quot;meta&quot;&gt;{{ .Date.Format &quot;Mon, Jan 2, 2006&quot; }}&lt;/div&gt;
-      &lt;/li&gt;
-      {{ end }}
-  &lt;/ul&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照日期分组</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照发布日期分组</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.GroupByPublishDate &quot;2006-01&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>按照其它元信息分组</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.GroupByParam &quot;param_key&quot; }}
-    &lt;!-- ... --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>反转分组排序</li>
-</ul>
-
-<pre><code>  {{ range (.Data.Pages.GroupByDate &quot;2006-01&quot;).Reverse }}
-    &lt;!-- 利用模板函数Reverse来反转 --&gt;
-  {{ end }}
-
-  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; &quot;desc&quot; }}
-    &lt;!-- 或者直接指定排序方向 --&gt;
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>组内文档排序</li>
-</ul>
-
-<pre><code>  {{ range .Data.Pages.GroupByDate &quot;2006-01&quot; &quot;asc&quot; }}
-  &lt;h3&gt;{{ .Key }}&lt;/h3&gt;
-  &lt;ul&gt;
-      {{ range .Pages.ByTitle }}
-      &lt;!-- 可以按照之前介绍排序文档的各种方法来排序组内文档 --&gt;
-      {{ end }}
-  &lt;/ul&gt;
-  {{ end }}
-</code></pre>
-
-<h3 id="文档过滤">文档过滤</h3>
-
-<p>有时候也许想要排除某些文档在列表页面显示，Hugo 支持我们在列表页面限制文档显示数量以及限制显示的文档种类。</p>
-
-<ul>
-<li>限制文档显示数量</li>
-</ul>
-
-<pre><code>  {{ range first 10 .Data.Pages }}
-      &lt;!-- 利用模板函数first，只显示排在前面的10篇文档 --&gt;
-      {{ .Render &quot;summary&quot; }}
-  {{ end }}
-</code></pre>
-
-<ul>
-<li>根据条件过滤某些文档</li>
-</ul>
-
-<pre><code>  {{ range where .Data.Pages &quot;Section&quot; &quot;post&quot; }}
-     &lt;!-- 利用模板函数where，只筛选显示Section为post的文档 --&gt;
-     {{ .Content }}
-  {{ end }}
-
-  {{ range first 5 (where .Data.Pages &quot;Section&quot; &quot;post&quot;) }}
-     &lt;!-- 同时使用where和first --&gt;
-     {{ .Content }}
-  {{ end }}
-</code></pre>
-
-<h3 id="文档摘要">文档摘要</h3>
-
-<p>Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存放在模板页面变量 <code>.Summary</code> ，同时提供模板变量 <code>.Truncated</code> 来记录截取的摘要是否包含了文档的全部内容。同时 Hugo 还支持我们在内容文档中明确指定将哪些内容作为该文档的摘要，具体来说需要在文档中插入一行 <code></code> 来标识位于该行之前的内容作为摘要，同理 Hugo 会将摘要存放在模板页面变量 <code>.Summary</code> ，并用模板变量 <code>.Truncated</code> 标识摘要是否包含了文档全部内容。</p>
-
-<p>利用文档的摘要功能可以实现“阅读更多&hellip;”这样的功能，示例如下</p>
-
-<pre><code>{{ range first 10 .Data.Pages }}
-  &lt;div class=&quot;summary&quot;&gt;
-    &lt;h4&gt;&lt;a href=&quot;{{ .RelPermalink }}&quot;&gt;{{ .Title }}&lt;/a&gt;&lt;/h4&gt;
-    {{ .Summary }}
-  &lt;/div&gt;
-  {{ if .Truncated }}
-  &lt;div class=&quot;read-more-link&quot;&gt;
-    &lt;a href=&quot;{{ .RelPermalink }}&quot;&gt;Read More…&lt;/a&gt;
-  &lt;/div&gt;
-  {{ end }}
-{{ end }}
-</code></pre>
                       
                     </div>
                     <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
@@ -1169,7 +257,7 @@ Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存�
     <div>
         <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
         
-        <br />本文出处：<a target="_blank" href="//blog.pytool.com/blog/hugo_sort/">//blog.pytool.com/blog/hugo_sort/</a>
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/hugo/typora/">//blog.pytool.com/hugo/typora/</a>
         <br />
         文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
     </div>
@@ -1245,10 +333,10 @@ Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存�
     <ul class="post-nav group">
     <li class="previous">
       
-      <a href="//blog.pytool.com/blog/hugo_markdown/" rel="prev">
+      <a href="//blog.pytool.com/post/2017-10-31-i18n/" rel="prev">
         <i class="fa fa-chevron-left"></i>
         <strong>Previous Post</strong>
-        <span>Hugo 中的 Markdown 语法</span>
+        <span>i18n</span>
       </a>
       
   </li>
@@ -1395,10 +483,10 @@ Hugo 默认会截取文档前70个词作为文档摘要，并将摘要内容存�
     <ul class="post-nav group">
     <li class="next">
       
-      <a href="//blog.pytool.com/basic/2015-01-01-10%E4%B8%AA%E5%AE%9E%E7%94%A8%E7%9A%84php%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/" rel="next">
+      <a href="//blog.pytool.com/hugo/hugo/" rel="next">
         <i class="fa fa-chevron-right"></i>
         <strong>Next post</strong>
-        <span>10个实用的PHP正则表达式</span>
+        <span>个人博客hugo</span>
       </a>
       
   </li>
