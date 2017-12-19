@@ -8,7 +8,7 @@
                     var target = event.currentTarget || event.target;
                     var $form = w.jQuery(target);
                     var orgVal = $form.find('.search').val();
-                    $form.find('.search').val('site:blog.coderzh.com/ ' + orgVal);
+                    $form.find('.search').val('site:blog.pytool.com/ ' + orgVal);
                     done = true;
                     $form.submit();
                 }
@@ -16,7 +16,7 @@
             $('.hubinfo').each(function (i, e) {
                 var $elem = $(e);
                 $elem.hubInfo({
-                    user : $elem.data('u') || 'coderzh',
+                    user : $elem.data('u') || 'rinetd',
                     repo : $elem.data('r') || ''
                 });
             });
