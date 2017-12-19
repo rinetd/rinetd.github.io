@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<title>Linux内核及文件系统移植 - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="Linux内核及文件系统移植 嵌入式系统包含硬件子系统与软件子系统，其中软件子系统大致可分为：bootloader、Linux内核、文件系统与">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Linux内核及文件系统移植 - 时光小栈">
+<meta itemprop="description" content="Linux内核及文件系统移植 嵌入式系统包含硬件子系统与软件子系统，其中软件子系统大致可分为：bootloader、Linux内核、文件系统与">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux内核及文件系统移植 - 时光小栈" />
+<meta property="og:description" content="Linux内核及文件系统移植 嵌入式系统包含硬件子系统与软件子系统，其中软件子系统大致可分为：bootloader、Linux内核、文件系统与">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/hardware/android-%E5%BA%95%E5%B1%82/2016-01-07-linux%E5%86%85%E6%A0%B8-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+
+
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<link rel="canonical" href="//blog.pytool.com/hardware/android-%E5%BA%95%E5%B1%82/2016-01-07-linux%E5%86%85%E6%A0%B8-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/">
+<link rel='shortlink' href="//blog.pytool.com/hardware/android-%E5%BA%95%E5%B1%82/2016-01-07-linux%E5%86%85%E6%A0%B8-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/blog/">Blog</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/it/">IT</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/life/">Life</a>
+          
+        </li>
+        
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/reship/">Reship</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/shell/">Shell</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/tool/">Tool</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/post/">归档</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//blog.pytool.com/" rel="home">
+              
+              
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/" rel="category tag">Linux内核</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Linux内核及文件系统移植</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年01月07日 16:46:14 · 10877 Words ·
+                    ~22min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Hardware/Android%20%e5%ba%95%e5%b1%82/2016-01-07%20Linux%e5%86%85%e6%a0%b8%20%e6%96%87%e4%bb%b6%e7%b3%bb%e7%bb%9f%e7%a7%bb%e6%a4%8d.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<h1 id="linux内核及文件系统移植">Linux内核及文件系统移植</h1>
+
+<p>嵌入式系统包含硬件子系统与软件子系统，其中软件子系统大致可分为：bootloader、Linux内核、文件系统与应用开发，这四个组成部分中前三者构建成嵌入式应用功能的基础运行环境，是进行嵌入式产品项目开发前期就需要敲定的配置环境，非常重要与关键。本课程主要对第三部分嵌入式文件系统的构建与移植进行介绍，讲解如何选择、配置、移植与制作一个可用的文件系统及其镜像，以及怎样配合Linux内核的配置调整来应用生成的文件系统，进而掌握构建完整的嵌入式软件子系统应用开发环境。</p>
+
+<h1 id="开发移植环境-虚拟机ubuntu-12-04-friendlyarm-smart210sdk-windows-7-ultimate">开发移植环境：虚拟机Ubuntu 12.04 + FriendlyARM Smart210SDK + Windows 7 Ultimate</h1>
+
+<h2 id="lesson-1-linux内核启动参数介绍与设置">Lesson 1. Linux内核启动参数介绍与设置</h2>
+
+<p>引导：
+  软件子系统各组成部分之间的层次与关联，怎样相互识别、配置与加载？</p>
+
+<p>一、系统启动流程
+  bootloader(uboot) ———— Linux Kernel(uImage) ———— Rootfs(Init) ———— Applications</p>
+
+<p>二、启动环境配置
+  uboot环境变量: printenv  setenv  saveenv  tftpboot  nand read/write &hellip;
+    baudrate  115200
+    bootdelay
+    bootcmd   boot bootd运行bootcmd变量指定的命令进行启动
+    ipaddr, serverip, ethaddr,gatewayip
+    bootargs</p>
+
+<p>内核启动参数：bootargs &lsquo;<name>=<value> &hellip;&rsquo;
+  bootargs=root=/dev/nfs nfsroot=192.168.10.7:/home/hong/nfsroot ip=192.168.10.11 init=/linuxrc console=ttySAC0,115200</p>
+
+<pre><code>root, rootfstype, nfsroot
+  root=/dev/nfs nfsroot=nfsserver:path
+  root=/dev/mtdblock2
+  rootfstype=jffs2/yaffs2/squashfs/ubifs/...
+mtdparts： mtdparts=mtd-id:&lt;size1&gt;@&lt;offset1&gt;(&lt;name1&gt;),&lt;size2&gt;@&lt;offset2&gt;(&lt;name2&gt;)
+  mtdparts=s5pv210-nand:1M(boot),5M(kernel),80M(rootfs),426M(usrfs)
+  要想这个参数起作用，内核中的mtd驱动必须要支持，即内核配置时需要选上
+  Device Drivers  ---&gt; Memory Technology Device (MTD) support  ---&gt; Command line partition table parsing
+ip: nfs必须进行设置
+   ip=ip addr
+   ip=ip addr:server ip addr:gateway:netmask::which netcard:off
+init, console
+mem 限制linux内核的使用内存 mem=128M
+</code></pre>
+
+<p>三、启动参数设置
+    setenv bootargs &lsquo;root=/dev/nfs nfsroot=192.168.10.7:/home/hong/nfsroot ip=192.168.10.11 init=/linuxrc console=ttySAC0,115200&rsquo;
+  setenv bootcmd &lsquo;tftpboot 20008000 tiny_uImage;bootm 20008000&rsquo;</p>
+
+<p>总结：
+  1. 收集信息：flash类型与分区(nand/nor/spi.etc), 内存大小, 根文件系统类型,网络参数等(参考SDK开发手册)
+  2. 配置参数：setenv bootargs &lsquo;&hellip;&rsquo;;saveenv;
+  3. 测试参数：确保内核镜像可以成功加载，必不可少的步骤</p>
+
+<h2 id="lession-2-linux的根文件系统与基本框架">Lession 2.Linux的根文件系统与基本框架</h2>
+
+<p>引导：
+  Q1.什么是根文件系统，为什么需要根文件系统？
+  Q2.根文件系统需要满足哪些要求？</p>
+
+<p>一、Linux文件系统
+  目录结构
+  树形结构：倒立 —— 根目录 /</p>
+
+<p>二、根文件系统概念
+  1. 是什么
+    内核第一个挂载的文件系统，包含Linux系统完整启动所需的目录结构和重要文件
+    其它所有文件系统进行挂载使用的载体
+  2. 为什么
+    Linux完整启动的需要，进入用户态操作环境：VFS设计
+    提供了良好强大的文件系统扩展性</p>
+
+<p>三、根文件系统形式
+  1. 要求
+    根文件系统能被内核找到并加载：存储介质驱动、存在地址问题
+    格式能被内核识别：initrd/cramfs/&hellip;
+    包含基本的目录结构与启动程序
+  2. 结构
+    /bin  存放二进制可执行命令的目录
+    /dev  存放设备文件的目录
+    /etc  存放系统管理和配置文件的目录
+    /home 用户主目录，比如用户user的主目录就是/home/user，可以用~user表示
+    /lib  存放动态链接共享库的目录
+    /sbin 存放系统管理员使用的管理程序的目录
+    /tmp  公用的临时文件存储点
+    /root 系统管理员的主目录
+    /mnt  系统提供这个目录是让用户临时挂载其他的文件系统。
+    /proc 虚拟文件系统，可直接访问这个目录来获取系统信息。
+    /var  某些大文件的溢出区
+    /usr  最庞大的目录，要用到的应用程序和文件几乎都在这个目录。</p>
+
+<pre><code>一般说来，只有/bin，/dev，/etc，/lib，/proc，/var，/usr这些需要的，而其他都是可选的。
+</code></pre>
+
+<p>总结：
+  1.概念：根文件系统必不可少，有基本的格式与结构要求
+  2.框架：/bin，/dev，/etc，/lib，/proc，/var，/usr</p>
+
+<h2 id="lession-3-嵌入式根文件系统框架-busybox简介">Lession 3.嵌入式根文件系统框架：busybox简介</h2>
+
+<p>引导：
+  每次从零开始构建根文件系统框架，还是可以从一个现成的通用框架开始构建满足需求的根文件系统？</p>
+
+<p>一、从零开始构建最小根文件系统
+  /bin，/dev，/etc，/lib，/proc，/var，/usr</p>
+
+<p>二、通用嵌入式根文件系统项目：busybox
+  1. busybox项目： <a href="http://www.busybox.net/">http://www.busybox.net/</a>
+    23 March 2015 &ndash; BusyBox 1.23.2 (stable)
+    嵌入式Linux的瑞士军刀
+      BusyBox 将许多具有共性的小版本的UNIX工具结合到一个单一的可执行文件。这样的集合可以替代大部分常用工具比如的GNU fileutils, shellutils等工具，BusyBox提供了一个比较完善的环境，可以适用于任何小的嵌入式Linux系统。</p>
+
+<ol>
+<li>busybox源码
+下载稳定的版本
+编译构建二进制：make defconfig;make
+  make menuconfig
+安装得到目录结构：make CONFIG_PREFIX=../mini_rootfs/ install</li>
+</ol>
+
+<p>总结：
+  以busybox为起点，进行项目根文件系统的裁剪定制，构建自己的根文件系统。</p>
+
+<h2 id="lession-4-嵌入式根文件系统框架-启动脚本">[Lession 4]. 嵌入式根文件系统框架：启动脚本</h2>
+
+<p>引导：
+  前提：基于busybox的根文件系统移植与应用
+  init程序的限制性与局限性如何实现灵活动态调整的嵌入式应用启动控制？</p>
+
+<p>一、init进程：linuxrc &ndash;&gt; ELF二进制程序
+  /bin/busybox, 进程号1</p>
+
+<p>二、/etc/inittab文件: init程序的默认配置文件
+  sysinit —— 为init提供初始化命令行的路径及脚本程序
+  respawn —— 每当相应的进程终止执行便会重新启动
+  askfirst —— 类似respawn，不过它的主要用途是减少系统上执行的终端应用程序的数量。它将会促使init在控制台上显示“Please press Enter to active this console”的信息，并在重新启动之前等待用户按下enter键
+  wait —— 告诉init必须等到相应的进程完成之后才能继续执行
+  once —— 仅执行相应的进程一次，而且不会等待它完成
+  restart —— 当init重新启动时，执行相应的进程，通常此处所执行的进程就是init本身
+  ctrlaltdel —— 当按下Ctrl+Alt+Delete组合键时，执行相应的进程
+  shutdown —— 当系统关机时，执行相应的进程</p>
+
+<p>三、/etc/init.d/rcS文件及/etc/init.d目录
+  初始化脚本：rcS &ndash;&gt; 系统环境准备与配置
+  应用及服务脚本：S[0-9]* &ndash;&gt; 应用环境准备与配置</p>
+
+<p>四、编写并添加自定义的启动脚本
+  S71myapp_demo S01hello</p>
+
+<p>总结：
+  1.init —— inittab —— /etc/init.d/rcS —— /etc/init.d/S[0-9][0-9]* —— Applications
+  2.用C编写一个应用程序，修改或者创建启动脚本使程序上电自动运行</p>
+
+<h2 id="lession-5-嵌入式根文件系统框架-busybox编译">Lession 5. 嵌入式根文件系统框架：busybox编译</h2>
+
+<p>怎样从源码交叉编译得到符合需求的可用busybox二进制以及根文件系统框架？</p>
+
+<p>一、busybox的构建流程
+  1. make menuconfig &ndash;&gt; 裁剪定制构建选项: make defconfig
+    ncurses库的支持：
+      sudo apt-get install libncurses*
+      aptitude search libncurses</p>
+
+<ol>
+<li>make &ndash;&gt; 根据选项编译出二进制文件</li>
+<li>make install &mdash;&gt;  根据选项安装busybox</li>
+</ol>
+
+<p>二、busybox的交叉编译
+  1. 确认使用的交叉编译工具链以及其安装位置
+      which arm-linux-gcc
+  2. 配置busybox的编译工具链参数
+    Build Options  &mdash;&gt;
+      ()Cross Compiler prefix
+      ()Path to sysroot</p>
+
+<p>三、busybox的裁剪定制
+  1. 可配置选项简介： busybox settings
+    通用配置
+      [ ] Don&rsquo;t use /usr
+    构建选项：静态库、交叉编译
+      [ ] Build BusyBox as a static binary (no shared libs)
+    安装目录：./_install
+      (./_install) BusyBox installation prefix
+  注意：记得保存裁剪配置,可以查看.config文件进行简单的确认</p>
+
+<ol>
+<li>工具应用程序定制： applets
+对应busybox的源码目录</li>
+</ol>
+
+<p>裁剪主要目标：降低busybox的文件大小，节省存储空间
+  裁剪原则：确信你在做什么，否则就不要做</p>
+
+<p>总结
+  掌握busybox的编译构建步骤和busybox的配置选项
+  对busybox的配置选项进行各种尝试，观察构建出的busybox体积大小在去掉哪些选项时会有显著的降低</p>
+
+<h2 id="lession-6-嵌入式根文件系统框架-busybox应用">Lession 6. 嵌入式根文件系统框架：busybox应用</h2>
+
+<p>使用busybox需要确保busybox的运行，以及掌握常用的工具命令。</p>
+
+<p>一、补全目录与文件
+  补全需要的目录：
+    /proc /lib /etc /dev /usr /var</p>
+
+<p>动态库依赖：readelf -d busybox|grep NEEDED
+    ld-linux.so.3  libc.so.6  libm.so.6
+    ld-linux.so &mdash;-&gt; 实现动态库的链接
+    C库的选择：glibc，还是uclibc &mdash;-&gt; 取决于你的交叉编译器
+      glibc &mdash;&gt; 更全面完善的功能
+      uclibc &mdash;&gt; 更小的体积
+    库文件的查找：交叉编译器的安装目录 find命令</p>
+
+<p>设备文件：
+    /dev/console
+    /dev/tty1 /dev/tty2 /dev/tty3
+  配置文件：
+    拷贝 examples/bootfloppy/etc</p>
+
+<p>二、机制与使用
+  busybox是一个二进制程序，集合大量简单常用的工具程序到单个执行文件
+    代码共用，让busybox更小
+    单一执行文件，让busybox更简单
+  直接使用busybox：（二进制程序）
+    得到可用的工具命令（applets)列表
+  将命令名称作为参数调用busybox：等同于直接使用命令
+    /bin/busybox ls &mdash;&gt; ls
+    手动创建链接文件：ln -s /bin/busybox /bin/ls
+    安装过程自动创建所有的链接文件 &mdash;&gt; make install
+  所有工具命令的通用选项：&ndash;help
+    提供命令的简洁使用说明</p>
+
+<p>三、嵌入式常用的工具命令
+  设备驱动管理:
+    fdisk fsck  hwclock   mkdosfs
+    insmod  rmmod lsmod   mknod     modprobe
+    lsusb mdev  mount   umount
+  文本编辑处理：
+    mkdir mkfifo  ln    mv    cp    touch rm  unlink
+    awk   cat   cut   find  vi    sed   wc  tar
+    grep  head  tail  less  more  xargs od  stat
+  网络信息配置：
+    udhcpc  udhcpd  route netstat ping  ifconfig</p>
+
+<p>系统信息管理：
+    chmod clear date  dd    df    echo  free
+    ipcrm   ipcs  ls    ps    pwd   top   uptime
+    kill  killall reboot  sleep sysctl  usleep</p>
+
+<p>总结：
+  编译完成后的安装步骤是进行busybox根文件系统应用高效开始的第一步
+  熟悉并掌握常用的工具命令是进行busybox根文件系统应用开发的第二步
+  确保busybox的正确运行需要额外的库支持，这是进行busybox应用的前提条件</p>
+
+<h2 id="lession-7-文件系统移植实践一-基于busybox制作可用根文件系统">Lession 7  文件系统移植实践一：基于busybox制作可用根文件系统</h2>
+
+<p>一个开发中实用的根文件系统，还需要完善哪些内容，怎样来部署一个根文件系统？</p>
+
+<p>一、完善根文件系统
+1. check程序运行库：/lib/
+  从交叉编译工具目录拷贝
+    libpthread.so   libthread_db.so
+    libresolv.so
+    librt.so</p>
+
+<ol>
+<li><p>check配置文件： /etc目录
+/etc/inittab
+/etc/fstab: 文件内容与格式介绍, man fstab
+ <file system>    <dir> <type>      <options> <dump>      <pass>
+设备名称(分区)    挂载点 文件系统类型  挂载选项  备份检查[0|1] fsck优先级[0|1|2]
+  defaults  使用默认设置，等于rw,suid,dev,exec,auto,nouser,async
+内核文件系统挂载：proc
+/etc/profile：环境变量的设置与导出
+#!/bin/sh
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+LD_LIBRARY_PATH=/lib:/usr/lib:$LD_LIBRARY_PATH
+export PATH LD_LIBRARY_PATH
+/etc/resolv.conf
+DNS配置： nameserver 192.168.10.1</p></li>
+
+<li><p>check启动脚本：/etc目录
+/etc/init.d/rcS
+for script in /etc/init.d/S[0-9][0-9]*
+do
+  if [ -x $script ];then
+    /bin/sh -c $script
+  fi
+done
+/etc/init.d/S80network：网络配置
+ifconfig eth0 hw ether 00:aa:11:cc:01:10
+静态配置：
+  ifconfig eth0 192.168.10.111 broadcast 255.255.255.0
+  route add default gw 192.168.10.1
+动态配置：
+  udhcpc -i eth0 -t 20 -naq</p></li>
+</ol>
+
+<p>二、 制作文件系统镜像
+  二进制镜像是根文件系统的目录结构以某种数据组织格式打包成的二进制文件
+    组织格式：文件系统格式
+       cramfs jffs2 yaffs2 &hellip;
+  产品的生产部署阶段使用：批量烧录到产品
+    镜像可以方便地进行存储、分发与部署</p>
+
+<p>总结：
+  实践取决于应用需求，原理是相通的，但是不同的需求决定需要包含哪些内容。
+ Lession 9  Linux内核文件系统：proc、tmpfs、devfs、sysfs</p>
+
+<hr />
+
+<p>在类Unix系统中一切都是文件，那么Linux是如何将系统的运行信息、设备信息等抽象成文件进行管理的？</p>
+
+<p>Linux内核实现了一套特殊的内存虚拟文件系统用于使用与文件接口统一的操作来完成系统信息管理，它们包括：
+  procfs、devfs、sysfs。</p>
+
+<p>一、procfs
+  procfs是Linux内核信息的抽象文件接口，大量内核中的信息以及可调参数都被作为常规文件映射到
+一个目录树中/proc.这样我们就可以简单直接的通过echo或cat这样的文件操作命令对系统信息进行查取
+和调整了。大量的系统工具也通过procfs获取内核参数，例如ps、lspci等。</p>
+
+<ol>
+<li><p>procfs的挂载：首先确定你的内核已经支持procfs，默认支持</p>
+
+<h1 id="mount-t-proc-none-proc">mount -t proc none /proc</h1>
+
+<p>使用/etc/fstab条目：none /proc proc defaults 0 0</p></li>
+
+<li><p>procfs的内容：
+进程信息
+系统信息</p></li>
+
+<li><p>procfs信息查看
+cat命令： cat /proc/cmdline</p></li>
+
+<li><p>procfs参数调整
+echo命令</p></li>
+</ol>
+
+<p>二、tmpfs
+  tmpfs是一种虚拟内存文件系统，使用内存作为存储分区进行文件的临时性存取，掉电会丢失，创建时不需要使用mkfs等进行格式化。</p>
+
+<ol>
+<li><p>tmpfs的挂载：首先确定你的内核已经支持tmpfs</p>
+
+<h1 id="mount-t-tmpfs-o-size-10m-tmpfs-tmp">mount -t tmpfs -o size=10M tmpfs /tmp</h1>
+
+<h1 id="df-h">df -h</h1>
+
+<p>使用/etc/fstab条目：tmpfs /tmp tmpfs defaults 0 0</p></li>
+
+<li><p>tmpfs的使用：用来存放应用临时生成的信息，不需要持久保存
+正常使用挂载目录：创建文件，存储信息，删除文件等
+记住：目录下的所有信息将在系统掉电后全部丢失</p></li>
+
+<li><p>tmpfs的作用
+提高存储效率，内存的访问速度比Flash快很多
+避免对Flash存储设备的频繁读写，提高使用寿命</p></li>
+</ol>
+
+<p>三、devfs
+  Linux2.6内核以前设备文件的抽象机制：提供了一种类似于文件的方法来管理位于/dev目录下的所有设备。</p>
+
+<ol>
+<li><p>/dev ————— 根文件系统目录
+设备文件创建
+  制作根文件系统时创建基本的，比如console,tty1等
+  设备驱动加载时创建相应的设备文件</p></li>
+
+<li><p>特殊设备文件
+/dev/console
+/dev/null /dev/zero</p></li>
+
+<li><p>devfs的缺点 ————&gt; sysfs的设计
+不确定的设备映射，有时一个设备映射的设备文件可能不同，例如我的U盘可能对应sda有可能对应sdb
+没有足够的主/辅设备号，当设备过多的时候，显然这会成为一个问题</p></li>
+</ol>
+
+<p>四、sysfs
+  Linux2.6内核以后引入sysfs：挂载于/sys目录下，把实际连接到系统上的设备和总线组织成一个分级的文件，用户空间的程序同样可以利用这些信息以实现和内核的交互，该文件系统是当前系统上实际设备树的一个直观反应。</p>
+
+<ol>
+<li><p>sysfs的原理
+kobject子系统：建立目录树
+  当一个kobject被创建的时候，/sys/目录下对应的文件和目录也就被创建
+  每个设备在sysfs中都有唯一对应的目录，可以被用户空间读写</p></li>
+
+<li><p>sysfs的挂载：首先确定你的内核已经支持sysfs，默认支持</p>
+
+<h1 id="mount-t-none-sysfs-sys">mount -t none sysfs /sys</h1>
+
+<p>使用/etc/fstab条目：none /sys sysfs defaults 0 0</p></li>
+
+<li><p>sysfs的使用
+cat命令： 查看/sys目录下的设备信息</p></li>
+
+<li><p>sysfs的应用
+用户空间的工具udev：利用了sysfs提供的信息来实现所有devfs的功能
+  udev运行在用户空间中，而devfs却运行在内核空间</p></li>
+</ol>
+
+<p>总结：
+  一切皆文件的抽象思想，使得Linux系统的管理变得简单统一，好的哲学产生好的设计。</p>
+
+<h2 id="lession-10-嵌入式nfs文件系统的介绍与应用">Lession 10  嵌入式NFS文件系统的介绍与应用</h2>
+
+<p>嵌入式是宿主机 + 开发板的开发模式，两者之间的网络通讯与文件共享是进行高效率开发调试的前提条件。
+  NFS文件系统是嵌入式开发调试的快速高效手段，掌握与熟练使用是必备技能。</p>
+
+<p>一、NFS简介
+1、NFS：Network FileSystem
+  通过NFS挂载远程主机的目录，访问该目录就像访问本地目录一样
+  使用NFS服务能够方便地使各unix-like系统之间实现共享
+  Samba：在unix-like系统和windows系统之间共享</p>
+
+<p>2、NFS模式：C/S模式，RPC服务框架
+  NFS Server &lt;&mdash;&mdash;&mdash;-&gt; NFS Client
+  NFS运行在SUN的RPC（Remote Procedure Call，远程过程调用）基础上，RPC定义了一种与系统无关的方法来实现进程间通信</p>
+
+<ol>
+<li>NFS服务与安装：
+portmap服务
+nfs-kernel-server服务
+安装：# sudo apt-get install nfs-kernel-server
+启动：# sudo /etc/init.d/nfs-kernel-server start
+停止：# sudo /etc/init.d/nfs-kernel-server stop
+状态：# sudo /etc/init.d/nfs-kernel-server status
+重启：# sudo /etc/init.d/nfs-kernel-server restart</li>
+</ol>
+
+<p>二、NFS使用配置
+  1. 配置文件： /etc/exports
+    对NFS服务的访问是由exports来批准，它枚举了若干有权访问NFS服务器上文件系统的主机名。
+    文件控制对目录的共享（NFS挂载目录及权限由该文件定义），书写规则是每个共享为一行）。</p>
+
+<pre><code>格式：[共享目录] [主机名或IP](参数,参数...)
+第一个参数是要让客户机访问的目录，第二个是你允许的主机IP，最后的()内是访问控制方式。
+</code></pre>
+
+<ol>
+<li><p>NFS共享控制参数：man exports
+ro 只读访问
+rw 读写访问
+sync 所有数据在请求时写入共享（默认）
+async NFS在写入数据前可以相应请求
+secure NFS通过1024以下的安全TCP/IP端口发送
+insecure NFS通过1024以上的端口发送
+wdelay 如果多个用户要写入NFS目录，则归组写入（默认）
+no_wdelay 如果多个用户要写入NFS目录，则立即写入，当使用async时，无需此设置
+hide 在NFS共享目录中不共享其子目录
+no_hide 共享NFS目录的子目录
+subtree_check 要求检查请求访问的目录或者文件是否在共享目录下
+no_subtree_check 只检查请求访问的目录或文件是否在共享的文件系统中
+all_squash 共享文件的UID和GID映射匿名用户anonymous，适合公用目录
+no_all_squash 保留共享文件的UID和GID（默认）
+root_squash root用户的所有请求映射成如anonymous用户一样的权限（默认）
+no_root_squash root用户具有根目录的完全管理访问权限
+anonuid=xxx 指定NFS服务器/etc/passwd文件中匿名用户的UID
+anongid=xxx 指定NFS服务器/etc/passwd文件中匿名用户的GID</p></li>
+
+<li><p>配置命令
+exportfs
+  重新加载/etc/exports的共享目录，卸载NFS Server共享的目录或者重新共享
+  若更改了/etc/exports，运行以下命令进行更新：
+    $ sudo exportfs -r
+showmount
+  用來查看NFS共享的目录资源, 查看NFS Server的export list：
+    $ sudo showmount -e</p></li>
+</ol>
+
+<p>二、NFS开发板使用</p>
+
+<p>1、宿主机防火墙：在挂载失败时返回来检查设置
+  一般需要关闭防火墙服务，确保没有屏蔽NFS使用的端口和允许通信的主机</p>
+
+<p>2、NFS内核支持
+  Network FileSystem &ndash;&gt; [] NFS Client
+  首先查看目标板kernel自身是否支持NFS
+    cat /proc/filesystems命令： 是否有NFS一行</p>
+
+<p>3、NFS目录挂载
+  挂载格式： mount [Server IP]:/[share dir] [local mount point]
+    # mount -t nfs -o nolock 192.168.10.11:/opt/FriendlyARM/mini2440/root_nfs /mnt/root_nfs
+  检查挂载：挂载失败会有错误原因打印
+    # df -h
+  取消挂载
+    # umount /mnt/root_nfs</p>
+
+<h2 id="lession-11-ramfs文件系统-initramfs概念与使用">Lession 11  Ramfs文件系统：initramfs概念与使用</h2>
+
+<p>Linux内核加载根文件系统执行/sbin/init程序前，需要找到根设备位置，如果根设备需要驱动的支持，
+  内核有可能无能为力，通过提供一个过渡的临时根文件系统可以使得内核的设计更灵活简单。</p>
+
+<p>一、rootfs,ramfs,ramdisk与tmpfs
+  1. rootfs
+    内核启动的初始始根文件系统，大部分linux系统正常运行后都会安装另外的文件系统，然后忽略rootfs
+  2. ramfs
+    基于内存的文件系统。ramfs文件系统没有容量大小的限制，它可以根据需要动态增加容量。
+    直接利用了内核的磁盘高速缓存
+  3. ramdisk
+    基于ram的块设备，占据一块固定的内存，事先要使用特定的工具比如mke2fs格式化，还需要一个文件系统驱动来读写其上的文件
+    空间固定导致容量有限，要想装入更多的文件需要重新格式化
+    Linux的块设备缓冲特性, ram disk上的数据被拷贝到page cache(对于文件数据)和dentry cache(对于目录项),导致内存浪费
+  4. tmpfs
+    ramfs的一个缺点是它可能不停的动态增长直到耗尽系统的全部内存，所以只有root或授权用户允许使用ramfs。
+      增加了容量大小的限制  +  允许把数据写入交换分区
+    由于增加了这两个特性，tmpfs允许普通用户使用。</p>
+
+<p>二、initrd与initramfs
+  过渡根文件系统机制：将加载真正的根文件系统需要的设备驱动、工具以及初始化程序先加载到内存运行。</p>
+
+<ol>
+<li><p>initrd: initial Ramdisk
+/linuxrc文件
+基于ramdisk技术
+文件系统(ext2等)镜像文件 ————&gt; cpio格式镜像文件
+在内核启动完成后把它复制到/dev/ram块设备中, 作为内核加载真正根文件系统的过渡根文件系统</p></li>
+
+<li><p>initramfs: initial RAM file system
+init文件
+cpio格式镜像文件
+在内核启动完成后把它复制到rootfs中，作为内核初始的根文件系统，完成挂载系统真正的根文件系统</p></li>
+</ol>
+
+<p>三、initramfs使用
+  1. init程序文件: hello world
+    #include <stdio.h></p>
+
+<pre><code>int main(int argc, char *argv[])
+{
+  printf(&quot;Hello world Initramfs!\n&quot;);
+  sleep(999999999);
+}
+交叉编译：arm-linux-gcc -static hello.c -o hello
+修改命名：mv hello init
+</code></pre>
+
+<ol>
+<li><p>打包initramfs镜像
+find .|cpio -o -H newc|gzip &gt; ~/myinitramfs.cpio.gz
+在内核中选择使用: 注意选择initramfs的压缩格式</p></li>
+
+<li><p>解包initramfs镜像
+cpio -i -F myinitramfs.cpio &ndash;no-absolute-filenames
+zcat myinitramfs.cpio.gz | cpio -i -d -H newc &ndash;no-absolute-filenames</p></li>
+
+<li><p>内核initramfs的构建
+General setup  &mdash;&gt;
+  [*] Initial RAM filesystem and RAM disk (initramfs/initrd) support
+  (/rootfs_dir) Initramfs source file(s)
+   Built-in initramfs compression mode (None)  &mdash;&gt; [] None [] GZIP</p></li>
+</ol>
+
+<p>总结：
+  Linux内核 ————&gt; initrd/initramfs（包含根文件系统的设备驱动等） ————&gt; Real Root Filesystem
+  详细官方的描述文档：内核源码树下 Documentation/filesystems/ramfs-rootfs-initramfs.txt</p>
+
+<h2 id="lession-13-flash文件系统-jffs-jffs2和yaffs-yaffs2">Lession 13  Flash文件系统：jffs/jffs2和yaffs/yaffs2</h2>
+
+<p>在嵌入式系统中进行数据读写时，为了保证可靠性，我们可以选择哪些合适的文件系统？</p>
+
+<p>一、Flash闪存类型
+  非易失存储器，可以对称为块的存储器单元块进行擦写和再编程
+  任何flash器件的写入操作只能在空或已擦除的单元内进行，在进行写入操作之前必须先执行擦除</p>
+
+<ol>
+<li><p>NOR Flash: 非易失内存
+应用：代码存储介质
+特点：
+  芯片内执行(XIP, eXecute In Place)
+  低容量高成本： 1 - 16MB（常见）
+  读写速度：读取速度快，写入速度慢
+  块最大擦写次数：10W</p></li>
+
+<li><p>NAND Flash：类似硬盘的块设备
+应用：数据存储介质
+特点：
+　极高的单元密度
+  读写速度：写入和擦除的速度很快
+  高容量低成本：16 - 1024MB（常见）
+  块最大擦写次数：100W</p></li>
+</ol>
+
+<p>二、JFFS2
+  JFFS：1999
+  Journalling Flash File System， Version 2：2001-9-23，Linux 2.4.10
+  主要用于NOR Flash，可用于NAND Flash</p>
+
+<ol>
+<li>特性：
+掉电保护与损耗平衡
+垃圾回收机制
+CRC循环冗余校验机制
+挂载时间与内存消耗跟文件系统的大小成正比：文件系统越大，越慢，消耗越多 ————&gt; 很差的扩展性
+  挂载需要进行全盘扫描，挂载一个 16M 的闪存有时需要半分钟以上的时间
+  在实际应用中，JFFS2 最大能用在 128M 的闪存上</li>
+</ol>
+
+<p>三、YAFFS2
+  YAFFS：2002
+  Yet Another Flash File System， Version 2：2003
+  只能用于NAND Flash, YAFFS1支持512Bytes/Page的NAND Flash;YAFFS2支持2kBytes/Page的NAND Flash.</p>
+
+<p>1.特性：
+    储存资料的基本单位是Chunk：Page
+    支持YAFFS/Direct使用：可以不需要VFS，甚至操作系统支持
+    ECC冗余校验机制
+      纠正单比特错误和检测双比特错误，而且计算速度很快，但对1比特以上的错误无法纠正，对2比特以上的错误不保证能检测。
+    更快的挂载速度，更少的内存使用
+      512B/page ————&gt; 4KB RAM/1MB NAND
+      2KB/Page  ————&gt; 1KB RAM/1MB NAND</p>
+
+<p>总结：
+  JFFS与YAFFS都是日志结构文件系统（LFS），保障了数据的可靠性与安全性，可以恢复数据。
+  一般来说,对于小于64MB的NAND Flash,可以选用JFFS2;如果超过64MB,用YAFFS2比较合适</p>
+
+<h2 id="lesson-16-cramfs文件系统的制作与使用">Lesson 16 Cramfs文件系统的制作与使用</h2>
+
+<p>如何来制作一个cramfs文件系统的镜像以及验证它？</p>
+
+<p>一、工具安装
+  sudo apt-get install cramfsprogs</p>
+
+<p>命令：
+    mkcramfs
+    cramfsck</p>
+
+<p>二、镜像制作
+  文件系统内容：mini_busybox/
+  mkcramfs [dir] [fs-name]</p>
+
+<p>三、镜像使用
+  文件系统验证：
+    cramfsck  [fs-name]</p>
+
+<p>文件系统测试：losetup命令
+    losetup [loop device] [fs-file]
+    losetup -a
+    losetup -d [loop device]</p>
+
+<p>总结：文件系统镜像制作：安装工具 &mdash; 准备文件系统内容 &mdash; 使用工具制作镜像 &mdash; 测试镜像</p>
+
+<h2 id="lesson-17-squashfs文件系统的制作与使用">Lesson 17 squashfs文件系统的制作与使用</h2>
+
+<p>如何来制作一个squashfs件系统的镜像？</p>
+
+<p>一、工具安装
+  sudo apt-get install squashfs-tools</p>
+
+<p>命令：dpkg -L squashfs-tools|grep bin
+    mksquashfs
+    unsquashfs</p>
+
+<p>二、镜像制作
+  mksquashfs source1 source2 &hellip;  dest [options] [-e list of exclude dirs/files]
+  主要选项：
+    -comp <comp>            指定压缩算法：gzip (default)/lzo/xz
+    -b <block_size>         设置块大小，单位 Bytes，默认 131072 bytes (1MB)
+    -no-exports             不支持NFS文件系统导出
+    -no-sparse              不检测稀疏文件
+    -no-xattrs              不存储扩展文件属性(XATTR)
+    -xattrs                 存储扩展文件属性(default)
+    -noI                    不压缩Inode节点表
+    -noD                    不压缩数据块
+    -noF                    不压缩片段块
+    -noX                    不压缩扩展文件属性
+    -no-fragments           不使用片段管理
+    -always-use-fragments   对比块大小大的文件也是用片段块
+    -no-duplicates          不对文件重复进行检查
+    -all-root               修改所有的文件拥有者为root
+    -force-uid uid          设置所有文件的uid为指定的uid
+    -force-gid gid          设置所有文件的gid为指定的gid
+    -nopad                  不对文件系统进行4K字节对齐
+    -keep-as-directory      如果指定的源中有目录，在文件系统中创建根目录包含该目录，而不是包含目录内容</p>
+
+<p>文件系统内容：mini_busybox/
+    mksquashfs mini_busybox rootfs.squashfs -no-exports -no-xattrs -all-root</p>
+
+<p>三、镜像使用
+  内容提取：
+    unsquashfs [options] filesystem [directories or files to extract]
+    主要选项：
+      -d[est] <pathname>      解压到指定目录，默认为&rdquo;squashfs-root&rdquo;
+      -n[o-progress]          不显示进度条
+      -no[-xattrs]            不提取xattr属性，默认提取
+      -l[s]                   列出文件系统内容，不进行解压缩提取</p>
+
+<pre><code>  unsquashfs rootfs.squashfs
+</code></pre>
+
+<p>烧录挂载：
+    sudo losetup /dev/loop0 rootfs.squashfs
+    sudo mount /dev/loop0 /mnt
+    sudo losetup -a</p>
+
+<p>卸载解依附：
+    sudo umount /dev/loop0
+    sudo losetup -d /dev/loop0</p>
+
+<h2 id="lession-18-jffs2文件系统的制作与使用">Lession 18  jffs2文件系统的制作与使用</h2>
+
+<p>如何来制作一个jffs2文件系统的镜像？</p>
+
+<p>一、工具安装
+  sudo apt-get install mtd-utils</p>
+
+<p>命令：mkfs.jffs2</p>
+
+<p>二、镜像制作
+  信息收集：
+    Flash的页大小、擦除块大小</p>
+
+<p>mkfs.jffs2 [options]
+  主要选项：
+      -p, &ndash;pad[=SIZE]        使用0xff填充文件系统到指定大小，不指定则只填充完最后一个擦除块
+      -r, -d, &ndash;root=DIR      使用指定的目录内容构建文件系统(default: cwd)
+      -s, &ndash;pagesize=SIZE     使用指定的页大小（最大数据节点大小） (default: 4KiB)
+      -e, &ndash;eraseblock=SIZE   指定擦除块的大小 (default: 64KiB)
+      -c, &ndash;cleanmarker=SIZE  擦除标记的大小 (default 12)
+      -m, &ndash;compr-mode=MODE   选择压缩模式(default: priortiry)
+      -x, &ndash;disable-compressor=COMPRESSOR_NAME  禁用指定的压缩算法
+      -X, &ndash;enable-compressor=COMPRESSOR_NAME 启用指定的压缩算法
+      -y, &ndash;compressor-priority=PRIORITY:COMPRESSOR_NAME  设置压缩算法的优先级
+      -L, &ndash;list-compressors  列出可用的压缩算法
+      -t, &ndash;test-compression  测试压缩算法
+      -n, &ndash;no-cleanmarkers   不添加擦除标记到擦除块
+      -o, &ndash;output=FILE       指定文件系统镜像名称(default: stdout)
+      -l, &ndash;little-endian     创建一个小端的文件系统
+      -b, &ndash;big-endian        创建一个大端的文件系统
+      -q, &ndash;squash            压缩权限和设置所有文件的拥有者为root
+      -U, &ndash;squash-uids       设置所有文件的拥有者为root
+      -P, &ndash;squash-perms      压缩所有文件的权限</p>
+
+<p>文件系统内容：mini_busybox/
+    mkfs.jffs2 -d mini_busybox &ndash;pad=0x1000000 -s 4096 -l -o rootfs.jffs2</p>
+
+<p>三、镜像使用
+  MTD设备文件系统： 无法使用/dev/loop0块设备来模拟
+    只能在Flash设备上使用</p>
+
+<p>应用: 烧录到Flash设备或者分区</p>
+
+<p>总结：mtd-utils包带有很多的工具命令可以使用，辅助管理和使用Flash设备</p>
+
+<h2 id="lession-19-yaffs2文件系统的制作与使用">Lession 19 yaffs2文件系统的制作与使用</h2>
+
+<p>如何来制作一个yaffs2文件系统的镜像？</p>
+
+<p>一、获取yaffs2源码
+  git clone git://www.aleph1.co.uk/yaffs2
+  从源码中编译制作工具：
+    cd yaffs2/utils
+    make
+      error: unknown type name ‘u8’
+      error: unknown type name ‘u32’</p>
+
+<pre><code>  修改yportenv.h文件，增加：#define CONFIG_YAFFS_DEFINES_TYPES
+</code></pre>
+
+<p>制作工具：
+    mkyaffs2image： YAFFS2(2KB/page)
+    mkyaffsimage： YAFFS(512B/page)</p>
+
+<p>二、镜像制作
+  文件系统内容：mini_busybox/
+  mkyaffs2image dir image_file [convert]</p>
+
+<p>三、镜像使用
+  MTD设备文件系统： 无法使用/dev/loop0块设备来模拟
+    只能在NAND Flash设备上使用</p>
+
+<p>应用: 烧录到Flash设备或者分区</p>
+
+<h2 id="lession-20-文件系统移植实践三-flash分区与文件系统镜像烧录">Lession 20  文件系统移植实践三：Flash分区与文件系统镜像烧录</h2>
+
+<p>如何将文件系统镜像烧录到嵌入式Flash设备中，怎么样进行Flash的布局？</p>
+
+<p>一、Flash设备分区
+  1. 嵌入式通用Flash布局
+    bootloader + kernel + rootfs + appfs</p>
+
+<ol>
+<li><p>内核启动参数bootargs： mtparts
+mtdparts： mtdparts=mtd-id:<size1>@<offset1>(<name1>),<size2>@<offset2>(<name2>)
+  mtdparts=s5pv210-nand:1M(boot),5M(kernel),80M(rootfs),426M(usrfs)
+  mtdparts=s5pv210-nand:1M(boot),5M(kernel),80M(rootfs),16M(jffs2),394M(yaffs2)
+  要想这个参数起作用，内核中的mtd驱动必须要支持，即内核配置时需要选上
+  Device Drivers  &mdash;&gt; Memory Technology Device (MTD) support  &mdash;&gt; Command line partition table parsing</p>
+
+<p>0x000000000000-0x000000100000 : &ldquo;boot&rdquo;
+0x000000100000-0x000000600000 : &ldquo;kernel&rdquo;
+0x000000600000-0x000005600000 : &ldquo;rootfs&rdquo;
+0x000005600000-0x000006600000 : &ldquo;jffs2&rdquo;
+0x000006600000-0x000020000000 : &ldquo;yaffs2&rdquo;</p></li>
+</ol>
+
+<p>二、uboot环境下的Flash命令
+  nand    - NAND sub-system</p>
+
+<p>nand info - show available NAND devices
+  nand device [dev] - show or set current device
+  nand read - addr off|partition size
+  nand write - addr off|partition size
+    read/write &lsquo;size&rsquo; bytes starting at offset &lsquo;off&rsquo;
+    to/from memory address &lsquo;addr&rsquo;, skipping bad blocks.
+  nand write.yaffs - addr off|partition size
+    write &lsquo;size&rsquo; bytes starting at offset &lsquo;off&rsquo; with yaffs format
+    from memory address &lsquo;addr&rsquo;, skipping bad blocks.
+  nand erase[.spread] [clean] off size - erase &lsquo;size&rsquo; bytes from offset &lsquo;off&rsquo;
+    With &lsquo;.spread&rsquo;, erase enough for given file size, otherwise,
+    &lsquo;size&rsquo; includes skipped bad blocks.</p>
+
+<p>二、文件系统镜像烧录
+  0. 镜像制作： Flash型号的Page大小与Block大小，查看Datasheet手册
+    K9F4G08X0B Array Organization：
+      1 Page = (2K + 64)Bytes
+      1 Block = 64 Pages = (128K + 4K) Bytes</p>
+
+<pre><code>mkfs.jffs2 -d mini_busybox --pad=0x1000000 -s 2048 -e 0x20000 -l -o rootfs_128K.jffs2
+</code></pre>
+
+<ol>
+<li><p>下载镜像到系统内存中： 确定内存地址
+tftp 0x20008000 <image></p></li>
+
+<li><p>确定烧录要使用的分区： 确定Flash地址
+Flash地址偏移
+  0x000005600000-0x000006600000 : &ldquo;jffs2&rdquo;
+  0x000006600000-0x000020000000 : &ldquo;yaffs2&rdquo;</p></li>
+
+<li><p>烧录内存中的镜像到Flash分区中
+nand erase[.spread] <flash-offset> <size>
+nand write <memory-address> <flash-offset> <size>
+nand write.yaffs <memory-address> <flash-offset> <size></p></li>
+</ol>
+
+<p>完整命令：
+  tftp 0x20008000 rootfs.jffs2;nand erase 0x5600000 0x1000000;nand write 0x20008000 0x6600000 0x1000000
+  tftp 0x20008000 rootfs.yaffs2;nand erase 0x6600000 0x19a00000;nand write.yaffs 0x20008000 0x6600000 0x4194c0</p>
+
+<h2 id="lession-21-文件系统的挂载配置与选项">Lession 21  文件系统的挂载配置与选项</h2>
+
+<p>将Flash设备分区挂载到根文件系统才能进行读写操作，挂载动作是系统正常运行的基础工作。</p>
+
+<p>一、根文件系统与应用文件系统
+  根文件系统挂载： 内核完成
+  应用文件系统（设备分区）挂载：mount命令
+    Linux伪文件系统
+    tmpfs文件系统
+    Flash设备分区</p>
+
+<p>二、文件系统的挂载
+  准备工作：
+    设备分区：/dev/mtdblock3 /dev/mtdbock4
+    创建挂载点：/mnt  /tmp  /apps</p>
+
+<p>挂载命令：
+    mount   系统当前的文件系统挂载信息
+    mount -a  挂载/etc/fstab文件中指定的文件系统与设备
+    mount -t <fstype> [options] <device name> <mount-point> 挂载指定类型的设备到指定挂载点
+      mount -t jffs2 /dev/mtdblock3 /appfs/jffs2    &mdash;-&gt; 时间比yaffs2的挂载长很多
+      mount -t yaffs2 /dev/mtdblock4 /appfs/yaffs2</p>
+
+<p>启动挂载控制：启动脚本设置
+    /etc/fstab   添加设备与文件系统的挂载配置
+      注意：确保MTD设备分区已识别（udev/mdev的运行需要比/etc/fstab的挂载早）</p>
+
+<pre><code>/etc/init.d/rc.S  添加具体的设备挂载命令
+  添加挂载脚本：
+  mount -t jffs2 /dev/mtdblock3 /appfs/jffs2
+  mount -t yaffs2 /dev/mtdblock4 /appfs/yaffs2
+</code></pre>
+
+<h2 id="lession-22-嵌入式开发文件系统的选择与配置原则">Lession 22  嵌入式开发文件系统的选择与配置原则</h2>
+
+<p>构建嵌入式软件开发的基础设施环境是嵌入式应用开发的前提</p>
+
+<p>一、嵌入式软件开发
+  1. uboot  ———— 提供开发控制环境
+    基础硬件驱动移植
+      串口控制终端
+      Flash设备
+      网卡识别</p>
+
+<ol>
+<li><p>kernel(linux)  ———— 系统管理与任务调度
+完整硬件驱动移植
+文件系统支持移植</p></li>
+
+<li><p>FileSystem(rootfs + appfs) ———— 提供用户应用环境
+移植构建根文件系统
+组织应用文件系统
+  应用开发</p></li>
+
+<li><p>分区管理控制
+uboot + kernel + fs
+镜像制作与烧录</p></li>
+</ol>
+
+<p>二、文件系统移植应用
+  1. 应用范畴
+    根文件系统：建立用户空间使用环境
+      busybox  &mdash;&ndash;&gt; 提供系统管理等全面的用户工具集合
+      启动脚本 &mdash;&ndash;&gt; 配置用户空间的环境变量与提供应用开机启动机制</p>
+
+<pre><code>应用文件系统：存放用户应用程序与数据
+  防止修改： cramfs squashfs
+  Flash设备: jffs2 yaffs2
+  SD卡等外部设备：FAT32
+
+临时文件系统：运行时存在的文件系统
+  系统信息管理：Linux伪文件系统
+    proc
+    sys
+
+  内存文件系统：临时数据的存放管理
+    tmpfs
+</code></pre>
+
+<p>总结：内核与文件系统是嵌入式软件开发的基础设施，最重要的原则就是必须保证稳定可靠。</p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/hardware/android-%E5%BA%95%E5%B1%82/2016-01-07-linux%E5%86%85%E6%A0%B8-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/">//blog.pytool.com/hardware/android-%E5%BA%95%E5%B1%82/2016-01-07-linux%E5%86%85%E6%A0%B8-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%A7%BB%E6%A4%8D/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/linux/2010-01-01-linux-sysctl%E7%B3%BB%E7%BB%9F%E4%BC%98%E5%8C%96/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Linux 系统优化</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/stm32/">Stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(21)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%9C%AA%E5%88%86%E7%B1%BB/">未分类</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(10)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/linux/2011-01-01-linux%E5%8F%8A%E5%B8%B8%E7%94%A8%E5%B7%A5%E5%85%B7%E9%85%8D%E7%BD%AE/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux及常用工具配置</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-7" title="1 Posts">hugo<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-4" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(6)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script id="baidu_push">
+  (function(){
+    if (window.location.hostname === 'localhost') return;
+    var bp = document.createElement('script'); bp.async = true;
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+</body>
+</html>
+

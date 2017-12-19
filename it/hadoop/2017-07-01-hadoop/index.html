@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<title>hadoop安装 - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="干货】Apache Hadoop 2.8 完全分布式集群搭建超详细过程，实现NameNode HA、ResourceManager HA高可靠性 目录：/root/h">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="hadoop安装 - 时光小栈">
+<meta itemprop="description" content="干货】Apache Hadoop 2.8 完全分布式集群搭建超详细过程，实现NameNode HA、ResourceManager HA高可靠性 目录：/root/h">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="hadoop安装 - 时光小栈" />
+<meta property="og:description" content="干货】Apache Hadoop 2.8 完全分布式集群搭建超详细过程，实现NameNode HA、ResourceManager HA高可靠性 目录：/root/h">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/it/hadoop/2017-07-01-hadoop/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+
+
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<link rel="canonical" href="//blog.pytool.com/it/hadoop/2017-07-01-hadoop/">
+<link rel='shortlink' href="//blog.pytool.com/it/hadoop/2017-07-01-hadoop/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/blog/">Blog</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/it/">IT</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/life/">Life</a>
+          
+        </li>
+        
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/reship/">Reship</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/shell/">Shell</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/tool/">Tool</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/post/">归档</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/about/">关于我</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="" type="application/rss+xml" target="_blank">订阅</a>
+        </li>
+        <li class="menu-item menu-item-type-post_type menu-item-text">
+        
+        </li>
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//blog.pytool.com/" rel="home">
+              
+              
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/" rel="category tag">程序员</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">hadoop安装</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年03月24日 14:55:34 · 1826 Words ·
+                    ~4min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/IT/hadoop/2017-07-01%20hadoop.md" target="_blank">Improve on <i class="fa fa-github"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      <p><a href="https://my.oschina.net/u/876354/blog/993836">干货】Apache Hadoop 2.8 完全分布式集群搭建超详细过程，实现NameNode HA、ResourceManager HA高可靠性</a>
+目录：/root/hadoop-2.6.0/sbin
+启动yarn历史进程命令：./mr-jobhistory-daemon.sh start historyservice</p>
+
+<p>192.168.10.90-192.168.10.102
+root info top .123
+<a href="http://192.168.8.240:8080/websitems-hadoop/">http://192.168.8.240:8080/websitems-hadoop/</a>
+admin 123456</p>
+
+<p>hadoop安装
+1、下载安装包
+    wget <a href="http://mirrors.hust.edu.cn/apache/hadoop/common/stable2/hadoop-2.7.3.tar.gz">http://mirrors.hust.edu.cn/apache/hadoop/common/stable2/hadoop-2.7.3.tar.gz</a>
+2、解压
+    tar -zvxf hadoop-2.7.3.tar.gz -C /usr/local/
+3、配置core-site.xml</p>
+
+<pre><code class="language-xml">	&lt;configuration&gt;
+		&lt;!-- 指定hdfs的nameservice为ns1 --&gt;
+        &lt;property&gt;
+        &lt;name&gt;fs.defaultFS&lt;/name&gt;
+        &lt;value&gt;hdfs://ns1/&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;!-- 指定hadoop临时目录 --&gt;
+        &lt;property&gt;
+        &lt;name&gt;hadoop.tmp.dir&lt;/name&gt;
+        &lt;value&gt;/usr/local/hadoop-2.7.3/tmp&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+        &lt;name&gt;dfs.journalnode.edits.dir&lt;/name&gt;
+        &lt;value&gt;/usr/local/hadoop-2.7.3/journal&lt;/value&gt;
+		&lt;/property&gt;
+		&lt;!-- 指定zookeeper地址 --&gt;
+        &lt;property&gt;
+        &lt;name&gt;ha.zookeeper.quorum&lt;/name&gt;
+        &lt;value&gt;10.130.213.53:2181,10.130.213.54:2181,10.130.213.55:2181&lt;/value&gt;
+        &lt;/property&gt;
+        &lt;property&gt;
+          &lt;name&gt;hadoop.native.lib&lt;/name&gt;
+          &lt;value&gt;true&lt;/value&gt;
+          &lt;description&gt;Should native hadoop libraries, if present, be used.&lt;/description&gt;
+        &lt;/property&gt;
+	&lt;/configuration&gt;
+</code></pre>
+
+<p>4、配置hdfs-site.xml
+手动强制切换 <code>sudo -u hdfs hdfs haadmin -transitionToActive/transitionToStandby</code></p>
+
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;?xml-stylesheet type=&quot;text/xsl&quot; href=&quot;configuration.xsl&quot;?&gt;
+&lt;!--
+  Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+--&gt;
+
+&lt;!-- Put site-specific property overrides in this file. --&gt;
+
+&lt;configuration&gt;
+	&lt;!--指定hdfs的nameservice为ns1，需要和core-site.xml中的保持一致 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.nameservices&lt;/name&gt;
+		&lt;value&gt;ns1&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- ns1下面有两个NameNode，分别是nn1，nn2 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.ha.namenodes.ns1&lt;/name&gt;
+		&lt;value&gt;nn1,nn2&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- nn1的RPC通信地址 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.namenode.rpc-address.ns1.nn1&lt;/name&gt;
+		&lt;value&gt;192.168.10.90:9000&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- nn1的http通信地址 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.namenode.http-address.ns1.nn1&lt;/name&gt;
+		&lt;value&gt;192.168.10.90:50070&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- nn2的RPC通信地址 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.namenode.rpc-address.ns1.nn2&lt;/name&gt;
+		&lt;value&gt;192.168.10.91:9000&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- nn2的http通信地址 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.namenode.http-address.ns1.nn2&lt;/name&gt;
+		&lt;value&gt;192.168.10.91:50070&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- 指定NameNode的元数据在JournalNode上的存放位置 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.namenode.shared.edits.dir&lt;/name&gt;
+		&lt;value&gt;qjournal://S1PA222:8485;S1PA223:8485;S1PA224:8485/ns1&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- 指定JournalNode在本地磁盘存放数据的位置 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.journalnode.edits.dir&lt;/name&gt;
+		&lt;value&gt;/root/hadoop-2.6.0/journal&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- 开启ZKFC NameNode失败自动切换 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.ha.automatic-failover.enabled.ns1&lt;/name&gt;
+		&lt;value&gt;true&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- 配置失败自动切换实现方式 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.client.failover.proxy.provider.ns1&lt;/name&gt;
+		&lt;value&gt;org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- 配置隔离机制方法，多个机制用换行分割，即每个机制占用一行--&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.ha.fencing.methods&lt;/name&gt;
+		&lt;value&gt;
+			sshfence
+			shell(/bin/true)
+		&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- 使用sshfence隔离机制时需要ssh免登陆 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.ha.fencing.ssh.private-key-files&lt;/name&gt;
+		&lt;value&gt;/root/.ssh/id_rsa&lt;/value&gt;
+	&lt;/property&gt;
+	&lt;!-- 配置sshfence隔离机制超时时间 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.ha.fencing.ssh.connect-timeout&lt;/name&gt;
+		&lt;value&gt;30000&lt;/value&gt;
+	&lt;/property&gt;
+
+	&lt;!-- 开启webhdfs服务 --&gt;
+	&lt;property&gt;
+		&lt;name&gt;dfs.webhdfs.enabled&lt;/name&gt;
+		&lt;value&gt;true&lt;/value&gt;
+	&lt;/property&gt;
+
+&lt;/configuration&gt;
+</code></pre>
+
+<p>5、配置mapred-site.xml</p>
+
+<pre><code class="language-xml">	&lt;configuration&gt;
+		&lt;!-- 指定mr框架为yarn方式 --&gt;
+        &lt;property&gt;
+                &lt;name&gt;mapreduce.framework.name&lt;/name&gt;
+                &lt;value&gt;yarn&lt;/value&gt;
+        &lt;/property&gt;
+
+        &lt;property&gt;
+                &lt;name&gt;mapred.hosts.exclude&lt;/name&gt;                       
+                &lt;value&gt;/usr/local/hadoop-2.7.3/conf/excludes&lt;/value&gt;
+                &lt;final&gt;true&lt;/final&gt;
+        &lt;/property&gt;
+	&lt;/configuration&gt;
+</code></pre>
+
+<p>6、配置yarn-site.xml
+启动 <code>sudo -u yarn yarn-daemon.sh start resourcemanager</code>
+<code>sudo -u yarn yarn rmadmin -transitionToActive/transitionToStandby</code>
+```xml
+&lt;?xml version=&ldquo;1.0&rdquo;?&gt;
+&lt;!&ndash;
+  Licensed under the Apache License, Version 2.0 (the &ldquo;License&rdquo;);
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at</p>
+
+<pre><code>http://www.apache.org/licenses/LICENSE-2.0
+</code></pre>
+
+<p>Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an &ldquo;AS IS&rdquo; BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License. See accompanying LICENSE file.
+&ndash;&gt;
+<configuration>
+    <!-- 指定resourcemanager地址 -->
+    <property>
+        <name>yarn.resourcemanager.hostname</name>
+        <value>S1PA13</value>
+    </property>
+    <!-- 指定nodemanager启动时加载server的方式为shuffle server -->
+    <property>
+        <name>yarn.nodemanager.aux-services</name>
+        <value>mapreduce_shuffle</value>
+    </property>
+</configuration></p>
+
+<p>```xml
+    <configuration>
+        <!-- Site specific YARN configuration properties -->
+        <!-- 开启RM高可用 -->
+        <property>
+           <name>yarn.resourcemanager.ha.enabled</name>
+           <value>true</value>
+        </property>
+        <!-- 指定RM的cluster id -->
+        <property>
+           <name>yarn.resourcemanager.cluster-id</name>
+           <value>yrc</value>
+        </property>
+        <!-- 指定RM的名字 -->
+        <property>
+           <name>yarn.resourcemanager.ha.rm-ids</name>
+           <value>rm1,rm2</value>
+        </property>
+        <!-- 分别指定RM的地址 -->
+        <property>
+           <name>yarn.resourcemanager.hostname.rm1</name>
+           <value>10.130.213.52</value>
+        </property>
+        <property>
+           <name>yarn.resourcemanager.hostname.rm2</name>
+           <value>10.130.213.53</value>
+        </property>
+        <!-- 指定zk集群地址 -->
+        <property>
+           <name>yarn.resourcemanager.zk-address</name>
+           <value>10.130.213.53:2181,10.130.213.54:2181,10.130.213.55:2181</value>
+        </property>
+        <property>
+           <name>yarn.nodemanager.aux-services</name>
+           <value>mapreduce_shuffle</value>
+        </property>
+    </configuration>
+7、配置slaves
+    10.130.213.52
+    10.130.213.53
+    10.130.213.54
+    10.130.213.55
+8、格式化namenode
+    hadoop namenode -format
+    报错：java.net.UnknownHostException: iZ2ze1vepnzhenh9aaz723Z: unknown error
+    我们通过执行hostname命令可以看到：</p>
+
+<pre><code>[shirdrn@localhost bin]# hostname
+localhost.localdomain
+也就是说，Hadoop在格式化HDFS的时候，通过hostname命令获取到的主机名是localhost.localdomain，然后在/etc/hosts文件中进行映射的时候，没有找到，看下我的/etc/hosts内容：
+
+[root@localhost bin]# cat /etc/hosts
+# Do not remove the following line, or various programs
+# that require network functionality will fail.
+127.0.0.1               localhost       localhost
+192.168.1.103           localhost       localhost
+也就说，通过localhost.localdomain根本无法映射到一个IP地址，所以报错了。
+
+此时，我们查看一下/etc/sysconfig/network文件：
+
+NETWORKING=yes
+NETWORKING_IPV6=yes
+HOSTNAME=localhost.localdomain
+
+可见，执行hostname获取到这里配置的HOSTNAME的值。
+解决办法：配置/etc/hosts或者修改/etc/sysconfig/network文件中的HOSTNAME
+</code></pre>
+
+<p>9、格式化zkfc
+    namenode节点上：hdfs zkfc -formatZK
+10、配置无密登陆
+    namenode节点：ssh-keygen -t rsa
+    一路回车
+    cat /root/.ssh/id_rsa.pub &gt;&gt; /root/.ssh/authorized_keys
+    复制master上的authorized_keys到其他子节点上:
+    首先，为了避免权限问题，我们可以事先设置文件和目录权限：
+    #设置authorized_keys权限
+    chmod 600 authorized_keys
+    #设置.ssh目录权限
+    chmod 700 -R .ssh
+11、hadoop迁移数据
+    hadoop distcp hdfs://172.18.16.44:9000/MP4 hdfs://101.201.56.236:50071/</p>
+
+<p>zookeeper安装
+1、下载安装包
+    wget <a href="http://mirror.bit.edu.cn/apache/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gz">http://mirror.bit.edu.cn/apache/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gz</a>
+2、解压
+    tar -zvxf zookeeper-3.4.10.tar.gz -C /usr/local/
+3、  配置
+    # The number of milliseconds of each tick
+    tickTime=2000
+    # The number of ticks that the initial
+    # synchronization phase can take
+    initLimit=10
+    # The number of ticks that can pass between
+    # sending a request and getting an acknowledgement
+    syncLimit=5
+    # the directory where the snapshot is stored.
+    # do not use /tmp for storage, /tmp here is just
+    # example sakes.
+    dataDir=/usr/local/zookeeper-3.4.10/data/
+    dataLogDir=/usr/local/zookeeper-3.4.10/logs
+    # the port at which the clients will connect
+    clientPort=2181
+    # the maximum number of client connections.
+    # increase this if you need to handle more clients
+    #maxClientCnxns=60
+    #
+    # Be sure to read the maintenance section of the
+    # administrator guide before turning on autopurge.
+    #
+    # <a href="http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance">http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance</a>
+    #
+    # The number of snapshots to retain in dataDir
+    #autopurge.snapRetainCount=3
+    # Purge task interval in hours
+    # Set to &ldquo;0&rdquo; to disable auto purge feature
+    #autopurge.purgeInterval=1
+    server.1=10.130.213.53:2888:3888
+    server.2=10.130.213.54:2888:3888
+    server.3=10.130.213.55:2888:3888
+3、安装jdk
+    cd /home/es/setup/
+    rpm -ivh jdk-8u40-linux-x64.rpm
+4、配置java环境变量
+    vi /etc/profile
+    #set environment<br />
+    export JAVA_HOME=/usr/java/jdk1.8.0_40
+    export CLASSPATH=.:$JAVA_HOME/lib.tools.jar
+    export PATH=$JAVA_HOME/bin:$PATH
+    source /etc/profile
+5、vi /usr/local/zookeeper-3.4.10/bin/zookeeper.out
+[myid:] - ERROR [main:QuorumPeerMain@85] - Invalid config, exiting abnormally
+org.apache.zookeeper.server.quorum.QuorumPeerConfig$ConfigException: Error processing /usr/local/zookeeper-3.4.10/bin/../conf/zoo.cfg
+        at org.apache.zookeeper.server.quorum.QuorumPeerConfig.parse(QuorumPeerConfig.java:154)
+        at org.apache.zookeeper.server.quorum.QuorumPeerMain.initializeAndRun(QuorumPeerMain.java:101)
+        at org.apache.zookeeper.server.quorum.QuorumPeerMain.main(QuorumPeerMain.java:78)
+Caused by: java.lang.IllegalArgumentException: /usr/local/zookeeper-3.4.10/data/myid file is missing
+        at org.apache.zookeeper.server.quorum.QuorumPeerConfig.parseProperties(QuorumPeerConfig.java:406)
+        at org.apache.zookeeper.server.quorum.QuorumPeerConfig.parse(QuorumPeerConfig.java:150)
+        &hellip; 2 more
+Invalid config, exiting abnormally</p>
+
+<p>解决办法：echo &lsquo;1&rsquo; &gt; myid
+注意：此数字必须与conf/zoo.cfg中的server.ID一致。</p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/it/hadoop/2017-07-01-hadoop/">//blog.pytool.com/it/hadoop/2017-07-01-hadoop/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/it/hadoop/2017-07-01-hadoop%E5%9F%BA%E7%A1%80/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>hadoop基础</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/stm32/">Stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(21)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%9C%AA%E5%88%86%E7%B1%BB/">未分类</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(10)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/it/hadoop/2017-07-01-hadoop%E6%B7%BB%E5%8A%A0%E8%8A%82%E7%82%B9datanode/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>hadoop添加datanode</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-7" title="1 Posts">hugo<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-4" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(6)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script id="baidu_push">
+  (function(){
+    if (window.location.hostname === 'localhost') return;
+    var bp = document.createElement('script'); bp.async = true;
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+</body>
+</html>
+
