@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<title>Makefile 详解 - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="基本原则 .PYTHON伪目标总是不如其它文件“新”，因此它总是被执行。 @ 使命令在被执行前不被回显。 – 使任何命令行的任何非零退出状态都被忽略。">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Makefile 详解 - 时光小栈">
+<meta itemprop="description" content="基本原则 .PYTHON伪目标总是不如其它文件“新”，因此它总是被执行。 @ 使命令在被执行前不被回显。 – 使任何命令行的任何非零退出状态都被忽略。">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Makefile 详解 - 时光小栈" />
+<meta property="og:description" content="基本原则 .PYTHON伪目标总是不如其它文件“新”，因此它总是被执行。 @ 使命令在被执行前不被回显。 – 使任何命令行的任何非零退出状态都被忽略。">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/post/shell/makefile/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+
+
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<link rel="canonical" href="//blog.pytool.com/post/shell/makefile/">
+<link rel='shortlink' href="//blog.pytool.com/post/shell/makefile/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hugo/">Hugo</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/life/">Life</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/other/">Other</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/post/">Post</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/reship/">Reship</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/shell/">Shell</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/tool/">Tool</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/post/">Post</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/about/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//blog.pytool.com/" rel="home">
+              
+              
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/" rel="category tag">Linux基础</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Makefile 详解</h1>
+
+                  <p class="post-byline">
+                    by  · 2017年11月07日 14:55:34 · 4108 Words ·
+                    ~9min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Post/shell/Makefile.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<h2 id="基本原则">基本原则</h2>
+
+<p>.PYTHON伪目标总是不如其它文件“新”，因此它总是被执行。
+@   使命令在被执行前不被回显。
+–   使任何命令行的任何非零退出状态都被忽略。
++   使命令行可以通过指定 -n、-q 或 -t 选项来执行。</p>
+
+<h2 id="模式变量">模式变量 %</h2>
+
+<p>argets定义了一系列的目标文件，可以有通配符。是目标的一个集合。
+target-parrtern是指明了targets的模式，也就是的目标集模式。
+prereq-parrterns是目标的依赖模式，它对target-parrtern形成的模式再进行一次依赖目标的定义。</p>
+
+<p>这样描述这三个东西，可能还是没有说清楚，还是举个例子来说明一下吧。
+如果我们的<target-parrtern>定义成“%.o”，意思是我们的集合中都是以“.o”结尾的，而如果我们的<prereq-parrterns>定义成“%.c”，意思是对<target-parrtern>所形成的目标集进行二次定义，其计算方法是，取<target-parrtern>模式中的“%”（也就是去掉了[.o]这个结尾），并为其加上[.c]这个结尾，形成的新集合。</p>
+
+<p>所以，我们的“目标模式”或是“依赖模式”中都应该有“%”这个字符，如果你的文件名中有“%”那么你可以使用反斜杠“\”进行转义，来标明真实的“%”字符。</p>
+
+<p>看一个例子：</p>
+
+<pre><code class="language-Makefile">objects = foo.o bar.o
+all: $(objects)
+$(objects):
+%.o: %.c
+  $(CC) -c $(CFLAGS) $&lt; -o $@
+</code></pre>
+
+<p>上面的例子中，指明了我们的目标从$object中获取，“%.o”表明要所有以“.o”结尾的目标，
+也就是“foo.o bar.o”，也就是变量$object集合的模式，而依赖模式“%.c”则取模式“%.o”的“%”，也就是“foobar”，并为其加下“.c”的后缀，于是，我们的依赖目标就是“foo.cbar.c”。
+而命令中的“$&lt;”和“$@”则是自动化变量，“$&lt;”表示所有的依赖目标集（也就是“foo.c bar.c”），“$@”表示目标集（也就是foo.o bar.o”）。于是，上面的规则展开后等价于下面的规则：</p>
+
+<pre><code class="language-Ｍakefile">foo.o : foo.c
+  $(CC) -c $(CFLAGS) foo.c -o foo.o
+bar.o : bar.c
+  $(CC) -c $(CFLAGS) bar.c -o bar.o
+</code></pre>
+
+<p>试想，如果我们的“%.o”有几百个，那种我们只要用这种很简单的“静态模式规则”就可以写完一堆规则，实在是太有效率了。“静态模式规则”的用法很灵活，如果用得好，那会一个很强大的功能。再看一个例子：</p>
+
+<p>files = foo.elc bar.o lose.o</p>
+
+<p>$(filter %.o,$(files)): %.o: %.c</p>
+
+<pre><code>       $(CC) -c $(CFLAGS) $&lt; -o $@
+</code></pre>
+
+<p>$(filter %.elc,$(files)): %.elc: %.el</p>
+
+<pre><code>       emacs -f batch-byte-compile $&lt;
+</code></pre>
+
+<p>$(filter%.o,$(files))表示调用Makefile的filter函数，过滤“$filter”集，只要其中模式为“%.o”的内容。其的它内容，我就不用多说了吧。这个例字展示了Makefile中更大的弹性。</p>
+
+<h2 id="自动变量">自动变量 $</h2>
+
+<p>$@          &ndash;代表目标文件(target)
+$^          &ndash;代表所有的依赖文件(components)
+$&lt;          &ndash;代表第一个依赖文件(components中最左边的那个)。</p>
+
+<p>要生成目标 &hellip; : 生成目标所需的依赖 &hellip;
+    command #必须要以[Tab]键开始</p>
+
+<p>export<unexport> 传递变量到下级 Makefile 中</p>
+
+<p>$@
+表示规则中的目标文件集。在模式规则中，如果有多个目标，那么，&rdquo;$@&ldquo;就是匹配于
+目标中模式定义的集合。
+  $% 仅匹配目标文件
+仅当目标是函数库文件中，表示规则中的目标成员名。例如，如果一个目标是&rdquo;foo.a
+(bar.o)&ldquo;，那么，&rdquo;$%&ldquo;就是&rdquo;bar.o&rdquo;，&rdquo;$@&ldquo;就是&rdquo;foo.a&rdquo;。如果目标不是函数库文件（Unix
+下是[.a]，Windows 下是[.lib]），那么，其值为空。
+  $&lt;
+依赖目标中的第一个目标名字。如果依赖目标是以模式（ 即&rdquo;%&ldquo;）定义的，那么&rdquo;$&lt;&ldquo;将
+是符合模式的一系列的文件集。注意，其是一个一个取出来的。
+  $? 依赖的集合(只提取比目标新的)
+所有比目标新的依赖目标的集合。以空格分隔。
+  $^ 依赖的集合(去重)
+所有的依赖目标的集合。以空格分隔。如果在依赖目标中有多个重复的，那个这个变量
+会去除重复的依赖目标，只保留一份。
+  $+ 依赖的集合(不去重)
+这个变量很像&rdquo;$^&ldquo;，也是所有依赖目标的集合。只是它不去除重复的依赖目标。
+  $* 去除后缀名(不推荐使用)
+这个变量表示目标模式中&rdquo;%&ldquo;及其之前的部分。如果目标是&rdquo;dir/a.foo.b&rdquo;，并且目标的
+模式是&rdquo;a.%.b&rdquo;，那么，&rdquo;$<em>&ldquo;的值就是&rdquo;dir/a.foo&rdquo;。这个变量对于构造有关联的文件名是比
+较有较。如果目标中没有模式的定义，那么&rdquo;$</em>&ldquo;也就不能被推导出，但是，如果目标文件的
+后缀是 make 所识别的，那么&rdquo;$<em>&ldquo;就是除了后缀的那一部分。例如：如果目标是&rdquo;foo.c&rdquo;，因
+为&rdquo;.c&rdquo;是 make 所能识别的后缀名，所以，&rdquo;$</em>&ldquo;的值就是&rdquo;foo&rdquo;。这个特性是 GNU make 的，</p>
+
+<p>很有可能不兼容于其它版本的 make，所以，你应该尽量避免使用&rdquo;$<em>&ldquo;，除非是在隐含规则
+或是静态模式中。如果目标中的后缀是 make 所不能识别的，那么&rdquo;$</em>&ldquo;就是空值。</p>
+
+<p>在Makefile中写shell代码有点诡异，和不同的shell语法不太一样，如果不了解，看Makefile会莫名其妙。下面总结了一些。</p>
+
+<h2 id="makefile和shell">Makefile和Shell</h2>
+
+<ol>
+<li>Makefile本质上来讲也是shell脚本，即每条command都是shell进程，运行完shell进程都会退出
+<code>Makefile
+test:
+gcc -c main.c -o main.o
+gcc -c a.c -o a.o
+</code>
+这样输入make test，结果相当于两个进程，都退出了。</li>
+</ol>
+
+<p>等价于在shell下输命令一样。</p>
+
+<pre><code class="language-Makefile">my_test:
+  cd /home;mkdir test
+</code></pre>
+
+<p>这里make my_test，结果相当于一个进程。当前目录是/root 而</p>
+
+<pre><code class="language-Makefile">own_test:
+  cd /home
+  mkdir test
+</code></pre>
+
+<p>此时<code>make own_test</code>，相当于两个进程，
+第一个进程是cd /home,运行完回到了/root。这时再运行第二个shell命令就会在/root下创建一个test目录.(makefile中的shell进程命令，跟直接在shell输的命令相同，但是它都会结束本身，即exit)</p>
+
+<h2 id="makefile-中变量赋值">Makefile 中变量赋值</h2>
+
+<p>1：尽在Makefile文件的目标项冒号后的另起一行的代码才是shell代码。</p>
+
+<p>第一种方式：</p>
+
+<p><code>xx = xx1</code>         // 这里时makefile代码</p>
+
+<p>第二种方式：
+yy：xx = xx2       // 这是是makefile代码，makefile允许变量赋值时，&rsquo;=&lsquo;号两边留空格  ？？？？？？可以吗</p>
+
+<p>第三种方式：
+yy：
+   xx=xx3         // 只有这里是shell代码 ，shell不允许‘=’号两边有空格哦。
+yy:
+   xx= xx3        // 只有这里是shell代码 ，shell不允许‘=’号两边有空格哦。</p>
+
+<p>注意此时xx的值是&rdquo; xx3&rdquo;，多了一个空格</p>
+
+<p>有一个例外：
+xx=$(shell 这里的代码也是shell代码)</p>
+
+<h2 id="变量传递">变量传递</h2>
+
+<p>2：Makefile中的shell，每一行是一个进程，不同行之间变量值不能传递。所以，Makefile中的shell不管多长也要写在一行。
+eg：</p>
+
+<p>SUBDIR=src example</p>
+
+<p>all:</p>
+
+<p>@for subdir in $(SUBDIR); /      // 这里往下是一行shell</p>
+
+<p>do/</p>
+
+<pre><code>   echo &quot;building &quot; $$subdir; /
+</code></pre>
+
+<p>done</p>
+
+<h2 id="变量引用-ｍakefile变量-shell的变量">变量引用 Ｍakefile变量$ shell的变量$$</h2>
+
+<p>3：Makefile中的变量以$开头，使用$(VAR)或${VAR}来引用变量的定义。 所以，为了避免和shell的变量冲突，shell的变量以$$开头</p>
+
+<p>注意：Makefile中在对一些简单变量的引用，我们也可以不使用“（）”和“{}”来标记变量名，而直接使用“$x”的格式来实现，此种用法仅限于变量名为单字符的情况。另外自动化变量也使用这种格式。对于一般多字符变量的引用必须使用括号了标记，否则make将把变量名的首字母作为作为变量而不是整个字符串（“$PATH”在Makefile中实际上是“$(P)ATH”）。这一点和shell中变量的引用方式不同。shell中变量的引用可以是“${xx}”或者“$xx”格式。但在Makefile中多字符变量名的引用只能是“$(xx)”或者“${xx}”格式。</p>
+
+<p>eg1：从当前目录路径中提取出 /application 或 /base_class 之前的部分
+PROJECT_ROOT_DIR = $(shell pwd | awk -F&rsquo;/application|/base_class&rsquo; &lsquo;{print $$1}&rsquo;)
+eg2：上例中$$subdir就是shell中的变量， 而$(SUBDIR)是Makefile的中的变量</p>
+
+<h2 id="变量输出-隐藏自身的输出-出错继续运行">变量输出 @隐藏自身的输出 - 出错继续运行</h2>
+
+<p>如果make执行的命令前面加了@字符，则不显示命令本身而只显示它的结果; Android中会定义某个变量等于@，例如 hide:= @
+通常make执行的命令如果出错（该命令的退出状态非0）就立刻终止，不再执行后续命令，但如果命令前面加了-号，即使这条命令出错，make也会继续执行后续命令。
+通常rm命令和mkdir命令前面要加-号，因为rm要删除的文件可能不存在，mkdir要创建的目录可能已存在，这两个命令都有可能出错，但这种错误是应该忽略的。</p>
+
+<p>1、在Makefile中只能在target中调用Shell脚本，其他地方是不能输出的。比如如下代码就是没有任何输出：</p>
+
+<pre><code>VAR=&quot;Hello&quot;
+echo &quot;$(VAR)&quot;
+
+all:
+  .....
+</code></pre>
+
+<p>以上代码任何时候都不会输出，没有在target内，如果上述代码改为如下：</p>
+
+<pre><code>VAR=&quot;Hello&quot;
+
+all:
+   echo &quot;$(VAR)&quot;
+   .....
+</code></pre>
+
+<p>以上代码，在make all的时候将会执行echo命令。</p>
+
+<p>最后打印结果是:
+echo &ldquo;&ldquo;Hello&rdquo;&rdquo;
+&ldquo;Hello&rdquo;</p>
+
+<p>2、在Makefile中执行shell命令，一行创建一个进程来执行。这也是为什么很多Makefile中有很多行的末尾都是“;  \”，以此来保证代码是一行而不是多行，这样Makefile可以在一个进程中执行，例如：</p>
+
+<pre><code>SUBDIR=src example
+all:
+   @for subdir in $(SUBDIR); \
+   do\
+       echo &quot;building &quot;; \
+   done
+</code></pre>
+
+<p>上述可以看出for循环中每行都是以”; \”结尾的。</p>
+
+<p>3、Makefile中所有以$打头的单词都会被解释成Makefile中的变量。如果你需要调用shell中的变量（或者正则表达式中锚定句位$），都需要加两个$符号（$$）。实例如下：</p>
+
+<pre><code>PATH=&quot;/data/&quot;
+
+all:
+   echo ${PATH}/*Makefile中变量，即&quot;/data&quot;*/
+   echo $$PATH /*shell中的变量*/
+</code></pre>
+
+<p>例子中的第一个${PATH}引用的是Makefile中的变量，而不是shell中的PATH环境变量，后者引用的事Shell中的PATH环境变量。</p>
+
+<pre><code>以上三点的是Makefile调用shell应该注意的地方，写Makefile一定要注意。
+</code></pre>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/post/shell/makefile/">//blog.pytool.com/post/shell/makefile/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/post/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/2016-11-09-webpack/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>wepack3 详解</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/stm32/">Stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(21)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%9C%AA%E5%88%86%E7%B1%BB/">未分类</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(10)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/post/shell/shell%E5%B8%B8%E7%94%A8%E6%8B%9B%E5%BC%8F%E5%A4%A7%E5%85%A8%E5%85%A5%E9%97%A8%E7%AF%87/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Shell常用招式大全-入门篇</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-7" title="1 Posts">hugo<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-4" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(6)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script id="baidu_push">
+  (function(){
+    if (window.location.hostname === 'localhost') return;
+    var bp = document.createElement('script'); bp.async = true;
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+</body>
+</html>
+

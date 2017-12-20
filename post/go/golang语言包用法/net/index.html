@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<title>golang中net包用法（一） - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="chenbaoke的专栏 golang中net包用法（一） net包对于网络I/O提供了便携式接口，包括TCP/IP,UDP，域名解析以及Uni">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="golang中net包用法（一） - 时光小栈">
+<meta itemprop="description" content="chenbaoke的专栏 golang中net包用法（一） net包对于网络I/O提供了便携式接口，包括TCP/IP,UDP，域名解析以及Uni">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="golang中net包用法（一） - 时光小栈" />
+<meta property="og:description" content="chenbaoke的专栏 golang中net包用法（一） net包对于网络I/O提供了便携式接口，包括TCP/IP,UDP，域名解析以及Uni">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/post/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/net/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+
+
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<link rel="canonical" href="//blog.pytool.com/post/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/net/">
+<link rel='shortlink' href="//blog.pytool.com/post/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/net/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hugo/">Hugo</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/life/">Life</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/other/">Other</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/post/">Post</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/reship/">Reship</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/shell/">Shell</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/tool/">Tool</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/post/">Post</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/about/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="//blog.pytool.com/" rel="home">
+              
+              
+            </a>
+          </h1>
+          <p class="site-description"> 如果你没有感觉到时间不够用时，你多半正在虚度光阴。 </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="//blog.pytool.com/categories/golang/" rel="category tag">golang</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">golang中net包用法（一）</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年10月04日 04:15:26 · 8325 Words ·
+                    ~17min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Post/Go/golang%e8%af%ad%e8%a8%80%e5%8c%85%e7%94%a8%e6%b3%95/net.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<h2 id="chenbaoke的专栏-http-blog-csdn-net-chenbaoke"><a href="http://blog.csdn.net/chenbaoke">chenbaoke的专栏</a></h2>
+
+<p><a href="//blog.pytool.com/chenbaoke/article/details/42782571">golang中net包用法（一）</a></p>
+
+<p>net包对于网络I/O提供了便携式接口，包括TCP/IP,UDP，域名解析以及Unix Socket。尽管net包提供了大量访问底层的接口，但是大多数情况下，客户端仅仅只需要最基本的接口，例如Dial，LIsten，Accepte以及分配的conn连接和listener接口。 crypto/tls包使用相同的接口以及类似的Dial和Listen函数。下面对net包进行具体分析。</p>
+
+<p>首先介绍其中常量：</p>
+
+<pre><code>const (
+    IPv4len = 4
+    IPv6len = 16
+)
+</code></pre>
+
+<p>很容易看出这表示ip地址的长度（bytes），其中ipv4长度是4，ipv6地址长度是16</p>
+
+<p><span style="font-size:18px">变量：</span></p>
+
+<p>常用的ipv4地址：</p>
+
+<pre><code>var (
+    IPv4bcast     = IPv4(255, 255, 255, 255) // 广播地址
+    IPv4allsys    = IPv4(224, 0, 0, 1)       // 所有系统，包括主机和路由器，这是一个组播地址
+    IPv4allrouter = IPv4(224, 0, 0, 2)       // 所有组播路由器
+    IPv4zero      = IPv4(0, 0, 0, 0)         // 本地网络，只能作为本地源地址其才是合法的
+）
+</code></pre>
+
+<p>常用的IPV6地址：</p>
+
+<pre><code class="language-go">var (
+    IPv6zero                   = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}     
+    IPv6unspecified            = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+    IPv6loopback               = IP{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+    IPv6interfacelocalallnodes = IP{0xff, 0x01, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01}
+    IPv6linklocalallnodes      = IP{0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x01}
+    IPv6linklocalallrouters    = IP{0xff, 0x02, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x02}
+)
+</code></pre>
+
+<p>接下来讲一下IPV4和IPV6相关知识，了解的请直接跳过。</p>
+
+<p>IP地址（<span class="LangWithName"><span lang="en">Internet Protocol Address</span></span>，称为互联网协议地址，简写为IP Address），是一种给主机在Internet上进行编址的方式。常见的IP地址，分为IPV4和IPV6地址两类。</p>
+
+<p>IPV4是由32位二进制数表示，其表示为XXX.XXX.XXX.XXX，每组XXX代表小于或等于255的10进制数，IPV4地址总数为2<sup>32</sup>，不过，一些地址是为特殊用途所保留的，如专用网络（约18百万个地址）和多播地址（约270百万个地址）。其中IPV4分为ABCDE五类地址，分别进行介绍：</p>
+
+<p>A类地址<span style="white-space:pre"> </span>第一位为0，注意是位<span style="white-space:pre"></span>1、第1字节为网络地址，其它3个字节为主机地址</p>
+
+<p>2、地址范围：1.0.0.1—126.255.255.254</p>
+
+<p>3、10.X.X.X是私有地址，范围从10.0.0.0-10.255.255.255</p>
+
+<p>4、127.X.X.X是保留地址，用做环回测试。</p>
+
+<p>B类地址<span style="white-space:pre"> </span>前两位为10，注意是位<span style="white-space:pre"></span>1、 第1字节和第2字节为网络地址，后2个字节为主机地址</p>
+
+<p>2、地址范围：128.0.0.1—191.255.255.254</p>
+
+<p>3、私有地址范围：172.16.0.0—172.31.255.255</p>
+
+<p>4、保留地址：169.254.X.X   </p>
+
+<p>C类地址<span style="white-space:pre"> </span>前三位为110，注意是位<span style="white-space:pre"></span>1、前三个字节为网络地址，最后字节为主机地址</p>
+
+<p>2、地址范围：192.0.0.1—223.255.255.254</p>
+
+<p>3、私有地址：192.168.X.X，范围从192.168.0.0-192.168.255.255</p>
+
+<p>D类地址<span style="white-space:pre"> </span>前四位为1110，注意三位<span style="white-space:pre"></span>1、不分网络地址和主机地址。</p>
+
+<p>2、地址范围：224.0.0.1—239.255.255.254</p>
+
+<p>E类地址<span style="white-space:pre"> </span>前五位为11110，注意四位<span style="white-space:pre"></span>1、不分网络地址和主机地址</p>
+
+<p>2、地址范围：240.0.0.1—255.255.255.254</p>
+
+<p>此外还有几个特殊IP地址：</p>
+
+<p>1、0.0.0.0只能做源地址</p>
+
+<p>2、255.255.255.255是广播地址</p>
+
+<p>3、127.x.x.x为环回地址，本机使用</p>
+
+<p>4、专用地址：</p>
+
+<p><sup>10</sup>&frasl;<sub>8</sub> 地址范围：10.0.0.0——10.255.255.255，</p>
+
+<p>172.<sup>16</sup>&frasl;<sub>12</sub> 地址范围：172.16.0.0——172.31.255.255，</p>
+
+<p>192.168/16地址范围：192.168.0.0——192.168.255.255。</p>
+
+<p> </p>
+
+<p>224.0.0.1</p>
+
+<p>     组播地址，注意它和广播的区别。从224.0.0.0到239.255.255.255都是这样的地址。224.0.0.1特指所有主机和路由器，224.0.0.2特指所有<span class="keylink">路由器</span>。这样的地址多用于一些特定的程序以及多媒体程序。如果你的主机开启了IRDP(Internet路由发现，使用组播功能)功能，那么你的主机路由表中应该有这样一条路由。</p>
+
+<p>169.254.x.x</p>
+
+<p>     如果你的主机使用了DHCP功能自动获得一个IP地址，那么当你的DHCP服务器发生故障，或响应时间太长而超出了一个<span class="keylink">系统</span>规定的时间，Wingdows系统会为你分配这样一个地址。如果你发现你的主机IP地址是一个诸如此类的地址，很不幸，十有八九是你的网络不能正常运行了。</p>
+
+<p>至于单播广播和组播介绍及优缺点，请看这篇文章：<a href="http://www.h3c.com.cn/products___technology/technology/group_management/other_technology/technology_recommend/200805/605846_30003_0.htm">http://www.h3c.com.cn/products___technology/technology/group_management/other_technology/technology_recommend/200805/605846_30003_0.htm</a></p>
+
+<p>由于IPV4地址共有2<sup>32</sup>个地址，约为43亿，导致其不够使用，从而诞生了IPV6，IPV6地址长度为128位，其地址总数为2<sup>128</sup>个，IPV6解决了IPV4地址不够用的问题，IPV6更加详细介绍请参考<a href="http://zh.wikipedia.org/wiki/IPv6">http://zh.wikipedia.org/wiki/IPv6</a></p>
+
+<p>func InterfaceAddrs() ([]Addr, error)  //InterfaceAddrs返回该系统的网络接口的地址列表。</p>
+
+<p>func Interfaces() ([]Interface, error)   //Interfaces返回该系统的网络接口列表。
+func JoinHostPort(host, port string) string   //JoinHostPort将host和port合并为一个网络地址。一般格式为&rdquo;host:port&rdquo;；如果host含有冒号或百分号，格式为&rdquo;[host]:port&rdquo;。
+func LookupAddr(addr string) (name []string, err error)  //对于给定的地址进行反向查找，并返回映射到那个地址的一个list列表
+func LookupCNAME(name string) (cname string, err error)  //返回给定名字的规范的DNS主机名称，如果调用者不关心这个name是否规范，可以直接调用LookupHost 或者 LookupIP，这两个函数都会在查询时考虑到name的规范性。
+func LookupHost(host string) (addrs []string, err error)     //通过利用本地解析器对给定的host进行查找，返回主机地址的数组
+func LookupIP(host string) (addrs []IP, err error)                //通过利用本地解析器查找host，返回主机ipv4和ipv6地址的一个数组</p>
+
+<p>举例说明其用法:</p>
+
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;net&quot;
+)
+
+func main() {
+    addr, _ := net.InterfaceAddrs()
+    fmt.Println(addr) //[127.0.0.1/8 10.236.15.24/24 ::1/128 fe80::3617:ebff:febe:f123/64],本地地址,ipv4和ipv6地址,这些信息可通过ifconfig命令看到
+    interfaces, _ := net.Interfaces()
+    fmt.Println(interfaces) //[{1 65536 lo  up|loopback} {2 1500 eth0 34:17:eb:be:f1:23 up|broadcast|multicast}] 类型:MTU(最大传输单元),网络接口名,支持状态
+    hp := net.JoinHostPort(&quot;127.0.0.1&quot;, &quot;8080&quot;)
+    fmt.Println(hp) //127.0.0.1:8080,根据ip和端口组成一个addr字符串表示
+    lt, _ := net.LookupAddr(&quot;127.0.0.1&quot;)
+    fmt.Println(lt) //[localhost],根据地址查找到改地址的一个映射列表
+    cname, _ := net.LookupCNAME(&quot;www.baidu.com&quot;)
+    fmt.Println(cname) //www.a.shifen.com,查找规范的dns主机名字
+    host, _ := net.LookupHost(&quot;www.baidu.com&quot;)
+    fmt.Println(host) //[111.13.100.92 111.13.100.91],查找给定域名的host名称
+    ip, _ := net.LookupIP(&quot;www.baidu.com&quot;)
+    fmt.Println(ip) //[111.13.100.92 111.13.100.91],查找给定域名的ip地址,可通过nslookup www.baidu.com进行查找操作.
+}
+</code></pre>
+
+<p>在讲解下面函数用法之前,先说明几个名词含义(参考如下连接:<a href="http://blog.sina.com.cn/s/blog_7ff492150101kqbh.html">http://blog.sina.com.cn/s/blog_7ff492150101kqbh.html</a>):</p>
+
+<h2 id="域名解析记录a-cname-mx-ns-txt-aaaa-srv-显性url-隐形url含义">域名解析记录A、CNAME、MX、NS、TXT、AAAA、SRV、显性URL、隐形URL含义</h2>
+
+<ol>
+<li>A记录（IP指向）：把域名（www.xxx.com）解析到某一个指定IP。用户可以将该域名解析到自己的web server上，同时也可以设置该域名的二级域名。</li>
+<li>CNAME记录（Canonical Name 别名指向）：相当于用子域名代替IP地址。（优点：如果IP地址改变，只需要更改子域名的解析即可。）</li>
+<li>MX记录：指向一个邮件服务器，用于电子邮件系统发邮件时根据收信人的地址后缀来定位邮件服务器。</li>
+<li>NS记录：1. 解析服务器记录。用来表明由哪台服务器对该域名进行解析，这里的NS记录只对子域名生效。例如用户希望由15.54.66.88这台服务器解析coco.mydomain.com，则需要设置coco.mydomain.com的NS记录。
+说明：
+·“优先级”中的数字越小表示级别越高；
+·“IP地址/主机名”中既可以填写IP地址，也可以填写像ns.mydomain.com这样的主机地址，但必须保证该主机地址有效。如，将coco.mydomain.com的NS记录指向到ns.mydomain.com，在设置NS记录的同时还需要设置ns.mydomain.com的指向，否则NS记录将无法正常解析；
+·优先级：NS记录优先于A记录。即，如果一个主机地址同时存在NS记录和A记录，则A记录不生效。这里的NS记录只对子域名生效。</li>
+<li>TXT记录：为某个主机名或域名设置联系信息，如：
+admin IN TXT &ldquo;管理员, 电话： 13901234567&rdquo;
+mail IN TXT &ldquo;邮件主机, 存放在xxx , 管理人：AAA&rdquo;
+Jim IN TXT &ldquo;contact: abc@mailserver.com&rdquo;
+也就是您可以设置 TXT ，以便使别人联系到您。</li>
+<li>AAAA记录1. (AAAA record)：是用来将域名解析到IPv6地址的DNS记录。用户可以将一个域名解析到IPv6地址上，也可以将子域名解析到IPv6地址上。（设置AAAA记录：
+i. 主机记录处填子域名。若添加泛解析，则填写*。若将主域名直接进行解析，则留空或填写@。
+ii. 记录类型为AAAA。记录值为ip地址，只可以填写IPv6地址(比如::1)。
+iii. MX优先级不需要填写。
+iv. TTL添加时系统会自动生成，默认为600秒。）</li>
+<li>SRV记录：一般是为Microsoft的活动目录设置时的应用。DNS可以独立于活动目录，但是活动目录必须有DNS的帮助才能工作。为了活动目录能够正常的工作，DNS服务器必须支持服务定位（SRV）资源记录，资源记录把服务名字映射为提供服务的服务器名字。活动目录客户和域控制器使用SRV资源记录决定域控制器的IP地址。
+此技术细节请参考相应网站（看过的见论坛帖<a href="http://bbs.28tui.com/forum.php?mod=viewthread&amp;tid=2321129）">http://bbs.28tui.com/forum.php?mod=viewthread&amp;tid=2321129）</a></li>
+<li>显性URL记录：访问域名时，会自动跳转到所指的另一个网络地址（URL），此时在浏览器地址栏中显示的是跳转的地址。</li>
+<li>隐形URL记录：访问域名时，会自动跳转到所指的另一个网络地址（URL），此时在浏览器地址栏中显示的是原域名地址。</li>
+</ol>
+
+<p>func LookupMX(name string) (mx []*MX, err error)  //查找指定域名的DNS MX邮件交换记录，并按照优先顺序进行返回。
+func LookupNS(name string) (ns []*NS, err error)    //返回指定域名的DNS NS记录
+func LookupPort(network, service string) (port int, err error)           //返回指定network和service的端口
+func LookupSRV(service, proto, name string) (cname string, addrs []*SRV, err error)    //对指定的service服务，protocol协议以及name域名进行srv查询，其中proto协议表示tcp或者udp，返回的record记录按照优先级进行排序，同一优先级下的按照weight权重进行随机排序。LookupSRV函数按照RFC 2782标准来构建用于查询的DNS。也就是说，它查询_service._proto.name。当service和proto参数都是空字符串时，LookupSRV将会直接查找name。
+func LookupTXT(name string) (txt []string, err error)  //查找指定域名的DNS TXT记录
+func SplitHostPort(hostport string) (host, port string, err error)  //SplitHostPort将如下形式的网络地址拆分成host和port形式，其中拆分前的格式如下：&rdquo;host:port&rdquo;,&rdquo;[host]:port&rdquo; or &ldquo;[ipv6-host%zone]:port&rdquo;，其中ipv6的地址或者主机名必须用方括号括起来，如&rdquo;[::1]:80&rdquo;、&rdquo;[ipv6-host]:http&rdquo;、&rdquo;[ipv6-host%zone]:80&rdquo;</p>
+
+<p><span style="font-size:18px">接下来讲述一下net包中存在的error：</span></p>
+
+<p>type Error  //表示网络错误</p>
+
+<pre><code class="language-go">type Error interface {
+    error      //错误
+    Timeout() bool   // Is the error a timeout? 该错误是时间超时错误吗？
+    Temporary() bool // Is the error temporary? 这个错误是一个临时错误吗？
+}
+</code></pre>
+
+<p>任何实现了error接口中方法的结构体都实现了网络error</p>
+
+<p>其主要有以下集中错误：</p>
+
+<p>type AddrError //网络地址错误</p>
+
+<pre><code class="language-go">type AddrError struct {
+    Err  string  //错误
+    Addr string //地址字符串表示
+}
+</code></pre>
+
+<p>func (e *AddrError) Error() string          //错误
+func (e *AddrError) Temporary() bool   //该错误是否是一个临时错误
+func (e *AddrError) Timeout() bool       //该错误是否是超时错误</p>
+
+<p>type DNSConfigError //DNS配置错误，表示在读取机器DNS配置过程中出现的错误</p>
+
+<pre><code class="language-go">type DNSConfigError struct {
+    Err error
+}
+</code></pre>
+
+<p>func (e *DNSConfigError) Error() string
+func (e *DNSConfigError) Temporary() bool
+func (e *DNSConfigError) Timeout() bool</p>
+
+<p>type DNSError   //DNS错误，表示DNS查询错误</p>
+
+<pre><code class="language-go">type DNSError struct {
+    Err       string // description of the error，错误描述
+    Name      string // name looked for，查询 名称
+    Server    string // server used，服务
+    IsTimeout bool，是否超时
+}
+</code></pre>
+
+<p>func (e *DNSError) Error() string
+func (e *DNSError) Temporary() bool
+func (e *DNSError) Timeout() bool</p>
+
+<p>以DNSError为例,举例说明net保重Error的用法</p>
+
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;net&quot;
+)
+
+func main() {
+    dnserror := net.DNSError{
+        Err:       &quot;dns error&quot;,
+        Name:      &quot;dnserr&quot;,
+        Server:    &quot;dns search&quot;,
+        IsTimeout: true,
+    }
+    fmt.Println(dnserror.Error())     //lookup dnserr on dns search: dns error
+    fmt.Println(dnserror.Temporary()) //true
+    fmt.Println(dnserror.Timeout())   //true
+    fmt.Println(dnserror.Server)      //dns search
+    fmt.Println(dnserror.Err)         //dns error
+    fmt.Println(dnserror.Name)        //dnserr
+    fmt.Println(dnserror.IsTimeout)   //true
+}
+</code></pre>
+
+<p>type InvalidAddrError  //无效地址错误</p>
+
+<pre><code class="language-go">type InvalidAddrError string
+</code></pre>
+
+<p>func (e InvalidAddrError) Error() string
+func (e InvalidAddrError) Temporary() bool
+func (e InvalidAddrError) Timeout() bool</p>
+
+<p>type OpError        //操作错误，OpError是在net包中经常背用刀的一个函数，它描述一个错误的操作，网络类型以及地址。</p>
+
+<pre><code class="language-go">type OpError struct {
+
+    Op string   //Op是引起错误的操作，如&quot;read&quot;或&quot;write&quot;
+
+    Net string      //Net表示错误出现的网络类型，如tcp或者udp6
+
+    Addr Addr    //Addr表示错误出现的网络抵制
+
+    Err error    //Err表示错误
+}
+</code></pre>
+
+<p>func (e *OpError) Error() string
+func (e *OpError) Temporary() bool
+func (e *OpError) Timeout() bool</p>
+
+<p>在OpError错误中大部分错误会包含如下错误：</p>
+
+<pre><code>var (
+    ErrWriteToConnected = errors.New(&quot;use of WriteTo with pre-connected connection&quot;)
+)
+</code></pre>
+
+<p>type ParseError   //解析错误，ParseError表示一个格式错误的字符串，其中Type表示期望的格式。</p>
+
+<pre><code class="language-go">type ParseError struct {
+    Type string
+    Text string
+}
+</code></pre>
+
+<p>func (e *ParseError) Error() string    //将错误表示为字符串形式</p>
+
+<p>type UnknownNetworkError  //未知网络错误</p>
+
+<pre><code class="language-go">type UnknownNetworkError string
+</code></pre>
+
+<p>func (e UnknownNetworkError) Error() string
+func (e UnknownNetworkError) Temporary() bool
+func (e UnknownNetworkError) Timeout() bool</p>
+
+<p>type Addr   //网络终端地址</p>
+
+<pre><code class="language-go">type Addr interface {
+    Network() string // 网络名称
+    String() string  // 地址字符串表示
+}
+</code></pre>
+
+<p>type Conn    //conn是一个通用的面向流的网络连接，多个goroutine可以同时调用conn中的方法。</p>
+
+<pre><code class="language-go">type Conn interface {
+    // Read从连接中读取数据，Read方法会在超过某个固定时间限制后返回一个表示超时的错误，该错误的TImeout()==True
+    Read(b []byte) (n int, err error)
+    // Write向conn中写入数据，与Read类似， Write方法也会在超过某个固定时间后返回超时错误，该错误的Timeout()==True
+    Write(b []byte) (n int, err error)
+    // Close方法关闭该连接，同时任何阻塞的Read或Write方法将不再阻塞，并且返回错误。
+    Close() error
+    // 返回本地网络地址
+    LocalAddr() Addr
+    // 返回远端网络地址
+    RemoteAddr() Addr
+    // 设定连接的读写deadline，它等价于调用SetReadDeadline和SetWriteDeadline进行conn连接的读写deadline设定。其中deadline是一个绝对时间，
+        //在deadline时间之后，任何的读写操作都不再阻塞，而是直接失败，deadline对之后的所有I/O操作都起效，而不仅仅是下一次的读或写操作，
+    // ：一：空闲超时，这种方法实现其中有两类超时比较特殊是在每次成功读或者写操作后都延长超时期限，当没有读写操作空闲时便会超时；二：参数t为零值表示不设置
+        //超时期限，即不会超时timeout
+    SetDeadline(t time.Time) error
+    // 设定连接的读操作deadline，参数t为零值表示不设置期限
+    SetReadDeadline(t time.Time) error
+    // 设定连接的写操作deadline，参数t为零值表示不设置期限
+    // 即使写超时，也有可能出现写入字数n&gt;0，说明成功写入了部分数据，但是没有将数据全部写入。
+    SetWriteDeadline(t time.Time) error
+}
+</code></pre>
+
+<p>func Dial(network, address string) (Conn, error)    //Dial 连接到指定address和name的网络，其中network包含如下几种：&rdquo;tcp&rdquo;, &ldquo;tcp4&rdquo; (IPv4-only), &ldquo;tcp6&rdquo; (IPv6-only),&ldquo;udp&rdquo;, &ldquo;udp4&rdquo; (IPv4-only), &ldquo;udp6&rdquo; (IPv6-only), &ldquo;ip&rdquo;, &ldquo;ip4&rdquo;(IPv4-only), &ldquo;ip6&rdquo; (IPv6-only), &ldquo;unix&rdquo;, &ldquo;unixgram&rdquo; and&rdquo;unixpacket&rdquo;. 对于TCP和UDP网络来说，addresses的形式如下host：port，其行使和JoinHostPort以及SplitHostPort函数中的addresses形式一致。举例如下所示：</p>
+
+<pre><code>Dial(&quot;tcp&quot;, &quot;12.34.56.78:80&quot;)
+Dial(&quot;tcp&quot;, &quot;google.com:http&quot;)
+Dial(&quot;tcp&quot;, &quot;[2001:db8::1]:http&quot;)
+Dial(&quot;tcp&quot;, &quot;[fe80::1%lo0]:80&quot;)
+</code></pre>
+
+<p>对于IP网络，network必须是ip，ipv4或者ipv6，并且他们后面必须跟着冒号和协议数字协议名字，并且这个地址必须是一个ip地址，举例如下：</p>
+
+<pre><code>Dial(&quot;ip4:1&quot;, &quot;127.0.0.1&quot;)
+Dial(&quot;ip6:ospf&quot;, &quot;::1&quot;)
+</code></pre>
+
+<p>对于Unix网络来说，address必须是一个文件系统的路径。</p>
+
+<p>func DialTimeout(network, address string, timeout time.Duration) (Conn, error) //该函数与Dial函数类似，但是多一个超时设置timeout，如果需要的话，timeout中包含域名解析
+func FileConn(f *os.File) (c Conn, err error)     //FileConn返回一个对文件f的网络连接的复制copy，当调用完毕后，用户需要自己关闭文件f，由于是复制关系，所以关闭c和关闭f二者互不影响。
+func Pipe() (Conn, Conn)      //Pipe在内存中创建一个同步全双工的网络连接。连接的两端都实现了Conn接口。一端的读取对应另一端的写入，在这个过程中复制数据是直接在两端之间进行复制，而没有内部缓存。
+type Dialer  //包含连接到一个地址的选项，//在Dialer结构体中的每个参数的零值相当于没有那个值，因此调用零值的Dialer中的Dial函数相当于直接调用Dial函数</p>
+
+<pre><code class="language-go">type Dialer struct {
+    // Timeout是dial操作等待连接建立的最大时长，默认值代表没有超时。如果Deadline字段也被设置了，dial操作也可能更早失败。
+    // 不管有没有设置超时，操作系统都可能强制执行它的超时设置。例如，TCP（系统）超时一般在3分钟左右。Timeout是一个相对时间，是时间段，而Deadline是一个绝
+        //对时间，是时间点，这是二者的区别
+    Timeout time.Duration
+
+       // Deadline是一个具体的时间点期限，超过该期限后，dial操作就会失败。如果Timeout字段也被设置了，dial操作也可能更早失败。零值表示没有期限。
+    Deadline time.Time
+
+       // LocalAddr是dial一个地址时使用的本地地址。
+    // 该地址必须是与dial的网络相容的类型。
+    // 如果为nil，将会自动选择一个本地地址。
+    LocalAddr Addr
+
+        // 当网络类型是tcp并且一个主机名字具有多个dns记录地址时，DualStack允许一个dial创建多个ipv4和ipv6的连接，并且返回第一个创建的连接
+    DualStack bool
+
+        // KeepAlive指定一个网络连接的保持声明的时间段；如果为0，会禁止keep-alive。当网络协议不支持keep-alives时便会忽略掉这个值。
+    // 不支持keep-alive的网络连接会忽略本字段。
+    KeepAlive time.Duration
+}
+</code></pre>
+
+<p>func (d *Dialer) Dial(network, address string) (Conn, error)   //Dial在指定的网络上连接指定的地址。详细用法参见Dial函数获取网络和地址参数的描述</p>
+
+<p>type Flags</p>
+
+<pre><code class="language-go">type Flags uint
+</code></pre>
+
+<pre><code class="language-go">const (
+    FlagUp           Flags = 1 &lt;&lt; iota // 接口处于互动状态
+    FlagBroadcast                      // 接口支持广播
+    FlagLoopback                       // 接口是回环接口
+    FlagPointToPoint                   // 接口属于点到点
+    FlagMulticast                      // 接口支持组播
+)
+</code></pre>
+
+<p>func (f Flags) String() string   //将f用字符串表示</p>
+
+<p>type HardwareAddr  //硬件地址，HardwareAddr表示一个物理硬件地址</p>
+
+<pre><code class="language-go">type HardwareAddr []byte
+</code></pre>
+
+<p>func ParseMAC(s string) (hw HardwareAddr, err error) //将字符串解析成硬件物理地址，其中ParseMAC函数使用如下格式解析一个IEEE 802 MAC-48、EUI-48或EUI-64硬件地址：</p>
+
+<pre><code class="language-go">01:23:45:67:89:ab
+01:23:45:67:89:ab:cd:ef
+01-23-45-67-89-ab
+01-23-45-67-89-ab-cd-ef
+0123.4567.89ab
+0123.4567.89ab.cdef
+</code></pre>
+
+<p>func (a HardwareAddr) String() string  //硬件地址的字符串表示</p>
+
+<p>type Interface   //Interface表示一个在网络接口名和索引之间的映射，他也包含网络借口设备信息。</p>
+
+<pre><code class="language-go">type Interface struct {
+    Index        int          // 索引，必须为正整数
+    MTU          int          // 最大传输单元
+    Name         string       // 名字，例如： &quot;en0&quot;, &quot;lo0&quot;, &quot;eth0.100&quot;
+    HardwareAddr HardwareAddr //硬件地址，例如： IEEE MAC-48, EUI-48 and EUI-64 form
+    Flags        Flags        // flags标记,例如： FlagUp, FlagLoopback, FlagMulticast
+}
+</code></pre>
+
+<p>func InterfaceByIndex(index int) (*Interface, error)    //通过指定的索引index返回相应的接口
+func InterfaceByName(name string) (*Interface, error) //通过指定的名字Name返回相应的接口
+func (ifi *Interface) Addrs() ([]Addr, error)          //返回指定接口的address
+func (ifi *Interface) MulticastAddrs() ([]Addr, error)   //MulticastAddrs返回网络接口ifi加入的多播组地址。
+type Listener  //Listener是一个用于面向流的网络协议的公用的网络监听器接口。多个线程可能会同时调用一个Listener的方法。</p>
+
+<pre><code class="language-go">type Listener interface {
+
+    Accept() (c Conn, err error)//等待并返回下一个连接到该连接的连接
+
+    Close() error   //关闭listener，关闭后，任何阻塞accept的操作都不再阻塞，并且返回error
+
+    Addr() Addr   //返回该接口的网络地址
+}
+</code></pre>
+
+<p>func FileListener(f *os.File) (l Listener, err error)   //返回对于文件f的网络listener的复制。
+func Listen(net, laddr string) (Listener, error)  //返回在一个本地网络地址laddr上监听的Listener。网络类型参数net必须是面向流的网络：&rdquo;tcp&rdquo;、&rdquo;tcp4&rdquo;、&rdquo;tcp6&rdquo;、&rdquo;unix&rdquo;或&rdquo;unixpacket&rdquo;。具体参见Dial函数获取laddr的语法。
+type PacketConn
+func FilePacketConn(f *os.File) (c PacketConn, err error)
+func ListenPacket(net, laddr string) (PacketConn, error)</p>
+
+<p>type MX  //MX代表一条DNS MX记录（邮件交换记录），根据收信人的地址后缀来定位邮件服务器。</p>
+
+<pre><code class="language-go">type MX struct {
+    Host string
+    Pref uint16
+}
+</code></pre>
+
+<p>type NS  //NS代表一条DNS NS记录（域名服务器记录），指定该域名由哪个DNS服务器来进行解析。</p>
+
+<pre><code class="language-go">type NS struct {
+    Host string
+}
+</code></pre>
+
+<p>type SRV  //SRV代表一条DNS SRV记录（资源记录），记录某个服务由哪台计算机提供。</p>
+
+<pre><code class="language-go">type SRV struct {
+    Target   string
+    Port     uint16
+    Priority uint16
+    Weight   uint16
+}
+</code></pre>
+
+<p>参考：</p>
+
+<p><a href="http://zh.wikipedia.org/wiki/IPv6">http://docscn.studygolang.com/pkg/net/#pkg-constants
+</a></p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/post/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/net/">//blog.pytool.com/post/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/net/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/post/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/net_ip/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>golang中net包用法(二)--IP</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(16)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(56)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(88)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(89)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/stm32/">Stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(21)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%9C%AA%E5%88%86%E7%B1%BB/">未分类</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(10)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/post/go/golang%E8%AF%AD%E8%A8%80%E5%8C%85%E7%94%A8%E6%B3%95/os_exec/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>golang中os/exec包用法</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(11)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(56)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-7" title="1 Posts">hugo<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-4" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(6)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script id="baidu_push">
+  (function(){
+    if (window.location.hostname === 'localhost') return;
+    var bp = document.createElement('script'); bp.async = true;
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+</body>
+</html>
+
