@@ -239,128 +239,129 @@
                       
                       
 
-<p>数据过滤有两个地方
+<p>数据过滤有两个地方<br />
 1. 在 <code>prospectors</code>中 通过 <code>include_lines</code>, <code>exclude_lines</code>, and <code>exclude_files</code>.</p>
 
-<pre><code class="language-yaml">filebeat.prospectors:
-- input_type: log
-  paths:
-    - /var/log/myapp/*.log
-  include_lines: [&quot;^ERR&quot;, &quot;^WARN&quot;]
+<pre><code class="language-yaml">filebeat.prospectors:  
+- input_type: log  
+  paths:  
+    - /var/log/myapp/*.log  
+  include_lines: [&quot;^ERR&quot;, &quot;^WARN&quot;]  
 </code></pre>
 
 <ol>
-<li>在 <code>processors</code> 中通过事件过滤器(管道) 目前支持5种<code>add_cloud_metadata</code> <code>decode_json_fields</code> <code>drop_event</code> <code>drop_fields</code> <code>include_fields</code></li>
+<li>在 <code>processors</code> 中通过事件过滤器(管道) 目前支持5种<code>add_cloud_metadata</code> <code>decode_json_fields</code> <code>drop_event</code> <code>drop_fields</code> <code>include_fields</code><br />
+<br /></li>
 </ol>
 
-<p>在数据输出之前可以通过libbeat提供的processor预处理
-每一个<code>processors</code>其接受一个事件event 处理后返回一个时间event
+<p>在数据输出之前可以通过libbeat提供的processor预处理<br />
+每一个<code>processors</code>其接受一个事件event 处理后返回一个时间event<br />
 <code>event -&gt; processor 1 -&gt; event1 -&gt; processor 2 -&gt; event2 ...</code></p>
 
 <h2 id="add-cloud-metadata">add_cloud_metadata</h2>
 
 <h2 id="1-丢弃信息-drop-event">1.丢弃信息 drop_event</h2>
 
-<pre><code class="language-yaml">1. 丢弃 DBG 开头的信息
-processors:
- - drop_event:
-     when:
-        regexp:
-           message: &quot;^DBG:&quot;
-2. 丢弃 包含test的信息
-processors:
-- drop_event:
-    when:
-       contains:
-          source: &quot;test&quot;
+<pre><code class="language-yaml">1. 丢弃 DBG 开头的信息  
+processors:  
+ - drop_event:  
+     when:  
+        regexp:  
+           message: &quot;^DBG:&quot;  
+2. 丢弃 包含test的信息  
+processors:  
+- drop_event:  
+    when:  
+       contains:  
+          source: &quot;test&quot;  
 </code></pre>
 
 <h2 id="2-解码json-decode-json-fields">2.解码json decode_json_fields</h2>
 
-<pre><code class="language-yaml">processors:
- - decode_json_fields:
-     fields: [&quot;field1&quot;, &quot;field2&quot;, ...] # 解码字段
-     process_array: false              # 数组是否解码 默认:false
-     max_depth: 1                      # 解码深度
-     target:            
-     overwrite_keys: false             # 覆盖字段  默认:false
+<pre><code class="language-yaml">processors:  
+ - decode_json_fields:  
+     fields: [&quot;field1&quot;, &quot;field2&quot;, ...] # 解码字段  
+     process_array: false              # 数组是否解码 默认:false  
+     max_depth: 1                      # 解码深度  
+     target:  
+     overwrite_keys: false             # 覆盖字段  默认:false  
 </code></pre>
 
 <h2 id="3-丢弃字段-drop-fields">3. 丢弃字段 drop_fields</h2>
 
 <p>注:@timestamp 和 type 字段 不论添不添加都不会删掉</p>
 
-<pre><code class="language-yaml"> processors:
- - drop_fields:
-     when:
-        condition
-     fields: [&quot;field1&quot;, &quot;field2&quot;, ...]
+<pre><code class="language-yaml"> processors:  
+ - drop_fields:  
+     when:  
+        condition  
+     fields: [&quot;field1&quot;, &quot;field2&quot;, ...]  
 </code></pre>
 
 <h2 id="4-包含字段include-fields">4. 包含字段include_fields</h2>
 
-<p>Apache2 Fields
-Auditd Fields
-Beat Fields
-Cloud Provider Metadata Fields
-Log File Content Fields
-MySQL Fields
-Nginx Fields
+<p>Apache2 Fields<br />
+Auditd Fields<br />
+Beat Fields<br />
+Cloud Provider Metadata Fields<br />
+Log File Content Fields<br />
+MySQL Fields<br />
+Nginx Fields<br />
 System Fields</p>
 
 <h1 id="条件判断-conditions">条件判断 conditions</h1>
 
 <h2 id="1-相等">1. 相等</h2>
 
-<p>equals:
+<p>equals:<br />
   http.response.code: 200</p>
 
 <h2 id="2-包含-contains-condition-checks-if-a-value-is-part-of-a-field">2. 包含  contains condition checks if a value is part of a field.</h2>
 
 <p>fields 可以是string 或 array ; value必须是sting</p>
 
-<pre><code>contains:
+<pre><code>contains:  
   status: &quot;Specific error&quot;  
 </code></pre>
 
 <h2 id="3-正则匹配">3. 正则匹配</h2>
 
-<pre><code>    regexp:
-      system.process.name: &quot;foo.*&quot;
+<pre><code>    regexp:  
+      system.process.name: &quot;foo.*&quot;  
 </code></pre>
 
 <h2 id="4-范围匹配">4. 范围匹配</h2>
 
-<p>range:
-    http.response.code:
-        gte: 400
-range:
-    http.response.code.gte: 400
-  <code>0.5 &lt; system.cpu.use &lt; 0.8</code>
-range:
-    system.cpu.user.pct.gte: 0.5
+<p>range:<br />
+    http.response.code:<br />
+        gte: 400<br />
+range:<br />
+    http.response.code.gte: 400<br />
+  <code>0.5 &lt; system.cpu.use &lt; 0.8</code><br />
+range:<br />
+    system.cpu.user.pct.gte: 0.5<br />
     system.cpu.user.pct.lt: 0.8</p>
 
 <h2 id="5-与">5. 与</h2>
 
-<p>and:
-  - equals:
-      http.response.code: 200
-  - equals:
+<p>and:<br />
+  - equals:<br />
+      http.response.code: 200<br />
+  - equals:<br />
       status: OK</p>
 
 <h2 id="6-或">6. 或</h2>
 
-<p>or:
-  - equals:
-      http.response.code: 304
-  - equals:
+<p>or:<br />
+  - equals:<br />
+      http.response.code: 304<br />
+  - equals:<br />
       http.response.code: 404</p>
 
 <h2 id="7-非">7. 非</h2>
 
-<p>not:
-  equals:
+<p>not:<br />
+  equals:<br />
     status: OK</p>
 
                       
@@ -528,7 +529,7 @@ range:
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -751,6 +752,8 @@ range:
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -773,7 +776,9 @@ range:
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -805,7 +810,7 @@ range:
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

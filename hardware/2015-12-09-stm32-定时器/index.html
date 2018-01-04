@@ -249,16 +249,16 @@
 
 <h2 id="1-时基-包含计数器寄存器-timx-cnt-预分频器寄存器-timx-psc-自动装载寄存器-timx-arr-重复次数寄存器-timx-rcr">1、时基：包含计数器寄存器(TIMx_CNT) 预分频器寄存器 (TIMx_PSC) 自动装载寄存器 (TIMx_ARR) 重复次数寄存器 (TIMx_RCR)</h2>
 
-<pre><code> 计数类似于51单片机中的TH1和TL1。预分频器就是将输入时钟进行降低。重复寄存器类似与51中的自动装载模式中的TH寄存器。最后一个寄存器与产生更新时间UEV与影子寄存器有关。UEV时间更新，对于预分频寄存器来说，他可以看成两个寄存器，一个叫可读写的，一个叫缓冲的，预分频是根据缓冲为标准的，设置的时候，将数据写入可读写，然后等待UEV时间的到来，在将可读写的写入缓冲来更新。这就是UEV的作用。影子寄存器主要是防止多通道时序错误的问题。
+<pre><code> 计数类似于51单片机中的TH1和TL1。预分频器就是将输入时钟进行降低。重复寄存器类似与51中的自动装载模式中的TH寄存器。最后一个寄存器与产生更新时间UEV与影子寄存器有关。UEV时间更新，对于预分频寄存器来说，他可以看成两个寄存器，一个叫可读写的，一个叫缓冲的，预分频是根据缓冲为标准的，设置的时候，将数据写入可读写，然后等待UEV时间的到来，在将可读写的写入缓冲来更新。这就是UEV的作用。影子寄存器主要是防止多通道时序错误的问题。  
 </code></pre>
 
 <p>有兴趣的可以看一下   <a href="http://blog.163.com/liuyunqian@yeah/blog/static/70395843201043094819579/">http://blog.163.com/liuyunqian@yeah/blog/static/70395843201043094819579/</a></p>
 
 <h2 id="2-计数器模式">2、计数器模式：</h2>
 
-<p>向上，向下，上下计数
-     向上计数从0开始，到TIMx_APR，产生溢出，溢出时产生UEV，然后更新影子寄存器。若设置了TIMx_RCR，则到TIMx_RCR时即产生UEV。否则只能到溢出时产生UEV。
-     向下计数从TIMx_APR递减到0，产生溢出，对于UEV和上面类似
+<p>向上，向下，上下计数<br />
+     向上计数从0开始，到TIMx_APR，产生溢出，溢出时产生UEV，然后更新影子寄存器。若设置了TIMx_RCR，则到TIMx_RCR时即产生UEV。否则只能到溢出时产生UEV。<br />
+     向下计数从TIMx_APR递减到0，产生溢出，对于UEV和上面类似<br />
      中央对齐模式：从0递增到TIMx_APR-1，产生溢出，然后在递减到0，产生下溢。有1、2、3，三种模式，其中2、3和UIF有关</p>
 
 <h2 id="3-重复计数器">3、重复计数器：</h2>
@@ -267,22 +267,22 @@
 
 <h2 id="4-时钟源">4、时钟源：</h2>
 
-<pre><code>1、内部时钟。
-2、外部时钟模式1：外部输入引脚 外部时钟模式2：外部触发输入ETR
-3、内部触发输入(ITRx)：使用一个定时器作为另一个定时器的预分频器。如可以配置一个定时器Timer1而作为另一个定时器Timer2的预分频器。
+<pre><code>1、内部时钟。  
+2、外部时钟模式1：外部输入引脚 外部时钟模式2：外部触发输入ETR  
+3、内部触发输入(ITRx)：使用一个定时器作为另一个定时器的预分频器。如可以配置一个定时器Timer1而作为另一个定时器Timer2的预分频器。  
 </code></pre>
 
 <h2 id="5-捕获比较通道">5、捕获比较通道：</h2>
 
-<p>主要多用于计频和pwm输出。t1和t8高级定时器通道中含有死区控制，使用时可设置。
-对于时间测量：一个方法是测频率，另一个是测周期，测频率在限定的时间内（如1秒钟）检测脉冲的个数，测周期测试限定的脉冲个数之间的时间。
-考虑的问题：
+<p>主要多用于计频和pwm输出。t1和t8高级定时器通道中含有死区控制，使用时可设置。<br />
+对于时间测量：一个方法是测频率，另一个是测周期，测频率在限定的时间内（如1秒钟）检测脉冲的个数，测周期测试限定的脉冲个数之间的时间。<br />
+考虑的问题：<br />
 (1)、系统时钟：频率与精度，(2)、计数器位数，一般为16位，可以产生的限定时间越长，或在限定时间里记录的脉冲个数越多。(3)、被测频率的范围，低频检测两个脉冲时间，高频在一定时间内检测脉冲个数。(4)、中断响应与软件算法。</p>
 
 <h2 id="6-输入捕获模式">6、输入捕获模式：</h2>
 
-<p>（1）配置TIMx的CCRx为输入模式，即TIMx-&gt;CCMRx的0和1位为 &ldquo;0x01&rdquo; &ldquo;0x02&rdquo; 或&rdquo;0x03&rdquo;。（2）配置输入滤波器，即TIMx-&gt;CCMRx的4-7位或15-12位。（3）配置通道的有效转换边沿，即TIMx-&gt;CCER的&rdquo;1&rdquo;,&ldquo;5&rdquo;,&ldquo;9&rdquo;,&ldquo;13&rdquo;位，0为上升沿，1为下降沿。（4）配置预分频器，TIMx-&gt;CCMRx的第2-3位或第11-10位。（5）设置TIMx-&gt;CCER的&rdquo;0&rdquo;,&ldquo;4&rdquo;,&ldquo;8&rdquo;,&ldquo;12&rdquo;位（6）设置TIMx-&gt;DIER的中断允许位。
-对于输入捕获，应该是在中断中进行处理。 可以计算高低电平的时间，同时也可以针对红外解码进行编程配置。
+<p>（1）配置TIMx的CCRx为输入模式，即TIMx-&gt;CCMRx的0和1位为 &ldquo;0x01&rdquo; &ldquo;0x02&rdquo; 或&rdquo;0x03&rdquo;。（2）配置输入滤波器，即TIMx-&gt;CCMRx的4-7位或15-12位。（3）配置通道的有效转换边沿，即TIMx-&gt;CCER的&rdquo;1&rdquo;,&ldquo;5&rdquo;,&ldquo;9&rdquo;,&ldquo;13&rdquo;位，0为上升沿，1为下降沿。（4）配置预分频器，TIMx-&gt;CCMRx的第2-3位或第11-10位。（5）设置TIMx-&gt;CCER的&rdquo;0&rdquo;,&ldquo;4&rdquo;,&ldquo;8&rdquo;,&ldquo;12&rdquo;位（6）设置TIMx-&gt;DIER的中断允许位。<br />
+对于输入捕获，应该是在中断中进行处理。 可以计算高低电平的时间，同时也可以针对红外解码进行编程配置。<br />
 当检测到捕获后进入中断开始处理。也可进入dma，或读取CCRx。</p>
 
 <h2 id="7-pwm输入">7，PWM输入：</h2>
@@ -311,7 +311,7 @@
 
 <h2 id="13-编码器接口模式">13，编码器接口模式：</h2>
 
-<p>用于编码器的脉冲和相位测量，在第一通道和第二通道中设置。对于编码器而言，有A、B两相相差90度，可通过比较A相在前还是B相在前，以判别编码器的正转与反转，通过零位脉冲，可获得编码器的零位参考位。并且可以测量两个编码器事件的间隔，获得动态的信息(速度，加速度，减速度)等。
+<p>用于编码器的脉冲和相位测量，在第一通道和第二通道中设置。对于编码器而言，有A、B两相相差90度，可通过比较A相在前还是B相在前，以判别编码器的正转与反转，通过零位脉冲，可获得编码器的零位参考位。并且可以测量两个编码器事件的间隔，获得动态的信息(速度，加速度，减速度)等。<br />
 我们假定配置如下： ● CC1S=’01’ (TIMx_CCMR1寄存器，IC1FP1映射到TI1) ● CC2S=’01’ (TIMx_CCMR2寄存器，IC2FP2映射到TI2) ● CC1P=’0’ (TIMx_CCER寄存器，IC1FP1不反相，IC1FP1=TI1) ● CC2P=’0’ (TIMx_CCER寄存器，IC2FP2不反相，IC2FP2=TI2) ● SMS=’011’ (TIMx_SMCR寄存器，所有的输入均在上升沿和下降沿有效). ● CEN=’1’ (TIMx_CR1寄存器，计数器使能)</p>
 
 <h2 id="14-定时器输入异或功能">14，定时器输入异或功能</h2>
@@ -324,10 +324,10 @@
 
 <h2 id="16-timx定时器和外部触发的同步">16，TIMx定时器和外部触发的同步</h2>
 
-<p>TIMx定时器能够在多种模式下和一个外部的触发同步：复位模式、门控模式和触发模式。
-复位模式：能在外部触发时，使计数器复位。
-门控模式：按照选中的输入端电平使能计数器。
-触发模式：输入端上选中的事件使能计数器
+<p>TIMx定时器能够在多种模式下和一个外部的触发同步：复位模式、门控模式和触发模式。<br />
+复位模式：能在外部触发时，使计数器复位。<br />
+门控模式：按照选中的输入端电平使能计数器。<br />
+触发模式：输入端上选中的事件使能计数器<br />
 外部时钟模式2可以与另一种从模式(外部时钟模式1和编码器模式除外)一起使用。这时，ETR信号被用作外部时钟的输入，在复位模式、门控模式或触发模式可以选择另一个输入作为触发输入。不建议使用TIMx_SMCR寄存器的TS位选择ETR作为TRGI。</p>
 
 <h2 id="17-定时器同步">17：定时器同步</h2>
@@ -503,7 +503,7 @@
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -726,6 +726,8 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -748,7 +750,9 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -780,7 +784,7 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

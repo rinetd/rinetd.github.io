@@ -238,101 +238,103 @@
                     <div class="entry-inner">
                       
                       <ol>
-<li>取得某个索引中某个字段中的所有出现过的值</li>
+<li>取得某个索引中某个字段中的所有出现过的值<br />
+<br /></li>
 </ol>
 
 <p>这种操作类似于使用SQL的SELECT UNIQUE语句。当需要获取某个字段上的所有可用值时，可以使用terms聚合查询完成：</p>
 
-<pre><code>GET /index_streets/_search?search_type=count
-{
- &quot;aggs&quot;: {
-   &quot;street_values&quot;: {
-     &quot;terms&quot;: {
-       &quot;field&quot;: &quot;name.raw&quot;,
-       &quot;size&quot;: 0
-     }
-   }
- }
-}
+<pre><code>GET /index_streets/_search?search_type=count  
+{  
+ &quot;aggs&quot;: {  
+   &quot;street_values&quot;: {  
+     &quot;terms&quot;: {  
+       &quot;field&quot;: &quot;name.raw&quot;,  
+       &quot;size&quot;: 0  
+     }  
+   }  
+ }  
+}  
 </code></pre>
 
 <p>因为目标是得到name字段上的所有出现过的值，因此search_type被设置为了count，这样在返回的响应中不会出现冗长的hits部分。另外，查询的目标字段的索引类型需要设置为not_analyzed。所以上面的field指定的是name.raw。</p>
 
 <p>得到的响应如下所示：</p>
 
-<pre><code>{
-   &quot;took&quot;: 23,
-   &quot;timed_out&quot;: false,
-   &quot;_shards&quot;: {
-      &quot;total&quot;: 5,
-      &quot;successful&quot;: 5,
-      &quot;failed&quot;: 0
-   },
-   &quot;hits&quot;: {
-      &quot;total&quot;: 7445,
-      &quot;max_score&quot;: 0,
-      &quot;hits&quot;: []
-   },
-   &quot;aggregations&quot;: {
-      &quot;street_values&quot;: {
-         &quot;doc_count_error_upper_bound&quot;: 0,
-         &quot;sum_other_doc_count&quot;: 0,
-         &quot;buckets&quot;: [
-            {
-               &quot;key&quot;: &quot;江苏路&quot;,
-               &quot;doc_count&quot;: 29
-            },
-            {
-               &quot;key&quot;: &quot;南京东路&quot;,
-               &quot;doc_count&quot;: 28
-            },
-         ...
-      ...
-   ...
+<pre><code>{  
+   &quot;took&quot;: 23,  
+   &quot;timed_out&quot;: false,  
+   &quot;_shards&quot;: {  
+      &quot;total&quot;: 5,  
+      &quot;successful&quot;: 5,  
+      &quot;failed&quot;: 0  
+   },  
+   &quot;hits&quot;: {  
+      &quot;total&quot;: 7445,  
+      &quot;max_score&quot;: 0,  
+      &quot;hits&quot;: []  
+   },  
+   &quot;aggregations&quot;: {  
+      &quot;street_values&quot;: {  
+         &quot;doc_count_error_upper_bound&quot;: 0,  
+         &quot;sum_other_doc_count&quot;: 0,  
+         &quot;buckets&quot;: [  
+            {  
+               &quot;key&quot;: &quot;江苏路&quot;,  
+               &quot;doc_count&quot;: 29  
+            },  
+            {  
+               &quot;key&quot;: &quot;南京东路&quot;,  
+               &quot;doc_count&quot;: 28  
+            },  
+         ...  
+      ...  
+   ...  
 </code></pre>
 
 <ol>
-<li>取得某个索引/类型下某个字段中出现的不同值的个数</li>
+<li>取得某个索引/类型下某个字段中出现的不同值的个数<br />
+<br /></li>
 </ol>
 
 <p>这种操作类似于使用SQL的select count( * ) from (select distinct * from table)语句。当需要获取某个字段上的出现的不同值的个数时，可以使用cardinality聚合查询完成：</p>
 
-<pre><code>GET /index_streets/_search?search_type=count
-{
-  &quot;aggs&quot;: {
-    &quot;uniq_streets&quot;: {
-      &quot;cardinality&quot;: {
-        &quot;field&quot;: &quot;name.raw&quot;
-      }
-    }
-  }
-}
-
+<pre><code>GET /index_streets/_search?search_type=count  
+{  
+  &quot;aggs&quot;: {  
+    &quot;uniq_streets&quot;: {  
+      &quot;cardinality&quot;: {  
+        &quot;field&quot;: &quot;name.raw&quot;  
+      }  
+    }  
+  }  
+}  
+  
 </code></pre>
 
 <p>因为目标是得到name字段上的所有出现过的值，因此search_type被设置为了count，这样在返回的响应中不会出现冗长的hits部分。另外，查询的目标字段如果是字符串类型的，那么其索引类型需要设置为not_analyzed。所以上面的field指定的是name.raw。</p>
 
 <p>得到的响应如下所示：</p>
 
-<pre><code>{
-   &quot;took&quot;: 96,
-   &quot;timed_out&quot;: false,
-   &quot;_shards&quot;: {
-      &quot;total&quot;: 1,
-      &quot;successful&quot;: 1,
-      &quot;failed&quot;: 0
-   },
-   &quot;hits&quot;: {
-      &quot;total&quot;: 4136543,
-      &quot;max_score&quot;: 0,
-      &quot;hits&quot;: []
-   },
-   &quot;aggregations&quot;: {
-      &quot;uniq_streets&quot;: {
-         &quot;value&quot;: 1951
-      }
-   }
-}
+<pre><code>{  
+   &quot;took&quot;: 96,  
+   &quot;timed_out&quot;: false,  
+   &quot;_shards&quot;: {  
+      &quot;total&quot;: 1,  
+      &quot;successful&quot;: 1,  
+      &quot;failed&quot;: 0  
+   },  
+   &quot;hits&quot;: {  
+      &quot;total&quot;: 4136543,  
+      &quot;max_score&quot;: 0,  
+      &quot;hits&quot;: []  
+   },  
+   &quot;aggregations&quot;: {  
+      &quot;uniq_streets&quot;: {  
+         &quot;value&quot;: 1951  
+      }  
+   }  
+}  
 </code></pre>
 
 <p>返回结果表示该字段出现过1951个不同的字符串。</p>
@@ -502,7 +504,7 @@
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -725,6 +727,8 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -747,7 +751,9 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -779,7 +785,7 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

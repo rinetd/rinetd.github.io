@@ -243,197 +243,198 @@
                       
                       
 
-<p>计算机技术发展这么多年，安全验证的技术也是很多种，大家熟悉有： BaseAuth, Oauth, Oauth2，基于Token的认证等机制。现在比较流行，大家常用的就是token认证的方式。
-   token的生成一般是采用uuid保证唯一性，当用户登录时为其生成唯一的token，存储一般保存在数据库中。token过期时间采用把token二次保存在cookie或session里面，根据cookie和session的过期时间去维护token的过期时间。至于采用那种存储一般需要根据应用程序部署的环境，如果你的应用部署在多台机器上，使用nginx进行负载均衡，那么需要把token二次保存在cookie中。
+<p>计算机技术发展这么多年，安全验证的技术也是很多种，大家熟悉有： BaseAuth, Oauth, Oauth2，基于Token的认证等机制。现在比较流行，大家常用的就是token认证的方式。<br />
+   token的生成一般是采用uuid保证唯一性，当用户登录时为其生成唯一的token，存储一般保存在数据库中。token过期时间采用把token二次保存在cookie或session里面，根据cookie和session的过期时间去维护token的过期时间。至于采用那种存储一般需要根据应用程序部署的环境，如果你的应用部署在多台机器上，使用nginx进行负载均衡，那么需要把token二次保存在cookie中。<br />
    怎么保证用户使用状态下token持续时间的一直有效？这需要依赖框架的一种机制，大家应该都挺熟悉的，那就是aop技术（面向切面编程），在Yii2框架里面一般采用behavior来实现，主要内容就是在给用户行为的api controller添加一个before action。在action里面，从cookie中获取token,拿取用户信息，如果用户有操作的权限，就根据当前时间去更新cookie的过期时间，从而维护token的持续时间，使得token在给定时间内不会过期，这样可以使用户的操作体验达到最佳，又能起到保护程序安全的作用。</p>
 
-<p>支持方式    支持内容
-公钥      RSA,RSA-E,RSA-S,ELG-E,DSA
-对称加密   3DES,CAST5,BLOWFISH,AES,AES192,AES256,TWOFISH
-散列0     MD5,SHA1,SHA160,SHA256,SHA384,SHA512
+<p>支持方式    支持内容<br />
+公钥      RSA,RSA-E,RSA-S,ELG-E,DSA<br />
+对称加密   3DES,CAST5,BLOWFISH,AES,AES192,AES256,TWOFISH<br />
+散列0     MD5,SHA1,SHA160,SHA256,SHA384,SHA512<br />
 压缩     不压缩，ZIP,ZLIB,BZIP2</p>
 
 <h1 id="gpg-对称加密-密码">gpg 对称加密 密码</h1>
 
-<p>gpg -c test.cpp         #加密
+<p>gpg -c test.cpp         #加密<br />
 gpg -o output.cpp test.cpp.gpg 解密</p>
 
 <h1 id="gpg-非对称加密-公钥-私钥">GPG 非对称加密 公钥+私钥</h1>
 
-<p>在 Unix 上密钥存储在 ~/.gnupg/ 中
-~/.gnupg/pubring.gpg                 # 包含你的公钥和所有其他导入的信息
+<p>在 Unix 上密钥存储在 ~/.gnupg/ 中<br />
+~/.gnupg/pubring.gpg                 # 包含你的公钥和所有其他导入的信息<br />
 ~/.gnupg/secring.gpg                 # 可包含多个私钥</p>
 
 <h1 id="配置文件介绍">配置文件介绍</h1>
 
-<p>GPG 配置文件目录:~/.gnupg
-~/.gnupg/gpg.conf – 配置文件
-~/.gnupg/trustdb.gpg – 信任库
-~/.gnupg/pubring.gpg – 公钥库
+<p>GPG 配置文件目录:~/.gnupg<br />
+~/.gnupg/gpg.conf – 配置文件<br />
+~/.gnupg/trustdb.gpg – 信任库<br />
+~/.gnupg/pubring.gpg – 公钥库<br />
 ~/.gnupg/secring.gpg – 私钥库</p>
 
 <p>常用选项的简短描述：</p>
 
-<p>-e 加密数据
--d 解密数据
--r 为某个收件者加密(&lsquo;全名&rsquo; 或者 &lsquo;email@domain&rsquo;)
--a 输出经过 ascii 封装的密钥
+<p>-e 加密数据<br />
+-d 解密数据<br />
+-r 为某个收件者加密(&lsquo;全名&rsquo; 或者 &lsquo;email@domain&rsquo;)<br />
+-a 输出经过 ascii 封装的密钥<br />
 -o 指定输出文件</p>
 
-<p>-o, &ndash;output
--r, &ndash;recipient NAME
--a, &ndash;armor   ascii  表示加内容转换成可见的 ASCII 码输出
--e, &ndash;encrypt
+<p>-o, &ndash;output<br />
+-r, &ndash;recipient NAME<br />
+-a, &ndash;armor   ascii  表示加内容转换成可见的 ASCII 码输出<br />
+-e, &ndash;encrypt<br />
 -s, &ndash;sign [file]<br />
--d, &ndash;decrypt
+-d, &ndash;decrypt<br />
 -se -r Bob [file]          sign and encrypt for user Bob</p>
 
 <ol>
-<li><p>查看本机钥匙信息
+<li><p>查看本机钥匙信息<br />
 <code>gpg --list-keys</code></p></li>
 
-<li><p>生成钥匙对
-<code>gpg --gen-key</code>
+<li><p>生成钥匙对<br />
+<code>gpg --gen-key</code><br />
 输入 name email passwd</p></li>
 
-<li><p>为了将自己的公钥发送给他人，你需要把公钥导出成为一个文件：
-<code>gpg  -a --export [UID|name|email] --output key.pub</code>
-  -a 表示输出文本文件格式。默认输出是二进制格式，因为二进制格式不太方便在网络（比如论坛或者博客）上展示，所以推荐文本格式。
-  &ndash;output 指定输出文件的名字，你可以更改为其他名字。
+<li><p>为了将自己的公钥发送给他人，你需要把公钥导出成为一个文件：<br />
+<code>gpg  -a --export [UID|name|email] --output key.pub</code><br />
+  -a 表示输出文本文件格式。默认输出是二进制格式，因为二进制格式不太方便在网络（比如论坛或者博客）上展示，所以推荐文本格式。<br />
+  &ndash;output 指定输出文件的名字，你可以更改为其他名字。<br />
   &ndash;export 表示执行输出公钥操作，后面的 UID 为你要输出的公钥的标识。</p></li>
 </ol>
 
-<p>私钥导出：
-  <code>gpg -ao seckey.asc --export-secret-keys mykeyID</code>
-4. 把公钥发布到公钥服务器
-$ <code>gpg --keyserver keys.gnupg.net --send-key [公钥的标识（id）]</code>
-注： &ndash;keyserver 可以不加，默认为 keys.gnupg.net
-5. 在公钥服务器搜索公钥
-$ <code>gpg --keyserver keys.gnupg.net --search-key [UID|name|email]</code>
-6. 公钥并导入到本机
-$ <code>gpg --keyserver keys.gnupg.net --recv-key 72E75B05</code>
-        72E75B05 是这个公钥的id，这个id跟uid都是用于标识这个公钥的，因为uid是用户随便输入的所以会有重复的情况，因此在某些需要明确指定公钥的命令，需要用id而不能用uid表示这个公钥。
-$ <code>gpg --import key.public</code>
-7. 核对公钥的指纹值并签收公钥
-$ <code>gpg --fingerprint</code>
-8. 公钥进行签收（sign key）：
-$ <code>gpg --sign-key [UID|name|email]</code>
+<p>私钥导出：<br />
+  <code>gpg -ao seckey.asc --export-secret-keys mykeyID</code><br />
+4. 把公钥发布到公钥服务器<br />
+$ <code>gpg --keyserver keys.gnupg.net --send-key [公钥的标识（id）]</code><br />
+注： &ndash;keyserver 可以不加，默认为 keys.gnupg.net<br />
+5. 在公钥服务器搜索公钥<br />
+$ <code>gpg --keyserver keys.gnupg.net --search-key [UID|name|email]</code><br />
+6. 公钥并导入到本机<br />
+$ <code>gpg --keyserver keys.gnupg.net --recv-key 72E75B05</code><br />
+        72E75B05 是这个公钥的id，这个id跟uid都是用于标识这个公钥的，因为uid是用户随便输入的所以会有重复的情况，因此在某些需要明确指定公钥的命令，需要用id而不能用uid表示这个公钥。<br />
+$ <code>gpg --import key.public</code><br />
+7. 核对公钥的指纹值并签收公钥<br />
+$ <code>gpg --fingerprint</code><br />
+8. 公钥进行签收（sign key）：<br />
+$ <code>gpg --sign-key [UID|name|email]</code><br />
   把对方的公钥导入到本机后，就已经可以用它来加密信息或者用于校验我的数字签名。不过这样每次操作时都会提示公钥不可信，因为虽然你导入了我的公钥，但存在导入冒充者的公钥的可能性。所以你需要进一步跟我核对公钥是否正确，然后签收（sign key）它</p>
 
 <ol>
-<li>密钥的回收
-<code>gpg -o revoke.asc –gen-revoke jianxiangqiao</code>
-选择吊销的原因：0=未指定原因，1=密钥已泄露，2=密钥被替换，3=密钥不再使用，Q=取消。</li>
+<li>密钥的回收<br />
+<code>gpg -o revoke.asc –gen-revoke jianxiangqiao</code><br />
+选择吊销的原因：0=未指定原因，1=密钥已泄露，2=密钥被替换，3=密钥不再使用，Q=取消。<br />
+<br /></li>
 </ol>
 
 <p>密钥回收:当您的密钥对生成之后，您应该立即做一个公钥回收证书，如果您忘记了您的私钥的口令或者您的私钥丢失或者被盗窃，您可以发布这个证书来声明以前的公钥不再有效。 生成回收证书</p>
 
 <p>gpg &ndash;output revoke.asc &ndash;gen-revoke mykeyID</p>
 
-<p>导入回收证书
- gpg &ndash;import revoke.asc
- 发送回收证书到服务器，声明原 GPG Key 作废
+<p>导入回收证书<br />
+ gpg &ndash;import revoke.asc<br />
+ 发送回收证书到服务器，声明原 GPG Key 作废<br />
  gpg &ndash;keyserver keyserverAddress &ndash;send mykeyID</p>
 
 <ol>
-<li><p>删除密钥
-先删除私钥
-<code>gpg --delete-secret-keys jianxiangqiao</code>
-再删除公钥
-<code>gpg --delete-keys jianxiangqiao</code>
+<li><p>删除密钥<br />
+先删除私钥<br />
+<code>gpg --delete-secret-keys jianxiangqiao</code><br />
+再删除公钥<br />
+<code>gpg --delete-keys jianxiangqiao</code><br />
 ############################</p>
 
 <h1 id="加密一个文件-默认">加密一个文件 默认：</h1></li>
 
-<li><p>加密一个文件
+<li><p>加密一个文件<br />
 $ <code>gpg -a --output message-ciper.txt -r ivarptr@126.com -e message.txt</code></p></li>
 </ol>
 
-<p>-a 表示输出文本文件格式。
-  &ndash;output 指定输出（即加密后）的文件名。
-  -r 指定信息的接收者（recipient）公钥的uid，可以是名字也可以是email地址。
+<p>-a 表示输出文本文件格式。<br />
+  &ndash;output 指定输出（即加密后）的文件名。<br />
+  -r 指定信息的接收者（recipient）公钥的uid，可以是名字也可以是email地址。<br />
   -e 表示这次要执行的是加密（encrypt）操作</p>
 
 <ol>
-<li><p>解密一个文件
-现在假设我已经收到你寄过来的加密文件 message-ciper.txt，使用如下的命令解密：
+<li><p>解密一个文件<br />
+现在假设我已经收到你寄过来的加密文件 message-ciper.txt，使用如下的命令解密：<br />
 $ <code>gpg --output message-plain.txt -d message-ciper.txt</code></p>
 
-<p>&ndash;output 指定输出（即解密后）的文件名。
-  -d 表示这次要执行的是解密（decrypt）操作
+<p>&ndash;output 指定输出（即解密后）的文件名。<br />
+  -d 表示这次要执行的是解密（decrypt）操作<br />
 ####################################################################</p>
 
 <h1 id="gpg数字签名-用来检验一个文件是否被修改-默认-sha256">GPG数字签名：用来检验一个文件是否被修改 默认:SHA256</h1></li>
 
-<li><p>生成独立的签名文件 abc.txt + abc.txt.asc
-  $ <code>gpg -a -b abc.txt</code>
--a 表示输出文本文件格式。
+<li><p>生成独立的签名文件 abc.txt + abc.txt.asc<br />
+  $ <code>gpg -a -b abc.txt</code><br />
+-a 表示输出文本文件格式。<br />
 -b 表示以生成独立的签名文件的方式进行签名</p></li>
 
-<li><p>数字签名一个文件的方法B abc.txt.asc
-如果不想生成一个独立的签名文件，则还可以用如下的命令进行签名：
-<code>$ gpg -a --clearsign abc.txt</code>
+<li><p>数字签名一个文件的方法B abc.txt.asc<br />
+如果不想生成一个独立的签名文件，则还可以用如下的命令进行签名：<br />
+<code>$ gpg -a --clearsign abc.txt</code><br />
 跟方法A不同的地方是用参数 –clearsign 替代了参数 -b参数 clearsign 表示将签名和原信息合并在一起，并生成一个新文件。</p></li>
 
-<li><p>然后使用如下命令进行检验：
+<li><p>然后使用如下命令进行检验：<br />
 $ <code>gpg --verify abc.txt.asc</code></p></li>
 
-<li><p>使用如下命令可以把原始信息提取出来：
+<li><p>使用如下命令可以把原始信息提取出来：<br />
 $ <code>gpg --output message-original.txt -d abc.txt.asc</code></p></li>
 </ol>
 
 <h2 id="gpg常用参数">GPG常用参数:</h2>
 
-<p>-s, &ndash;sign [文件名]        生成一份签字
-&ndash;clearsign [文件名]       生成一份明文签字
--b, &ndash;detach-sign         生成一份分离的签字
--e, &ndash;encrypt             加密数据
--c, &ndash;symmetric           仅使用对称加密
--d, &ndash;decrypt             解密数据(默认)
-&ndash;verify                  验证签字
-&ndash;list-keys               列出密钥
-&ndash;list-sigs               列出密钥和签字
-&ndash;check-sigs              列出并检查密钥签字
-&ndash;fingerprint             列出密钥和指纹
--K, &ndash;list-secret-keys    列出私钥
-&ndash;gen-key                 生成一副新的密钥对
-&ndash;delete-keys             从公钥钥匙环里删除密钥
-&ndash;delete-secret-keys      从私钥钥匙环里删除密钥
-&ndash;sign-key                为某把密钥添加签字
-&ndash;lsign-key               为某把密钥添加本地签字
-&ndash;edit-key                编辑某把密钥或为其添加签字
-&ndash;gen-revoke              生成一份吊销证书
-&ndash;export                  导出密钥
-&ndash;send-keys               把密钥导出到某个公钥服务器上
-&ndash;recv-keys               从公钥服务器上导入密钥
-&ndash;search-keys             在公钥服务器上搜寻密钥
-&ndash;refresh-keys            从公钥服务器更新所有的本地密钥
-&ndash;import                  导入/合并密钥
-&ndash;card-status             打印卡状态
-&ndash;card-edit               更改卡上的数据
-&ndash;change-pin              更改卡的 PIN
-&ndash;update-trustdb          更新信任度数据库
+<p>-s, &ndash;sign [文件名]        生成一份签字<br />
+&ndash;clearsign [文件名]       生成一份明文签字<br />
+-b, &ndash;detach-sign         生成一份分离的签字<br />
+-e, &ndash;encrypt             加密数据<br />
+-c, &ndash;symmetric           仅使用对称加密<br />
+-d, &ndash;decrypt             解密数据(默认)<br />
+&ndash;verify                  验证签字<br />
+&ndash;list-keys               列出密钥<br />
+&ndash;list-sigs               列出密钥和签字<br />
+&ndash;check-sigs              列出并检查密钥签字<br />
+&ndash;fingerprint             列出密钥和指纹<br />
+-K, &ndash;list-secret-keys    列出私钥<br />
+&ndash;gen-key                 生成一副新的密钥对<br />
+&ndash;delete-keys             从公钥钥匙环里删除密钥<br />
+&ndash;delete-secret-keys      从私钥钥匙环里删除密钥<br />
+&ndash;sign-key                为某把密钥添加签字<br />
+&ndash;lsign-key               为某把密钥添加本地签字<br />
+&ndash;edit-key                编辑某把密钥或为其添加签字<br />
+&ndash;gen-revoke              生成一份吊销证书<br />
+&ndash;export                  导出密钥<br />
+&ndash;send-keys               把密钥导出到某个公钥服务器上<br />
+&ndash;recv-keys               从公钥服务器上导入密钥<br />
+&ndash;search-keys             在公钥服务器上搜寻密钥<br />
+&ndash;refresh-keys            从公钥服务器更新所有的本地密钥<br />
+&ndash;import                  导入/合并密钥<br />
+&ndash;card-status             打印卡状态<br />
+&ndash;card-edit               更改卡上的数据<br />
+&ndash;change-pin              更改卡的 PIN<br />
+&ndash;update-trustdb          更新信任度数据库<br />
 &ndash;print-md 算法 [文件]     使用指定的散列算法打印报文散列值</p>
 
 <p>选项：</p>
 
-<p>-a, &ndash;armor               输出 ASCII 文本文件
--r, &ndash;recipient           为收件者“UID”加密
--u, &ndash;local-user          使用这个用户标识来签字或解密
--z N                      设定压缩等级为 N (0 表示不压缩)
-&ndash;textmode                使用标准的文本模式
--o, &ndash;output              指定输出文件
--v, &ndash;verbose             详细模式
--n, &ndash;dry-run             不做任何改变
--i, &ndash;interactive         覆盖前先询问
-&ndash;openpgp                 行为严格遵循 OpenPGP 定义
+<p>-a, &ndash;armor               输出 ASCII 文本文件<br />
+-r, &ndash;recipient           为收件者“UID”加密<br />
+-u, &ndash;local-user          使用这个用户标识来签字或解密<br />
+-z N                      设定压缩等级为 N (0 表示不压缩)<br />
+&ndash;textmode                使用标准的文本模式<br />
+-o, &ndash;output              指定输出文件<br />
+-v, &ndash;verbose             详细模式<br />
+-n, &ndash;dry-run             不做任何改变<br />
+-i, &ndash;interactive         覆盖前先询问<br />
+&ndash;openpgp                 行为严格遵循 OpenPGP 定义<br />
 &ndash;pgp2                    生成与 PGP 2.x 兼容的报文</p>
 
 <p>(请参考在线说明以获得所有命令和选项的完整清单)</p>
 
-<p>范例：
--se -r Bob [文件名]          为 Bob 这个收件人签字及加密
-&ndash;clearsign [文件名]         做出明文签字
+<p>范例：<br />
+-se -r Bob [文件名]          为 Bob 这个收件人签字及加密<br />
+&ndash;clearsign [文件名]         做出明文签字<br />
 &ndash;detach-sign [文件名]       做出分离式签字</p>
 
 <h3 id="gpg-加密解密简明教程">GPG 加密解密简明教程</h3>
@@ -446,54 +447,56 @@ $ <code>gpg --output message-original.txt -d abc.txt.asc</code></p></li>
 
 <p>GPG :（全称 GnuPG ) 是一款非对称加密(PGP)的免费软件，非对称加密方式简单讲就是指用公钥加密文件，用私钥解密文件。如果你想给谁发送加密信息，首先你要得到他的公钥，然后通过该公钥加密后传给他，对方利用自已的私钥就可解密并读取文件了。</p>
 
-<pre><code># 配置文件介绍
-GPG 配置文件目录:~/.gnupg
-~/.gnupg/gpg.conf – 配置文件
-~/.gnupg/trustdb.gpg – 信任库
-~/.gnupg/pubring.gpg – 公钥库
-~/.gnupg/secring.gpg – 私钥库
+<pre><code># 配置文件介绍  
+GPG 配置文件目录:~/.gnupg  
+~/.gnupg/gpg.conf – 配置文件  
+~/.gnupg/trustdb.gpg – 信任库  
+~/.gnupg/pubring.gpg – 公钥库  
+~/.gnupg/secring.gpg – 私钥库  
 </code></pre>
 
 <h4 id="基本操作">基本操作</h4>
 
 <ul>
-<li>生成密钥对
-<code>gpg --gen-key</code></li>
+<li>生成密钥对<br />
+<code>gpg --gen-key</code><br />
+<br /></li>
 </ul>
 
 <p>生成过程中会让你选择加密方式，一般选 (1) RSA and RSA (default) 就可以了，然后还需要选择加密位数、过期日期及输入姓名，邮件地址，备注，Passphrase(访问密码）等信息。最后你就可以干点别的事，比如上上网，玩玩游戏什么的，以便让机器生成一些随机数，回头你就可以看到密钥对已经生成完毕。</p>
 
 <ul>
-<li><p>传播公钥：
+<li><p>传播公钥：<br />
 导出公钥:生成后你可以把公钥中公钥库中导出来，以便传播给你的朋友。</p>
 
 <p><code>gpg --export --armor mykeyID &gt; gpgkey.pub.asc</code> # mykeyID 部分可以用 name 或 mail 地址代替</p></li>
 </ul>
 
-<p>注： - -armor 表示加内容转换成可见的 ASCII 码输出,否则是二进制不可见内容。
+<p>注： - -armor 表示加内容转换成可见的 ASCII 码输出,否则是二进制不可见内容。<br />
 现在你可以把导出的公钥通过 Email 等途径发送给你的朋友了，或者你也可以不导出公钥直接上传公钥到密钥服务器。</p>
 
-<pre><code>`gpg --keyserver keyserverAddress --send mykeyID`
+<pre><code>`gpg --keyserver keyserverAddress --send mykeyID`  
 </code></pre>
 
-<p>注： &ndash;keyserver 可以不加，默认为 keys.gnupg.net
+<p>注： &ndash;keyserver 可以不加，默认为 keys.gnupg.net<br />
 然后只要把公钥 ID 和服务器地址告诉给朋友就可以了，朋友可以通过搜索你的 公钥 ID ，Email 地址或名字来获取并导入你的公钥，如下：</p>
 
-<pre><code>`gpg --keyserver keyserverAddress --search-keys keyid/name/Email`
+<pre><code>`gpg --keyserver keyserverAddress --search-keys keyid/name/Email`  
 </code></pre>
 
 <p>比如搜索我的：</p>
 
-<pre><code>`gpg --keyserver keyserver.ubuntu.com --search-keys rikulu`
+<pre><code>`gpg --keyserver keyserver.ubuntu.com --search-keys rikulu`  
 </code></pre>
 
 <ul>
-<li>导入朋友的公钥</li>
+<li>导入朋友的公钥<br />
+<br /></li>
 </ul>
 
 <p>当你获得朋友的公钥文件后，你首先需要导入公钥到公钥库</p>
 
-<pre><code>`gpg --import gpgkey.pub.asc`
+<pre><code>`gpg --import gpgkey.pub.asc`  
 </code></pre>
 
 <p>或直接从公钥服务器导入</p>
@@ -503,159 +506,166 @@ GPG 配置文件目录:~/.gnupg
 <h4 id="私钥备份与密钥回收">私钥备份与密钥回收</h4>
 
 <ul>
-<li>密钥的导出和导入:以便用来备份密钥或导入到其它机器上。</li>
-<li>导出私钥
-<code>gpg -oa seckey.asc --export-secret-keys mykeyID</code></li>
+<li>密钥的导出和导入:以便用来备份密钥或导入到其它机器上。<br /></li>
+<li>导出私钥<br />
+<code>gpg -oa seckey.asc --export-secret-keys mykeyID</code><br /></li>
 
-<li><p>导入私钥
+<li><p>导入私钥<br />
 <code>gpg --import seckey.asc</code></p></li>
 
 <li><p>密钥回收:当您的密钥对生成之后，您应该立即做一个公钥回收证书，如果您忘记了您的私钥的口令或者您的私钥丢失或者被盗窃，您可以发布这个证书来声明以前的公钥不再有效。</p></li>
 
-<li><p>生成回收证书
+<li><p>生成回收证书<br />
 <code>gpg --output revoke.asc --gen-revoke mykeyID</code></p></li>
 
-<li><p>导入回收证书
+<li><p>导入回收证书<br />
 <code>gpg --import revoke.asc</code></p></li>
 
-<li><p>发送回收证书到服务器，声明原 GPG Key 作废
+<li><p>发送回收证书到服务器，声明原 GPG Key 作废<br />
 <code>gpg --keyserver keyserverAddress --send mykeyID</code></p></li>
 </ul>
 
 <h4 id="列出机器中保存的所有密钥">列出机器中保存的所有密钥</h4>
 
-<p>列出所有公钥
+<p>列出所有公钥<br />
     gpg -k</p>
 
-<p>列出所有私钥
+<p>列出所有私钥<br />
     gpg -K</p>
 
 <h4 id="常规使用">常规使用</h4>
 
 <ul>
-<li>对称加密与解密： 有时候没有得到对方的公钥，而且资料不是太重要，此时还可以使用简单的对称加密方式(加密及解密都使用相同的密钥/密码)，加密过程中提示输出对称密钥/密码，注意:此密码是临时用的密码,不要设置和自己的私钥保护密码一样，以防别人猜测及盗用!</li>
+<li>对称加密与解密： 有时候没有得到对方的公钥，而且资料不是太重要，此时还可以使用简单的对称加密方式(加密及解密都使用相同的密钥/密码)，加密过程中提示输出对称密钥/密码，注意:此密码是临时用的密码,不要设置和自己的私钥保护密码一样，以防别人猜测及盗用!<br />
+<br /></li>
 </ul>
 
-<p>密码加密
+<p>密码加密<br />
     <code>gpg -c filename</code><br />
          -c, &ndash;symmetric               仅使用对称加密</p>
 
-<p>密码解密
-    <code>gpg -d filename.gpg</code>
+<p>密码解密<br />
+    <code>gpg -d filename.gpg</code><br />
          -d, &ndash;decrypt                 解密数据(默认)</p>
 
 <ul>
-<li>非对称文件加密与解密：</li>
+<li>非对称文件加密与解密：<br />
+<br /></li>
 </ul>
 
-<p>公钥加密：当你导入完好友的公钥后，就可以用朋友的公钥加密文件了，
+<p>公钥加密：当你导入完好友的公钥后，就可以用朋友的公钥加密文件了，<br />
     <code>gpg -e -r username filename (-r 表示指定用户)</code></p>
 
-<p>私钥解密：上面的操作会生成 filename.gpg 加密文件，之后你可以把此文件发送给好友了，对方就可以用自已的密钥来解密文件了。
+<p>私钥解密：上面的操作会生成 filename.gpg 加密文件，之后你可以把此文件发送给好友了，对方就可以用自已的密钥来解密文件了。<br />
     <code>gpg -d filename.gpg</code></p>
 
 <ul>
-<li>对文件签名</li>
+<li>对文件签名<br />
+<br /></li>
 </ul>
 
 <ol>
-<li>数字签名 二进制
-<code>gpg -o doc.sig -s doc</code>
-<code>gpg --sign test.txt</code> &gt;&gt; test.txt.gpg
-其中doc是原文件，doc.sig包含了原文件和签名，是二进制的。这个命令会要求你输入你的私钥的密码句。
-<code>gpg -o doc.sig -ser name doc</code> 既签名又加密
-<code>gpg -o doc -d doc.sig</code>        解密时自动校验签名
-<code>gpg --local-user [发信者ID] --recipient [接收者ID] --armor --sign --encrypt test.txt</code>
--u, &ndash;local-user 参数指定用发信者的私钥签名，
--r, &ndash;recipient  参数指定用接收者的公钥加密，
--a, &ndash;armor      参数表示采用ASCII码形式显示，
--s, &ndash;sign       signature参数表示需要签名，
--e, &ndash;encrypt    encrypt参数表示加密源文件。</li>
-<li>文本签名 ANSCII
-<code>gpg -o doc.sig --clearsign doc</code></li>
+<li>数字签名 二进制<br />
+<code>gpg -o doc.sig -s doc</code><br />
+<code>gpg --sign test.txt</code> &gt;&gt; test.txt.gpg<br />
+其中doc是原文件，doc.sig包含了原文件和签名，是二进制的。这个命令会要求你输入你的私钥的密码句。<br />
+<code>gpg -o doc.sig -ser name doc</code> 既签名又加密<br />
+<code>gpg -o doc -d doc.sig</code>        解密时自动校验签名<br />
+<code>gpg --local-user [发信者ID] --recipient [接收者ID] --armor --sign --encrypt test.txt</code><br />
+-u, &ndash;local-user 参数指定用发信者的私钥签名，<br />
+-r, &ndash;recipient  参数指定用接收者的公钥加密，<br />
+-a, &ndash;armor      参数表示采用ASCII码形式显示，<br />
+-s, &ndash;sign       signature参数表示需要签名，<br />
+-e, &ndash;encrypt    encrypt参数表示加密源文件。<br /></li>
+<li>文本签名 ANSCII<br />
+<code>gpg -o doc.sig --clearsign doc</code><br />
+<br /></li>
 </ol>
 
 <p>这样产生的doc.sig同样包含原文件和签名，其中签名是文本的，而原文件不变。</p>
 
 <ol>
-<li>分离式签名
-<code>gpg -o doc.sig -ab doc</code></li>
+<li>分离式签名<br />
+<code>gpg -o doc.sig -ab doc</code><br />
+<br /></li>
 </ol>
 
-<p>doc.sig仅包括签名，分离式签名的意思是原文件和签名是分开的。
+<p>doc.sig仅包括签名，分离式签名的意思是原文件和签名是分开的。<br />
 b 表示分离式签名detach-sign</p>
 
 <p>如果想生成单独的签名文件，与文件内容分开存放，可以使用detach-sign参数。</p>
 
-<p><code>gpg --detach-sign test.txt</code>
-  是一个二进制的数据，如果想采用ASCII码形式，要加上armor参数
+<p><code>gpg --detach-sign test.txt</code><br />
+  是一个二进制的数据，如果想采用ASCII码形式，要加上armor参数<br />
   <code>gpg --armor --detach-sign test.txt</code></p>
 
 <ol>
-<li>验证签名
-<code>gpg --verify doc.sig [doc]</code>
-<code>gpg --verify test.txt.asc test.txt</code></li>
-<li>修改信任等级
-<code>gpg --edit-key &quot;rinetd&quot; trust quit</code>
-请选择您要使用的密钥种类：
-(1) DSA 和 ElGamal (默认)
-(2) DSA (仅用于签名)
-(5) RSA (仅用于签名)
-您的选择？ 1  ←只有1可以用于加密，其他种类只能用于签名
-DSA 密钥对会有 1024 位。
-ELG-E 密钥长度应在 1024 位与 4096 位之间。</li>
+<li>验证签名<br />
+<code>gpg --verify doc.sig [doc]</code><br />
+<code>gpg --verify test.txt.asc test.txt</code><br /></li>
+<li>修改信任等级<br />
+<code>gpg --edit-key &quot;rinetd&quot; trust quit</code><br />
+请选择您要使用的密钥种类：<br />
+(1) DSA 和 ElGamal (默认)<br />
+(2) DSA (仅用于签名)<br />
+(5) RSA (仅用于签名)<br />
+您的选择？ 1  ←只有1可以用于加密，其他种类只能用于签名<br />
+DSA 密钥对会有 1024 位。<br />
+ELG-E 密钥长度应在 1024 位与 4096 位之间。<br />
+<br /></li>
 </ol>
 
-<p>您想要用多大的密钥尺寸？(2048)  ←选择密码的位数，位数越大，越安全，但速度越慢
+<p>您想要用多大的密钥尺寸？(2048)  ←选择密码的位数，位数越大，越安全，但速度越慢<br />
 您所要求的密钥尺寸是 2048 位</p>
 
-<p>请设定这把密钥的有效期限。
-0 = 密钥永不过期
-<n>  = 密钥在 n 天后过期
-<n>w = 密钥在 n 周后过期
-<n>m = 密钥在 n 月后过期
-<n>y = 密钥在 n 年后过期
-密钥的有效期限是？(0) 0  ←根据实际情况选择密钥期限
-密钥永远不会过期
+<p>请设定这把密钥的有效期限。<br />
+0 = 密钥永不过期<br />
+<n>  = 密钥在 n 天后过期<br />
+<n>w = 密钥在 n 周后过期<br />
+<n>m = 密钥在 n 月后过期<br />
+<n>y = 密钥在 n 年后过期<br />
+密钥的有效期限是？(0) 0  ←根据实际情况选择密钥期限<br />
+密钥永远不会过期<br />
 以上正确吗？(y/n)y  ←确认</p>
 
-<p>您需要一个用户标识来辨识您的密钥；本软件会用真实姓名、注释和电子邮件地址组合
-成用户标识，如下所示：
+<p>您需要一个用户标识来辨识您的密钥；本软件会用真实姓名、注释和电子邮件地址组合<br />
+成用户标识，如下所示：<br />
 “Heinrich Heine (Der Dichter) <a href="mailto:heinrichh@duesseldorf.de">heinrichh@duesseldorf.de</a>”</p>
 
-<p>真实姓名：Hyphen Wang  ←请填入真实姓名，后面会用到
-电子邮件地址：gpgencrypt@linuxfly.org  ←邮件作为标记之一，不能重复
-注释：Use for GPG Encrypt  ←仅是注释而已
-您选定了这个用户标识：
+<p>真实姓名：Hyphen Wang  ←请填入真实姓名，后面会用到<br />
+电子邮件地址：gpgencrypt@linuxfly.org  ←邮件作为标记之一，不能重复<br />
+注释：Use for GPG Encrypt  ←仅是注释而已<br />
+您选定了这个用户标识：<br />
 “Hyphen Wang (Use for GPG Encrypt) <a href="mailto:gpgencrypt@linuxfly.org">gpgencrypt@linuxfly.org</a>”</p>
 
-<p>更改姓名(N)、注释&copy;、电子邮件地址(E)或确定(O)/退出(Q)？O  ←输入“O”确认
+<p>更改姓名(N)、注释&copy;、电子邮件地址(E)或确定(O)/退出(Q)？O  ←输入“O”确认<br />
 您需要一个密码来保护您的私钥。  ←输入两次用于访问私钥的密码，紧记，不能公开或丢失</p>
 
-<p>我们需要生成大量的随机字节。这个时候您可以多做些琐事(像是敲打键盘、移动
-鼠标、读写硬盘之类的)，这会让随机数字发生器有更好的机会获得足够的熵数。
+<p>我们需要生成大量的随机字节。这个时候您可以多做些琐事(像是敲打键盘、移动<br />
+鼠标、读写硬盘之类的)，这会让随机数字发生器有更好的机会获得足够的熵数。<br />
 ++++++++++&hellip;++++++++++..++++++++</p>
 
-<p>随机字节不够多。请再做一些其他的琐事，以使操作系统能搜集到更多的熵数！
-(还需要274字节)  ←运行一些的程序，以便在内存中获得更多随机数
-我们需要生成大量的随机字节。这个时候您可以多做些琐事(像是敲打键盘、移动
-鼠标、读写硬盘之类的)，这会让随机数字发生器有更好的机会获得足够的熵数。
-+++++++++++++++++++++++++.+++++.+++++.++++++++++.+++&lt;+++++..+++++^^^
-gpg: 密钥 A3942296 被标记为绝对信任  ←密钥ID
+<p>随机字节不够多。请再做一些其他的琐事，以使操作系统能搜集到更多的熵数！<br />
+(还需要274字节)  ←运行一些的程序，以便在内存中获得更多随机数<br />
+我们需要生成大量的随机字节。这个时候您可以多做些琐事(像是敲打键盘、移动<br />
+鼠标、读写硬盘之类的)，这会让随机数字发生器有更好的机会获得足够的熵数。<br />
++++++++++++++++++++++++++.+++++.+++++.++++++++++.+++&lt;+++++..+++++^^^<br />
+gpg: 密钥 A3942296 被标记为绝对信任  ←密钥ID<br />
 公钥和私钥已经生成并经签名。</p>
 
-<p>gpg: 正在检查信任度数据库
-gpg: 需要 3 份勉强信任和 1 份完全信任，PGP 信任模型
-gpg: 深度：0 有效性：  2 已签名：  0 信任度：0-，0q，0n，0m，0f，2u
-pub   1024D/A3942296 2008-12-19
-密钥指纹 = E95E 1F77 6C4E 33BD 740C  19AB EEF9 A67E A394 2296
-uid                  Hyphen Wang (Use for GPG Encrypt) <a href="mailto:gpgencrypt@linuxfly.org">gpgencrypt@linuxfly.org</a>
+<p>gpg: 正在检查信任度数据库<br />
+gpg: 需要 3 份勉强信任和 1 份完全信任，PGP 信任模型<br />
+gpg: 深度：0 有效性：  2 已签名：  0 信任度：0-，0q，0n，0m，0f，2u<br />
+pub   1024D/A3942296 2008-12-19<br />
+密钥指纹 = E95E 1F77 6C4E 33BD 740C  19AB EEF9 A67E A394 2296<br />
+uid                  Hyphen Wang (Use for GPG Encrypt) <a href="mailto:gpgencrypt@linuxfly.org">gpgencrypt@linuxfly.org</a><br />
 sub   2048g/911E677B 2008-12-19</p>
 
 <ol>
-<li>密钥的回收
-当您的密钥对生成之后，您应该立即做一个公钥回收证书，如果您忘记了您的私钥的口令或者您的私钥丢失或者被盗窃，您可以发布这个证书来声明以前的公钥不再有效。生成回收证书的选项是&rdquo;&ndash;gen-revoke&rdquo;。
-<code>gpg --output revoke.asc --gen-revoke mykeyID</code></li>
+<li>密钥的回收<br />
+当您的密钥对生成之后，您应该立即做一个公钥回收证书，如果您忘记了您的私钥的口令或者您的私钥丢失或者被盗窃，您可以发布这个证书来声明以前的公钥不再有效。生成回收证书的选项是&rdquo;&ndash;gen-revoke&rdquo;。<br />
+<code>gpg --output revoke.asc --gen-revoke mykeyID</code><br />
+<br /></li>
 </ol>
 
 <p>其中mykey 参数是可以表示的密钥标识，产生的回收证书放在revoke.asc文件里，一旦回收证书被发放，以前的证书就不能再被其他用户访问，因此以前的公钥也就失效了。</p>
@@ -670,22 +680,22 @@ sub   2048g/911E677B 2008-12-19</p>
 
 <p>通过如下命令可以将你的key发布到服务器上：</p>
 
-<p>gpg &ndash;keyserver Server Address &ndash;send-keys mykeyID
-PS:当然您也可以定义默认的服务器key server，一般安装好后的默认key server都是subkeys.pgp.net。你也可以通过修改.gnupg/gpg.conf中的keyserver信息来改变你的key server。
+<p>gpg &ndash;keyserver Server Address &ndash;send-keys mykeyID<br />
+PS:当然您也可以定义默认的服务器key server，一般安装好后的默认key server都是subkeys.pgp.net。你也可以通过修改.gnupg/gpg.conf中的keyserver信息来改变你的key server。<br />
 4.密钥的导出／导入</p>
 
-<p>我们通常需要导出公钥和私钥保存起来，当然公钥是可以满世界的泼洒，但是私钥请务必保存好，否则你的密钥对将会永久性的失去威力。
-公钥的导出：
+<p>我们通常需要导出公钥和私钥保存起来，当然公钥是可以满世界的泼洒，但是私钥请务必保存好，否则你的密钥对将会永久性的失去威力。<br />
+公钥的导出：<br />
 gpg -o keyfilename &ndash;export mykeyID</p>
 
 <p>如果没有mykeyID则是备份所有的公钥，-o表示输出到文件keyfilename中，如果加上-a的参数则输出文本格式( ASCII )的信息，否则输出的是二进制格式信息。</p>
 
-<p>私钥的导出：
+<p>私钥的导出：<br />
 gpg -o keyfilename &ndash;export-secret-keys mykeyID</p>
 
 <p>如果没有mykeyID则是备份所有的私钥，-o表示输出到文件keyfilename中，如果加上-a的参数则输出文本格式的信息，否则输出的是二进制格式信息。</p>
 
-<p>密钥的导入：
+<p>密钥的导入：<br />
 gpg &ndash;import filename</p>
 
 <p>PS:用户可以使用gpg &ndash;list-keys命令查看是否成功导入了密钥。</p>
@@ -736,33 +746,33 @@ gpg &ndash;import filename</p>
 
 <p>PS:无论加密解密，都可以加上-o参数来指定加密和解密后的输出文件，例如</p>
 
-<p>#gpg -o doc.gpg -er name doc
-其中name是选择谁的公钥加密，即谁是文件的接收者。
-doc为要加密的文件，即原文件
+<p>#gpg -o doc.gpg -er name doc<br />
+其中name是选择谁的公钥加密，即谁是文件的接收者。<br />
+doc为要加密的文件，即原文件<br />
 doc.gpg为命令执行后生成的加密的文件，这里要先指定好文件名</p>
 
-<p>对文件进行签名
-1、数字签名
-命令格式：
-#gpg -o doc.sig -s doc
-其中doc是原文件，doc.sig包含了原文件和签名，是二进制的。这个命令会要求你输入你的私钥的密码句。
-#gpg -o doc.sig -ser name doc
+<p>对文件进行签名<br />
+1、数字签名<br />
+命令格式：<br />
+#gpg -o doc.sig -s doc<br />
+其中doc是原文件，doc.sig包含了原文件和签名，是二进制的。这个命令会要求你输入你的私钥的密码句。<br />
+#gpg -o doc.sig -ser name doc<br />
 既签名又加密</p>
 
-<p>2、文本签名
-#gpg -o doc.sig &ndash;clearsign doc
+<p>2、文本签名<br />
+#gpg -o doc.sig &ndash;clearsign doc<br />
 这样产生的doc.sig同样包含原文件和签名，其中签名是文本的，而原文件不变。</p>
 
-<p>3、分离式签名
-#gpg -o doc.sig -ab doc
-doc.sig仅包括签名，分离式签名的意思是原文件和签名是分开的。
+<p>3、分离式签名<br />
+#gpg -o doc.sig -ab doc<br />
+doc.sig仅包括签名，分离式签名的意思是原文件和签名是分开的。<br />
 b 表示分离式签名detach-sign</p>
 
-<p>4、验证签名
-#gpg &ndash;verify doc.sig [doc]
+<p>4、验证签名<br />
+#gpg &ndash;verify doc.sig [doc]<br />
 验证之前必须导入文件作者的公钥，对于分离式签名，最后还要加上原文件，即后面的doc。</p>
 
-<p>密匙签名和用户信任(进阶功能)
+<p>密匙签名和用户信任(进阶功能)<br />
 尽管在理论上讲，具备了公匙和私匙就可以实现安全的信息通讯，但是在实际应用中，还必须对公匙进行有效确认。因为，确实存在伪造公匙信息的可能。</p>
 
 <p>由此，在GPG中引入了一个复杂的信任系统，以帮助我们区分哪些密匙是真的，哪些密匙是假的。这个信任系统是基于密匙的，主要包括密匙签名。</p>
@@ -797,94 +807,94 @@ b 表示分离式签名detach-sign</p>
 
 <h1 id="gpg-delete-secret-keys-hyphenwang-redflag-linux-com">gpg &ndash;delete-secret-keys hyphenwang@redflag-linux.com</h1>
 
-<p>gpg (GnuPG) 1.4.5; Copyright &copy; 2006 Free Software Foundation, Inc.
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to redistribute it
-under certain conditions. See the file COPYING for details.
+<p>gpg (GnuPG) 1.4.5; Copyright &copy; 2006 Free Software Foundation, Inc.<br />
+This program comes with ABSOLUTELY NO WARRANTY.<br />
+This is free software, and you are welcome to redistribute it<br />
+under certain conditions. See the file COPYING for details.<br />
 sec  1024D/A3942296 2008-12-19 Hyphen Wang (Use for GPG Encrypt) <a href="mailto:gpgencrypt@linuxfly.org">gpgencrypt@linuxfly.org</a></p>
 
-<p>要从钥匙环里删除这把密钥吗？(y/N)y
+<p>要从钥匙环里删除这把密钥吗？(y/N)y<br />
 这是一把私钥！――真的要删除吗？(y/N)y</p>
 
-<p>必须先删除私钥，然后才能删除公钥。
+<p>必须先删除私钥，然后才能删除公钥。<br />
 从公钥钥匙环里删除密钥：</p>
 
 <h1 id="gpg-delete-keys-hyphenwang-redflag-linux-com">gpg &ndash;delete-keys hyphenwang@redflag-linux.com</h1>
 
-<p>gpg (GnuPG) 1.4.5; Copyright &copy; 2006 Free Software Foundation, Inc.
-This program comes with ABSOLUTELY NO WARRANTY.
-This is free software, and you are welcome to redistribute it
-under certain conditions. See the file COPYING for details.
+<p>gpg (GnuPG) 1.4.5; Copyright &copy; 2006 Free Software Foundation, Inc.<br />
+This program comes with ABSOLUTELY NO WARRANTY.<br />
+This is free software, and you are welcome to redistribute it<br />
+under certain conditions. See the file COPYING for details.<br />
 sec  1024D/A3942296 2008-12-19 Hyphen Wang (Use for GPG Encrypt) <a href="mailto:gpgencrypt@linuxfly.org">gpgencrypt@linuxfly.org</a></p>
 
 <p>要从钥匙环里删除这把密钥吗？(y/N)y</p>
 
-<p>三.对称加密:
+<p>三.对称加密:<br />
 当然GPG同样具备普通的对称加密功能，这时候就不需要密钥，直接用密码加密即可（注意，这里的密码不一定是你私钥的密码，您大可以随意设定）</p>
 
 <p>gpg -o doc.gpg -c doc</p>
 
 <p>－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－－</p>
 
-<p>四.GPG常用参数:
-语法：gpg [选项] [文件名]
-签字、检查、加密或解密
-默认的操作依输入数据而定
+<p>四.GPG常用参数:<br />
+语法：gpg [选项] [文件名]<br />
+签字、检查、加密或解密<br />
+默认的操作依输入数据而定<br />
 指令：</p>
 
-<p>-s, &ndash;sign [文件名]           生成一份签字
-&ndash;clearsign [文件名]      生成一份明文签字
--b, &ndash;detach-sign             生成一份分离的签字
--e, &ndash;encrypt                 加密数据
--c, &ndash;symmetric               仅使用对称加密
--d, &ndash;decrypt                 解密数据(默认)
-&ndash;verify                  验证签字
-&ndash;list-keys               列出密钥
-&ndash;list-sigs               列出密钥和签字
-&ndash;check-sigs              列出并检查密钥签字
-&ndash;fingerprint             列出密钥和指纹
--K, &ndash;list-secret-keys        列出私钥
-&ndash;gen-key                 生成一副新的密钥对
-&ndash;delete-keys             从公钥钥匙环里删除密钥
-&ndash;delete-secret-keys      从私钥钥匙环里删除密钥
-&ndash;sign-key                为某把密钥添加签字
-&ndash;lsign-key               为某把密钥添加本地签字
-&ndash;edit-key                编辑某把密钥或为其添加签字
-&ndash;gen-revoke              生成一份吊销证书
-&ndash;export                  导出密钥
-&ndash;send-keys               把密钥导出到某个公钥服务器上
-&ndash;recv-keys               从公钥服务器上导入密钥
-&ndash;search-keys             在公钥服务器上搜寻密钥
-&ndash;refresh-keys            从公钥服务器更新所有的本地密钥
-&ndash;import                  导入/合并密钥
-&ndash;card-status             打印卡状态
-&ndash;card-edit               更改卡上的数据
-&ndash;change-pin              更改卡的 PIN
-&ndash;update-trustdb          更新信任度数据库
+<p>-s, &ndash;sign [文件名]           生成一份签字<br />
+&ndash;clearsign [文件名]      生成一份明文签字<br />
+-b, &ndash;detach-sign             生成一份分离的签字<br />
+-e, &ndash;encrypt                 加密数据<br />
+-c, &ndash;symmetric               仅使用对称加密<br />
+-d, &ndash;decrypt                 解密数据(默认)<br />
+&ndash;verify                  验证签字<br />
+&ndash;list-keys               列出密钥<br />
+&ndash;list-sigs               列出密钥和签字<br />
+&ndash;check-sigs              列出并检查密钥签字<br />
+&ndash;fingerprint             列出密钥和指纹<br />
+-K, &ndash;list-secret-keys        列出私钥<br />
+&ndash;gen-key                 生成一副新的密钥对<br />
+&ndash;delete-keys             从公钥钥匙环里删除密钥<br />
+&ndash;delete-secret-keys      从私钥钥匙环里删除密钥<br />
+&ndash;sign-key                为某把密钥添加签字<br />
+&ndash;lsign-key               为某把密钥添加本地签字<br />
+&ndash;edit-key                编辑某把密钥或为其添加签字<br />
+&ndash;gen-revoke              生成一份吊销证书<br />
+&ndash;export                  导出密钥<br />
+&ndash;send-keys               把密钥导出到某个公钥服务器上<br />
+&ndash;recv-keys               从公钥服务器上导入密钥<br />
+&ndash;search-keys             在公钥服务器上搜寻密钥<br />
+&ndash;refresh-keys            从公钥服务器更新所有的本地密钥<br />
+&ndash;import                  导入/合并密钥<br />
+&ndash;card-status             打印卡状态<br />
+&ndash;card-edit               更改卡上的数据<br />
+&ndash;change-pin              更改卡的 PIN<br />
+&ndash;update-trustdb          更新信任度数据库<br />
 &ndash;print-md 算法 [文件]    使用指定的散列算法打印报文散列值</p>
 
 <p>选项：</p>
 
-<p>-a, &ndash;armor                   输出 ASCII 文本文件
--r, &ndash;recipient               为收件者“UID”加密
--u, &ndash;local-user              使用这个用户标识来签字或解密
--z N                          设定压缩等级为 N (0 表示不压缩)
-&ndash;textmode                    使用标准的文本模式
--o, &ndash;output                  指定输出文件
--v, &ndash;verbose                 详细模式
--n, &ndash;dry-run                 不做任何改变
--i, &ndash;interactive             覆盖前先询问
-&ndash;openpgp                 行为严格遵循 OpenPGP 定义
+<p>-a, &ndash;armor                   输出 ASCII 文本文件<br />
+-r, &ndash;recipient               为收件者“UID”加密<br />
+-u, &ndash;local-user              使用这个用户标识来签字或解密<br />
+-z N                          设定压缩等级为 N (0 表示不压缩)<br />
+&ndash;textmode                    使用标准的文本模式<br />
+-o, &ndash;output                  指定输出文件<br />
+-v, &ndash;verbose                 详细模式<br />
+-n, &ndash;dry-run                 不做任何改变<br />
+-i, &ndash;interactive             覆盖前先询问<br />
+&ndash;openpgp                 行为严格遵循 OpenPGP 定义<br />
 &ndash;pgp2                    生成与 PGP 2.x 兼容的报文</p>
 
 <p>(请参考在线说明以获得所有命令和选项的完整清单)</p>
 
 <p>范例：</p>
 
-<p>-se -r Bob [文件名]          为 Bob 这个收件人签字及加密
-&ndash;clearsign [文件名]         做出明文签字
-&ndash;detach-sign [文件名]       做出分离式签字
-&ndash;list-keys [某甲]           显示密钥
+<p>-se -r Bob [文件名]          为 Bob 这个收件人签字及加密<br />
+&ndash;clearsign [文件名]         做出明文签字<br />
+&ndash;detach-sign [文件名]       做出分离式签字<br />
+&ndash;list-keys [某甲]           显示密钥<br />
 &ndash;fingerprint [某甲]         显示指纹</p>
 
                       
@@ -1052,7 +1062,7 @@ sec  1024D/A3942296 2008-12-19 Hyphen Wang (Use for GPG Encrypt) <a href="mailto
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -1275,6 +1285,8 @@ sec  1024D/A3942296 2008-12-19 Hyphen Wang (Use for GPG Encrypt) <a href="mailto
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -1297,7 +1309,9 @@ sec  1024D/A3942296 2008-12-19 Hyphen Wang (Use for GPG Encrypt) <a href="mailto
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1329,7 +1343,7 @@ sec  1024D/A3942296 2008-12-19 Hyphen Wang (Use for GPG Encrypt) <a href="mailto
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

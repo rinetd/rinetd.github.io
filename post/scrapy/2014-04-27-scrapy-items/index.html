@@ -245,154 +245,154 @@
 
 <p>##声明item</p>
 
-<pre><code>import scrapy
+<pre><code>import scrapy  
 
-class Product(scrapy.Item):
-    name = scrapy.Field()
-    price = scrapy.Field()
-    stock = scrapy.Field()
-    last_updated = scrapy.Field(serializer=str)
+class Product(scrapy.Item):  
+    name = scrapy.Field()  
+    price = scrapy.Field()  
+    stock = scrapy.Field()  
+    last_updated = scrapy.Field(serializer=str)  
 </code></pre>
 
 <p>scrapy item 类似于Django modle ,只是scrapy item 更简单，因为它所有field 类型都一样。</p>
 
-<p>##Item Field
+<p>##Item Field<br />
 Field对象用来给每个域指定元数据。例如：上面例子展示的<code>last_updateed</code>域指定了<code>serializer</code>函数。</p>
 
 <p>你可以指定任何的元数据，Field 对象接受的值并没有限制。所以，没有一个可用的元数据键的列表。每个键会被不同的组件使用到，并且只有这些组件知道。Field对象最主要的目的是提供一个方式将所有元数据定义到一个地方。</p>
 
-<p>##使用item
-下面是一些使用item的场景，用到了上面定义的Produc item。
+<p>##使用item<br />
+下面是一些使用item的场景，用到了上面定义的Produc item。<br />
 ###创建</p>
 
-<pre><code>&gt;&gt;&gt; product = Product(name='Desktop PC', price=1000)
-&gt;&gt;&gt; print product
-Product(name='Desktop PC', price=1000)
+<pre><code>&gt;&gt;&gt; product = Product(name='Desktop PC', price=1000)  
+&gt;&gt;&gt; print product  
+Product(name='Desktop PC', price=1000)  
 </code></pre>
 
 <p>###取值</p>
 
-<pre><code>&gt;&gt;&gt; product['name']
-Desktop PC
-&gt;&gt;&gt; product.get('name')
-Desktop PC
+<pre><code>&gt;&gt;&gt; product['name']  
+Desktop PC  
+&gt;&gt;&gt; product.get('name')  
+Desktop PC  
 
-&gt;&gt;&gt; product['price']
-1000
+&gt;&gt;&gt; product['price']  
+1000  
 
-&gt;&gt;&gt; product['last_updated']
-Traceback (most recent call last):
-    ...
-KeyError: 'last_updated'
+&gt;&gt;&gt; product['last_updated']  
+Traceback (most recent call last):  
+    ...  
+KeyError: 'last_updated'  
 
-&gt;&gt;&gt; product.get('last_updated', 'not set')
-not set
+&gt;&gt;&gt; product.get('last_updated', 'not set')  
+not set  
 
-&gt;&gt;&gt; product['lala'] # getting unknown field
-Traceback (most recent call last):
-    ...
-KeyError: 'lala'
+&gt;&gt;&gt; product['lala'] # getting unknown field  
+Traceback (most recent call last):  
+    ...  
+KeyError: 'lala'  
 
-&gt;&gt;&gt; product.get('lala', 'unknown field')
-'unknown field'
+&gt;&gt;&gt; product.get('lala', 'unknown field')  
+'unknown field'  
 
-&gt;&gt;&gt; 'name' in product  # is name field populated?
-True
+&gt;&gt;&gt; 'name' in product  # is name field populated?  
+True  
 
-&gt;&gt;&gt; 'last_updated' in product  # is last_updated populated?
-False
+&gt;&gt;&gt; 'last_updated' in product  # is last_updated populated?  
+False  
 
-&gt;&gt;&gt; 'last_updated' in product.fields  # is last_updated a declared field?
-True
+&gt;&gt;&gt; 'last_updated' in product.fields  # is last_updated a declared field?  
+True  
 
-&gt;&gt;&gt; 'lala' in product.fields  # is lala a declared field?
-False
+&gt;&gt;&gt; 'lala' in product.fields  # is lala a declared field?  
+False  
 </code></pre>
 
 <p>###赋值</p>
 
-<pre><code>&gt;&gt;&gt; product['last_updated'] = 'today'
-&gt;&gt;&gt; product['last_updated']
-today
+<pre><code>&gt;&gt;&gt; product['last_updated'] = 'today'  
+&gt;&gt;&gt; product['last_updated']  
+today  
 
-&gt;&gt;&gt; product['lala'] = 'test' # setting unknown field
-Traceback (most recent call last):
-...
-KeyError: 'Product does not support field: lala'
+&gt;&gt;&gt; product['lala'] = 'test' # setting unknown field  
+Traceback (most recent call last):  
+...  
+KeyError: 'Product does not support field: lala'  
 </code></pre>
 
 <p>###取得所有填充的值</p>
 
-<pre><code>&gt;&gt;&gt; product.keys()
-['price', 'name']
+<pre><code>&gt;&gt;&gt; product.keys()  
+['price', 'name']  
 
-&gt;&gt;&gt; product.items()
-[('price', 1000), ('name', 'Desktop PC')]
+&gt;&gt;&gt; product.items()  
+[('price', 1000), ('name', 'Desktop PC')]  
 </code></pre>
 
 <p>###其它常见任务</p>
 
 <p>拷贝item</p>
 
-<pre><code>&gt;&gt;&gt; product2 = Product(product)
-&gt;&gt;&gt; print product2
-Product(name='Desktop PC', price=1000)
+<pre><code>&gt;&gt;&gt; product2 = Product(product)  
+&gt;&gt;&gt; print product2  
+Product(name='Desktop PC', price=1000)  
 
-&gt;&gt;&gt; product3 = product2.copy()
-&gt;&gt;&gt; print product3
-Product(name='Desktop PC', price=1000)
+&gt;&gt;&gt; product3 = product2.copy()  
+&gt;&gt;&gt; print product3  
+Product(name='Desktop PC', price=1000)  
 </code></pre>
 
 <p>用item创建字典</p>
 
-<pre><code>&gt;&gt;&gt; dict(product) # create a dict from all populated values
-{'price': 1000, 'name': 'Desktop PC'}
+<pre><code>&gt;&gt;&gt; dict(product) # create a dict from all populated values  
+{'price': 1000, 'name': 'Desktop PC'}  
 </code></pre>
 
 <p>用字典创建item</p>
 
-<pre><code>&gt;&gt;&gt; Product({'name': 'Laptop PC', 'price': 1500})
-Product(price=1500, name='Laptop PC')
+<pre><code>&gt;&gt;&gt; Product({'name': 'Laptop PC', 'price': 1500})  
+Product(price=1500, name='Laptop PC')  
 
-&gt;&gt;&gt; Product({'name': 'Laptop PC', 'lala': 1500}) # warning: unknown field in dict
-Traceback (most recent call last):
-...
-KeyError: 'Product does not support field: lala'
+&gt;&gt;&gt; Product({'name': 'Laptop PC', 'lala': 1500}) # warning: unknown field in dict  
+Traceback (most recent call last):  
+...  
+KeyError: 'Product does not support field: lala'  
 </code></pre>
 
-<p>##扩展item
+<p>##扩展item<br />
 通过声明继承你原始的item，可以扩展item（给它添加更多的field，或者是改变一些field的元数据）。例如：</p>
 
-<pre><code>class DiscountedProduct(Product):
-    discount_percent = scrapy.Field(serializer=str)
-    discount_expiration_date = scrapy.Field()
+<pre><code>class DiscountedProduct(Product):  
+    discount_percent = scrapy.Field(serializer=str)  
+    discount_expiration_date = scrapy.Field()  
 </code></pre>
 
 <p>通过使用之前的field元数据再加上新的值，还可以扩展元数据或者是改变已经存在的值，例如：</p>
 
-<pre><code>class SpecificProduct(Product):
-    name = scrapy.Field(Product.fields['name'],serializer=my_serializer)
+<pre><code>class SpecificProduct(Product):  
+    name = scrapy.Field(Product.fields['name'],serializer=my_serializer)  
 </code></pre>
 
 <p>添加或者替换serializer 元数据会保留之前已经存在的元数据值。</p>
 
 <p>##item对象</p>
 
-<pre><code>class scrapy.item.Item([arg])
+<pre><code>class scrapy.item.Item([arg])  
 </code></pre>
 
 <p>返回一个新item,可以通过参数进行初始化（可选）。</p>
 
 <p>item复制了标准dict api ,包括它的constructor。只是增加了一个fields属性。</p>
 
-<pre><code>fields
+<pre><code>fields  
 </code></pre>
 
 <p>一个包含了所有声明的field的dict，不只是已填充的。键是field name，值是Field对象。</p>
 
 <p>##Field对象</p>
 
-<pre><code>class scrapy.item.Field([arg])
+<pre><code>class scrapy.item.Field([arg])  
 </code></pre>
 
 <p>Field类就是内置的dict类的别名，它并不提供额外的方法和属性。也就是说，Field对象就是纯python dict。</p>
@@ -562,7 +562,7 @@ KeyError: 'Product does not support field: lala'
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -785,6 +785,8 @@ KeyError: 'Product does not support field: lala'
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -807,7 +809,9 @@ KeyError: 'Product does not support field: lala'
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -839,7 +843,7 @@ KeyError: 'Product does not support field: lala'
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

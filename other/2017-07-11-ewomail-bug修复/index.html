@@ -243,20 +243,20 @@
                       
                       <p>EwoMail修改密码后无法登陆bug修复</p>
 
-<p>现象:
+<p>现象:<br />
   新用户登陆后修改密码后 新密码旧密码都无法登陆</p>
 
-<p>排查 ：
-1. 登陆数据库 查看密码
-<code>select id,password from ewomail.i_users \G;</code>
-*************************** 11. row ***************************
-      id: 12
-password: d41d8cd98f00b204e9800998ecf8427e
-*************************** 12. row ***************************
-      id: 13
-password: d41d8cd98f00b204e9800998ecf8427e
-*************************** 13. row ***************************
-      id: 14
+<p>排查 ：<br />
+1. 登陆数据库 查看密码<br />
+<code>select id,password from ewomail.i_users \G;</code><br />
+*************************** 11. row ***************************<br />
+      id: 12<br />
+password: d41d8cd98f00b204e9800998ecf8427e<br />
+*************************** 12. row ***************************<br />
+      id: 13<br />
+password: d41d8cd98f00b204e9800998ecf8427e<br />
+*************************** 13. row ***************************<br />
+      id: 14<br />
 password: d41d8cd98f00b204e9800998ecf8427e</p>
 
 <ol>
@@ -265,71 +265,71 @@ password: d41d8cd98f00b204e9800998ecf8427e</p>
 <p>查询结果：<br />
  [空密码]/[Empty String]</p></li>
 
-<li><p>前端调试 ajax postform传值 Status Code:200 OK
-PrevPassword=lsl123457&amp;NewPassword=lshl123457&amp;Action=ChangePassword&amp;XToken=6b43065d8ab5c2ba300337907c7d21fb
+<li><p>前端调试 ajax postform传值 Status Code:200 OK<br />
+PrevPassword=lsl123457&amp;NewPassword=lshl123457&amp;Action=ChangePassword&amp;XToken=6b43065d8ab5c2ba300337907c7d21fb<br />
 所以问题出在后端程序处理</p></li>
 
-<li><p>后端定位密码修改
+<li><p>后端定位密码修改<br />
 app/libraries/RainLoop/EwoMail.php</p>
 
-<pre><code class="language-php">public function updatePassword($email,$password,$new_passowrd)
-{
-    $newData = [
-        'email'=&gt;$email,
-        'password'=&gt;$password,
-        'new_passowrd'=&gt;$new_passowrd
-    ];
-    $r = $this-&gt;send('User/update_password',$newData);
-    return $r;
-}
+<pre><code class="language-php">public function updatePassword($email,$password,$new_passowrd)  
+{  
+    $newData = [  
+        'email'=&gt;$email,  
+        'password'=&gt;$password,  
+        'new_passowrd'=&gt;$new_passowrd  
+    ];  
+    $r = $this-&gt;send('User/update_password',$newData);  
+    return $r;  
+}  
 </code></pre></li>
 </ol>
 
 <p>继续跟踪 ewomail-admin/module/Api/User.php</p>
 
-<pre><code class="language-php">/**
- * 修改账号密码
- */
-Rout::get('update_password',function(){
-    $email = iany('email');
-    $password = iany('password');
-    $new_password = iany('new_password');
-    if(!$email){
-        E::error('email domain parameter');
-    }
-    if(!$password){
-        E::error('password domain parameter');
-    }
-    if(!$password){
-        E::error('new_password domain parameter');
-    }
-    $row = App::$db-&gt;getOne(&quot;select * from &quot;.table(&quot;users&quot;).&quot; where email='$email' and active=1&quot;);
-    if(!$row){
-        E::error('Data does not exist');
-    }
-    if($row['password']!=md5($password)){
-        E::error('The original password is not correct');
-    }
-    $newData = [
-        'password'=&gt;md5($new_password)
-    ];
-    App::$db-&gt;update(&quot;users&quot;,$newData,&quot;email='$email'&quot;);
-    E::success('');
-});
+<pre><code class="language-php">/**  
+ * 修改账号密码  
+ */  
+Rout::get('update_password',function(){  
+    $email = iany('email');  
+    $password = iany('password');  
+    $new_password = iany('new_password');  
+    if(!$email){  
+        E::error('email domain parameter');  
+    }  
+    if(!$password){  
+        E::error('password domain parameter');  
+    }  
+    if(!$password){  
+        E::error('new_password domain parameter');  
+    }  
+    $row = App::$db-&gt;getOne(&quot;select * from &quot;.table(&quot;users&quot;).&quot; where email='$email' and active=1&quot;);  
+    if(!$row){  
+        E::error('Data does not exist');  
+    }  
+    if($row['password']!=md5($password)){  
+        E::error('The original password is not correct');  
+    }  
+    $newData = [  
+        'password'=&gt;md5($new_password)  
+    ];  
+    App::$db-&gt;update(&quot;users&quot;,$newData,&quot;email='$email'&quot;);  
+    E::success('');  
+});  
 </code></pre>
 
 <p>发现 <code>new_passowrd</code> 笔误，改正</p>
 
-<pre><code class="language-php">public function updatePassword($email,$password,$new_password)
-   {
-       $newData = [
-           'email'=&gt;$email,
-           'password'=&gt;$password,
-           'new_password'=&gt;$new_password
-       ];
-       $r = $this-&gt;send('User/update_password',$newData);
-       return $r;
-   }
+<pre><code class="language-php">public function updatePassword($email,$password,$new_password)  
+   {  
+       $newData = [  
+           'email'=&gt;$email,  
+           'password'=&gt;$password,  
+           'new_password'=&gt;$new_password  
+       ];  
+       $r = $this-&gt;send('User/update_password',$newData);  
+       return $r;  
+   }  
 </code></pre>
 
 <p>问题修复。</p>
@@ -501,7 +501,7 @@ Rout::get('update_password',function(){
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -724,6 +724,8 @@ Rout::get('update_password',function(){
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -746,7 +748,9 @@ Rout::get('update_password',function(){
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -778,7 +782,7 @@ Rout::get('update_password',function(){
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

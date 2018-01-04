@@ -245,39 +245,39 @@
 
 <h2 id="基本原则">基本原则</h2>
 
-<p>.PYTHON伪目标总是不如其它文件“新”，因此它总是被执行。
-@   使命令在被执行前不被回显。
-–   使任何命令行的任何非零退出状态都被忽略。
+<p>.PYTHON伪目标总是不如其它文件“新”，因此它总是被执行。<br />
+@   使命令在被执行前不被回显。<br />
+–   使任何命令行的任何非零退出状态都被忽略。<br />
 +   使命令行可以通过指定 -n、-q 或 -t 选项来执行。</p>
 
 <h2 id="模式变量">模式变量 %</h2>
 
-<p>argets定义了一系列的目标文件，可以有通配符。是目标的一个集合。
-target-parrtern是指明了targets的模式，也就是的目标集模式。
+<p>argets定义了一系列的目标文件，可以有通配符。是目标的一个集合。<br />
+target-parrtern是指明了targets的模式，也就是的目标集模式。<br />
 prereq-parrterns是目标的依赖模式，它对target-parrtern形成的模式再进行一次依赖目标的定义。</p>
 
-<p>这样描述这三个东西，可能还是没有说清楚，还是举个例子来说明一下吧。
+<p>这样描述这三个东西，可能还是没有说清楚，还是举个例子来说明一下吧。<br />
 如果我们的<target-parrtern>定义成“%.o”，意思是我们的集合中都是以“.o”结尾的，而如果我们的<prereq-parrterns>定义成“%.c”，意思是对<target-parrtern>所形成的目标集进行二次定义，其计算方法是，取<target-parrtern>模式中的“%”（也就是去掉了[.o]这个结尾），并为其加上[.c]这个结尾，形成的新集合。</p>
 
 <p>所以，我们的“目标模式”或是“依赖模式”中都应该有“%”这个字符，如果你的文件名中有“%”那么你可以使用反斜杠“\”进行转义，来标明真实的“%”字符。</p>
 
 <p>看一个例子：</p>
 
-<pre><code class="language-Makefile">objects = foo.o bar.o
-all: $(objects)
-$(objects):
-%.o: %.c
-  $(CC) -c $(CFLAGS) $&lt; -o $@
+<pre><code class="language-Makefile">objects = foo.o bar.o  
+all: $(objects)  
+$(objects):  
+%.o: %.c  
+  $(CC) -c $(CFLAGS) $&lt; -o $@  
 </code></pre>
 
-<p>上面的例子中，指明了我们的目标从$object中获取，“%.o”表明要所有以“.o”结尾的目标，
-也就是“foo.o bar.o”，也就是变量$object集合的模式，而依赖模式“%.c”则取模式“%.o”的“%”，也就是“foobar”，并为其加下“.c”的后缀，于是，我们的依赖目标就是“foo.cbar.c”。
+<p>上面的例子中，指明了我们的目标从$object中获取，“%.o”表明要所有以“.o”结尾的目标，<br />
+也就是“foo.o bar.o”，也就是变量$object集合的模式，而依赖模式“%.c”则取模式“%.o”的“%”，也就是“foobar”，并为其加下“.c”的后缀，于是，我们的依赖目标就是“foo.cbar.c”。<br />
 而命令中的“$&lt;”和“$@”则是自动化变量，“$&lt;”表示所有的依赖目标集（也就是“foo.c bar.c”），“$@”表示目标集（也就是foo.o bar.o”）。于是，上面的规则展开后等价于下面的规则：</p>
 
-<pre><code class="language-Ｍakefile">foo.o : foo.c
-  $(CC) -c $(CFLAGS) foo.c -o foo.o
-bar.o : bar.c
-  $(CC) -c $(CFLAGS) bar.c -o bar.o
+<pre><code class="language-Ｍakefile">foo.o : foo.c  
+  $(CC) -c $(CFLAGS) foo.c -o foo.o  
+bar.o : bar.c  
+  $(CC) -c $(CFLAGS) bar.c -o bar.o  
 </code></pre>
 
 <p>试想，如果我们的“%.o”有几百个，那种我们只要用这种很简单的“静态模式规则”就可以写完一堆规则，实在是太有效率了。“静态模式规则”的用法很灵活，如果用得好，那会一个很强大的功能。再看一个例子：</p>
@@ -286,52 +286,52 @@ bar.o : bar.c
 
 <p>$(filter %.o,$(files)): %.o: %.c</p>
 
-<pre><code>       $(CC) -c $(CFLAGS) $&lt; -o $@
+<pre><code>       $(CC) -c $(CFLAGS) $&lt; -o $@  
 </code></pre>
 
 <p>$(filter %.elc,$(files)): %.elc: %.el</p>
 
-<pre><code>       emacs -f batch-byte-compile $&lt;
+<pre><code>       emacs -f batch-byte-compile $&lt;  
 </code></pre>
 
 <p>$(filter%.o,$(files))表示调用Makefile的filter函数，过滤“$filter”集，只要其中模式为“%.o”的内容。其的它内容，我就不用多说了吧。这个例字展示了Makefile中更大的弹性。</p>
 
 <h2 id="自动变量">自动变量 $</h2>
 
-<p>$@          &ndash;代表目标文件(target)
-$^          &ndash;代表所有的依赖文件(components)
+<p>$@          &ndash;代表目标文件(target)<br />
+$^          &ndash;代表所有的依赖文件(components)<br />
 $&lt;          &ndash;代表第一个依赖文件(components中最左边的那个)。</p>
 
-<p>要生成目标 &hellip; : 生成目标所需的依赖 &hellip;
+<p>要生成目标 &hellip; : 生成目标所需的依赖 &hellip;<br />
     command #必须要以[Tab]键开始</p>
 
 <p>export<unexport> 传递变量到下级 Makefile 中</p>
 
-<p>$@
-表示规则中的目标文件集。在模式规则中，如果有多个目标，那么，&rdquo;$@&ldquo;就是匹配于
-目标中模式定义的集合。
-  $% 仅匹配目标文件
-仅当目标是函数库文件中，表示规则中的目标成员名。例如，如果一个目标是&rdquo;foo.a
-(bar.o)&ldquo;，那么，&rdquo;$%&ldquo;就是&rdquo;bar.o&rdquo;，&rdquo;$@&ldquo;就是&rdquo;foo.a&rdquo;。如果目标不是函数库文件（Unix
-下是[.a]，Windows 下是[.lib]），那么，其值为空。
-  $&lt;
-依赖目标中的第一个目标名字。如果依赖目标是以模式（ 即&rdquo;%&ldquo;）定义的，那么&rdquo;$&lt;&ldquo;将
-是符合模式的一系列的文件集。注意，其是一个一个取出来的。
-  $? 依赖的集合(只提取比目标新的)
-所有比目标新的依赖目标的集合。以空格分隔。
-  $^ 依赖的集合(去重)
-所有的依赖目标的集合。以空格分隔。如果在依赖目标中有多个重复的，那个这个变量
-会去除重复的依赖目标，只保留一份。
-  $+ 依赖的集合(不去重)
-这个变量很像&rdquo;$^&ldquo;，也是所有依赖目标的集合。只是它不去除重复的依赖目标。
-  $* 去除后缀名(不推荐使用)
-这个变量表示目标模式中&rdquo;%&ldquo;及其之前的部分。如果目标是&rdquo;dir/a.foo.b&rdquo;，并且目标的
-模式是&rdquo;a.%.b&rdquo;，那么，&rdquo;$<em>&ldquo;的值就是&rdquo;dir/a.foo&rdquo;。这个变量对于构造有关联的文件名是比
-较有较。如果目标中没有模式的定义，那么&rdquo;$</em>&ldquo;也就不能被推导出，但是，如果目标文件的
-后缀是 make 所识别的，那么&rdquo;$<em>&ldquo;就是除了后缀的那一部分。例如：如果目标是&rdquo;foo.c&rdquo;，因
+<p>$@<br />
+表示规则中的目标文件集。在模式规则中，如果有多个目标，那么，&rdquo;$@&ldquo;就是匹配于<br />
+目标中模式定义的集合。<br />
+  $% 仅匹配目标文件<br />
+仅当目标是函数库文件中，表示规则中的目标成员名。例如，如果一个目标是&rdquo;foo.a<br />
+(bar.o)&ldquo;，那么，&rdquo;$%&ldquo;就是&rdquo;bar.o&rdquo;，&rdquo;$@&ldquo;就是&rdquo;foo.a&rdquo;。如果目标不是函数库文件（Unix<br />
+下是[.a]，Windows 下是[.lib]），那么，其值为空。<br />
+  $&lt;<br />
+依赖目标中的第一个目标名字。如果依赖目标是以模式（ 即&rdquo;%&ldquo;）定义的，那么&rdquo;$&lt;&ldquo;将<br />
+是符合模式的一系列的文件集。注意，其是一个一个取出来的。<br />
+  $? 依赖的集合(只提取比目标新的)<br />
+所有比目标新的依赖目标的集合。以空格分隔。<br />
+  $^ 依赖的集合(去重)<br />
+所有的依赖目标的集合。以空格分隔。如果在依赖目标中有多个重复的，那个这个变量<br />
+会去除重复的依赖目标，只保留一份。<br />
+  $+ 依赖的集合(不去重)<br />
+这个变量很像&rdquo;$^&ldquo;，也是所有依赖目标的集合。只是它不去除重复的依赖目标。<br />
+  $* 去除后缀名(不推荐使用)<br />
+这个变量表示目标模式中&rdquo;%&ldquo;及其之前的部分。如果目标是&rdquo;dir/a.foo.b&rdquo;，并且目标的<br />
+模式是&rdquo;a.%.b&rdquo;，那么，&rdquo;$<em>&ldquo;的值就是&rdquo;dir/a.foo&rdquo;。这个变量对于构造有关联的文件名是比<br />
+较有较。如果目标中没有模式的定义，那么&rdquo;$</em>&ldquo;也就不能被推导出，但是，如果目标文件的<br />
+后缀是 make 所识别的，那么&rdquo;$<em>&ldquo;就是除了后缀的那一部分。例如：如果目标是&rdquo;foo.c&rdquo;，因<br />
 为&rdquo;.c&rdquo;是 make 所能识别的后缀名，所以，&rdquo;$</em>&ldquo;的值就是&rdquo;foo&rdquo;。这个特性是 GNU make 的，</p>
 
-<p>很有可能不兼容于其它版本的 make，所以，你应该尽量避免使用&rdquo;$<em>&ldquo;，除非是在隐含规则
+<p>很有可能不兼容于其它版本的 make，所以，你应该尽量避免使用&rdquo;$<em>&ldquo;，除非是在隐含规则<br />
 或是静态模式中。如果目标中的后缀是 make 所不能识别的，那么&rdquo;$</em>&ldquo;就是空值。</p>
 
 <p>在Makefile中写shell代码有点诡异，和不同的shell语法不太一样，如果不了解，看Makefile会莫名其妙。下面总结了一些。</p>
@@ -339,29 +339,30 @@ $&lt;          &ndash;代表第一个依赖文件(components中最左边的那�
 <h2 id="makefile和shell">Makefile和Shell</h2>
 
 <ol>
-<li>Makefile本质上来讲也是shell脚本，即每条command都是shell进程，运行完shell进程都会退出
-<code>Makefile
-test:
-gcc -c main.c -o main.o
-gcc -c a.c -o a.o
-</code>
-这样输入make test，结果相当于两个进程，都退出了。</li>
+<li>Makefile本质上来讲也是shell脚本，即每条command都是shell进程，运行完shell进程都会退出<br />
+<code>Makefile  
+test:  
+gcc -c main.c -o main.o  
+gcc -c a.c -o a.o  
+</code><br />
+这样输入make test，结果相当于两个进程，都退出了。<br />
+<br /></li>
 </ol>
 
 <p>等价于在shell下输命令一样。</p>
 
-<pre><code class="language-Makefile">my_test:
-  cd /home;mkdir test
+<pre><code class="language-Makefile">my_test:  
+  cd /home;mkdir test  
 </code></pre>
 
 <p>这里make my_test，结果相当于一个进程。当前目录是/root 而</p>
 
-<pre><code class="language-Makefile">own_test:
-  cd /home
-  mkdir test
+<pre><code class="language-Makefile">own_test:  
+  cd /home  
+  mkdir test  
 </code></pre>
 
-<p>此时<code>make own_test</code>，相当于两个进程，
+<p>此时<code>make own_test</code>，相当于两个进程，<br />
 第一个进程是cd /home,运行完回到了/root。这时再运行第二个shell命令就会在/root下创建一个test目录.(makefile中的shell进程命令，跟直接在shell输的命令相同，但是它都会结束本身，即exit)</p>
 
 <h2 id="makefile-中变量赋值">Makefile 中变量赋值</h2>
@@ -372,23 +373,23 @@ gcc -c a.c -o a.o
 
 <p><code>xx = xx1</code>         // 这里时makefile代码</p>
 
-<p>第二种方式：
+<p>第二种方式：<br />
 yy：xx = xx2       // 这是是makefile代码，makefile允许变量赋值时，&rsquo;=&lsquo;号两边留空格  ？？？？？？可以吗</p>
 
-<p>第三种方式：
-yy：
-   xx=xx3         // 只有这里是shell代码 ，shell不允许‘=’号两边有空格哦。
-yy:
+<p>第三种方式：<br />
+yy：<br />
+   xx=xx3         // 只有这里是shell代码 ，shell不允许‘=’号两边有空格哦。<br />
+yy:<br />
    xx= xx3        // 只有这里是shell代码 ，shell不允许‘=’号两边有空格哦。</p>
 
 <p>注意此时xx的值是&rdquo; xx3&rdquo;，多了一个空格</p>
 
-<p>有一个例外：
+<p>有一个例外：<br />
 xx=$(shell 这里的代码也是shell代码)</p>
 
 <h2 id="变量传递">变量传递</h2>
 
-<p>2：Makefile中的shell，每一行是一个进程，不同行之间变量值不能传递。所以，Makefile中的shell不管多长也要写在一行。
+<p>2：Makefile中的shell，每一行是一个进程，不同行之间变量值不能传递。所以，Makefile中的shell不管多长也要写在一行。<br />
 eg：</p>
 
 <p>SUBDIR=src example</p>
@@ -399,7 +400,7 @@ eg：</p>
 
 <p>do/</p>
 
-<pre><code>   echo &quot;building &quot; $$subdir; /
+<pre><code>   echo &quot;building &quot; $$subdir; /  
 </code></pre>
 
 <p>done</p>
@@ -410,64 +411,64 @@ eg：</p>
 
 <p>注意：Makefile中在对一些简单变量的引用，我们也可以不使用“（）”和“{}”来标记变量名，而直接使用“$x”的格式来实现，此种用法仅限于变量名为单字符的情况。另外自动化变量也使用这种格式。对于一般多字符变量的引用必须使用括号了标记，否则make将把变量名的首字母作为作为变量而不是整个字符串（“$PATH”在Makefile中实际上是“$(P)ATH”）。这一点和shell中变量的引用方式不同。shell中变量的引用可以是“${xx}”或者“$xx”格式。但在Makefile中多字符变量名的引用只能是“$(xx)”或者“${xx}”格式。</p>
 
-<p>eg1：从当前目录路径中提取出 /application 或 /base_class 之前的部分
-PROJECT_ROOT_DIR = $(shell pwd | awk -F&rsquo;/application|/base_class&rsquo; &lsquo;{print $$1}&rsquo;)
+<p>eg1：从当前目录路径中提取出 /application 或 /base_class 之前的部分<br />
+PROJECT_ROOT_DIR = $(shell pwd | awk -F&rsquo;/application|/base_class&rsquo; &lsquo;{print $$1}&rsquo;)<br />
 eg2：上例中$$subdir就是shell中的变量， 而$(SUBDIR)是Makefile的中的变量</p>
 
 <h2 id="变量输出-隐藏自身的输出-出错继续运行">变量输出 @隐藏自身的输出 - 出错继续运行</h2>
 
-<p>如果make执行的命令前面加了@字符，则不显示命令本身而只显示它的结果; Android中会定义某个变量等于@，例如 hide:= @
-通常make执行的命令如果出错（该命令的退出状态非0）就立刻终止，不再执行后续命令，但如果命令前面加了-号，即使这条命令出错，make也会继续执行后续命令。
+<p>如果make执行的命令前面加了@字符，则不显示命令本身而只显示它的结果; Android中会定义某个变量等于@，例如 hide:= @<br />
+通常make执行的命令如果出错（该命令的退出状态非0）就立刻终止，不再执行后续命令，但如果命令前面加了-号，即使这条命令出错，make也会继续执行后续命令。<br />
 通常rm命令和mkdir命令前面要加-号，因为rm要删除的文件可能不存在，mkdir要创建的目录可能已存在，这两个命令都有可能出错，但这种错误是应该忽略的。</p>
 
 <p>1、在Makefile中只能在target中调用Shell脚本，其他地方是不能输出的。比如如下代码就是没有任何输出：</p>
 
-<pre><code>VAR=&quot;Hello&quot;
-echo &quot;$(VAR)&quot;
-
-all:
-  .....
+<pre><code>VAR=&quot;Hello&quot;  
+echo &quot;$(VAR)&quot;  
+  
+all:  
+  .....  
 </code></pre>
 
 <p>以上代码任何时候都不会输出，没有在target内，如果上述代码改为如下：</p>
 
-<pre><code>VAR=&quot;Hello&quot;
-
-all:
-   echo &quot;$(VAR)&quot;
-   .....
+<pre><code>VAR=&quot;Hello&quot;  
+  
+all:  
+   echo &quot;$(VAR)&quot;  
+   .....  
 </code></pre>
 
 <p>以上代码，在make all的时候将会执行echo命令。</p>
 
-<p>最后打印结果是:
-echo &ldquo;&ldquo;Hello&rdquo;&rdquo;
+<p>最后打印结果是:<br />
+echo &ldquo;&ldquo;Hello&rdquo;&rdquo;<br />
 &ldquo;Hello&rdquo;</p>
 
 <p>2、在Makefile中执行shell命令，一行创建一个进程来执行。这也是为什么很多Makefile中有很多行的末尾都是“;  \”，以此来保证代码是一行而不是多行，这样Makefile可以在一个进程中执行，例如：</p>
 
-<pre><code>SUBDIR=src example
-all:
-   @for subdir in $(SUBDIR); \
-   do\
-       echo &quot;building &quot;; \
-   done
+<pre><code>SUBDIR=src example  
+all:  
+   @for subdir in $(SUBDIR); \  
+   do\  
+       echo &quot;building &quot;; \  
+   done  
 </code></pre>
 
 <p>上述可以看出for循环中每行都是以”; \”结尾的。</p>
 
 <p>3、Makefile中所有以$打头的单词都会被解释成Makefile中的变量。如果你需要调用shell中的变量（或者正则表达式中锚定句位$），都需要加两个$符号（$$）。实例如下：</p>
 
-<pre><code>PATH=&quot;/data/&quot;
-
-all:
-   echo ${PATH}/*Makefile中变量，即&quot;/data&quot;*/
-   echo $$PATH /*shell中的变量*/
+<pre><code>PATH=&quot;/data/&quot;  
+  
+all:  
+   echo ${PATH}/*Makefile中变量，即&quot;/data&quot;*/  
+   echo $$PATH /*shell中的变量*/  
 </code></pre>
 
 <p>例子中的第一个${PATH}引用的是Makefile中的变量，而不是shell中的PATH环境变量，后者引用的事Shell中的PATH环境变量。</p>
 
-<pre><code>以上三点的是Makefile调用shell应该注意的地方，写Makefile一定要注意。
+<pre><code>以上三点的是Makefile调用shell应该注意的地方，写Makefile一定要注意。  
 </code></pre>
 
                       
@@ -635,7 +636,7 @@ all:
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -858,6 +859,8 @@ all:
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -880,7 +883,9 @@ all:
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -912,7 +917,7 @@ all:
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

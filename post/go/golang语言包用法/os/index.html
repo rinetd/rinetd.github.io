@@ -255,217 +255,217 @@
 
 <p>func Getwd() (dir string, err error)    //获取当前目录，类似linux中的pwd</p>
 
-<p>func Chmod(name string, mode FileMode) error     //更改文件的权限（读写执行，分为三类：all-group-owner）
-func Chown(name string, uid, gid int) error  //更改文件拥有者owner
-func Chtimes(name string, atime time.Time, mtime time.Time) error    //更改文件的访问时间和修改时间，atime表示访问时间，mtime表示更改时间
-func Clearenv()    //清除所有环境变量（<span style="color:#FF0000">慎用</span>）
-func Environ() []string  //返回所有环境变量
+<p>func Chmod(name string, mode FileMode) error     //更改文件的权限（读写执行，分为三类：all-group-owner）<br />
+func Chown(name string, uid, gid int) error  //更改文件拥有者owner<br />
+func Chtimes(name string, atime time.Time, mtime time.Time) error    //更改文件的访问时间和修改时间，atime表示访问时间，mtime表示更改时间<br />
+func Clearenv()    //清除所有环境变量（<span style="color:#FF0000">慎用</span>）<br />
+func Environ() []string  //返回所有环境变量<br />
 func Exit(code int)     //系统退出，并返回code，其中０表示执行成功并退出，非０表示错误并退出，其中<span style="color:#FF0000">执行Exit后程序会直接退出，defer函数不会执行．</span></p>
 
 <p>func Expand(s string, mapping func(string) string) string   //Expand用mapping 函数指定的规则替换字符串中的<span style="background-color:rgb(255,0,0)">${var}或者$var</span>（注：变量之前必须有$符号）。比如，os.ExpandEnv(s)等效于os.Expand(s, os.Getenv)。</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;fmt&quot;
-    &quot;os&quot;
-)
-
-func main() {
-    mapping := func(key string) string {
-        m := make(map[string]string)
-        m = map[string]string{
-            &quot;world&quot;: &quot;kitty&quot;,
-            &quot;hello&quot;: &quot;hi&quot;,
-        }
-        if m[key] != &quot;&quot; {
-            return m[key]
-        }
-        return key
-    }
-    s := &quot;hello,world&quot;            //  hello,world，由于hello world之前没有$符号，则无法利用map规则进行转换
-    s1 := &quot;$hello,$world $finish&quot; //  hi,kitty finish，finish没有在map规则中，所以还是返回原来的值
-    fmt.Println(os.Expand(s, mapping))
-    fmt.Println(os.Expand(s1, mapping))
-
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;fmt&quot;  
+    &quot;os&quot;  
+)  
+  
+func main() {  
+    mapping := func(key string) string {  
+        m := make(map[string]string)  
+        m = map[string]string{  
+            &quot;world&quot;: &quot;kitty&quot;,  
+            &quot;hello&quot;: &quot;hi&quot;,  
+        }  
+        if m[key] != &quot;&quot; {  
+            return m[key]  
+        }  
+        return key  
+    }  
+    s := &quot;hello,world&quot;            //  hello,world，由于hello world之前没有$符号，则无法利用map规则进行转换  
+    s1 := &quot;$hello,$world $finish&quot; //  hi,kitty finish，finish没有在map规则中，所以还是返回原来的值  
+    fmt.Println(os.Expand(s, mapping))  
+    fmt.Println(os.Expand(s1, mapping))  
+  
+}  
 </code></pre>
 
 <p>func ExpandEnv(s string) string  //ExpandEnv根据当前环境变量的值来替换字符串中的${var}或者$var。如果引用变量没有定义，则用空字符串替换。</p>
 
-<pre><code class="language-go">func main() {
-    s := &quot;hello $GOROOT&quot;
-    fmt.Println(os.ExpandEnv(s)) // hello /home/work/software/go，$GOROOT替换为环境变量的值，而h没有环境变量可以替换，返回空字符串
-}
+<pre><code class="language-go">func main() {  
+    s := &quot;hello $GOROOT&quot;  
+    fmt.Println(os.ExpandEnv(s)) // hello /home/work/software/go，$GOROOT替换为环境变量的值，而h没有环境变量可以替换，返回空字符串  
+}  
 </code></pre>
 
-<p>func Getenv(key string) string  //获取系统key的环境变量，如果没有环境变量就返回空
+<p>func Getenv(key string) string  //获取系统key的环境变量，如果没有环境变量就返回空<br />
   fmt.Println(os.Getenv(&ldquo;GOROOT&rdquo;)) // /home/software/go</p>
 
 <p>func Geteuid() int  //获取调用者用户id</p>
 
 <p>func Getgid() int   //获取调用者的组id</p>
 
-<pre><code class="language-go">fmt.Println(os.Getgid()) //  1000
+<pre><code class="language-go">fmt.Println(os.Getgid()) //  1000  
 </code></pre>
 
 <p>func Getgroups() ([]int, error)  //返回调用者属于的group，其和chown配合使用，改变文件属于的group．</p>
 
-<pre><code class="language-go">func main() {
-
-    fmt.Println(os.Getgroups())　　　　　//获取调用者属于的组  [4 24 27 30 46 108 124 1000]
-    fmt.Println(os.Getgid())　　　　　　　//获取调用者当前所在的组　1000
-    fmt.Println(os.Chown(&quot;tmp.txt&quot;, 1000, 46))  //更改文件所在的组
-}
+<pre><code class="language-go">func main() {  
+  
+    fmt.Println(os.Getgroups())　　　　　//获取调用者属于的组  [4 24 27 30 46 108 124 1000]  
+    fmt.Println(os.Getgid())　　　　　　　//获取调用者当前所在的组　1000  
+    fmt.Println(os.Chown(&quot;tmp.txt&quot;, 1000, 46))  //更改文件所在的组  
+}  
 </code></pre>
 
-<p>func Getpagesize() int　　　//获取底层系统内存页的数量
-func Getpid() int　　　　//获取进程id
-func Getppid() int             //获取调用者进程父id
-func Hostname() (name string, err error)    //获取主机名
-func IsExist(err error) bool    　　　　　 //返回一个布尔值，它指明<code>err</code>错误是否报告了一个文件或者目录已经存在。它被ErrExist和其它系统调用满足。
-func IsNotExist(err error) bool　　　　　//返回一个布尔值，它指明<code>err</code>错误是否报告了一个文件或者目录不存在。它被ErrNotExist 和其它系统调用满足。
+<p>func Getpagesize() int　　　//获取底层系统内存页的数量<br />
+func Getpid() int　　　　//获取进程id<br />
+func Getppid() int             //获取调用者进程父id<br />
+func Hostname() (name string, err error)    //获取主机名<br />
+func IsExist(err error) bool    　　　　　 //返回一个布尔值，它指明<code>err</code>错误是否报告了一个文件或者目录已经存在。它被ErrExist和其它系统调用满足。<br />
+func IsNotExist(err error) bool　　　　　//返回一个布尔值，它指明<code>err</code>错误是否报告了一个文件或者目录不存在。它被ErrNotExist 和其它系统调用满足。<br />
 func IsPathSeparator(c uint8) bool         //判断c是否是一个路径分割符号，是的话返回true,否则返回false</p>
 
-<pre><code class="language-go">fmt.Println(os.IsPathSeparator('/')) //true
-fmt.Println(os.IsPathSeparator('|')) //false
+<pre><code class="language-go">fmt.Println(os.IsPathSeparator('/')) //true  
+fmt.Println(os.IsPathSeparator('|')) //false  
 </code></pre>
 
-<p>func IsPermission(err error) bool   //判定<code>err</code>错误是否是权限错误。它被ErrPermission 和其它系统调用满足。
-func Lchown(name string, uid, gid int) error　　　//改变了文件的<code>gid</code>和<code>uid</code>。如果文件是一个符号链接，它改变的链接自己。如果出错，则会是*PathError类型。
-func Link(oldname, newname string) error       //创建一个从oldname指向newname的<span style="color:#FF0000">硬连接</span>，对一个进行操作，则另外一个也会被修改．
+<p>func IsPermission(err error) bool   //判定<code>err</code>错误是否是权限错误。它被ErrPermission 和其它系统调用满足。<br />
+func Lchown(name string, uid, gid int) error　　　//改变了文件的<code>gid</code>和<code>uid</code>。如果文件是一个符号链接，它改变的链接自己。如果出错，则会是*PathError类型。<br />
+func Link(oldname, newname string) error       //创建一个从oldname指向newname的<span style="color:#FF0000">硬连接</span>，对一个进行操作，则另外一个也会被修改．<br />
 func Mkdir(name string, perm FileMode) error　//创建一个新目录，该目录具有FileMode权限，<span style="color:#FF0000">当创建一个已经存在的目录时会报错</span></p>
 
-<pre><code class="language-go">func main() {
-    var path string
-    if os.IsPathSeparator('\\') {
-        path = &quot;\\&quot;
-    } else {
-        path = &quot;/&quot;
-    }
-    pwd, _ := os.Getwd()
-    err := os.Mkdir(pwd+path+&quot;tmp&quot;, os.ModePerm)
-    if err != nil {
-        fmt.Println(err)　　
-    }
-}
+<pre><code class="language-go">func main() {  
+    var path string  
+    if os.IsPathSeparator('\\') {  
+        path = &quot;\\&quot;  
+    } else {  
+        path = &quot;/&quot;  
+    }  
+    pwd, _ := os.Getwd()  
+    err := os.Mkdir(pwd+path+&quot;tmp&quot;, os.ModePerm)  
+    if err != nil {  
+        fmt.Println(err)　　  
+    }  
+}  
 </code></pre>
 
-<p>func MkdirAll(path string, perm FileMode) error　//创建一个新目录，该目录是利用路径（包括绝对路径和相对路径）进行创建的，如果需要创建对应的父目录，也一起进行创建，如果已经有了该目录，则不进行新的创建，<span style="color:#FF0000">当创建一个已经存在的目录时，不会报错.</span>
+<p>func MkdirAll(path string, perm FileMode) error　//创建一个新目录，该目录是利用路径（包括绝对路径和相对路径）进行创建的，如果需要创建对应的父目录，也一起进行创建，如果已经有了该目录，则不进行新的创建，<span style="color:#FF0000">当创建一个已经存在的目录时，不会报错.</span><br />
 func NewSyscallError(syscall string, err error) error    //NewSyscallError返回一个SyscallError 错误，带有给出的系统调用名字和详细的错误信息。也就是说，如果err为空，则返回空</p>
 
-<pre><code class="language-go">func main() {
-    a := os.NewSyscallError(&quot;mkdir&quot;, nil)
-    fmt.Println(a) // nil
-    a = os.NewSyscallError(&quot;mkdir&quot;, errors.New(&quot;bad error&quot;))
-    fmt.Println(a) //mkdir: bad error
-}
+<pre><code class="language-go">func main() {  
+    a := os.NewSyscallError(&quot;mkdir&quot;, nil)  
+    fmt.Println(a) // nil  
+    a = os.NewSyscallError(&quot;mkdir&quot;, errors.New(&quot;bad error&quot;))  
+    fmt.Println(a) //mkdir: bad error  
+}  
 </code></pre>
 
-<p>func Readlink(name string) (string, error)         //返回符号链接的目标。如果出错，将会是 *PathError类型。
-func Remove(name string) error           //删除文件或者目录
+<p>func Readlink(name string) (string, error)         //返回符号链接的目标。如果出错，将会是 *PathError类型。<br />
+func Remove(name string) error           //删除文件或者目录<br />
 func RemoveAll(path string) error　　//删除目录以及其子目录和文件，如果path不存在的话，返回nil</p>
 
-<pre><code class="language-go">func main() {
-    err := os.MkdirAll(&quot;./a&quot;, os.ModePerm)
-    os.Chdir(&quot;./a&quot;)
-    os.Create(&quot;file.txt&quot;)
-    fmt.Println(err)//成功创建文件file.txt，返回nil
-    os.Chdir(&quot;../&quot;)
-    err = os.RemoveAll(&quot;./a&quot;)
-    fmt.Println(err)//成功删除目录a，返回nil
-}
+<pre><code class="language-go">func main() {  
+    err := os.MkdirAll(&quot;./a&quot;, os.ModePerm)  
+    os.Chdir(&quot;./a&quot;)  
+    os.Create(&quot;file.txt&quot;)  
+    fmt.Println(err)//成功创建文件file.txt，返回nil  
+    os.Chdir(&quot;../&quot;)  
+    err = os.RemoveAll(&quot;./a&quot;)  
+    fmt.Println(err)//成功删除目录a，返回nil  
+}  
 </code></pre>
 
-<p>func Rename(oldpath, newpath string) error　　//重命名文件，如果oldpath不存在，则报错no such file or directory
-func SameFile(fi1, fi2 FileInfo) bool　　　　　　//查看f1和f2这两个是否是同一个文件，如果再Unix系统，这意味着底层结构的device和inode完全一致，在其他系统上可能是基于文件绝对路径的．SameFile只适用于本文件包stat返回的状态，其他情况下都返回false
+<p>func Rename(oldpath, newpath string) error　　//重命名文件，如果oldpath不存在，则报错no such file or directory<br />
+func SameFile(fi1, fi2 FileInfo) bool　　　　　　//查看f1和f2这两个是否是同一个文件，如果再Unix系统，这意味着底层结构的device和inode完全一致，在其他系统上可能是基于文件绝对路径的．SameFile只适用于本文件包stat返回的状态，其他情况下都返回false<br />
 func Setenv(key, value string) error           //设定环境变量，经常与Getenv连用，用来设定环境变量的值</p>
 
-<pre><code class="language-go">func main() {
-    err := os.Setenv(&quot;goenv&quot;, &quot;go environment&quot;)
-    a := os.Getenv(&quot;goenv&quot;)
-    fmt.Println(err, a) //  &lt;nil&gt; go environment
-}
+<pre><code class="language-go">func main() {  
+    err := os.Setenv(&quot;goenv&quot;, &quot;go environment&quot;)  
+    a := os.Getenv(&quot;goenv&quot;)  
+    fmt.Println(err, a) //  &lt;nil&gt; go environment  
+}  
 </code></pre>
 
-<p>func Symlink(oldname, newname string) error　　　//<span style="color:#FF0000">创建一个newname作为oldname的符号连接，这是一个符号连接（Link是硬连接）</span>，与link的硬连接不同，利用Link创建的硬连接，则newname和oldname的file互不影响，一个文件删除，另外一个文件不受影响；但是利用SymLink创建的符号连接，其newname只是一个指向oldname文件的符号连接，当oldname　file删除之后，则newname的文件也就不能够继续使用．
-func TempDir() string　　　　　　　　//创建临时目录用来存放临时文件，这个临时目录一般为/tmp
+<p>func Symlink(oldname, newname string) error　　　//<span style="color:#FF0000">创建一个newname作为oldname的符号连接，这是一个符号连接（Link是硬连接）</span>，与link的硬连接不同，利用Link创建的硬连接，则newname和oldname的file互不影响，一个文件删除，另外一个文件不受影响；但是利用SymLink创建的符号连接，其newname只是一个指向oldname文件的符号连接，当oldname　file删除之后，则newname的文件也就不能够继续使用．<br />
+func TempDir() string　　　　　　　　//创建临时目录用来存放临时文件，这个临时目录一般为/tmp<br />
 func Truncate(name string, size int64) error     //按照指定长度size将文件截断，如果这个文件是一个符号链接，则同时也改变其目标连接的长度，如果有错误，则返回一个错误．</p>
 
 <p><span style="font-size:18px">文件操作：</span></p>
 
 <p>type File</p>
 
-<pre><code>type File struct {
-    // contains filtered or unexported fields
-}
+<pre><code>type File struct {  
+    // contains filtered or unexported fields  
+}  
 </code></pre>
 
 <p>File表示打开的文件描述符</p>
 
-<p>func Create(name string) (file *File, err error)　　//创建一个文件，文件mode是0666(读写权限)，如果文件已经存在，则重新创建一个，原文件被覆盖，创建的新文件具有读写权限，能够备用与i/o操作．其相当于OpenFile的快捷操作，等同于OpenFile(name string, O_CREATE,0666)
+<p>func Create(name string) (file *File, err error)　　//创建一个文件，文件mode是0666(读写权限)，如果文件已经存在，则重新创建一个，原文件被覆盖，创建的新文件具有读写权限，能够备用与i/o操作．其相当于OpenFile的快捷操作，等同于OpenFile(name string, O_CREATE,0666)<br />
 func NewFile(fd uintptr, name string) *File　　　//根据文件描述符和名字创建一个新的文件</p>
 
-<pre><code class="language-go">   Stdin  = NewFile(uintptr(syscall.Stdin), &quot;/dev/stdin&quot;)
-    Stdout = NewFile(uintptr(syscall.Stdout), &quot;/dev/stdout&quot;)
-    Stderr = NewFile(uintptr(syscall.Stderr), &quot;/dev/stderr&quot;)
+<pre><code class="language-go">   Stdin  = NewFile(uintptr(syscall.Stdin), &quot;/dev/stdin&quot;)  
+    Stdout = NewFile(uintptr(syscall.Stdout), &quot;/dev/stdout&quot;)  
+    Stderr = NewFile(uintptr(syscall.Stderr), &quot;/dev/stderr&quot;)  
 </code></pre>
 
-<pre><code> func Open(name string) (file *File, err error)　　　//打开一个文件，返回文件描述符，该文件描述符只有只读权限．他相当于OpenFile(name string,O_RDWR,0)
+<pre><code> func Open(name string) (file *File, err error)　　　//打开一个文件，返回文件描述符，该文件描述符只有只读权限．他相当于OpenFile(name string,O_RDWR,0)  
 </code></pre>
 
 <p>func OpenFile(name string, flag int, perm FileMode) (file *File, err error)　//指定文件权限和打开方式打开name文件或者create文件，其中flag标志如下:</p>
 
 <p><strong>打开标记：</strong></p>
 
-<p>O_RDONLY：只读模式(read-only)
-O_WRONLY：只写模式(write-only)
-O_RDWR：读写模式(read-write)
-O_APPEND：追加模式(append)
-O_CREATE：文件不存在就创建(create a new file if none exists.)
-O_EXCL：与 O_CREATE 一起用，构成一个新建文件的功能，它要求文件必须不存在(used with O_CREATE, file must not exist)
-O_SYNC：同步方式打开，即不使用缓存，直接写入硬盘
-O_TRUNC：打开并清空文件
+<p>O_RDONLY：只读模式(read-only)<br />
+O_WRONLY：只写模式(write-only)<br />
+O_RDWR：读写模式(read-write)<br />
+O_APPEND：追加模式(append)<br />
+O_CREATE：文件不存在就创建(create a new file if none exists.)<br />
+O_EXCL：与 O_CREATE 一起用，构成一个新建文件的功能，它要求文件必须不存在(used with O_CREATE, file must not exist)<br />
+O_SYNC：同步方式打开，即不使用缓存，直接写入硬盘<br />
+O_TRUNC：打开并清空文件<br />
 至于操作权限perm，除非创建文件时才需要指定，不需要创建新文件时可以将其设定为０.虽然go语言给perm权限设定了很多的常量，但是习惯上也可以直接使用数字，如0666(具体含义和Unix系统的一致).</p>
 
 <p>func Pipe() (r *File, w *File, err error)        //返回一对连接的文件，从r中读取写入w中的数据，即首先向w中写入数据，此时从r中变能够读取到写入w中的数据，Pipe()函数返回文件和该过程中产生的错误．</p>
 
-<pre><code class="language-go">func main() {
-    r, w, _ := os.Pipe()
-    w.WriteString(&quot;hello,world!&quot;)
-    var s = make([]byte, 20)
-    n, _ := r.Read(s)
-    fmt.Println(string(s[:n])) //  hello,world!
-}
+<pre><code class="language-go">func main() {  
+    r, w, _ := os.Pipe()  
+    w.WriteString(&quot;hello,world!&quot;)  
+    var s = make([]byte, 20)  
+    n, _ := r.Read(s)  
+    fmt.Println(string(s[:n])) //  hello,world!  
+}  
 </code></pre>
 
 <p>func (f *File) Chdir() error　　　　　　　//改变工作目录到f，其中f必须为一个目录，否则便会报错</p>
 
-<pre><code class="language-go">func main() {
-    dir, _ := os.Getwd()
-    fmt.Println(dir)
-    f, _ := os.Open(&quot;tmp.txt&quot;)
-    err := f.Chdir()
-    if err != nil {
-        fmt.Println(err)　　　//chdir tmp.txt: not a directory，因为tmp.txt不是目录，所以报错
-    }
-    f, _ = os.Open(&quot;develop&quot;)
-    err = f.Chdir()
-    if err != nil {
-        fmt.Println(err)
-    }
-    dir1, _ := os.Getwd()
-    fmt.Println(dir1)　　　 //home/work/develop，因为develop是工作目录，所以变切换到该目录
-}
+<pre><code class="language-go">func main() {  
+    dir, _ := os.Getwd()  
+    fmt.Println(dir)  
+    f, _ := os.Open(&quot;tmp.txt&quot;)  
+    err := f.Chdir()  
+    if err != nil {  
+        fmt.Println(err)　　　//chdir tmp.txt: not a directory，因为tmp.txt不是目录，所以报错  
+    }  
+    f, _ = os.Open(&quot;develop&quot;)  
+    err = f.Chdir()  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    dir1, _ := os.Getwd()  
+    fmt.Println(dir1)　　　 //home/work/develop，因为develop是工作目录，所以变切换到该目录  
+}  
 </code></pre>
 
-<p>func (f *File) Chmod(mode FileMode) error　　　//更改文件权限，其等价与os.Chmod(name string,mode FileMode)error
-func (f *File) Chown(uid, gid int) error                     //更改文件所有者，与os.Chown等价
-func (f *File) Close() error　　　　　　　　　　//关闭文件，使其不能够再进行i/o操作，其经常和defer一起使用，用在创建或者打开某个文件之后，这样在程序退出前变能够自己关闭响应的已经打开的文件．
-func (f *File) Fd() uintptr　　　//返回系统文件描述符，也叫做文件句柄．
-func (f *File) Name() string　　//返回文件名字，与file.Stat().Name()等价
-func (f *File) Read(b []byte) (n int, err error)　//将len(b)的数据从f中读取到b中，如果无错，则返回n和nil,否则返回读取的字节数n以及响应的错误
-func (f *File) ReadAt(b []byte, off int64) (n int, err error)　//和Read类似，不过ReadAt指定开始读取的位置offset
+<p>func (f *File) Chmod(mode FileMode) error　　　//更改文件权限，其等价与os.Chmod(name string,mode FileMode)error<br />
+func (f *File) Chown(uid, gid int) error                     //更改文件所有者，与os.Chown等价<br />
+func (f *File) Close() error　　　　　　　　　　//关闭文件，使其不能够再进行i/o操作，其经常和defer一起使用，用在创建或者打开某个文件之后，这样在程序退出前变能够自己关闭响应的已经打开的文件．<br />
+func (f *File) Fd() uintptr　　　//返回系统文件描述符，也叫做文件句柄．<br />
+func (f *File) Name() string　　//返回文件名字，与file.Stat().Name()等价<br />
+func (f *File) Read(b []byte) (n int, err error)　//将len(b)的数据从f中读取到b中，如果无错，则返回n和nil,否则返回读取的字节数n以及响应的错误<br />
+func (f *File) ReadAt(b []byte, off int64) (n int, err error)　//和Read类似，不过ReadAt指定开始读取的位置offset<br />
 func (f *File) Readdir(n int) (fi []FileInfo, err error)           </p>
 
 <p>Readdir读取file指定的目录的内容，然后返回一个切片，它最多包含<code>n</code>个FileInfo值，这些值可能是按照目录顺序的Lstat返回的。接下来调用相同的文件会产生更多的FileInfos。</p>
@@ -482,155 +482,155 @@ func (f *File) Readdir(n int) (fi []FileInfo, err error)           </
 
 <p>如果n&lt;0，Readdirnames返回目录下所有的文件的名字，用一个切片表示。在这种情况下，如果用一个切片表示成功（读取直到目录结尾），它返回切片和一个空的错误。如果在目录结尾之前遇到了一个错误，Readdirnames返回直到当前所读到的<code>names</code>和一个非空的错误。</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;fmt&quot;
-    &quot;os&quot;
-)
-
-func main() {
-    file, err := os.Open(&quot;/home/chenbaoke&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    fileslice, err := file.Readdir(5)
-    if err != nil {
-        fmt.Println(err)
-    }
-    for _, f := range fileslice {
-        fmt.Println(f.Name())       //输出５个文件的名字
-    }
-
-    filename, err := file.Readdirnames(-1)
-    if err != nil {
-        fmt.Println(err)
-    }
-    for _, f := range filename {
-        fmt.Println(f)　　　　　//输出所有文件的名字
-    }
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;fmt&quot;  
+    &quot;os&quot;  
+)  
+  
+func main() {  
+    file, err := os.Open(&quot;/home/chenbaoke&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    fileslice, err := file.Readdir(5)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    for _, f := range fileslice {  
+        fmt.Println(f.Name())       //输出５个文件的名字  
+    }  
+  
+    filename, err := file.Readdirnames(-1)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    for _, f := range filename {  
+        fmt.Println(f)　　　　　//输出所有文件的名字  
+    }  
+}  
 </code></pre>
 
 <p>func (f *File) Seek(offset int64, whence int) (ret int64, err error)　　　　//Seek设置下一次读或写操作的偏移量<code>offset</code>，根据<code>whence</code>来解析：0意味着相对于文件的原始位置，1意味着相对于当前偏移量，2意味着相对于文件结尾。它返回新的偏移量和错误（如果存在）。</p>
 
-<pre><code class="language-go">func main() {
-    s := make([]byte, 10)
-    file, _ := os.Open(&quot;tmp.txt&quot;)
-    defer file.Close()
-    file.Seek(-12, 2)        // 从离最后位置12的地方开始
-    n, _ := file.Read(s)
-    fmt.Println(string(s[:n]))
-}
+<pre><code class="language-go">func main() {  
+    s := make([]byte, 10)  
+    file, _ := os.Open(&quot;tmp.txt&quot;)  
+    defer file.Close()  
+    file.Seek(-12, 2)        // 从离最后位置12的地方开始  
+    n, _ := file.Read(s)  
+    fmt.Println(string(s[:n]))  
+}  
 </code></pre>
 
-<p>func (f *File) Stat() (fi FileInfo, err error)　　//返回文件描述相关信息，包括大小，名字等．等价于os.Stat(filename string)
-func (f *File) Sync() (err error)                        //同步操作，将当前存在内存中的文件内容写入硬盘．
-func (f *File) Truncate(size int64) error        //类似  os.Truncate(name, size),，将文件进行截断
-func (f *File) Write(b []byte) (n int, err error)　　//将b中的数据写入f文件
-func (f *File) WriteAt(b []byte, off int64) (n int, err error)　//将b中数据写入f文件中，写入时从offset位置开始进行写入操作
+<p>func (f *File) Stat() (fi FileInfo, err error)　　//返回文件描述相关信息，包括大小，名字等．等价于os.Stat(filename string)<br />
+func (f *File) Sync() (err error)                        //同步操作，将当前存在内存中的文件内容写入硬盘．<br />
+func (f *File) Truncate(size int64) error        //类似  os.Truncate(name, size),，将文件进行截断<br />
+func (f *File) Write(b []byte) (n int, err error)　　//将b中的数据写入f文件<br />
+func (f *File) WriteAt(b []byte, off int64) (n int, err error)　//将b中数据写入f文件中，写入时从offset位置开始进行写入操作<br />
 func (f *File) WriteString(s string) (ret int, err error)　　　//将字符串s写入文件中</p>
 
-<pre><code class="language-go">func main() {
-    file, _ := os.Create(&quot;tmp.txt&quot;)
-    a := &quot;hellobyte&quot;
-    file.WriteAt([]byte(a), 10)      //在文件file偏移量10处开始写入hellobyte
-    file.WriteString(&quot;string&quot;)　　//在文件file偏移量0处开始写入string
-    file.Write([]byte(a))                //在文件file偏移量string之后开始写入hellobyte，这个时候就会把开始利用WriteAt在offset为10处开始写入的hellobyte进行部分覆盖
-    b := make([]byte, 20)
-    file.Seek(0, 0)          　　　　//file指针指向文件开始位置
-    n, _ := file.Read(b)
-    fmt.Println(string(b[:n]))  //stringhellobytebyte，这是由于在写入过程中存在覆盖造成的
-}
+<pre><code class="language-go">func main() {  
+    file, _ := os.Create(&quot;tmp.txt&quot;)  
+    a := &quot;hellobyte&quot;  
+    file.WriteAt([]byte(a), 10)      //在文件file偏移量10处开始写入hellobyte  
+    file.WriteString(&quot;string&quot;)　　//在文件file偏移量0处开始写入string  
+    file.Write([]byte(a))                //在文件file偏移量string之后开始写入hellobyte，这个时候就会把开始利用WriteAt在offset为10处开始写入的hellobyte进行部分覆盖  
+    b := make([]byte, 20)  
+    file.Seek(0, 0)          　　　　//file指针指向文件开始位置  
+    n, _ := file.Read(b)  
+    fmt.Println(string(b[:n]))  //stringhellobytebyte，这是由于在写入过程中存在覆盖造成的  
+}  
 </code></pre>
 
 <p>type FileInfo</p>
 
-<pre><code class="language-go">type FileInfo interface {
-    Name() string       //文件名字
-    Size() int64        // length in bytes for regular files; system-dependent for others，文件大小
-    Mode() FileMode     // file mode bits，文件权限
-    ModTime() time.Time // modification time　文件更改时间
-    IsDir() bool        // abbreviation for Mode().IsDir()　文件是否为目录
-    Sys() interface{}   // underlying data source (can return nil)　　基础数据源
-}
+<pre><code class="language-go">type FileInfo interface {  
+    Name() string       //文件名字  
+    Size() int64        // length in bytes for regular files; system-dependent for others，文件大小  
+    Mode() FileMode     // file mode bits，文件权限  
+    ModTime() time.Time // modification time　文件更改时间  
+    IsDir() bool        // abbreviation for Mode().IsDir()　文件是否为目录  
+    Sys() interface{}   // underlying data source (can return nil)　　基础数据源  
+}  
 </code></pre>
 
 <p>FileInfo经常被Stat和Lstat返回来描述一个文件</p>
 
-<p>func Lstat(name string) (fi FileInfo, err error)      //返回描述文件的FileInfo信息。如果文件是符号链接，返回的FileInfo描述的符号链接。Lstat不会试着去追溯link。如果出错，将是 *PathError类型。
+<p>func Lstat(name string) (fi FileInfo, err error)      //返回描述文件的FileInfo信息。如果文件是符号链接，返回的FileInfo描述的符号链接。Lstat不会试着去追溯link。如果出错，将是 *PathError类型。<br />
 func Stat(name string) (fi FileInfo, err error)       //返回描述文件的FileInfo信息。如果出错，将是 *PathError类型。</p>
 
 <p>type FileMode</p>
 
-<pre><code class="language-go">type FileMode uint32
+<pre><code class="language-go">type FileMode uint32  
 </code></pre>
 
 <p>FileMode代表文件的模式和权限标志位。标志位在所有的操作系统有相同的定义，因此文件的信息可以从一个操作系统移动到另外一个操作系统。不是所有的标志位是用所有的系统。唯一要求的标志位是目录的ModeDir。</p>
 
-<pre><code class="language-go">const (
-    // The single letters are the abbreviations
-    // used by the String method's formatting.
-    ModeDir        FileMode = 1 &lt;&lt; (32 - 1 - iota) // d: is a directory
-    ModeAppend                                     // a: append-only
-    ModeExclusive                                  // l: exclusive use
-    ModeTemporary                                  // T: temporary file (not backed up)
-    ModeSymlink                                    // L: symbolic link
-    ModeDevice                                     // D: device file
-    ModeNamedPipe                                  // p: named pipe (FIFO)
-    ModeSocket                                     // S: Unix domain socket
-    ModeSetuid                                     // u: setuid
-    ModeSetgid                                     // g: setgid
-    ModeCharDevice                                 // c: Unix character device, when ModeDevice is set
-    ModeSticky                                     // t: sticky
-
-    // Mask for the type bits. For regular files, none will be set.
-    ModeType = ModeDir | ModeSymlink | ModeNamedPipe | ModeSocket | ModeDevice
-
-    ModePerm FileMode = 0777 // permission bits
-)
+<pre><code class="language-go">const (  
+    // The single letters are the abbreviations  
+    // used by the String method's formatting.  
+    ModeDir        FileMode = 1 &lt;&lt; (32 - 1 - iota) // d: is a directory  
+    ModeAppend                                     // a: append-only  
+    ModeExclusive                                  // l: exclusive use  
+    ModeTemporary                                  // T: temporary file (not backed up)  
+    ModeSymlink                                    // L: symbolic link  
+    ModeDevice                                     // D: device file  
+    ModeNamedPipe                                  // p: named pipe (FIFO)  
+    ModeSocket                                     // S: Unix domain socket  
+    ModeSetuid                                     // u: setuid  
+    ModeSetgid                                     // g: setgid  
+    ModeCharDevice                                 // c: Unix character device, when ModeDevice is set  
+    ModeSticky                                     // t: sticky  
+  
+    // Mask for the type bits. For regular files, none will be set.  
+    ModeType = ModeDir | ModeSymlink | ModeNamedPipe | ModeSocket | ModeDevice  
+  
+    ModePerm FileMode = 0777 // permission bits  
+)  
 </code></pre>
 
 <p>所定义的文件标志位最重要的位是FileMode。9个次重要的位是标准Unix rwxrwxrwx权限。这些位的值应该被认为公开API的一部分，可能用于连接协议或磁盘表示：它们必须不能被改变，尽管新的标志位有可能增加。</p>
 
-<p>FileModel的方法主要用来进行判断和输出权限
-func (m FileMode) IsDir() bool              //判断m是否是目录，也就是检查文件是否有设置的ModeDir位
-func (m FileMode) IsRegular() bool　　//判断m是否是普通文件，也就是说检查m中是否有设置mode type
-func (m FileMode) Perm() FileMode　　//返回m的权限位
+<p>FileModel的方法主要用来进行判断和输出权限<br />
+func (m FileMode) IsDir() bool              //判断m是否是目录，也就是检查文件是否有设置的ModeDir位<br />
+func (m FileMode) IsRegular() bool　　//判断m是否是普通文件，也就是说检查m中是否有设置mode type<br />
+func (m FileMode) Perm() FileMode　　//返回m的权限位<br />
 func (m FileMode) String() string　　　　//返回m的字符串表示</p>
 
-<pre><code class="language-go">func main() {
-    fd, err := os.Stat(&quot;tmp.txt&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    fm := fd.Mode()
-    fmt.Println(fm.IsDir())     //false
-    fmt.Println(fm.IsRegular()) //true
-    fmt.Println(fm.Perm())      //-rwxrwxrwx
-    fmt.Println(fm.String())    //-rwxrwxrwx
-}
+<pre><code class="language-go">func main() {  
+    fd, err := os.Stat(&quot;tmp.txt&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    fm := fd.Mode()  
+    fmt.Println(fm.IsDir())     //false  
+    fmt.Println(fm.IsRegular()) //true  
+    fmt.Println(fm.Perm())      //-rwxrwxrwx  
+    fmt.Println(fm.String())    //-rwxrwxrwx  
+}  
 </code></pre>
 
 <p>type LinkError</p>
 
-<pre><code>type LinkError struct {
-    Op  string
-    Old string
-    New string
-    Err error
-}
+<pre><code>type LinkError struct {  
+    Op  string  
+    Old string  
+    New string  
+    Err error  
+}  
 </code></pre>
 
 <p>func (e *LinkError) Error() string　　　　//LinkError记录了一个在链接或者符号连接或者重命名的系统调用中发生的错误和引起错误的文件的路径。</p>
 
 <p>type PathError</p>
 
-<pre><code class="language-go">type PathError struct {
-Op string
-Path string
-Err error
-}
+<pre><code class="language-go">type PathError struct {  
+Op string  
+Path string  
+Err error  
+}  
 </code></pre>
 
 <p>func (e *PathError) Error() string　　//返回一个有操作者，路径以及错误组成的字符串形式</p>
@@ -639,135 +639,135 @@ Err error
 
 <p>type ProcAttr</p>
 
-<pre><code class="language-go">type ProcAttr struct {
-    Dir   string               //如果dir不是空，子进程在创建之前先进入该目录
-    Env   []string　　　//如果Env不是空，则将里面的内容赋值给新进程的环境变量，如果他为空，则使用默认的环境变量
-    Files []*File　　　  //Files指定新进程打开文件，前三个实体分别为标准输入，标准输出和标准错误输出，可以添加额外的实体，这取决于底层的操作系统，当进程开始时，文
-　　　　　　　　　　//件对应的空实体将被关闭
-    Sys   *syscall.SysProcAttr  //操作系统特定进程的属性，设置该值也许会导致你的程序在某些操作系统上无法运行或者编译
-}
+<pre><code class="language-go">type ProcAttr struct {  
+    Dir   string               //如果dir不是空，子进程在创建之前先进入该目录  
+    Env   []string　　　//如果Env不是空，则将里面的内容赋值给新进程的环境变量，如果他为空，则使用默认的环境变量  
+    Files []*File　　　  //Files指定新进程打开文件，前三个实体分别为标准输入，标准输出和标准错误输出，可以添加额外的实体，这取决于底层的操作系统，当进程开始时，文  
+　　　　　　　　　　//件对应的空实体将被关闭  
+    Sys   *syscall.SysProcAttr  //操作系统特定进程的属性，设置该值也许会导致你的程序在某些操作系统上无法运行或者编译  
+}  
 </code></pre>
 
 <p>ProcAttr包含属性，这些属性将会被应用在被StartProcess启动的新进程上type Process</p>
 
 <p>Process存储了通过StartProcess创建的进程信息。</p>
 
-<pre><code class="language-go">type Process struct {
-    Pid int
-     handle uintptr 　　//处理指针
-      isdone uint32        // 如果进程正在等待则该值非０，没有等待该值为０
- }
+<pre><code class="language-go">type Process struct {  
+    Pid int  
+     handle uintptr 　　//处理指针  
+      isdone uint32        // 如果进程正在等待则该值非０，没有等待该值为０  
+ }  
 </code></pre>
 
 <p>func FindProcess(pid int) (p *Process, err error)　　　　//通过进程pid查找运行的进程，返回相关进程信息及在该过程中遇到的errorfunc StartProcess(name string, argv []string, attr *ProcAttr) (*Process, error)  //StartProcess启动一个新的进程，其传入的<code>name</code>、<code>argv</code>和<code>addr</code>指定了程序、参数和属性；StartProcess是一个低层次的接口。os/exec包提供了高层次的接口；如果出错，将会是*PathError错误。func (p *Process) Kill() error　　　　　　　　　　　//杀死进程并直接退出func (p *Process) Release() error　　　　　　　　//释放进程p的所有资源，之后进程p便不能够再被使用，只有Wati没有被调用时，才需要调用Release释放资源</p>
 
-<pre><code class="language-go">func main() {
-    attr := &amp;os.ProcAttr{
-        Files: []*os.File{os.Stdin, os.Stdout, os.Stderr}, //其他变量如果不清楚可以不设定
-    }
-    p, err := os.StartProcess(&quot;/usr/bin/vim&quot;, []string{&quot;/usr/bin/vim&quot;, &quot;tmp.txt&quot;}, attr) //vim 打开tmp.txt文件
-    if err != nil {
-        fmt.Println(err)
-    }
-    fmt.Println(p)                  //&amp;{5488 240 0}
-    pro, _ := os.FindProcess(p.Pid) //查找进程
-    fmt.Println(pro)                //&amp;{5488 240 0}
-
-    err = p.Kill() 　　　　　//杀死进程但不释放进程相关资源
-    fmt.Println(err)
-
-    err = p.Release() 　　　//&lt;span style=&quot;color:#FF0000;&quot;&gt;释放进程相关资源，因为资源释放凋之后进程p就不能进行任何操作，此后进程Ｐ的任何操作都会被报错&lt;/span&gt;
-    fmt.Println(err)
-}
+<pre><code class="language-go">func main() {  
+    attr := &amp;os.ProcAttr{  
+        Files: []*os.File{os.Stdin, os.Stdout, os.Stderr}, //其他变量如果不清楚可以不设定  
+    }  
+    p, err := os.StartProcess(&quot;/usr/bin/vim&quot;, []string{&quot;/usr/bin/vim&quot;, &quot;tmp.txt&quot;}, attr) //vim 打开tmp.txt文件  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    fmt.Println(p)                  //&amp;{5488 240 0}  
+    pro, _ := os.FindProcess(p.Pid) //查找进程  
+    fmt.Println(pro)                //&amp;{5488 240 0}  
+  
+    err = p.Kill() 　　　　　//杀死进程但不释放进程相关资源  
+    fmt.Println(err)  
+  
+    err = p.Release() 　　　//&lt;span style=&quot;color:#FF0000;&quot;&gt;释放进程相关资源，因为资源释放凋之后进程p就不能进行任何操作，此后进程Ｐ的任何操作都会被报错&lt;/span&gt;  
+    fmt.Println(err)  
+}  
 </code></pre>
 
-<p>func (p *Process) Signal(sig Signal) error　　　　//发送一个信号给进程p, 在windows中没有实现发送中断interrupt
+<p>func (p *Process) Signal(sig Signal) error　　　　//发送一个信号给进程p, 在windows中没有实现发送中断interrupt<br />
 func (p *Process) Wait() (*ProcessState, error)　　//Wait等待进程退出，并返回进程状态和错误。Wait释放进程相关的资源。在大多数的系统上，进程p必须是当前进程的子进程，否则会返回一个错误。</p>
 
-<pre><code class="language-go">func main() {
-    attr := &amp;os.ProcAttr{
-        Files: []*os.File{os.Stdin, os.Stdout, os.Stderr}, //其他变量如果不清楚可以不设定
-    }
-    p, err := os.StartProcess(&quot;/usr/bin/vim&quot;, []string{&quot;/usr/bin/vim&quot;, &quot;tmp.txt&quot;}, attr) //vim 打开tmp.txt文件
-    if err != nil {
-        fmt.Println(err)
-    }
-    go func() {
-        p.Signal(os.Kill) //kill process
-    }()
-
-    pstat, err := p.Wait()
-    if err != nil {
-        fmt.Println(err)
-    }
-
-    fmt.Println(pstat) //signal: killed
-}
+<pre><code class="language-go">func main() {  
+    attr := &amp;os.ProcAttr{  
+        Files: []*os.File{os.Stdin, os.Stdout, os.Stderr}, //其他变量如果不清楚可以不设定  
+    }  
+    p, err := os.StartProcess(&quot;/usr/bin/vim&quot;, []string{&quot;/usr/bin/vim&quot;, &quot;tmp.txt&quot;}, attr) //vim 打开tmp.txt文件  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    go func() {  
+        p.Signal(os.Kill) //kill process  
+    }()  
+  
+    pstat, err := p.Wait()  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+  
+    fmt.Println(pstat) //signal: killed  
+}  
 </code></pre>
 
 <p>type ProcessState     //ProcessState存储了Wait函数报告的进程信息</p>
 
-<pre><code class="language-go">type ProcessState struct {
-    pid    int                
-    status syscall.WaitStatus
-    rusage *syscall.Rusage
-}
+<pre><code class="language-go">type ProcessState struct {  
+    pid    int  
+    status syscall.WaitStatus  
+    rusage *syscall.Rusage  
+}  
 </code></pre>
 
-<p>func (p *ProcessState) Exited() bool　　　　　　// 判断程序是否<span style="color:#FF0000">已经退出</span>
-func (p *ProcessState) Pid() int                                //返回退出进程的pid
-func (p *ProcessState) String() string                     //获取进程状态的字符串表示
-func (p *ProcessState) Success() bool                    //判断程序是否<span style="color:#FF0000">成功退出，而Exited则仅仅只是判断其是否退出</span>
-func (p *ProcessState) Sys() interface{}                //返回有关进程的系统独立的退出信息。并将它转换为恰当的底层类型（比如Unix上的syscall.WaitStatus），主要用来获取进程退出相关资源。
-func (p *ProcessState) SysUsage() interface{}         //SysUsage返回关于退出进程的系统独立的资源使用信息。主要用来获取进程使用系统资源
-func (p *ProcessState) SystemTime() time.Duration      //获取退出进程的内核态cpu使用时间
+<p>func (p *ProcessState) Exited() bool　　　　　　// 判断程序是否<span style="color:#FF0000">已经退出</span><br />
+func (p *ProcessState) Pid() int                                //返回退出进程的pid<br />
+func (p *ProcessState) String() string                     //获取进程状态的字符串表示<br />
+func (p *ProcessState) Success() bool                    //判断程序是否<span style="color:#FF0000">成功退出，而Exited则仅仅只是判断其是否退出</span><br />
+func (p *ProcessState) Sys() interface{}                //返回有关进程的系统独立的退出信息。并将它转换为恰当的底层类型（比如Unix上的syscall.WaitStatus），主要用来获取进程退出相关资源。<br />
+func (p *ProcessState) SysUsage() interface{}         //SysUsage返回关于退出进程的系统独立的资源使用信息。主要用来获取进程使用系统资源<br />
+func (p *ProcessState) SystemTime() time.Duration      //获取退出进程的内核态cpu使用时间<br />
 func (p *ProcessState) UserTime() time.Duration     //返回退出进程和子进程的用户态CPU使用时间</p>
 
-<pre><code class="language-go">func main() {
-    attr := &amp;os.ProcAttr{
-        Files: []*os.File{os.Stdin, os.Stdout, os.Stderr}, //其他变量如果不清楚可以不设定
-    }
-    p, err := os.StartProcess(&quot;/usr/bin/vim&quot;, []string{&quot;/usr/bin/vim&quot;, &quot;tmp.txt&quot;}, attr) //vim 打开tmp.txt文件
-    if err != nil {
-        fmt.Println(err)
-    }
-    ps, _ := p.Wait()　　//当关闭vim打开的tmp.txt时，进程就结束了
-    fmt.Println(ps) 　　//exit status 0
-    if ps.Exited() {
-        fmt.Println(ps.Pid())        //536
-        fmt.Println(ps.String())     // exit status 0
-        fmt.Println(ps.Success())    //true
-        fmt.Println(ps.Sys())        //0
-        fmt.Println(ps.SysUsage())   //&amp;{{0 313157} {0 42898} 29164 0 0 0 7745 41 0 10736 240 0 0 0 1238 143}
-        fmt.Println(ps.SystemTime()) // 42.898ms
-        fmt.Println(ps.UserTime())   //313.157ms
-    }
-}
+<pre><code class="language-go">func main() {  
+    attr := &amp;os.ProcAttr{  
+        Files: []*os.File{os.Stdin, os.Stdout, os.Stderr}, //其他变量如果不清楚可以不设定  
+    }  
+    p, err := os.StartProcess(&quot;/usr/bin/vim&quot;, []string{&quot;/usr/bin/vim&quot;, &quot;tmp.txt&quot;}, attr) //vim 打开tmp.txt文件  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    ps, _ := p.Wait()　　//当关闭vim打开的tmp.txt时，进程就结束了  
+    fmt.Println(ps) 　　//exit status 0  
+    if ps.Exited() {  
+        fmt.Println(ps.Pid())        //536  
+        fmt.Println(ps.String())     // exit status 0  
+        fmt.Println(ps.Success())    //true  
+        fmt.Println(ps.Sys())        //0  
+        fmt.Println(ps.SysUsage())   //&amp;{{0 313157} {0 42898} 29164 0 0 0 7745 41 0 10736 240 0 0 0 1238 143}  
+        fmt.Println(ps.SystemTime()) // 42.898ms  
+        fmt.Println(ps.UserTime())   //313.157ms  
+    }  
+}  
 </code></pre>
 
 <p>type Signal</p>
 
-<pre><code class="language-go">type Signal interface {
-    String() string
-    Signal() // 同其他字符串做区别
-}
+<pre><code class="language-go">type Signal interface {  
+    String() string  
+    Signal() // 同其他字符串做区别  
+}  
 </code></pre>
 
 <p>代表操作系统的信号．底层的实现是操作系统独立的：在Unix中是syscal.Signal．</p>
 
-<pre><code class="language-go">var (
-    Interrupt Signal = syscall.SIGINT
-    Kill      Signal = syscall.SIGKILL
-)
+<pre><code class="language-go">var (  
+    Interrupt Signal = syscall.SIGINT  
+    Kill      Signal = syscall.SIGKILL  
+)  
 </code></pre>
 
-<p>在所有系统中都能够使用的是interrupe,给进程发送一个信号，强制杀死该进程
+<p>在所有系统中都能够使用的是interrupe,给进程发送一个信号，强制杀死该进程<br />
 type SyscallError　//SyscallError记录了一个特定系统调用的错误，主要用来返回SyscallError的字符串表示</p>
 
-<pre><code class="language-go">type SyscallError struct {
-    Syscall string
-    Err     error
-}
+<pre><code class="language-go">type SyscallError struct {  
+    Syscall string  
+    Err     error  
+}  
 </code></pre>
 
 <p>func (e *SyscallError) Error() string　　　//返回SyscallError的字符串表示</p>
@@ -937,7 +937,7 @@ type SyscallError　//SyscallError记录了一个特定系统调用的错误，�
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -1160,6 +1160,8 @@ type SyscallError　//SyscallError记录了一个特定系统调用的错误，�
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -1182,7 +1184,9 @@ type SyscallError　//SyscallError记录了一个特定系统调用的错误，�
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1214,7 +1218,7 @@ type SyscallError　//SyscallError记录了一个特定系统调用的错误，�
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

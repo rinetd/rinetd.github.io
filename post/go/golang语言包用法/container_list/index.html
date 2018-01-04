@@ -253,79 +253,79 @@
 
 <p>1.举个简单例子，Remove（）函数</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;container/list&quot;
-    &quot;fmt&quot;
-)
-
-func main() {
-    l := list.New()
-    l.PushBack(1)
-    fmt.Println(l.Front().Value) //1
-    value := l.Remove(l.Front())
-    fmt.Println(value)            //1
-    value1 := l.Remove(l.Front()) //panic: runtime error: invalid memory address or nil pointer dereference
-    fmt.Println(value1)
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;container/list&quot;  
+    &quot;fmt&quot;  
+)  
+  
+func main() {  
+    l := list.New()  
+    l.PushBack(1)  
+    fmt.Println(l.Front().Value) //1  
+    value := l.Remove(l.Front())  
+    fmt.Println(value)            //1  
+    value1 := l.Remove(l.Front()) //panic: runtime error: invalid memory address or nil pointer dereference  
+    fmt.Println(value1)  
+}  
 </code></pre>
 
 <p>从程序中可以直观的看出程序崩溃，原因是list中只有1个元素，但是要删除2个元素。但是再进一步查看一下原因，便会得出如下结果。</p>
 
 <p>golang中Front()函数实现如下</p>
 
-<pre><code class="language-go">func (l *List) Front() *Element {
-    if l.len == 0 {
-        return nil
-    }
-    return l.root.next
-}
+<pre><code class="language-go">func (l *List) Front() *Element {  
+    if l.len == 0 {  
+        return nil  
+    }  
+    return l.root.next  
+}  
 </code></pre>
 
 <p>由此可见，当第一次删除之后。list的长度变为0，此时在调用l.Remove(l.Front()),其中l.Front()返回的是一个nil。</p>
 
 <p>接下来再看golang中Remove（）函数实现，该函数并没有判定e是否为nil，变直接默认其为非nil，直接对其进行e.list或者e.Value取值操作。当e为nil时，这两个操作都将会造成程序崩溃，这也就是为什么上面程序会崩溃的原因。</p>
 
-<pre><code class="language-go">func (l *List) Remove(e *Element) interface{} {
-    if e.list == l {
-        // if e.list == l, l must have been initialized when e was inserted
-        // in l or l == nil (e is a zero Element) and l.remove will crash
-        l.remove(e)
-    }
-    return e.Value
-}
+<pre><code class="language-go">func (l *List) Remove(e *Element) interface{} {  
+    if e.list == l {  
+        // if e.list == l, l must have been initialized when e was inserted  
+        // in l or l == nil (e is a zero Element) and l.remove will crash  
+        l.remove(e)  
+    }  
+    return e.Value  
+}  
 </code></pre>
 
 <p>2.（l *list）PushBackList（other *list)该函数用于将other list中元素添加在l list的后面。基本实现思想是取出other中所有元素，将其顺次挂载在l列表中，但是golang中实现有问题，代码如下。</p>
 
-<pre><code class="language-go">func (l *List) PushBackList(other *List) {
-    l.lazyInit()
-    for i, e := other.Len(), other.Front(); i &gt; 0; i, e = i-1, e.Next() {
-        l.insertValue(e.Value, l.root.prev)
-    }
-}
+<pre><code class="language-go">func (l *List) PushBackList(other *List) {  
+    l.lazyInit()  
+    for i, e := other.Len(), other.Front(); i &gt; 0; i, e = i-1, e.Next() {  
+        l.insertValue(e.Value, l.root.prev)  
+    }  
+}  
 </code></pre>
 
 <p>其具体思想是首先获取other的长度n，然后循环n次取出其元素将其插入l中。问题就出现在循环n次，如果在这个过程中other的元素变化的话，例如其中有些元素被删除了，这就导致e的指针可能为nil，此时再利用e.Value取值，程序便会崩溃。如下所示。</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;container/list&quot;
-    &quot;runtime&quot;
-)
-
-func main() {
-    runtime.GOMAXPROCS(8)
-    l := list.New()
-    ls := list.New()
-    for i := 0; i &lt; 10000; i++ {
-        ls.PushBack(i)
-    }
-    go ls.Remove(l.Back())
-    l.PushBackList(ls) //invalid memory address or nil pointer dereference
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;container/list&quot;  
+    &quot;runtime&quot;  
+)  
+  
+func main() {  
+    runtime.GOMAXPROCS(8)  
+    l := list.New()  
+    ls := list.New()  
+    for i := 0; i &lt; 10000; i++ {  
+        ls.PushBack(i)  
+    }  
+    go ls.Remove(l.Back())  
+    l.PushBackList(ls) //invalid memory address or nil pointer dereference  
+}  
 </code></pre>
 
 <p>如程序中所示，再讲ls中元素添加到l过程中，如果ls中元素减少，程序便会崩溃。原因如上面分析。</p>
@@ -499,7 +499,7 @@ func main() {
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -722,6 +722,8 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -744,7 +746,9 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -776,7 +780,7 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

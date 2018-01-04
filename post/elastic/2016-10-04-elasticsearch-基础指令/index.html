@@ -226,7 +226,7 @@
                   <h1 class="post-title">Elasticsearch</h1>
 
                   <p class="post-byline">
-                    by  · 2016年10月04日 04:15:26 · 544 Words ·
+                    by  · 2016年10月04日 04:15:26 · 542 Words ·
                     ~2min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Post/Elastic/2016-10-04%20Elasticsearch%20%e5%9f%ba%e7%a1%80%e6%8c%87%e4%bb%a4.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
@@ -255,53 +255,52 @@
 
 <p>和SQL使用LIMIT关键字返回只有一页的结果一样，Elasticsearch接受from和size参数：</p>
 
-<p>from: 跳过开始的结果数，默认0
-size: 结果数，默认10
+<p>from: 跳过开始的结果数，默认0<br />
+size: 结果数，默认10<br />
 <code>curl -u elastic:changeme 120.92.36.21:9200/_search?from=10&amp;size=5</code></p>
 
 <p><code>curl -u elastic:changeme 120.92.36.21:9200/_search?search_type=count&amp;size=0</code></p>
 
 <h2 id="match查询子句用来找寻在title字段中找寻包含dns的成员">match查询子句用来找寻在title字段中找寻包含dns的成员：</h2>
 
-<pre><code>curl -u elastic:changeme 120.92.36.21:9200/_search?pretty -d '
-{
-    &quot;query&quot;: {
-      &quot;match&quot;: {
-          &quot;title&quot;: &quot;dns&quot;
-      }
-    }
-}
-'
+<pre><code>curl -u elastic:changeme 120.92.36.21:9200/_search?pretty -d '  
+{  
+    &quot;query&quot;: {  
+      &quot;match&quot;: {  
+          &quot;title&quot;: &quot;dns&quot;  
+      }  
+    }  
+}  
+'  
 </code></pre>
 
 <h1 id="mapping-映射"><code>_mapping</code> 映射</h1>
 
 <p><code>curl -u elastic:changeme '120.92.36.21:9200/_mapping?from=10&amp;size=5'</code></p>
 
-<p>如果是按日期索引的日志，那么最好定期清除旧索引：
+<p>如果是按日期索引的日志，那么最好定期清除旧索引：<br />
 <code>curl -XDELETE -u &lt;USER&gt;:&lt;PASSWORD&gt; http://&lt;HOST&gt;:9200/logstash-$(date -d '-10days' +'%Y.%m.%d')</code></p>
 
-<p>a、导入模版
+<p>a、导入模版<br />
 <code>curl -XPUT -u elastic:changeme  'http://120.92.36.21:9200/_template/filebeat?pretty' -d@/etc/filebeat/filebeat.template.json</code></p>
 
-<p>b、查看模版
+<p>b、查看模版<br />
 <code>curl -u elastic:changeme  'http://120.92.36.21:9200/_template/filebeat?pretty'</code></p>
 
-<p>c、清理旧的 index（如果是新配置的服务，没有生成任何 index 因此也不需要清理，可略过这一步）
-先查看现有的 index
-<code>curl -u elastic:changeme  '120.92.36.21:9200/_cat/indices?v'</code>
-删除 filebeat-* 匹配的所有 index
-<code>curl -XDELETE 'http://120.92.36.21:9200/filebeat-*?pretty'</code>
-再次查看，确认一下结果是否符合预期：
+<p>c、清理旧的 index（如果是新配置的服务，没有生成任何 index 因此也不需要清理，可略过这一步）<br />
+先查看现有的 index<br />
+<code>curl -u elastic:changeme  '120.92.36.21:9200/_cat/indices?v'</code><br />
+删除 filebeat-* 匹配的所有 index<br />
+<code>curl -XDELETE 'http://120.92.36.21:9200/filebeat-*?pretty'</code><br />
+再次查看，确认一下结果是否符合预期：<br />
 <code>curl -u elastic:changeme '120.92.36.21:9200/_cat/indices?v'</code></p>
 
-<p>#################################
-#KIBANA
+<p>#################################<br />
+#KIBANA<br />
 #################################</p>
 
-<p>url_elasticsearch = &lsquo;<a href="http://120.92.36.21:9200'">http://120.92.36.21:9200'</a>
-kibana_element_dir = &lsquo;/vagrant/cookbooks/elk-reflex/files/default/kibana&rsquo;
-#</p>
+<p>url_elasticsearch = &lsquo;<a href="http://120.92.36.21:9200'">http://120.92.36.21:9200'</a><br />
+kibana_element_dir = &lsquo;/vagrant/cookbooks/elk-reflex/files/default/kibana&rsquo;</p>
 
 <h1 id="commands-to-export-kibana-element">Commands to export Kibana element :</h1>
 
@@ -311,45 +310,43 @@ kibana_element_dir = &lsquo;/vagrant/cookbooks/elk-reflex/files/default/kibana&r
 
 <h1 id="curl-http-120-92-36-21-9200-kibana-search-search-name-source-pretty-1-search-file-json">- curl <a href="http://120.92.36.21:9200/.kibana/search/SEARCH_NAME/_source?pretty=1">http://120.92.36.21:9200/.kibana/search/SEARCH_NAME/_source?pretty=1</a> &gt; SEARCH_FILE.json</h1>
 
-<p>#</p>
-
-<p>bash &lsquo;kibana creating index&rsquo; do
-  code &lt;&lt;-EOH
-curl -XDELETE #{url_elasticsearch}/logstash-*
-curl -XPOST #{url_elasticsearch}/_template/reflex &ndash;data &ldquo;@#{kibana_element_dir}/template_reflex.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/index-pattern/logstash-* -d &lsquo;{&ldquo;title&rdquo; : &ldquo;logstash-<em>&rdquo;,  &ldquo;timeFieldName&rdquo;: &ldquo;@timestamp&rdquo;}&rsquo;
-curl -XPUT #{url_elasticsearch}/.kibana/config/4.6.1 -d &lsquo;{&ldquo;defaultIndex&rdquo; : &ldquo;logstash-</em>&rdquo;}&rsquo;
-    EOH
-  retries 3
-  retry_delay 5
+<p>bash &lsquo;kibana creating index&rsquo; do<br />
+  code &lt;&lt;-EOH<br />
+curl -XDELETE #{url_elasticsearch}/logstash-*<br />
+curl -XPOST #{url_elasticsearch}/_template/reflex &ndash;data &ldquo;@#{kibana_element_dir}/template_reflex.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/index-pattern/logstash-* -d &lsquo;{&ldquo;title&rdquo; : &ldquo;logstash-<em>&rdquo;,  &ldquo;timeFieldName&rdquo;: &ldquo;@timestamp&rdquo;}&rsquo;<br />
+curl -XPUT #{url_elasticsearch}/.kibana/config/4.6.1 -d &lsquo;{&ldquo;defaultIndex&rdquo; : &ldquo;logstash-</em>&rdquo;}&rsquo;<br />
+    EOH<br />
+  retries 3<br />
+  retry_delay 5<br />
 end</p>
 
-<p>bash &lsquo;kibana creating searches&rsquo; do
-  code &lt;&lt;-EOH
-curl -XPOST #{url_elasticsearch}/.kibana/search/Error-List &ndash;data &ldquo;@#{kibana_element_dir}/search_Error-List.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/search/Traces &ndash;data &ldquo;@#{kibana_element_dir}/search_Traces.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/search/SQL-Dump-List &ndash;data &ldquo;@#{kibana_element_dir}/search_SQL-Dump-List.json&rdquo;
-    EOH
+<p>bash &lsquo;kibana creating searches&rsquo; do<br />
+  code &lt;&lt;-EOH<br />
+curl -XPOST #{url_elasticsearch}/.kibana/search/Error-List &ndash;data &ldquo;@#{kibana_element_dir}/search_Error-List.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/search/Traces &ndash;data &ldquo;@#{kibana_element_dir}/search_Traces.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/search/SQL-Dump-List &ndash;data &ldquo;@#{kibana_element_dir}/search_SQL-Dump-List.json&rdquo;<br />
+    EOH<br />
 end</p>
 
-<p>bash &lsquo;kibana creating visualizations&rsquo; do
-  code &lt;&lt;-EOH
-curl -XPOST #{url_elasticsearch}/.kibana/visualization/Activity &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Activity.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/visualization/Top-10-Errors &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Top-10-Errors.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/visualization/Error-Number &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Error-Number.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/visualization/Users &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Users.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/visualization/Server-Role &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Server-Role.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/visualization/Programs &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Programs.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/visualization/SQL-Cursor &ndash;data &ldquo;@#{kibana_element_dir}/visualization_SQL-Cursor.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/visualization/SQL-Dump-Repartition &ndash;data &ldquo;@#{kibana_element_dir}/visualization_SQL-Dump-Repartition.json&rdquo;
-    EOH
+<p>bash &lsquo;kibana creating visualizations&rsquo; do<br />
+  code &lt;&lt;-EOH<br />
+curl -XPOST #{url_elasticsearch}/.kibana/visualization/Activity &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Activity.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/visualization/Top-10-Errors &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Top-10-Errors.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/visualization/Error-Number &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Error-Number.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/visualization/Users &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Users.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/visualization/Server-Role &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Server-Role.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/visualization/Programs &ndash;data &ldquo;@#{kibana_element_dir}/visualization_Programs.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/visualization/SQL-Cursor &ndash;data &ldquo;@#{kibana_element_dir}/visualization_SQL-Cursor.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/visualization/SQL-Dump-Repartition &ndash;data &ldquo;@#{kibana_element_dir}/visualization_SQL-Dump-Repartition.json&rdquo;<br />
+    EOH<br />
 end</p>
 
-<p>bash &lsquo;kibana creating dashboard&rsquo; do
-  code &lt;&lt;-EOH
-curl -XPOST #{url_elasticsearch}/.kibana/dashboard/Main-Reflex &ndash;data &ldquo;@#{kibana_element_dir}/dashboard_Main-Reflex.json&rdquo;
-curl -XPOST #{url_elasticsearch}/.kibana/dashboard/SQL-Dump-Reflex &ndash;data &ldquo;@#{kibana_element_dir}/dashboard_SQL-Dump-Reflex.json&rdquo;
-    EOH
+<p>bash &lsquo;kibana creating dashboard&rsquo; do<br />
+  code &lt;&lt;-EOH<br />
+curl -XPOST #{url_elasticsearch}/.kibana/dashboard/Main-Reflex &ndash;data &ldquo;@#{kibana_element_dir}/dashboard_Main-Reflex.json&rdquo;<br />
+curl -XPOST #{url_elasticsearch}/.kibana/dashboard/SQL-Dump-Reflex &ndash;data &ldquo;@#{kibana_element_dir}/dashboard_SQL-Dump-Reflex.json&rdquo;<br />
+    EOH<br />
 end</p>
 
                       
@@ -517,7 +514,7 @@ end</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -740,6 +737,8 @@ end</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -762,7 +761,9 @@ end</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -794,7 +795,7 @@ end</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

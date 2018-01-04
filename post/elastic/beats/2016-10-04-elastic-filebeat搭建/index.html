@@ -250,8 +250,10 @@
 <h2 id="当前环境">当前环境</h2>
 
 <ol>
-<li>系统：centos7</li>
-<li>docker 1.12.1</li>
+<li>系统：centos7<br /></li>
+<li>docker 1.12.1<br />
+<br />
+<br /></li>
 </ol>
 
 <h2 id="介绍">介绍</h2>
@@ -262,7 +264,7 @@
 
 <h3 id="logstash">Logstash</h3>
 
-<p>Logstash 是一个具有实时渠道能力的数据收集引擎，主要用于日志的收集与解析，并将其存入
+<p>Logstash 是一个具有实时渠道能力的数据收集引擎，主要用于日志的收集与解析，并将其存入<br />
 ElasticSearch中。</p>
 
 <h3 id="kibana">Kibana</h3>
@@ -287,95 +289,97 @@ ElasticSearch中。</p>
 
 <h3 id="启动elasticsearch">启动ElasticSearch</h3>
 
-<pre><code>docker run -d -p 9200:9200 --name elasticsearch elasticsearch
-
+<pre><code>docker run -d -p 9200:9200 --name elasticsearch elasticsearch  
+  
 </code></pre>
 
 <h3 id="启动logstash">启动Logstash</h3>
 
-<pre><code># 1. 新建配置文件logstash.conf
-input {
-    beats {
-        port =&gt; 5044
-    }
-}
-
-output {
-    stdout {
-        codec =&gt; rubydebug
-    }
-    elasticsearch {
-        #填写实际情况elasticsearch的访问IP，因为是跨容器间的访问，使用内网、公网IP，不要填写127.0.0.1|localhost
-        hosts =&gt; [&quot;{$ELASTIC_IP}:9200&quot;]
-
-    }
-}
-
-# 2.启动容器，暴露并映射端口，挂载配置文件
-docker run -d --expose 5044 -p 5044:5044 --name logstash -v &quot;$PWD&quot;:/config-dir logstash -f /config-dir/logstash.conf
+<pre><code># 1. 新建配置文件logstash.conf  
+input {  
+    beats {  
+        port =&gt; 5044  
+    }  
+}  
+  
+output {  
+    stdout {  
+        codec =&gt; rubydebug  
+    }  
+    elasticsearch {  
+        #填写实际情况elasticsearch的访问IP，因为是跨容器间的访问，使用内网、公网IP，不要填写127.0.0.1|localhost  
+        hosts =&gt; [&quot;{$ELASTIC_IP}:9200&quot;]  
+  
+    }  
+}  
+  
+# 2.启动容器，暴露并映射端口，挂载配置文件  
+docker run -d --expose 5044 -p 5044:5044 --name logstash -v &quot;$PWD&quot;:/config-dir logstash -f /config-dir/logstash.conf  
 </code></pre>
 
 <h3 id="启动filebeat">启动Filebeat</h3>
 
 <p>下载地址：<a href="https://www.elastic.co/downloads/beats/filebeat">https://www.elastic.co/downloads/beats/filebeat</a></p>
 
-<pre><code># 1.下载Filebeat压缩包
-wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.2.2-linux-x86_64.tar.gz
-
-# 2.解压文件
-tar -xvf filebeat-5.2.2-linux-x86_64.tar.gz
-
-# 3.新建配置文件filebeat.yml
-filebeat:
-  prospectors:
-    - paths:
-        - /tmp/test.log #日志文件地址
-      input_type: log #从文件中读取
-      tail_files: true #以文件末尾开始读取数据
-output:
-  logstash:
-      hosts: [&quot;{$LOGSTASH_IP}:5044&quot;] #填写logstash的访问IP
-
+<pre><code># 1.下载Filebeat压缩包  
+wget https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-5.2.2-linux-x86_64.tar.gz  
+  
+# 2.解压文件  
+tar -xvf filebeat-5.2.2-linux-x86_64.tar.gz  
+  
+# 3.新建配置文件filebeat.yml  
+filebeat:  
+  prospectors:  
+    - paths:  
+        - /tmp/test.log #日志文件地址  
+      input_type: log #从文件中读取  
+      tail_files: true #以文件末尾开始读取数据  
+output:  
+  logstash:  
+      hosts: [&quot;{$LOGSTASH_IP}:5044&quot;] #填写logstash的访问IP  
+  
 # 4.运行filebeat  
-./filebeat-5.2.2-linux-x86_64/filebeat -e -c filebeat.yml
+./filebeat-5.2.2-linux-x86_64/filebeat -e -c filebeat.yml  
 </code></pre>
 
 <h3 id="启动kibana">启动Kibana</h3>
 
-<pre><code>docker run -d --name kibana -e ELASTICSEARCH_URL=http://{$ELASTIC_IP}:9200 -p 5601:5601 kibana
+<pre><code>docker run -d --name kibana -e ELASTICSEARCH_URL=http://{$ELASTIC_IP}:9200 -p 5601:5601 kibana  
 </code></pre>
 
 <h2 id="测试">测试</h2>
 
 <ol>
-<li>模拟日志数据</li>
+<li>模拟日志数据<br />
+<br /></li>
 </ol>
 
-<pre><code># 1.创建日志文件
-touch /tmp/test.log
-
-# 2.向日志文件中写入一条nginx访问日志
-echo '127.0.0.1 - - [13/Mar/2017:22:57:14 +0800] &quot;GET / HTTP/1.1&quot; 200 3700 &quot;-&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36&quot; &quot;-&quot;' &gt;&gt; /tmp/test.log
+<pre><code># 1.创建日志文件  
+touch /tmp/test.log  
+  
+# 2.向日志文件中写入一条nginx访问日志  
+echo '127.0.0.1 - - [13/Mar/2017:22:57:14 +0800] &quot;GET / HTTP/1.1&quot; 200 3700 &quot;-&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36&quot; &quot;-&quot;' &gt;&gt; /tmp/test.log  
 </code></pre>
 
 <ol>
-<li>访问 http://{$KIBANA_IP}:5601</li>
+<li>访问 http://{$KIBANA_IP}:5601<br />
+<br /></li>
 </ol>
 
-<p><img src="assets/elk_kibana_01.png" alt="" />
+<p><img src="assets/elk_kibana_01.png" alt="" /><br />
 <img src="assets/elk_kibana_02.png" alt="" /></p>
 
 <h2 id="总结">总结</h2>
 
-<p>本文主要讲述了如何一步步搭建ELK的过程，以及Filebeat在其中所起的作用。<br>
+<p>本文主要讲述了如何一步步搭建ELK的过程，以及Filebeat在其中所起的作用。<br><br />
 这儿仅仅给大家做了一个演示，要在生产环境中部署时，还需使用数据卷进行数据持久化，容器内存问题也需考虑，elasticsearch与logstash都是相对吃内存的，如果不加以限制，很可能会拖垮你整个服务器。<br>当然安全因素也是大家不能忽视的，如传输的安全性、端口权限的最小化暴露程度，防火墙设置等。</p>
 
 <h2 id="后续">后续</h2>
 
 <ol>
-<li>logstash解析日志格式，如JAVA、nginx、nodejs等日志；</li>
-<li>elasticsearch的常用搜索语法；</li>
-<li>通过kibana制作可视化图表；</li>
+<li>logstash解析日志格式，如JAVA、nginx、nodejs等日志；<br /></li>
+<li>elasticsearch的常用搜索语法；<br /></li>
+<li>通过kibana制作可视化图表；<br /></li>
 </ol>
 
                       
@@ -543,7 +547,7 @@ echo '127.0.0.1 - - [13/Mar/2017:22:57:14 +0800] &quot;GET / HTTP/1.1&quot; 200 
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -766,6 +770,8 @@ echo '127.0.0.1 - - [13/Mar/2017:22:57:14 +0800] &quot;GET / HTTP/1.1&quot; 200 
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -788,7 +794,9 @@ echo '127.0.0.1 - - [13/Mar/2017:22:57:14 +0800] &quot;GET / HTTP/1.1&quot; 200 
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -820,7 +828,7 @@ echo '127.0.0.1 - - [13/Mar/2017:22:57:14 +0800] &quot;GET / HTTP/1.1&quot; 200 
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

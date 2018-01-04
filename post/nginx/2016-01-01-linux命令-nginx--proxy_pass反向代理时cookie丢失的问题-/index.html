@@ -243,18 +243,18 @@
                       
                       <p>X-Forwarded-For: 203.0.113.195, 70.41.3.18, 150.172.238.178</p>
 
-<pre><code>location / {
-            proxy_pass   http://192.168.1.12:11080/v1/;
-            proxy_cookie_path /v1/ /; #关键
-
-            proxy_set_header   Host    $host;
-            proxy_set_header   Remote_Addr    $remote_addr;
-            proxy_set_header   X-Real-IP    $remote_addr;
-            proxy_set_header   X-Forwarded-For    $proxy_add_x_forwarded_for;
-        }
+<pre><code>location / {  
+            proxy_pass   http://192.168.1.12:11080/v1/;  
+            proxy_cookie_path /v1/ /; #关键  
+  
+            proxy_set_header   Host    $host;  
+            proxy_set_header   Remote_Addr    $remote_addr;  
+            proxy_set_header   X-Real-IP    $remote_addr;  
+            proxy_set_header   X-Forwarded-For    $proxy_add_x_forwarded_for;  
+        }  
 </code></pre>
 
-<pre><code>location / {        
+<pre><code>location / {  
         proxy_pass http://127.0.0.1:8090/sso;  
         proxy_cookie_path /sso/ /;  
         proxy_cookie_path /sso /;  
@@ -262,9 +262,10 @@
 </code></pre>
 
 <ol>
-<li>如果只是host、端口转换，则cookie不会丢失。例如：
-location /project {
-   proxy_pass   <a href="http://127.0.0.1:8080/project">http://127.0.0.1:8080/project</a>;</li>
+<li>如果只是host、端口转换，则cookie不会丢失。例如：<br />
+location /project {<br />
+   proxy_pass   <a href="http://127.0.0.1:8080/project">http://127.0.0.1:8080/project</a>;<br />
+<br /></li>
 </ol>
 
 <p>}</p>
@@ -272,9 +273,10 @@ location /project {
 <p>通过浏览器访问<a href="http://127.0.0.1/project时，浏览器的cookie内有jsessionid。再次访问时，浏览器会发送当前的cookie。">http://127.0.0.1/project时，浏览器的cookie内有jsessionid。再次访问时，浏览器会发送当前的cookie。</a></p>
 
 <ol>
-<li>如果路径也变化了，则需要设置cookie的路径转换，nginx.conf的配置如下
-location /proxy_path {
-   proxy_pass   <a href="http://127.0.0.1:8080/project">http://127.0.0.1:8080/project</a>;</li>
+<li>如果路径也变化了，则需要设置cookie的路径转换，nginx.conf的配置如下<br />
+location /proxy_path {<br />
+   proxy_pass   <a href="http://127.0.0.1:8080/project">http://127.0.0.1:8080/project</a>;<br />
+<br /></li>
 </ol>
 
 <p>}</p>
@@ -287,212 +289,212 @@ location /proxy_path {
 
 <p>则可以将project的cookie输出到proxy_path上。正确的配置是：</p>
 
-<p>location /proxy_path {
-       proxy_pass   <a href="http://127.0.0.1:8080/project">http://127.0.0.1:8080/project</a>;
-       proxy_cookie_path  /project /proxy_path;
-   }
-   # http{
-   #   include    common/proxy.conf;
-   # }
-   # <a href="http://www.mylinuxer.com/?p=281">Linux 运维 » Nginx 代理 配置详解</a>
-   proxy_set_header field value;
-   更改nginx服务器接收到的客户端请求的请求头信息，然后将心的请求头发送给被代理的服务器
-   field  要更改的信息所在的头域
-   value  更改的值，支持使用文本、变量或者变量的组合
-   默认情况下为以下设置：
-      proxy_set_header Host $proxy_host;
+<p>location /proxy_path {<br />
+       proxy_pass   <a href="http://127.0.0.1:8080/project">http://127.0.0.1:8080/project</a>;<br />
+       proxy_cookie_path  /project /proxy_path;<br />
+   }<br />
+   # http{<br />
+   #   include    common/proxy.conf;<br />
+   # }<br />
+   # <a href="http://www.mylinuxer.com/?p=281">Linux 运维 » Nginx 代理 配置详解</a><br />
+   proxy_set_header field value;<br />
+   更改nginx服务器接收到的客户端请求的请求头信息，然后将心的请求头发送给被代理的服务器<br />
+   field  要更改的信息所在的头域<br />
+   value  更改的值，支持使用文本、变量或者变量的组合<br />
+   默认情况下为以下设置：<br />
+      proxy_set_header Host $proxy_host;<br />
       proxy_set_header Connection close;</p>
 
-<p>proxy_rediect
-   用于修改被代理服务器返回的响应头中的location头域和“Rsfresh”头域，与proxy_pass配合使用，该指令可以把代理服务器返回的地址信息更改为需要的地址信息
-   语法如下三种：
-              (1)proxy_redirect redirect replacement;
-                 redirect 匹配location头域值得字符串
-                 replacement 用于替换redirect 变量内容的字符串
-               eg:
-                  假如被代理服务器返回的响应头中“location”头域为：
-                   Location:<a href="http://localhost:8081/proxy/some/uri/">http://localhost:8081/proxy/some/uri/</a>
-                  设置为：
-                   proxy_redirect <a href="http://localhost:8081/proxy/">http://localhost:8081/proxy/</a> <a href="http://mylinuxer/frontend/">http://mylinuxer/frontend/</a>;
-                  Nginx服务器会将Location头域信息更改为
-                   Location:<a href="http://mylinuxer/frintend//some/uri/">http://mylinuxer/frintend//some/uri/</a>
-              (2)proxy_redirect default;
-               eg:
-                  location块的uri变量作为replacement,并使用proxy_pass变量作为redirect
-                  location /server/
-                    {
-                       proxy_pass <a href="http://proxyserver/source/">http://proxyserver/source/</a>;
-                       proxy_redirect default;
-                    }
-              (3)proxy_redirect off;
+<p>proxy_rediect<br />
+   用于修改被代理服务器返回的响应头中的location头域和“Rsfresh”头域，与proxy_pass配合使用，该指令可以把代理服务器返回的地址信息更改为需要的地址信息<br />
+   语法如下三种：<br />
+              (1)proxy_redirect redirect replacement;<br />
+                 redirect 匹配location头域值得字符串<br />
+                 replacement 用于替换redirect 变量内容的字符串<br />
+               eg:<br />
+                  假如被代理服务器返回的响应头中“location”头域为：<br />
+                   Location:<a href="http://localhost:8081/proxy/some/uri/">http://localhost:8081/proxy/some/uri/</a><br />
+                  设置为：<br />
+                   proxy_redirect <a href="http://localhost:8081/proxy/">http://localhost:8081/proxy/</a> <a href="http://mylinuxer/frontend/">http://mylinuxer/frontend/</a>;<br />
+                  Nginx服务器会将Location头域信息更改为<br />
+                   Location:<a href="http://mylinuxer/frintend//some/uri/">http://mylinuxer/frintend//some/uri/</a><br />
+              (2)proxy_redirect default;<br />
+               eg:<br />
+                  location块的uri变量作为replacement,并使用proxy_pass变量作为redirect<br />
+                  location /server/<br />
+                    {<br />
+                       proxy_pass <a href="http://proxyserver/source/">http://proxyserver/source/</a>;<br />
+                       proxy_redirect default;<br />
+                    }<br />
+              (3)proxy_redirect off;<br />
                 使用此方法，可将当前作用域下面的所有的proxy_redirect指令配置全部设置为无效</p>
 
-<pre><code class="language-nginx">   proxy_hide_header field;
-   设置nginx服务器在发送HTTP相应时，隐藏一些头域信息，field为需要隐藏的头域
-   proxy_pass_header field;
-   设置nginx服务器在发送响应报文时候，报文中不包含&quot;Date&quot; &quot;Server&quot; &quot;X-Accel&quot;等来自被代理服务器的头域信息，field为需要发送的头域.
-   proxy_pass_request_body on|off;
-   设置是否将客户端请求的请求体发送给代理服务器，默认设置为开启on
-   proxy_pass_request_headers on|off;
-   设置是否将客户端请求的请求头发送给代理服务器，默认设置为开启on
-   proxy_set_body value;
-   更改nginx服务器接收到的客户端请求的请求体信息，value为更改的信息
-   proxy_bind address;
-   如果我们希望代理连接由指定主机处理，可修改此配置，address为IP地址
-   proxy_connect_timeout time;
-   配置nginx服务器与后端被代理服务器尝试建立连接的超时时间，默认为60s
-   proxy_read_timeout time;
-   配置nginx服务器向后端被代理服务器发出read请求后，等待响应的超时时间，默认为60s
-   proxy_send_timeout time;
-   配置nginx服务器向后端被代理服务器发出write请求后，等待响应的超时时间，默认为60s
-   proxy_http_version 1.0|1.1
-   设置nginx服务器提供代理服务的HTTP协议版本，默认为1.0,1.1版本支持upsteam服务器组设置中的keepalive指令
-   proxy_method method;
-   设置Nginx服务器请求被代理服务器时使用的请求方法，method可设置为POST和GET，不加引号，设置了该指令，客户端的请求方法将被忽略
-   proxy_ignore_client_abort on|off;
-   设置在客户端终端网络请求时，Nginx服务器是否中断对被代理服务器的请求，默认为off中断
-   proxy_ignore_headers field ...;
-   设置一些HTTP的响应头中的头域，field为要设置的HTTP响应头的头域，如&quot;X-Accel-Redirect&quot;、&quot;X-Accel-Expires&quot;、&quot;Expires&quot;、&quot;Cache-Control&quot;、&quot;Set-Cookie&quot;等
-   proxy_intercept_errors on|off;
-   配置一个状态是否开启，在开启时，如果被代理的服务器返回的HTTP状态代码为400或者大于400，则nginx服务器使用自己预定义的错误页（使用error_page指令），如果是关闭状态，则直接将被代理服务器返回的HTTP状态返回给客户端
-   proxy_headers_hash_max_size size;
-   配置存放http报文头的哈希表的容量，默认为512个字符，siez为字符大小
-   proxy_headers_hash_bucket_size size;
-   设置nginx服务器申请存放http报文头的哈希表容量的单位大小，默认为64个字符
-   proxy_next_upstream status ....；
-   可以使用该指令配置在服务器(组)发生哪些异常情况时，将请求顺序交个下一个服务器处理
-   status设置服务器返回状态，可以是一个或多个
-   error 连接错误
-   timeout 超时
-   invalid_header响应头为空或无效
-   http_500|http_502|http_504|http_404，被代理服务器返回500 502 504 404状态代码
-   off 无法将请求发送给被代理服务器
-   proxy_ssl_session_reuse on|off;
-   配置是否基于SSL安全协议的会话连接(https://)，默认为开启状态
-
-
-
-   ### proxy-global ###
-   #resolver               &lt;dns-proxy&gt;; # we use &quot;pdnsd&quot; here
-   proxy_intercept_errors  on; # testing=off
-   proxy_ignore_client_abort off;
-   proxy_redirect          http:// $scheme://;
-
-   ### proxy-header ###
-   proxy_hide_header       Server;
-   proxy_hide_header       X-Powered-By;
-   proxy_hide_header       X-AspNet-Version;
-   proxy_set_header        Accept-Encoding   &quot;&quot;; # no backend compression
-   proxy_set_header        Host              $http_host;
-   proxy_set_header        X-Forwarded-By    $server_addr:$server_port;
-   proxy_set_header        X-Forwarded-For   $proxy_add_x_forwarded_for;
-   proxy_set_header        X-Forwarded-Class $classification; # our internal custom header
-   proxy_set_header        X-Forwarded-Proto $scheme;
-   map $scheme $msiis      { http off; https on; } # compatibility
-   proxy_set_header        Front-End-Https   $msiis;
-
-   ### proxy-timeouts ###
-   proxy_connect_timeout   6;
-   proxy_send_timeout      60;
-   proxy_read_timeout      60;
-
-   ### proxy-buffers ###
-   proxy_buffering         on;
-   proxy_buffer_size       8k;
-   proxy_buffers           256 8k;
-   proxy_busy_buffers_size    64k;
-   proxy_temp_file_write_size 64k;
-   proxy_temp_path         /var/spool/nginx/temp/;
-
-
-   2  Proxy Buffer详解
-   proxy buffer启用以后，nginx服务器会异步地将被failing服务器的响应数据传递给客户端，首先，nginx服务器会尽可能的从被代理服务器哪里接收响应数据，放在Proxy Buffer中
-   2.1
-   proxy_buffering on|off;
-   配置是否开启或关闭proxy buffer功能,默认为开启
-
-   2.2
-   proxy_buffers number size;
-   设置接收一次被代理服务器响应数据的proxy buffer个数和每个buffer的大小
-   number 为个数
-   size 为大小
-   默认设置为
-   proxy_buffers 8 4k|8k;
-
-   proxy_buffer_size size;
-   配置从被代理服务器获取的第一部分响应数据的大小
-   size 设置缓存的大小，保持与proxy_buffers设置的size相同
-   proxy_busy_buffers_size size;
-   限制同时处于BUSY状态的缓存区总大小，默认为8KB故意整个16KB
-   proxy_temp_path path .........;
-   配置磁盘上的一个文件路径，用于零食存放服务器的大体积响应数据
-   path 设置存放临时文件的路径
-   ..... 目录
-   eg :
-       proxy_temp_path /nginx/proxy_web/proxy_temp 1 2;
-       临时文件存放目录为/nginx/proxy_web/proxy_temp路径下的第二级目录中
-
-   proxy_max_temp_file_size size;
-   配置所有临时文件的总体积的大小，存放在磁盘上的临时文件大小不能超过该值
-   size设置大小，默认我1024MB
-
-   proxy_temp_file_write_size size;
-   配置同时写入临时文件的数据量的总大小，可以设置为8KB 16KB,一般与平台的内存页大小相同
-
-
-   3.Proxy Cache配置详解
-   Proxy Cache机制依赖于Proxy Buffer机制，只有当后者开启的时候，前者才能使用
-   proxy_cache zone | off;
-   配置一块用于公用的内存区域名称，该区域可以存放缓存的索引数据
-   zone 设置用于存放缓存索引的内存区域的名称
-   off  关闭proxy_cache功能，默认为关闭的
-
-   proxy_cache_bypass string..........；
-   配置nginx服务器向客户端发送响应数据时，不从缓存中获取的条件
-   string 为条件变量
-   eg:
-     proxy_cache_bypass $cookie_nocache;
-
-   proxy_cache_key string;
-   配置nginx服务器在内存中为缓存数据建立索引时使用的关键字
-   string 为设置的关键字
-   通常使用以下配置
-    eg :
-       proxy_cache_key &quot;$scheme$proxy_host$uri$is_args$args&quot;;
-
-   proxy_cache_lock on|off;
-   设置是否开启缓存锁的功能，默认为关闭状态
-   proxy_cache_lock_timeout time;
-   设置缓存锁功能开启以后锁的超时时间，默认为5
-   proxy_cache_min_uses number;
-   设置客户请求发送的次数，当客户端向被代理服务器发送相同请求到达一定的次数后，nginx才对请求进行缓存，默认为1
-   proxy_cache_path path [levels=levels] keys_zone=name:size [inactive=time] [max_size=size2] [loader_files=number] [loader_sleep=time2] [loader_threshold=time3];
-   设置nginx服务器存储数据的路径以及和缓存索引相关的内容
-   path 设置缓存数据存放的根路径，此路径必须存在
-   levels 设置相对于path指定目录的第几级hash目录中缓存数据
-   name:size1 用于设置存放缓存索引的内存区域的名称和大小
-   time1 设置强制更新缓存数据的时间默认为10s
-   size2 设置硬盘中缓存数据的大小限制
-   number 设置缓存索引重建进程每次加载的数据袁术的数量上限，默认为100
-   time2 设置缓存索引重建进程在一次遍历结束，下一次遍历开始之间的暂停时间，默认为50ms
-   time3 设置遍历一次磁盘缓存源数据的时间上限，默认为200ms
-   eg:
-      proxy_cache_path /home/cache levels=1:2 keys_zone=cache_one:200m inactive=1d max_size=30g;
-
-   proxy_cache_use_stale error|timeout|invalid_header|updating|http_500|http_502|http_503|http_504|http_404 | off .....;
-   设置nginx在访问被代理服务器过程中出现被代理服务器无法访问或者访问错误等现象时，nginx服务器可以使用历史缓存响应客户端，该指令默认为off
-
-   proxy_cache_valid [ code ....] time;
-   设置对不同的HTTP响应状态设置不同的缓存时间
-   code 设置响应状态，nginx 职位http状态代码为200 301  302做缓存，可以使用any表示所有该指令中为设置的其他响应数据
-   time 设置缓存时间
-   eg:
-      proxy_cache_valid 200 302 1h;
-      proxy_cache_valid 301 1h;
-      proxy_cache_valid any 1m;
-
-   proxy_no_cache string;
-   设置什么情况下不使用cache
+<pre><code class="language-nginx">   proxy_hide_header field;  
+   设置nginx服务器在发送HTTP相应时，隐藏一些头域信息，field为需要隐藏的头域  
+   proxy_pass_header field;  
+   设置nginx服务器在发送响应报文时候，报文中不包含&quot;Date&quot; &quot;Server&quot; &quot;X-Accel&quot;等来自被代理服务器的头域信息，field为需要发送的头域.  
+   proxy_pass_request_body on|off;  
+   设置是否将客户端请求的请求体发送给代理服务器，默认设置为开启on  
+   proxy_pass_request_headers on|off;  
+   设置是否将客户端请求的请求头发送给代理服务器，默认设置为开启on  
+   proxy_set_body value;  
+   更改nginx服务器接收到的客户端请求的请求体信息，value为更改的信息  
+   proxy_bind address;  
+   如果我们希望代理连接由指定主机处理，可修改此配置，address为IP地址  
+   proxy_connect_timeout time;  
+   配置nginx服务器与后端被代理服务器尝试建立连接的超时时间，默认为60s  
+   proxy_read_timeout time;  
+   配置nginx服务器向后端被代理服务器发出read请求后，等待响应的超时时间，默认为60s  
+   proxy_send_timeout time;  
+   配置nginx服务器向后端被代理服务器发出write请求后，等待响应的超时时间，默认为60s  
+   proxy_http_version 1.0|1.1  
+   设置nginx服务器提供代理服务的HTTP协议版本，默认为1.0,1.1版本支持upsteam服务器组设置中的keepalive指令  
+   proxy_method method;  
+   设置Nginx服务器请求被代理服务器时使用的请求方法，method可设置为POST和GET，不加引号，设置了该指令，客户端的请求方法将被忽略  
+   proxy_ignore_client_abort on|off;  
+   设置在客户端终端网络请求时，Nginx服务器是否中断对被代理服务器的请求，默认为off中断  
+   proxy_ignore_headers field ...;  
+   设置一些HTTP的响应头中的头域，field为要设置的HTTP响应头的头域，如&quot;X-Accel-Redirect&quot;、&quot;X-Accel-Expires&quot;、&quot;Expires&quot;、&quot;Cache-Control&quot;、&quot;Set-Cookie&quot;等  
+   proxy_intercept_errors on|off;  
+   配置一个状态是否开启，在开启时，如果被代理的服务器返回的HTTP状态代码为400或者大于400，则nginx服务器使用自己预定义的错误页（使用error_page指令），如果是关闭状态，则直接将被代理服务器返回的HTTP状态返回给客户端  
+   proxy_headers_hash_max_size size;  
+   配置存放http报文头的哈希表的容量，默认为512个字符，siez为字符大小  
+   proxy_headers_hash_bucket_size size;  
+   设置nginx服务器申请存放http报文头的哈希表容量的单位大小，默认为64个字符  
+   proxy_next_upstream status ....；  
+   可以使用该指令配置在服务器(组)发生哪些异常情况时，将请求顺序交个下一个服务器处理  
+   status设置服务器返回状态，可以是一个或多个  
+   error 连接错误  
+   timeout 超时  
+   invalid_header响应头为空或无效  
+   http_500|http_502|http_504|http_404，被代理服务器返回500 502 504 404状态代码  
+   off 无法将请求发送给被代理服务器  
+   proxy_ssl_session_reuse on|off;  
+   配置是否基于SSL安全协议的会话连接(https://)，默认为开启状态  
+  
+  
+  
+   ### proxy-global ###  
+   #resolver               &lt;dns-proxy&gt;; # we use &quot;pdnsd&quot; here  
+   proxy_intercept_errors  on; # testing=off  
+   proxy_ignore_client_abort off;  
+   proxy_redirect          http:// $scheme://;  
+  
+   ### proxy-header ###  
+   proxy_hide_header       Server;  
+   proxy_hide_header       X-Powered-By;  
+   proxy_hide_header       X-AspNet-Version;  
+   proxy_set_header        Accept-Encoding   &quot;&quot;; # no backend compression  
+   proxy_set_header        Host              $http_host;  
+   proxy_set_header        X-Forwarded-By    $server_addr:$server_port;  
+   proxy_set_header        X-Forwarded-For   $proxy_add_x_forwarded_for;  
+   proxy_set_header        X-Forwarded-Class $classification; # our internal custom header  
+   proxy_set_header        X-Forwarded-Proto $scheme;  
+   map $scheme $msiis      { http off; https on; } # compatibility  
+   proxy_set_header        Front-End-Https   $msiis;  
+  
+   ### proxy-timeouts ###  
+   proxy_connect_timeout   6;  
+   proxy_send_timeout      60;  
+   proxy_read_timeout      60;  
+  
+   ### proxy-buffers ###  
+   proxy_buffering         on;  
+   proxy_buffer_size       8k;  
+   proxy_buffers           256 8k;  
+   proxy_busy_buffers_size    64k;  
+   proxy_temp_file_write_size 64k;  
+   proxy_temp_path         /var/spool/nginx/temp/;  
+  
+  
+   2  Proxy Buffer详解  
+   proxy buffer启用以后，nginx服务器会异步地将被failing服务器的响应数据传递给客户端，首先，nginx服务器会尽可能的从被代理服务器哪里接收响应数据，放在Proxy Buffer中  
+   2.1  
+   proxy_buffering on|off;  
+   配置是否开启或关闭proxy buffer功能,默认为开启  
+  
+   2.2  
+   proxy_buffers number size;  
+   设置接收一次被代理服务器响应数据的proxy buffer个数和每个buffer的大小  
+   number 为个数  
+   size 为大小  
+   默认设置为  
+   proxy_buffers 8 4k|8k;  
+  
+   proxy_buffer_size size;  
+   配置从被代理服务器获取的第一部分响应数据的大小  
+   size 设置缓存的大小，保持与proxy_buffers设置的size相同  
+   proxy_busy_buffers_size size;  
+   限制同时处于BUSY状态的缓存区总大小，默认为8KB故意整个16KB  
+   proxy_temp_path path .........;  
+   配置磁盘上的一个文件路径，用于零食存放服务器的大体积响应数据  
+   path 设置存放临时文件的路径  
+   ..... 目录  
+   eg :  
+       proxy_temp_path /nginx/proxy_web/proxy_temp 1 2;  
+       临时文件存放目录为/nginx/proxy_web/proxy_temp路径下的第二级目录中  
+  
+   proxy_max_temp_file_size size;  
+   配置所有临时文件的总体积的大小，存放在磁盘上的临时文件大小不能超过该值  
+   size设置大小，默认我1024MB  
+  
+   proxy_temp_file_write_size size;  
+   配置同时写入临时文件的数据量的总大小，可以设置为8KB 16KB,一般与平台的内存页大小相同  
+  
+  
+   3.Proxy Cache配置详解  
+   Proxy Cache机制依赖于Proxy Buffer机制，只有当后者开启的时候，前者才能使用  
+   proxy_cache zone | off;  
+   配置一块用于公用的内存区域名称，该区域可以存放缓存的索引数据  
+   zone 设置用于存放缓存索引的内存区域的名称  
+   off  关闭proxy_cache功能，默认为关闭的  
+  
+   proxy_cache_bypass string..........；  
+   配置nginx服务器向客户端发送响应数据时，不从缓存中获取的条件  
+   string 为条件变量  
+   eg:  
+     proxy_cache_bypass $cookie_nocache;  
+  
+   proxy_cache_key string;  
+   配置nginx服务器在内存中为缓存数据建立索引时使用的关键字  
+   string 为设置的关键字  
+   通常使用以下配置  
+    eg :  
+       proxy_cache_key &quot;$scheme$proxy_host$uri$is_args$args&quot;;  
+  
+   proxy_cache_lock on|off;  
+   设置是否开启缓存锁的功能，默认为关闭状态  
+   proxy_cache_lock_timeout time;  
+   设置缓存锁功能开启以后锁的超时时间，默认为5  
+   proxy_cache_min_uses number;  
+   设置客户请求发送的次数，当客户端向被代理服务器发送相同请求到达一定的次数后，nginx才对请求进行缓存，默认为1  
+   proxy_cache_path path [levels=levels] keys_zone=name:size [inactive=time] [max_size=size2] [loader_files=number] [loader_sleep=time2] [loader_threshold=time3];  
+   设置nginx服务器存储数据的路径以及和缓存索引相关的内容  
+   path 设置缓存数据存放的根路径，此路径必须存在  
+   levels 设置相对于path指定目录的第几级hash目录中缓存数据  
+   name:size1 用于设置存放缓存索引的内存区域的名称和大小  
+   time1 设置强制更新缓存数据的时间默认为10s  
+   size2 设置硬盘中缓存数据的大小限制  
+   number 设置缓存索引重建进程每次加载的数据袁术的数量上限，默认为100  
+   time2 设置缓存索引重建进程在一次遍历结束，下一次遍历开始之间的暂停时间，默认为50ms  
+   time3 设置遍历一次磁盘缓存源数据的时间上限，默认为200ms  
+   eg:  
+      proxy_cache_path /home/cache levels=1:2 keys_zone=cache_one:200m inactive=1d max_size=30g;  
+  
+   proxy_cache_use_stale error|timeout|invalid_header|updating|http_500|http_502|http_503|http_504|http_404 | off .....;  
+   设置nginx在访问被代理服务器过程中出现被代理服务器无法访问或者访问错误等现象时，nginx服务器可以使用历史缓存响应客户端，该指令默认为off  
+  
+   proxy_cache_valid [ code ....] time;  
+   设置对不同的HTTP响应状态设置不同的缓存时间  
+   code 设置响应状态，nginx 职位http状态代码为200 301  302做缓存，可以使用any表示所有该指令中为设置的其他响应数据  
+   time 设置缓存时间  
+   eg:  
+      proxy_cache_valid 200 302 1h;  
+      proxy_cache_valid 301 1h;  
+      proxy_cache_valid any 1m;  
+  
+   proxy_no_cache string;  
+   设置什么情况下不使用cache  
 </code></pre>
 
                       
@@ -660,7 +662,7 @@ location /proxy_path {
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -883,6 +885,8 @@ location /proxy_path {
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -905,7 +909,9 @@ location /proxy_path {
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -937,7 +943,7 @@ location /proxy_path {
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

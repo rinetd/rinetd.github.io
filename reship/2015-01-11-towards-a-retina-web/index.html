@@ -255,7 +255,7 @@
 
 <p>CSS pixel是浏览器使用的抽象单位，用来精确的、统一的绘制网页内容。通常，CSS pixels被称为与设备无关的像素（DIPs,device-independent pixels）。在标准密度显示器（standard-density displays）上，1 CSS pixel对应一个物理像素。</p>
 
-<pre><code>&lt;div height=&quot;200&quot; width=&quot;300&quot;&gt;&lt;/div&gt;
+<pre><code>&lt;div height=&quot;200&quot; width=&quot;300&quot;&gt;&lt;/div&gt;  
 </code></pre>
 
 <p>在标准密度显示器上，上面的<code>div</code>会占据200 * 300 个物理像素。而在Retina显示器上，为了保持相同的物理大小，上面的<code>div</code>需要用400 * 600 个物理像素来渲染，如下图：</p>
@@ -296,7 +296,7 @@
 
 <p>最简单的方式就是使用<code>img</code>标签的<code>width</code>和<code>height</code>属性：</p>
 
-<pre><code>&lt;img src=&quot;example@2x.png&quot; width=&quot;200&quot; height=&quot;300&quot; /&gt;
+<pre><code>&lt;img src=&quot;example@2x.png&quot; width=&quot;200&quot; height=&quot;300&quot; /&gt;  
 </code></pre>
 
 <p>需要说明：虽然指定图片高度是可选的，但是声明高度的好处是，浏览器会在图片加载之前预留出相应的位置，这就避免了图片加载完成后页面布局发生变化。</p>
@@ -305,91 +305,93 @@
 
 <p>利用jQuery，可以这样写：</p>
 
-<pre><code>$(window).load(function() {
-  var images = $('img');
-    images.each(function(i) {
-      $(this).width($(this).width() / 2);
-    });
-});
+<pre><code>$(window).load(function() {  
+  var images = $('img');  
+    images.each(function(i) {  
+      $(this).width($(this).width() / 2);  
+    });  
+});  
 </code></pre>
 
 <p>###通过CSS（SCSS）</p>
 
 <p>如果你想把有关样式的代码都放到css里的话，那么最常见的方法就是使用HTML元素的背景替换<code>img</code>标签，然后指定<code>background-size</code>属性。你可以明确指定背景图片的宽度和高度，或者是在指定了HTML元素的宽高的前提下使用<code>background-size: contain</code>。需要注意的是IE7、8不支持<code>background-size</code></p>
 
-<pre><code>.image {
-  background-image: url(example@2x.png);
-  background-size: 200px 300px;
-  /* 或者是用 background-size: contain; */
-  height: 300px;
-  width: 200px;
-}
+<pre><code>.image {  
+  background-image: url(example@2x.png);  
+  background-size: 200px 300px;  
+  /* 或者是用 background-size: contain; */  
+  height: 300px;  
+  width: 200px;  
+}  
 </code></pre>
 
 <p>还可以通过<code>:before</code>或者<code>:after</code>伪元素来实现：</p>
 
-<pre><code>.image-container:before {
-  background-image: url(example@2x.png);
-  background-size: 200px 300px;
-  content:'';
-  display: block;
-  height: 300px;
-  width: 200px;
-}
+<pre><code>.image-container:before {  
+  background-image: url(example@2x.png);  
+  background-size: 200px 300px;  
+  content:'';  
+  display: block;  
+  height: 300px;  
+  width: 200px;  
+}  
 </code></pre>
 
 <p>该技术对CSS sprite同样适用，因为<code>background-position</code>指定的值是相对于CSS 大小的（在这里就是 200px * 300px）:</p>
 
-<pre><code>.icon {
-  background-image: url(example@2x.png);
-  background-size: 200px 300px;
-  height: 25px;
-  width: 25px;
-  &amp;.trash {
-    background-position: 25px 0;
-  }
-  &amp;.edit {
-    background-position: 25px 25px;
-  }
-}
+<pre><code>.icon {  
+  background-image: url(example@2x.png);  
+  background-size: 200px 300px;  
+  height: 25px;  
+  width: 25px;  
+  &amp;.trash {  
+    background-position: 25px 0;  
+  }  
+  &amp;.edit {  
+    background-position: 25px 25px;  
+  }  
+}  
 </code></pre>
 
 <p>方案一的优势：</p>
 
 <ul>
-<li>容易实现</li>
-<li>跨浏览器兼容</li>
+<li>容易实现<br /></li>
+<li>跨浏览器兼容<br />
+<br /></li>
 </ul>
 
 <p>方案一的不足：</p>
 
 <ul>
-<li>非Retina设备需要下载Retina资源</li>
-<li>在标准密度屏幕上Downsampled的图片可能会丢失一些锐利度</li>
-<li>IE7、8不支持<code>background-size</code></li>
+<li>非Retina设备需要下载Retina资源<br /></li>
+<li>在标准密度屏幕上Downsampled的图片可能会丢失一些锐利度<br /></li>
+<li>IE7、8不支持<code>background-size</code><br />
+<br /></li>
 </ul>
 
-<p>##方案二：查询像素密度
+<p>##方案二：查询像素密度<br />
 应对Retina最流行的方式应该就是通过查询像素密度，然后针对不同密度提供不同的资源。该方案可以用CSS或javascript来实现。</p>
 
-<p>###通过CSS媒体查询
+<p>###通过CSS媒体查询<br />
 大多数浏览器都以私有前缀实现了<code>device-pixel-ratio</code>，以及它的俩兄弟<code>min-device-pixel-ratio</code> 和 <code>max-device-pixel-ratio</code>。媒体查询再结合<code>background-image</code>：</p>
 
-<pre><code>.icon {
-  background-image: url(example.png);
-  background-size: 200px 300px;
-  height: 300px;
-  width: 200px;
-}
+<pre><code>.icon {  
+  background-image: url(example.png);  
+  background-size: 200px 300px;  
+  height: 300px;  
+  width: 200px;  
+}  
 
-@media only screen and (-Webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5) {
-  .icon {
-    background-image: url(example@2x.png);
-  }
-}
+@media only screen and (-Webkit-min-device-pixel-ratio: 1.5),  
+only screen and (-moz-min-device-pixel-ratio: 1.5),  
+only screen and (-o-min-device-pixel-ratio: 3/2),  
+only screen and (min-device-pixel-ratio: 1.5) {  
+  .icon {  
+    background-image: url(example@2x.png);  
+  }  
+}  
 </code></pre>
 
 <p>这里使用的比率是1.5而不是2，这样该媒体查询还可以覆盖一些非苹果设备。</p>
@@ -397,32 +399,34 @@ only screen and (min-device-pixel-ratio: 1.5) {
 <p>CSS媒体查询优势：</p>
 
 <ul>
-<li>设备只需下载相匹配的资源</li>
-<li>跨浏览器兼容</li>
-<li>像素级精确控制</li>
+<li>设备只需下载相匹配的资源<br /></li>
+<li>跨浏览器兼容<br /></li>
+<li>像素级精确控制<br />
+<br /></li>
 </ul>
 
 <p>CSS媒体查询不足：</p>
 
 <ul>
-<li>代码冗长，尤其是大网站</li>
-<li>把应该由<code>img</code>标签展示的图片转化为背景图片属于语义错误。</li>
+<li>代码冗长，尤其是大网站<br /></li>
+<li>把应该由<code>img</code>标签展示的图片转化为背景图片属于语义错误。<br />
+<br /></li>
 </ul>
 
 <p>###通过javascript</p>
 
 <p>像素密度可以通过javascript的<code>window.devicePixelRatio</code>来查询(注意：不是所有浏览器都支持<code>devicePixelRatio</code>)。一旦检测到高密度显示器，你就可以用高质量图片替换普通图片：</p>
 
-<pre><code>$(document).ready(function(){
-  if (window.devicePixelRatio &gt; 1) {
-    var lowresImages = $('img');
-    images.each(function(i) {
-      var lowres = $(this).attr('src');
-      var highres = lowres.replace(&quot;.&quot;, &quot;@2x.&quot;);
-      $(this).attr('src', highres);
-    });
-  }
-});
+<pre><code>$(document).ready(function(){  
+  if (window.devicePixelRatio &gt; 1) {  
+    var lowresImages = $('img');  
+    images.each(function(i) {  
+      var lowres = $(this).attr('src');  
+      var highres = lowres.replace(&quot;.&quot;, &quot;@2x.&quot;);  
+      $(this).attr('src', highres);  
+    });  
+  }  
+});  
 </code></pre>
 
 <p><a href="http://retinajs.com/">Retina.js</a>是一个js插件，原理类似，但是有一些额外功能，例如：忽略外部图片等等。</p>
@@ -430,76 +434,79 @@ only screen and (min-device-pixel-ratio: 1.5) {
 <p>通过javascript查询的优势：</p>
 
 <ul>
-<li>容易实现</li>
-<li>非Retina设备无需下载大尺寸图片</li>
-<li>像素级精确控制</li>
+<li>容易实现<br /></li>
+<li>非Retina设备无需下载大尺寸图片<br /></li>
+<li>像素级精确控制<br />
+<br /></li>
 </ul>
 
 <p>通过javascript查询的不足：</p>
 
 <ul>
-<li>Retina设备不得不下载标准图片和高质量图片</li>
-<li>图片替换的过程会被用户看到</li>
-<li>有一些浏览器不支持（例如IE和火狐）</li>
+<li>Retina设备不得不下载标准图片和高质量图片<br /></li>
+<li>图片替换的过程会被用户看到<br /></li>
+<li>有一些浏览器不支持（例如IE和火狐）<br />
+<br />
+<br /></li>
 </ul>
 
-<p>##方案三：SVG(Scalable Vector Graphics)
+<p>##方案三：SVG(Scalable Vector Graphics)<br />
 由于位图本身固有的性质，不可能无限制的缩放。而恰恰这是矢量图的优势所在。</p>
 
 <p>浏览器对svg的<a href="http://caniuse.com/#search=svg">兼容程度</a></p>
 
 <p>使用svg资源最直接的方式就是通过<code>img</code>标签或者CSS <code>background-image</code> 或者<code>content:url()</code>。</p>
 
-<pre><code>&lt;img src=&quot;example.svg&quot; width=&quot;200&quot; height=&quot;300&quot; /&gt;
+<pre><code>&lt;img src=&quot;example.svg&quot; width=&quot;200&quot; height=&quot;300&quot; /&gt;  
 </code></pre>
 
 <p>或是通过CSS:</p>
 
-<pre><code>/* 使用 background-image */
-.image {
-  background-image: url(example.svg);
-  background-size: 200px 300px;
-  height: 200px;
-  width: 300px;
-}
+<pre><code>/* 使用 background-image */  
+.image {  
+  background-image: url(example.svg);  
+  background-size: 200px 300px;  
+  height: 200px;  
+  width: 300px;  
+}  
 
-/* 使用 content:url() */
-.image-container:before {
-  content: url(example.svg);
-  /* width 和 height 对 content:url() 不起作用 */
-}
+/* 使用 content:url() */  
+.image-container:before {  
+  content: url(example.svg);  
+  /* width 和 height 对 content:url() 不起作用 */  
+}  
 </code></pre>
 
 <p>使用svg不仅可以节约宝贵的带宽资源，还可以使你的图片资源更容易维护。</p>
 
 <p>如果你需要支持IE7、8或是Android 2.x，那么你还需要一个fallback 方案：用对应的PNG资源替换SVG图片。通过<a href="http://modernizr.com/docs/#features-misc">Modernizr</a> 来做，很简单：</p>
 
-<pre><code>.image {
-  background-image: url(example.png);
-  background-size: 200px 300px;
-}
-.svg {
-  .image {
-    background-image: url(example.svg);
-  }
-}
+<pre><code>.image {  
+  background-image: url(example.png);  
+  background-size: 200px 300px;  
+}  
+.svg {  
+  .image {  
+    background-image: url(example.svg);  
+  }  
+}  
 </code></pre>
 
 <p>也可以通过html实现类似的fallback方案：给<code>img</code>标签添加自定义<code>data</code>属性：</p>
 
-<pre><code>&lt;img src=&quot;example.svg&quot; data-png-fallback=&quot;example.png&quot; /&gt;
+<pre><code>&lt;img src=&quot;example.svg&quot; data-png-fallback=&quot;example.png&quot; /&gt;  
 </code></pre>
 
 <p>然后，剩下的就交给jQuery和Modernizr</p>
 
-<pre><code>$(document).ready(function(){
-  if(!Modernizr.svg) {
-    var images = $('img[data-png-fallback]');
-    images.each(function(i) {
-      $(this).attr('src', $(this).data('png-fallback'));
-    });
-  }
-});
+<pre><code>$(document).ready(function(){  
+  if(!Modernizr.svg) {  
+    var images = $('img[data-png-fallback]');  
+    images.each(function(i) {  
+      $(this).attr('src', $(this).data('png-fallback'));  
+    });  
+  }  
+});  
 </code></pre>
 
 <p>通过html实现的fallback方案缺点就是：不支持svg的浏览器也会下载svg资源。</p>
@@ -507,17 +514,19 @@ only screen and (min-device-pixel-ratio: 1.5) {
 <p>方案三的优势：</p>
 
 <ul>
-<li>所有设备用同一套资源</li>
-<li>容易维护</li>
-<li>应对未来的变化：可以无限缩放</li>
+<li>所有设备用同一套资源<br /></li>
+<li>容易维护<br /></li>
+<li>应对未来的变化：可以无限缩放<br />
+<br /></li>
 </ul>
 
 <p>方案三的不足：</p>
 
 <ul>
-<li>由于anti-aliasing，所以不能精确到像素</li>
-<li>不适合复杂的的图像，因为图片体积会非常大</li>
-<li>IE7、8以及早期android没有原生支持svg</li>
+<li>由于anti-aliasing，所以不能精确到像素<br /></li>
+<li>不适合复杂的的图像，因为图片体积会非常大<br /></li>
+<li>IE7、8以及早期android没有原生支持svg<br />
+<br /></li>
 </ul>
 
 <p>##方案四：Icon Fonts</p>
@@ -530,52 +539,55 @@ only screen and (min-device-pixel-ratio: 1.5) {
 
 <p>网页中使用icon fonts 最常见的方式是给特定的HTML元素(通常是<code>&lt;span&gt;</code>或<code>&lt;i&gt;</code>)赋予<code>.icon</code> 或<code>.glyph</code> class,然后使用icon对应的字符作为内容：</p>
 
-<pre><code>&lt;span class=&quot;icon&quot;&gt;a&lt;/span&gt;
+<pre><code>&lt;span class=&quot;icon&quot;&gt;a&lt;/span&gt;  
 </code></pre>
 
 <p>通过<code>@font-face</code>引入了自定义font后，用下面的方式使用：</p>
 
-<pre><code>.icon {
-  font-family: 'My Icon Font';
-}
+<pre><code>.icon {  
+  font-family: 'My Icon Font';  
+}  
 </code></pre>
 
 <p>另一种方式是使用<code>:before</code>伪元素和<code>content</code>属性，每个icon对应一个class：</p>
 
-<pre><code>&lt;span class=&quot;glyph-heart&quot;&gt;&lt;/span&gt;
+<pre><code>&lt;span class=&quot;glyph-heart&quot;&gt;&lt;/span&gt;  
 </code></pre>
 
 <p>CSS:</p>
 
-<pre><code>[class^=&quot;glyph-&quot;]:before {
-  font-family: 'My Icon Font';
-}
-.glyph-heart:before {
-  content: 'h';
-}
+<pre><code>[class^=&quot;glyph-&quot;]:before {  
+  font-family: 'My Icon Font';  
+}  
+.glyph-heart:before {  
+  content: 'h';  
+}  
 </code></pre>
 
 <p>方案四的优势：</p>
 
 <ul>
-<li>应对未来的变化：可以无限制缩放</li>
-<li>跨浏览器</li>
-<li>比图片资源更灵活：可以用在placeholder文本里以及其他form元素中</li>
+<li>应对未来的变化：可以无限制缩放<br /></li>
+<li>跨浏览器<br /></li>
+<li>比图片资源更灵活：可以用在placeholder文本里以及其他form元素中<br />
+<br /></li>
 </ul>
 
 <p>方案四的不足：</p>
 
 <ul>
-<li>由于anti-aliasing，所以不能精确到像素</li>
-<li>比较难维护：修改一个icon就需要重新生成整个font</li>
-<li>依赖语义错误的标签（除非是用<code>:before</code> 或<code>:after</code>伪元素）</li>
+<li>由于anti-aliasing，所以不能精确到像素<br /></li>
+<li>比较难维护：修改一个icon就需要重新生成整个font<br /></li>
+<li>依赖语义错误的标签（除非是用<code>:before</code> 或<code>:after</code>伪元素）<br />
+<br />
+<br /></li>
 </ul>
 
-<p>##Favicons
-Favicons也获得了它应有的关注度，越来越多的应用于浏览器之外，用作网站或应用的图标。
+<p>##Favicons<br />
+Favicons也获得了它应有的关注度，越来越多的应用于浏览器之外，用作网站或应用的图标。<br />
 要想适配Retina，需要导出两版.ico文件，16 * 16像素 和 32 * 32像素。</p>
 
-<p>##一睹未来
+<p>##一睹未来<br />
 除了上面提到的几种技术，还有一些技术值得关注：</p>
 
 <ul>
@@ -583,24 +595,24 @@ Favicons也获得了它应有的关注度，越来越多的应用于浏览器之
 
 <p>例如：</p>
 
-<pre><code>.image {
-  background-image: -Webkit-image-set(url(example.png) 1x, url(example@2x.png) 2x);
-  background-size: 200px 300px;
-}
+<pre><code>.image {  
+  background-image: -Webkit-image-set(url(example.png) 1x, url(example@2x.png) 2x);  
+  background-size: 200px 300px;  
+}  
 </code></pre></li>
 
 <li><p><a href="https://github.com/scottjehl/picturefill">Picturefill</a>是一个html+js解决方案，大量使用<code>data</code>属性和媒体查询，来给不同的媒体上下文提供不同的图片。</p>
 
 <p>例如：</p>
 
-<pre><code>&lt;div data-picture&gt;
-    &lt;div data-src=&quot;example.png&quot;&gt;&lt;/div&gt;
-    &lt;div data-src=&quot;example@2x.png&quot; data-media=&quot;(min-device-pixel-ratio: 1.5)&quot;&gt;&lt;/div&gt;
-&lt;!-- Fallback content for non-JS browsers --&gt;
-&lt;noscript&gt;
-    &lt;img src=&quot;example.png&quot; &gt;
-&lt;/noscript&gt;
-&lt;/div&gt;
+<pre><code>&lt;div data-picture&gt;  
+    &lt;div data-src=&quot;example.png&quot;&gt;&lt;/div&gt;  
+    &lt;div data-src=&quot;example@2x.png&quot; data-media=&quot;(min-device-pixel-ratio: 1.5)&quot;&gt;&lt;/div&gt;  
+&lt;!-- Fallback content for non-JS browsers --&gt;  
+&lt;noscript&gt;  
+    &lt;img src=&quot;example.png&quot; &gt;  
+&lt;/noscript&gt;  
+&lt;/div&gt;  
 </code></pre></li>
 </ul>
 
@@ -773,7 +785,7 @@ Favicons也获得了它应有的关注度，越来越多的应用于浏览器之
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -996,6 +1008,8 @@ Favicons也获得了它应有的关注度，越来越多的应用于浏览器之
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -1018,7 +1032,9 @@ Favicons也获得了它应有的关注度，越来越多的应用于浏览器之
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1050,7 +1066,7 @@ Favicons也获得了它应有的关注度，越来越多的应用于浏览器之
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

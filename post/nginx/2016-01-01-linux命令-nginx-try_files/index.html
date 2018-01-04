@@ -241,37 +241,37 @@
                   <div class="entry">
                     <div class="entry-inner">
                       
-                      <pre><code>try_files $uri/index.html $uri.html $uri @app;
-
-  location @app {
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header Host $http_host;
-
-    proxy_redirect off;
-
-    proxy_pass http://unicorn;
-
-    proxy_buffer_size 16k;
-    proxy_busy_buffers_size 16k;
-  }
-
-  error_page 500 502 503 504 /500.html;
+                      <pre><code>try_files $uri/index.html $uri.html $uri @app;  
+  
+  location @app {  
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;  
+    proxy_set_header Host $http_host;  
+  
+    proxy_redirect off;  
+  
+    proxy_pass http://unicorn;  
+  
+    proxy_buffer_size 16k;  
+    proxy_busy_buffers_size 16k;  
+  }  
+  
+  error_page 500 502 503 504 /500.html;  
 </code></pre>
 
-<p>Nginx的try_files指令使用实例
-IT运维
-编辑：优云小编
-2016-05-01 459 次围观
+<p>Nginx的try_files指令使用实例<br />
+IT运维<br />
+编辑：优云小编<br />
+2016-05-01 459 次围观<br />
 0</p>
 
 <p>blob.png</p>
 
-<p>Nginx的配置语法灵活，可控制度非常高。在0.7以后的版本中加入了一个try_files指令，配合命名location，可以部分替代原本常用的rewrite配置方式，提高解析效率。
+<p>Nginx的配置语法灵活，可控制度非常高。在0.7以后的版本中加入了一个try_files指令，配合命名location，可以部分替代原本常用的rewrite配置方式，提高解析效率。<br />
 try_files指令说明</p>
 
-<p>try_files指令
-语法：try_files file &hellip; uri 或 try_files file &hellip; = code
-默认值：无
+<p>try_files指令<br />
+语法：try_files file &hellip; uri 或 try_files file &hellip; = code<br />
+默认值：无<br />
 作用域：server location</p>
 
 <p>其作用是按顺序检查文件是否存在，返回第一个找到的文件或文件夹(结尾加斜线表示为文件夹)，如果所有的文件或文件夹都找不到，会进行一个内部重定向到最后一个参数。</p>
@@ -280,140 +280,140 @@ try_files指令说明</p>
 
 <p>try_files $uri $uri/ /index.php?q=$uri&amp;$args;</p>
 
-<p>实例分析
+<p>实例分析<br />
 示例一</p>
 
 <p>try_files 将尝试你列出的文件并设置内部文件指向。</p>
 
 <p>例如:</p>
 
-<p>try_files /app/cache/ $uri @fallback;
+<p>try_files /app/cache/ $uri @fallback;<br />
 index index.php index.html;</p>
 
-<p>它将检测document_root/app/cache/index.html 和 uri是否存在，如果不存在着内部重定向到@fallback(＠表示配置文件中预定义标记点) 。
-你也可以使用一个文件或者状态码(=404)作为最后一个参数，如果是最后一个参数是文件，那么这个文件必须存在。
+<p>它将检测document_root/app/cache/index.html 和 uri是否存在，如果不存在着内部重定向到@fallback(＠表示配置文件中预定义标记点) 。<br />
+你也可以使用一个文件或者状态码(=404)作为最后一个参数，如果是最后一个参数是文件，那么这个文件必须存在。<br />
 示例二</p>
 
 <p>例如nginx不解析PHP文件，以文本代码返回</p>
 
 <p>try_files $uri /cache.php @fallback;</p>
 
-<p>因为这个指令设置内部文件指向到 $document_root/cache.php 并返回,但没有发生内部重定向，因而没有进行location段处理而返回文本 。
-(如果加上index指令可以解析PHP是因为index会触发一个内部重定向)
+<p>因为这个指令设置内部文件指向到 $document_root/cache.php 并返回,但没有发生内部重定向，因而没有进行location段处理而返回文本 。<br />
+(如果加上index指令可以解析PHP是因为index会触发一个内部重定向)<br />
 示例三</p>
 
 <p>跳转到变量</p>
 
-<pre><code>  server {
-   listen 8000;
-   server_name 192.168.119.100;
-   root html;
-   index index.html index.php;
-
-   location /abc {
-       try_files /4.html /5.html @qwe;              #检测文件4.html和5.html,如果存在正常显示,不存在就去查找@qwe值
-  }
-
-   location @qwe  {
-      rewrite ^/(.*)$   http://www.baidu.com;       #跳转到百度页面
-   }
+<pre><code>  server {  
+   listen 8000;  
+   server_name 192.168.119.100;  
+   root html;  
+   index index.html index.php;  
+  
+   location /abc {  
+       try_files /4.html /5.html @qwe;              #检测文件4.html和5.html,如果存在正常显示,不存在就去查找@qwe值  
+  }  
+  
+   location @qwe  {  
+      rewrite ^/(.*)$   http://www.baidu.com;       #跳转到百度页面  
+   }  
 </code></pre>
 
 <p>示例四</p>
 
 <p>跳转指定文件</p>
 
-<pre><code>server {
-   listen 8000;
-   server_name 192.168.119.100;
-   root html;
-   index index.php index.html;
-
-   location /abc {
-       try_files /4.html /5.html /6.html;
-  }
+<pre><code>server {  
+   listen 8000;  
+   server_name 192.168.119.100;  
+   root html;  
+   index index.php index.html;  
+  
+   location /abc {  
+       try_files /4.html /5.html /6.html;  
+  }  
 </code></pre>
 
 <p>示例五</p>
 
 <p>将请求跳转到后端</p>
 
-<p>upstream tornado {
-        server 127.0.0.1:8001;
+<p>upstream tornado {<br />
+        server 127.0.0.1:8001;<br />
 }</p>
 
-<p>server {
-        server_name imike.me;
-        return 301 $scheme://www.imike.me$request_uri;
+<p>server {<br />
+        server_name imike.me;<br />
+        return 301 $scheme://www.imike.me$request_uri;<br />
 }</p>
 
-<p>server {
-        listen 80;
+<p>server {<br />
+        listen 80;<br />
         server_name www.imike.me;</p>
 
-<pre><code>    root /var/www/www.imike.me/V0.3/www;
-    index index.html index.htm;
+<pre><code>    root /var/www/www.imike.me/V0.3/www;  
+    index index.html index.htm;  
 
-    try_files $uri @tornado;
+    try_files $uri @tornado;  
 
-    location @tornado {
-            proxy_pass_essay-header Server;
-            proxy_set_essay-header Host $http_host;
-            proxy_set_essay-header X-Real-IP $remote_addr;
-            proxy_set_essay-header X-Scheme $scheme;
+    location @tornado {  
+            proxy_pass_essay-header Server;  
+            proxy_set_essay-header Host $http_host;  
+            proxy_set_essay-header X-Real-IP $remote_addr;  
+            proxy_set_essay-header X-Scheme $scheme;  
 
-            proxy_pass http://tornado;
-    }
+            proxy_pass http://tornado;  
+    }  
 </code></pre>
 
 <p>}</p>
 
-<p>常见错误
+<p>常见错误<br />
 常见错误一</p>
 
 <p>try_files 按顺序检查文件是否存在，返回第一个找到的文件，至少需要两个参数，但最后一个是内部重定向也就是说和rewrite效果一致，前面的值是相对$document_root的文件路径。也就是说参数的意义不同，甚至可以用一个状态码 (404)作为最后一个参数。如果不注意会有死循环造成500错误。</p>
 
-<p>location ~.*.(gif|jpg|jpeg|png)$ {
-        root /web/wwwroot;
-        try_files /static/$uri $uri;
+<p>location ~.*.(gif|jpg|jpeg|png)$ {<br />
+        root /web/wwwroot;<br />
+        try_files /static/$uri $uri;<br />
 }</p>
 
 <p>原意图是访问<a href="http://example.com/test.jpg时先去检查/web/wwwroot/static/test.jpg是否存在，不存在就取/web/wwwroot/test.jpg">http://example.com/test.jpg时先去检查/web/wwwroot/static/test.jpg是否存在，不存在就取/web/wwwroot/test.jpg</a></p>
 
 <p>但由于最后一个参数是一个内部重定向，所以并不会检查/web/wwwroot/test.jpg是否存在，只要第一个路径不存在就会重新向然后再进入这个location造成死循环。结果出现500 Internal Server Error</p>
 
-<p>location ~.*.(gif|jpg|jpeg|png)$ {
-        root /web/wwwroot;
-        try_files /static/$uri $uri 404;
+<p>location ~.*.(gif|jpg|jpeg|png)$ {<br />
+        root /web/wwwroot;<br />
+        try_files /static/$uri $uri 404;<br />
 }</p>
 
-<p>这样才会先检查/web/wwwroot/static/test.jpg是否存在，不存在就取/web/wwwroot/test.jpg再不存在则返回404 not found
+<p>这样才会先检查/web/wwwroot/static/test.jpg是否存在，不存在就取/web/wwwroot/test.jpg再不存在则返回404 not found<br />
 常见错误二</p>
 
 <p>Nginx try_files $query_string为空的解决办法</p>
 
-<p>server {
-    listen 80;
-    server_name localhost.dev;
-    index index.php index.html index.htm;
-    set $root_path &lsquo;/var/www/phalcon/public&rsquo;;
-    root $root_path;
-    location / {
-        try_files $uri $uri/ /index.php;
-    }
-    location ~ .php$ {
-        try_files $uri =404;
-        fastcgi_split_path_info ^(.+.php)(/.+)$;
-        fastcgi_pass 127.0.0.1:9000;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; include fastcgi_params;
-    }
-    location ~* ^/(css|img|js|flv|swf|download)/(.+)$ {
-        root $root_path;
-    }
-    location ~ /.ht {
-        deny all;
-    }
+<p>server {<br />
+    listen 80;<br />
+    server_name localhost.dev;<br />
+    index index.php index.html index.htm;<br />
+    set $root_path &lsquo;/var/www/phalcon/public&rsquo;;<br />
+    root $root_path;<br />
+    location / {<br />
+        try_files $uri $uri/ /index.php;<br />
+    }<br />
+    location ~ .php$ {<br />
+        try_files $uri =404;<br />
+        fastcgi_split_path_info ^(.+.php)(/.+)$;<br />
+        fastcgi_pass 127.0.0.1:9000;<br />
+        fastcgi_index index.php;<br />
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; include fastcgi_params;<br />
+    }<br />
+    location ~* ^/(css|img|js|flv|swf|download)/(.+)$ {<br />
+        root $root_path;<br />
+    }<br />
+    location ~ /.ht {<br />
+        deny all;<br />
+    }<br />
 }</p>
 
 <p>发现PHP无法获取$_GET信息</p>
@@ -591,7 +591,7 @@ index index.php index.html;</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -814,6 +814,8 @@ index index.php index.html;</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -836,7 +838,9 @@ index index.php index.html;</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -868,7 +872,7 @@ index index.php index.html;</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

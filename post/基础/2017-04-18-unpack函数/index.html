@@ -239,13 +239,13 @@
                       
                       <p>摘要: PHP作为一门为web而生的服务器端开发语言，被越来越多的公司所采用。其中不乏大公司，如腾迅、盛大、淘米、新浪等。在对性能要求比较高的项目中，PHP也逐渐演变成一门前端语言，用于访问后端接口。或者不同项目之间需要共享数据的时候，通常可以抽取出数据层，通过PHP来访问。</p>
 
-<p>PHP作为一门为web而生的服务器端开发语言，被越来越多的公司所采用。其中不乏大公司，如腾迅、盛大、淘米、新浪等。在对性能要求比较高的项目中，PHP也逐渐演变成一门前端语言，用于访问后端接口。或者不同项目之间需要共享数据的时候，通常可以抽取出数据层，通过PHP来访问。
+<p>PHP作为一门为web而生的服务器端开发语言，被越来越多的公司所采用。其中不乏大公司，如腾迅、盛大、淘米、新浪等。在对性能要求比较高的项目中，PHP也逐渐演变成一门前端语言，用于访问后端接口。或者不同项目之间需要共享数据的时候，通常可以抽取出数据层，通过PHP来访问。<br />
 写在前面的话</p>
 
-<p>本文介绍的是通过二进制数据包的方式通信，演示语言为PHP和Golang。PHP提供了pack/unpack函数来进行二进制打包和二进制解包。在具体讲解之前，我们先来了解一些基础知识。
+<p>本文介绍的是通过二进制数据包的方式通信，演示语言为PHP和Golang。PHP提供了pack/unpack函数来进行二进制打包和二进制解包。在具体讲解之前，我们先来了解一些基础知识。<br />
 什么是字节序</p>
 
-<p>在不同的计算机体系结构中，对于数据(比特、字节、字)等的存储和传输机制有所不同，因而引发了计算机领域中一个潜在但是又很重要的问题，即通信双方交流的信息单元应该以什么样的顺序进行传送。如果达不成一致的规则，计算机的通信与存储将会无法进行。目前在各种体系的计算机中通常采用的字节存储机制主要有两种：大端(Big-endian)和小端(Little-endian)。这里所说的大端和小端即是字节序。
+<p>在不同的计算机体系结构中，对于数据(比特、字节、字)等的存储和传输机制有所不同，因而引发了计算机领域中一个潜在但是又很重要的问题，即通信双方交流的信息单元应该以什么样的顺序进行传送。如果达不成一致的规则，计算机的通信与存储将会无法进行。目前在各种体系的计算机中通常采用的字节存储机制主要有两种：大端(Big-endian)和小端(Little-endian)。这里所说的大端和小端即是字节序。<br />
 MSB和LSB</p>
 
 <p>MSB是Most Significant Bit/Byte的首字母缩写，通常译为最重要的位或最重要的字节。它通常用来表示在一个bit序列(如一个byte是8个bit组成的一个序列)或一个byte序列(如word是两个byte组成的一个序列)中对整个序列取值影响最大的那个bit/byte。</p>
@@ -330,57 +330,57 @@ MSB和LSB</p>
 
 <p>a和A都是用来打包字符串的，它们的唯一区别就是当小于定长时的填充方式。a以NULL填充，NULL事实上是&rsquo;\0&rsquo;的表示，代表空字节，8个位上全是0。A以空格填充，空格也即ASCII码为32的字符。这里有一个关于填充的使用场景的例子：请求登录的数据包规定用户名不超过20个字节，密码经过md5加密后是固定的32个字节。用户名就是变长的，为了便于服务器端读取和处理，通常会填充成定长。当然，这只是使用的方式之一，事实上还可以用变长的方式传递数据包，但这不在本文的探讨范围内。字符串有一点麻烦的是编码问题，尤其是在跟不同的平台通信时更为突出。比如在用pack进行打包字符串时，事实上是将字符内部的编码打包进去。单字节字符就没有问题，因为单字节在所有平台上都是一致的。来看个例子(pack.php)：</p>
 
-<p>&lt;?php
-$bin = pack(&ldquo;a&rdquo;, &ldquo;d&rdquo;);
-echo &ldquo;output: &ldquo; . $bin . &ldquo;\n&rdquo;;
+<p>&lt;?php<br />
+$bin = pack(&ldquo;a&rdquo;, &ldquo;d&rdquo;);<br />
+echo &ldquo;output: &ldquo; . $bin . &ldquo;\n&rdquo;;<br />
 echo &ldquo;output: 0x&rdquo; . bin2hex($bin) . &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
-output: d
+<p>$ php -f pack.php<br />
+output: d<br />
 output: 0x64</p>
 
 <p>$bin是返回的二进制字符，您可以直接输出它，PHP知道如何处理。通过bin2hex方法将$bin转换成十六进制可以知道，十六进制0x64表示的是字符d。对于中文字符(多字节字符)来说，通常有GBK编码、BIG5编码以及UTF8编码等。比如在GBK编码中，一个中文字符采用2个字节来表示；在UTF8编码中，一个中文字符采用3个字节来表示。这通常需要协商采用统一的编码，否则会由于内部的表示不一致导致无法处理。在PHP中只要将文件保存为特定的编码格即可，其它语言可能跟操作系统相关，因此或许需要编码转换。本文的例子一概基于UTF8编码。继续来看个例子：</p>
 
-<p>&lt;?php
-$bin = pack(&ldquo;a3&rdquo;, &ldquo;中&rdquo;);
-echo &ldquo;output: 0x&rdquo; . bin2hex($bin) . &ldquo;\n&rdquo;;
-echo &ldquo;output: &ldquo; . chr(0xe4) . chr(0xb8) . chr(0xad) . &ldquo;\n&rdquo;;
+<p>&lt;?php<br />
+$bin = pack(&ldquo;a3&rdquo;, &ldquo;中&rdquo;);<br />
+echo &ldquo;output: 0x&rdquo; . bin2hex($bin) . &ldquo;\n&rdquo;;<br />
+echo &ldquo;output: &ldquo; . chr(0xe4) . chr(0xb8) . chr(0xad) . &ldquo;\n&rdquo;;<br />
 echo &ldquo;output: &ldquo; . $bin{0} . $bin{1} . $bin{2} . &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
-output: 0xe4b8ad
-output: 中
+<p>$ php -f pack.php<br />
+output: 0xe4b8ad<br />
+output: 中<br />
 output: 中</p>
 
 <p>您可能会觉得很奇怪，后面2个输出是一样的。ASCII码表示单字节字符(其中包括英文字母、数字、英文标点符号、不可见字符以及控制字符等等)，它总是小于0x80，即小于十进制的128。当在处理字符时，如果字节小于0x80，则把它当作单字节来处理，否则会继续读取下一个字节，这通常跟编码有关，GBK会将2个字节当成一个字符来处理，UTF8则需要3个字节。有时候在PHP中需要做类似的处理，比如计算字符串中字符的个数(字符串可能包含单字节和多字节)，strlen方法只能计算字节数，而mb_strlen需要开启扩展。类似这样的需求，其实很容易处理：</p>
 
-<p>&lt;?php
-function mbstrlen($str)
-{
+<p>&lt;?php<br />
+function mbstrlen($str)<br />
+{<br />
  $len = strlen($str);</p>
 
-<p>if ($len &lt;= 0)
- {
-   return 0;
+<p>if ($len &lt;= 0)<br />
+ {<br />
+   return 0;<br />
  }</p>
 
 <p>$count  = 0;</p>
 
-<p>for ($i = 0; $i &lt; $len; $i++)
- {
-   $count++;
-   if (ord($str{$i}) &gt;= 0x80)
-   {
-     $i += 2;
-   }
+<p>for ($i = 0; $i &lt; $len; $i++)<br />
+ {<br />
+   $count++;<br />
+   if (ord($str{$i}) &gt;= 0x80)<br />
+   {<br />
+     $i += 2;<br />
+   }<br />
  }</p>
 
-<p>return $count;
+<p>return $count;<br />
 }</p>
 
 <p>echo &ldquo;output: &ldquo; . mbstrlen(&ldquo;中国so强大！&rdquo;) . &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
+<p>$ php -f pack.php<br />
 output: 7</p>
 
 <p>以上代码的实现就是利用单字节字符的ASCII码小于0x80。至于要跳过几个字节，这要看具体是什么编码。接下来通过例子来看看a和A的区别：</p>
@@ -395,69 +395,69 @@ output: 7</p>
 
 <p>package main</p>
 
-<p>import (
- &ldquo;fmt&rdquo;
- &ldquo;net&rdquo;
+<p>import (<br />
+ &ldquo;fmt&rdquo;<br />
+ &ldquo;net&rdquo;<br />
 )</p>
 
 <p>const BUF_SIZE = 20</p>
 
-<p>func handleConnection(conn net.Conn) {
- defer conn.Close()
- buf := make([]byte, BUF_SIZE)
+<p>func handleConnection(conn net.Conn) {<br />
+ defer conn.Close()<br />
+ buf := make([]byte, BUF_SIZE)<br />
  n, err := conn.Read(buf)</p>
 
-<p>if err != nil {
-   fmt.Printf(&ldquo;err: %v\n&rdquo;, err)
-   return
+<p>if err != nil {<br />
+   fmt.Printf(&ldquo;err: %v\n&rdquo;, err)<br />
+   return<br />
  }</p>
 
-<p>fmt.Printf(&rdquo;\n已接收：%d个字节，数据是：&rsquo;%s&rsquo;\n&rdquo;, n, string(buf))
+<p>fmt.Printf(&rdquo;\n已接收：%d个字节，数据是：&rsquo;%s&rsquo;\n&rdquo;, n, string(buf))<br />
 }</p>
 
-<p>func main() {
+<p>func main() {<br />
  ln, err := net.Listen(&ldquo;tcp&rdquo;, &ldquo;:9872&rdquo;)</p>
 
-<p>if err != nil {
-   fmt.Printf(&ldquo;error: %v\n&rdquo;, err)
-   return
+<p>if err != nil {<br />
+   fmt.Printf(&ldquo;error: %v\n&rdquo;, err)<br />
+   return<br />
  }</p>
 
-<p>for {
-   conn, err := ln.Accept()
-   if err != nil {
-     continue
-   }
-   go handleConnection(conn)
- }
+<p>for {<br />
+   conn, err := ln.Accept()<br />
+   if err != nil {<br />
+     continue<br />
+   }<br />
+   go handleConnection(conn)<br />
+ }<br />
 }</p>
 
 <p>代码很简单，收到数据，然后输出。</p>
 
 <p>pack.php</p>
 
-<p>&lt;?php
-$host = &ldquo;127.0.0.1&rdquo;;
+<p>&lt;?php<br />
+$host = &ldquo;127.0.0.1&rdquo;;<br />
 $port = &ldquo;9872&rdquo;;</p>
 
-<p>$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)
+<p>$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)<br />
  or die(&ldquo;Unable to create socket\n&rdquo;);</p>
 
 <p>@socket_connect($socket, $host, $port) or die(&ldquo;Connect error.\n&rdquo;);</p>
 
-<p>if ($err = socket_last_error($socket))
+<p>if ($err = socket_last_error($socket))<br />
 {</p>
 
-<p>socket_close($socket);
- die(socket_strerror($err) . &ldquo;\n&rdquo;);
+<p>socket_close($socket);<br />
+ die(socket_strerror($err) . &ldquo;\n&rdquo;);<br />
 }</p>
 
-<p>$binarydata = pack(&ldquo;a20&rdquo;, &ldquo;中国强大&rdquo;);
-$len = socket_write ($socket , $binarydata, strlen($binarydata));
+<p>$binarydata = pack(&ldquo;a20&rdquo;, &ldquo;中国强大&rdquo;);<br />
+$len = socket_write ($socket , $binarydata, strlen($binarydata));<br />
 socket_close($socket);</p>
 
-<p>$ cd $GOPATH/src/pack_test
-$ go build
+<p>$ cd $GOPATH/src/pack_test<br />
+$ go build<br />
 $ ./pack_test</p>
 
 <p>$ php -f pack.php</p>
@@ -468,24 +468,24 @@ $ ./pack_test</p>
 
 <p>以上的输出中，单引号不是数据的一部分，只是为了便于观察。很明显，我们打包的字符串只占12字节，a20表示20个a，您当然可以连续写20个a，但我想您不会这么傻。如果是a*的话，则表示任意多个a。通过服务器端的输出来看，PHP发送了20个字节过去，服务器端也接收了20个字节，但因为填充的\0是空字符，所以您不会看到有什么不一样的地方。现在我们将a20换成A20，代码如下：</p>
 
-<p>&lt;?php
-$host = &ldquo;127.0.0.1&rdquo;;
+<p>&lt;?php<br />
+$host = &ldquo;127.0.0.1&rdquo;;<br />
 $port = &ldquo;9872&rdquo;;</p>
 
-<p>$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)
+<p>$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)<br />
  or die(&ldquo;Unable to create socket\n&rdquo;);</p>
 
 <p>@socket_connect($socket, $host, $port) or die(&ldquo;Connect error.\n&rdquo;);</p>
 
-<p>if ($err = socket_last_error($socket))
+<p>if ($err = socket_last_error($socket))<br />
 {</p>
 
-<p>socket_close($socket);
- die(socket_strerror($err) . &ldquo;\n&rdquo;);
+<p>socket_close($socket);<br />
+ die(socket_strerror($err) . &ldquo;\n&rdquo;);<br />
 }</p>
 
-<p>$binarydata = pack(&ldquo;A20&rdquo;, &ldquo;中国强大&rdquo;);
-$len = socket_write ($socket , $binarydata, strlen($binarydata));
+<p>$binarydata = pack(&ldquo;A20&rdquo;, &ldquo;中国强大&rdquo;);<br />
+$len = socket_write ($socket , $binarydata, strlen($binarydata));<br />
 socket_close($socket);</p>
 
 <p>$ php -f pack.php</p>
@@ -498,79 +498,79 @@ socket_close($socket);</p>
 
 <p>h和H的描述看起来有些奇怪。它们都是读取十进制，以十六进制方式读取，以半字节(4位)为单位。这听起来有些拗口，还是以实例来说明：</p>
 
-<p>&lt;?php
+<p>&lt;?php<br />
 echo &ldquo;output: &ldquo; . pack(&ldquo;H&rdquo;, 0x5) . &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
+<p>$ php -f pack.php<br />
 output: P</p>
 
 <p>首先是读取十进制，所以0x5会转成十进制的5，然后以半字节为单位并且以十六进制方式读取，为了补足8位，所以需要在5后面补0，变成0x50。别忘了十六进制的一位相当于二进制的四位。0x50正好是字符P的ASCII码。</p>
 
-<p>&lt;?php
+<p>&lt;?php<br />
 echo &ldquo;output: &ldquo; . chr(0x50) . &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
+<p>$ php -f pack.php<br />
 output: P</p>
 
 <p>h和H的差别在于h是低位在前，H是高位在前，拿前面的例子来看看h的行为：</p>
 
-<p>&lt;?php
-$bin = pack(&ldquo;h&rdquo;, 0x5);
-echo &ldquo;output: &ldquo; . $bin . &ldquo;\n&rdquo;;
+<p>&lt;?php<br />
+$bin = pack(&ldquo;h&rdquo;, 0x5);<br />
+echo &ldquo;output: &ldquo; . $bin . &ldquo;\n&rdquo;;<br />
 echo &ldquo;output: &ldquo; . ord($bin) . &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
-output:
+<p>$ php -f pack.php<br />
+output:<br />
 output: 5</p>
 
 <p>读取十进制的5，后面补0，变成十六进制的0x50，因为H是高位在前，所以没有变化，而h就需要将0x50变成0x05。由于0x05是不可见字符，所以上面的字符输出是空的。</p>
 
 <p>h和H是以半字节为单位，h2和H2则表示一次读取8位，同理h3和H3可以推导出来，但是别忘了补足8位哦！</p>
 
-<p>&lt;?php
+<p>&lt;?php<br />
 echo &ldquo;output: &ldquo; . pack(&ldquo;H&rdquo;, 0x47) . &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
+<p>$ php -f pack.php<br />
 output: p</p>
 
 <p>以上的代码中，0x47为十进制的71，因为读取半个字节，所以变成0x7，后面补0变成0x70，则刚好是字符p的ASCII码。如果换成是h格式化，则最终的结果是0x07，因为低位在前。</p>
 
 <p>对于一次读取多个字节，也以同样的规则：</p>
 
-<p>&lt;?php
+<p>&lt;?php<br />
 echo &ldquo;output: &ldquo; . pack(&ldquo;H2h2&rdquo;, 0x47, 0x56) . &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
+<p>$ php -f pack.php<br />
 output: qh</p>
 
 <p>0x47是十进制的71，由于使用H2格式化，所以一次读取8位，最后变成十六进制的0x71，即字符q的ASCII码。0x56是十进制的86，由于使用h2格式化，所以一次读取8位，最后变成十六进制的0x86，但是由于h表示低位在前，因此0x86变成0x68，即字符h的ASCII码。</p>
 
 <p>c和C都表示字符，前者表示有符号字符，后者表示无符号字符。</p>
 
-<p>&lt;?php
-echo &ldquo;output: &ldquo; . pack(&ldquo;c&rdquo;, 65) . &ldquo;\n&rdquo;;
+<p>&lt;?php<br />
+echo &ldquo;output: &ldquo; . pack(&ldquo;c&rdquo;, 65) . &ldquo;\n&rdquo;;<br />
 echo &ldquo;output: &ldquo; . pack(&ldquo;C&rdquo;, 65) . &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
-output: A
+<p>$ php -f pack.php<br />
+output: A<br />
 output: A</p>
 
 <p>s为有符号短整数；S为无符号短整数。它们都为主机字节序，并且为16位。通常为主机字节序的格式化字符，一般只用于单机的操作，因为您无法确定主机字节序究竟是大端还是小端。当然，您一定要这么干的话，也是有办法来获取本机字节序是属于大端或小端，但那样是没有必要的。稍后就会给出一个通过PHP来判断字节序的例子。</p>
 
-<p>&lt;?php
-$bin1 = pack(&ldquo;s&rdquo;, 345);
-$bin2 = pack(&ldquo;S&rdquo;, 452);
-print_r(unpack(&ldquo;sshort1&rdquo;, $bin1));
+<p>&lt;?php<br />
+$bin1 = pack(&ldquo;s&rdquo;, 345);<br />
+$bin2 = pack(&ldquo;S&rdquo;, 452);<br />
+print_r(unpack(&ldquo;sshort1&rdquo;, $bin1));<br />
 print_r(unpack(&ldquo;sshort2&rdquo;, $bin2));</p>
 
-<p>$ php -f pack.php
-Array
-(
-   [short1] =&gt; 345
-)
-Array
-(
-   [short2] =&gt; 452
+<p>$ php -f pack.php<br />
+Array<br />
+(<br />
+   [short1] =&gt; 345<br />
+)<br />
+Array<br />
+(<br />
+   [short2] =&gt; 452<br />
 )</p>
 
 <p>n和v除了明确指定了字节序，其它行为跟s和S是一样的。</p>
@@ -587,52 +587,52 @@ Array
 
 <p>unpack是用来解包经过pack打包的数据包，如果成功，则返回数组。其中格式化字符和执行pack时一一对应，但是需要额外的指定一个key，用作返回数组的key。多个字段用/分隔。例如：</p>
 
-<p>&lt;?php
-$bin = @pack(&ldquo;a9SS&rdquo;, &ldquo;陈一回&rdquo;, 20, 1);
+<p>&lt;?php<br />
+$bin = @pack(&ldquo;a9SS&rdquo;, &ldquo;陈一回&rdquo;, 20, 1);<br />
 $data = @unpack(&ldquo;a9name/sage/Sgender&rdquo;, $bin);</p>
 
-<p>if (is_array($data))
-{
- print_r($data);
+<p>if (is_array($data))<br />
+{<br />
+ print_r($data);<br />
 }</p>
 
-<p>$ php  -f pack.php
-Array
-(
-   [name] =&gt; 陈一回
-   [age] =&gt; 20
-   [gender] =&gt; 1
+<p>$ php  -f pack.php<br />
+Array<br />
+(<br />
+   [name] =&gt; 陈一回<br />
+   [age] =&gt; 20<br />
+   [gender] =&gt; 1<br />
 )</p>
 
 <p>一些例子</p>
 
 <p>判断大小端</p>
 
-<p>&lt;?php
-function IsBigEndian()
-{
- $bin = pack(&ldquo;L&rdquo;, 0x12345678);
- $hex = bin2hex($bin);
- if (ord(pack(&ldquo;H2&rdquo;, $hex)) === 0x78)
- {
-   return FALSE;
+<p>&lt;?php<br />
+function IsBigEndian()<br />
+{<br />
+ $bin = pack(&ldquo;L&rdquo;, 0x12345678);<br />
+ $hex = bin2hex($bin);<br />
+ if (ord(pack(&ldquo;H2&rdquo;, $hex)) === 0x78)<br />
+ {<br />
+   return FALSE;<br />
  }</p>
 
-<p>return TRUE;
+<p>return TRUE;<br />
 }</p>
 
-<p>if (IsBigEndian())
-{
- echo &ldquo;大端序&rdquo;;
-}
-else
-{
- echo &ldquo;小端序&rdquo;;
+<p>if (IsBigEndian())<br />
+{<br />
+ echo &ldquo;大端序&rdquo;;<br />
+}<br />
+else<br />
+{<br />
+ echo &ldquo;小端序&rdquo;;<br />
 }</p>
 
 <p>echo &ldquo;\n&rdquo;;</p>
 
-<p>$ php -f pack.php
+<p>$ php -f pack.php<br />
 小端序</p>
 
 <p>网络通信</p>
@@ -641,43 +641,43 @@ else
 
 <p>包结构：</p>
 
-<p>字段  字节数     说明
-包头  定长  每一个通信消息必须包含的内容
+<p>字段  字节数     说明<br />
+包头  定长  每一个通信消息必须包含的内容<br />
 包体  不定长     根据每个通信消息的不同产生变化</p>
 
-<p>其中包头详细内容如下：
-字段
- 字节数    类型
- 说明
-pkg_len     2
- ushort     整个包的长度，不超过4K
-version     1   uchar   通讯协议版本号
-command_id  2   ushort  消息命令ID
+<p>其中包头详细内容如下：<br />
+字段<br />
+ 字节数    类型<br />
+ 说明<br />
+pkg_len     2<br />
+ ushort     整个包的长度，不超过4K<br />
+version     1   uchar   通讯协议版本号<br />
+command_id  2   ushort  消息命令ID<br />
 result  2   short   请求时不起作用；请求返回时使用</p>
 
 <p>当然实际中可能会涉及到各种校验。本文为了简单，只是列举一下通常的工作流程及处理的方式。</p>
 
-<p>登录(执行命储1001)
-字段  字节数     类型  说明
-用户名     30  uchar[30]   登录用户名
+<p>登录(执行命储1001)<br />
+字段  字节数     类型  说明<br />
+用户名     30  uchar[30]   登录用户名<br />
 密码  32  uchar[32]   登录密码</p>
 
 <p>包头是定长的，通过计算可知包头占7个字节，并且包头在包体之前。比如用户陈一回需要登录，密码是123456，则代码如下：</p>
 
-<p>&lt;?php
-$version    = 1;
-$result     = 0;
-$command_id = 1001;
-$username   = &ldquo;陈一回&rdquo;;
-$password   = md5(&ldquo;123456&rdquo;);
-// 构造包体
-$bin_body   = pack(&ldquo;a30a32&rdquo;, $username, $password);
-// 包体长度
-$body_len   = strlen($bin_body);
-$bin_head   = pack(&ldquo;nCns&rdquo;, $body_len, $version, $command_id, $result);
-$bin_data   = $bin_head . $bin_body;
-// 发送数据
-// socket_write($socket, $bin_data, strlen($bin_data));
+<p>&lt;?php<br />
+$version    = 1;<br />
+$result     = 0;<br />
+$command_id = 1001;<br />
+$username   = &ldquo;陈一回&rdquo;;<br />
+$password   = md5(&ldquo;123456&rdquo;);<br />
+// 构造包体<br />
+$bin_body   = pack(&ldquo;a30a32&rdquo;, $username, $password);<br />
+// 包体长度<br />
+$body_len   = strlen($bin_body);<br />
+$bin_head   = pack(&ldquo;nCns&rdquo;, $body_len, $version, $command_id, $result);<br />
+$bin_data   = $bin_head . $bin_body;<br />
+// 发送数据<br />
+// socket_write($socket, $bin_data, strlen($bin_data));<br />
 // socket_close($socket);</p>
 
 <p>服务器端通过读取定长包头，拿到包体长度，再读取并解析包体。大致的过程就是这样。当然服务器端也会返回响应包，客户端做相应的读取处理。</p>
@@ -847,7 +847,7 @@ $bin_data   = $bin_head . $bin_body;
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -1070,6 +1070,8 @@ $bin_data   = $bin_head . $bin_body;
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -1092,7 +1094,9 @@ $bin_data   = $bin_head . $bin_body;
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1124,7 +1128,7 @@ $bin_data   = $bin_head . $bin_body;
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

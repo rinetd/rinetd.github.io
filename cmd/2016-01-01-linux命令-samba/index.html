@@ -247,63 +247,64 @@
 
 <h2 id="samba-nfs-区别">samba nfs 区别</h2>
 
-<p>1.samba 是windows 和linux共享方式 速度块
+<p>1.samba 是windows 和linux共享方式 速度块<br />
 2.nfs 在windows下访问慢</p>
 
 <p>如果提示没有权限的问题 chmod o+rwx share</p>
 
 <h3 id="samba">samba</h3>
 
-<p>samba服务器需要两个守护进程：smbd和nmbd。
-smbd进程监听TCP139端口，用来管理 SAMBA 主机分享的目录、文件和打印机等，处理到来的SMB数据包;
-nmbd进程监听137、138UDP端口，负责名称解析的服务，使其他主机能浏览linux服务器。
-NBT(NetBIOS over TCP/IP)
-使用137, 138 (UDP) and 139 (TCP）来实现基于TCP/IP的NETBIOS网际互联。
-Port 137 (UDP) - NetBIOS 名字服务  nmbd
-Port 138 (UDP) - NetBIOS 数据报服务 nmbd
-Port 139 (TCP) - 文件和打印共享 ； smbd （基于SMB(Server Message Block)协议，主要在局域网中使用，文件共享协议）
-Port 445 (TCP) - 文件和打印机共享服务 不过该端口是基于CIFS协议（通用因特网文件 系统协议）工作的，而139端口是基于SMB协议（服务器协议族）
-root@ubuntu-desktop:~# netstat -anptu |grep mb
+<p>samba服务器需要两个守护进程：smbd和nmbd。<br />
+smbd进程监听TCP139端口，用来管理 SAMBA 主机分享的目录、文件和打印机等，处理到来的SMB数据包;<br />
+nmbd进程监听137、138UDP端口，负责名称解析的服务，使其他主机能浏览linux服务器。<br />
+NBT(NetBIOS over TCP/IP)<br />
+使用137, 138 (UDP) and 139 (TCP）来实现基于TCP/IP的NETBIOS网际互联。<br />
+Port 137 (UDP) - NetBIOS 名字服务  nmbd<br />
+Port 138 (UDP) - NetBIOS 数据报服务 nmbd<br />
+Port 139 (TCP) - 文件和打印共享 ； smbd （基于SMB(Server Message Block)协议，主要在局域网中使用，文件共享协议）<br />
+Port 445 (TCP) - 文件和打印机共享服务 不过该端口是基于CIFS协议（通用因特网文件 系统协议）工作的，而139端口是基于SMB协议（服务器协议族）<br />
+root@ubuntu-desktop:~# netstat -anptu |grep mb<br />
 tcp        0      0 0.0.0.0:445             0.0.0.0:*               LISTEN      3054/smbd<br />
 tcp        0      0 0.0.0.0:139             0.0.0.0:*               LISTEN      3054/smbd<br />
 udp        0      0 0.0.0.0:137             0.0.0.0:*                           3062/nmbd<br />
 udp        0      0 0.0.0.0:138             0.0.0.0:*                           3062/nmbd</p>
 
 <ol>
-<li>apt-get install samba</li>
-<li>mkdir share
-chmod o+rw share
-!!不能创建在/root/目录下!!</li>
-<li>vi /etc/samba/smb.conf
-[share_name]
-comment = Shared Folder with username and password
-path = /usr/src
-public = yes
-writable = yes
-available = yes
-browseable = yes
-create mask = 0755
-directory mask = 0755
-;valid users = ubuntu
-;force user = nobody
-;force user = nobody
-;force group = nogroup
-;guest ok = yes</li>
-<li>service smbd restart</li>
+<li>apt-get install samba<br /></li>
+<li>mkdir share<br />
+chmod o+rw share<br />
+!!不能创建在/root/目录下!!<br /></li>
+<li>vi /etc/samba/smb.conf<br />
+[share_name]<br />
+comment = Shared Folder with username and password<br />
+path = /usr/src<br />
+public = yes<br />
+writable = yes<br />
+available = yes<br />
+browseable = yes<br />
+create mask = 0755<br />
+directory mask = 0755<br />
+;valid users = ubuntu<br />
+;force user = nobody<br />
+;force user = nobody<br />
+;force group = nogroup<br />
+;guest ok = yes<br /></li>
+<li>service smbd restart<br />
+<br /></li>
 </ol>
 
-<p>##########
-要mount的机器上面开启NFS
+<p>##########<br />
+要mount的机器上面开启NFS<br />
 /etc/init.d/nfs start (service nfs start)</p>
 
-<p>开启mount权限
-vi /etc/exports
+<p>开启mount权限<br />
+vi /etc/exports<br />
 例如：figure/data 192.168.115.*(insecure,rw,sync,no_root_squash,insecure)</p>
 
-<p>开始mount
+<p>开始mount<br />
 [root@localhost /]# mount -t nfs 192.168.115.72:/figure/data /mnt/2</p>
 
-<p>如果mount失败，查看被mount的机器的日志
+<p>如果mount失败，查看被mount的机器的日志<br />
 cat /var/log/messages |grep mount   查看对应的错误</p>
 
 <p>防火墙 和 selinux关掉。命令关。。</p>
@@ -312,71 +313,71 @@ cat /var/log/messages |grep mount   查看对应的错误</p>
 
 <h2 id="1-nfs包">1、NFS包</h2>
 
-<p>NFS需要5个RPM，分别是：
-setup-* : 共享NFS目录在/etc/exports中定义
-initscripts-* : 包括引导过程中装载网络目录的基本脚本
-nfs-utils-* : 包括基本的NFS命令与监控程序
-portmap-* : 支持安全NFS RPC服务的连接
+<p>NFS需要5个RPM，分别是：<br />
+setup-* : 共享NFS目录在/etc/exports中定义<br />
+initscripts-* : 包括引导过程中装载网络目录的基本脚本<br />
+nfs-utils-* : 包括基本的NFS命令与监控程序<br />
+portmap-* : 支持安全NFS RPC服务的连接<br />
 quota-* : 网络上共享的目录配额，包括rpc.rquotad （这个包不是必须的）</p>
 
 <h2 id="基本监控程序">、基本监控程序</h2>
 
-<p>要顺利运行NFS，至少需要五个Linux服务，它们各有不同的功能，有的负责装载服务，有的保证远程命令指向正确的位置。这些服务通过/etc/rc.d/init.d目录中的nfs,nfslock和portmap脚本启动。下面简单介绍每个监控程序：
-(1) 基本NFS
+<p>要顺利运行NFS，至少需要五个Linux服务，它们各有不同的功能，有的负责装载服务，有的保证远程命令指向正确的位置。这些服务通过/etc/rc.d/init.d目录中的nfs,nfslock和portmap脚本启动。下面简单介绍每个监控程序：<br />
+(1) 基本NFS<br />
 rpc.nfsd是NFS服务器监控程序，它通过/etc/rc.d/init.d目录中的nfs脚本启动。NFS监控程序还启动rpc.mountd装载监控程序，并导出共享目录。</p>
 
-<p>(2) RPC装载
+<p>(2) RPC装载<br />
 可以用mount命令连接本地目录或网络目录，但还需要一个装载NFS目录的特殊监控程序rpc.mountd</p>
 
-<p>(3) 端口映射器
+<p>(3) 端口映射器<br />
 portmap监控程序只是定向RPC通信数据流，但它对于NFS服务很重要。如果不运行portmap，则NFS客户机无法找到从NFS服务器共享的目录。</p>
 
-<p>(4) 重新启动与statd
+<p>(4) 重新启动与statd<br />
 当NFS服务需要中断或者重新启动时，rpc.statd监控程序和rpc.lockd在服务器重新启动之后使客户机恢复NFS连接。</p>
 
-<p>(5) 锁定
+<p>(5) 锁定<br />
 通过共享NFS目录打开文件时，锁定可以使用户不能覆盖同一个文件。锁定通过nfslock脚本并使用rpc.lockd监控程序启动运行。</p>
 
-<p>ro 只读访问
-rw 读写访问
-sync 所有数据在请求时写入共享
-async NFS在写入数据前可以相应请求
-secure NFS通过1024以下的安全TCP/IP端口发送
-insecure NFS通过1024以上的端口发送
-wdelay 如果多个用户要写入NFS目录，则归组写入（默认）
-no_wdelay 如果多个用户要写入NFS目录，则立即写入，当使用async时，无需此设置。
-hide 在NFS共享目录中不共享其子目录
-no_hide 共享NFS目录的子目录
-subtree_check 如果共享/usr/bin之类的子目录时，强制NFS检查父目录的权限（默认）
-no_subtree_check 和上面相对，不检查父目录权限
-all_squash 共享文件的UID和GID映射匿名用户anonymous，适合公用目录。
-no_all_squash 保留共享文件的UID和GID（默认）
-root_squash root用户的所有请求映射成如anonymous用户一样的权限（默认）
-no_root_squas root用户具有根目录的完全管理访问权限
-anonuid=xxx 指定NFS服务器/etc/passwd文件中匿名用户的UID
+<p>ro 只读访问<br />
+rw 读写访问<br />
+sync 所有数据在请求时写入共享<br />
+async NFS在写入数据前可以相应请求<br />
+secure NFS通过1024以下的安全TCP/IP端口发送<br />
+insecure NFS通过1024以上的端口发送<br />
+wdelay 如果多个用户要写入NFS目录，则归组写入（默认）<br />
+no_wdelay 如果多个用户要写入NFS目录，则立即写入，当使用async时，无需此设置。<br />
+hide 在NFS共享目录中不共享其子目录<br />
+no_hide 共享NFS目录的子目录<br />
+subtree_check 如果共享/usr/bin之类的子目录时，强制NFS检查父目录的权限（默认）<br />
+no_subtree_check 和上面相对，不检查父目录权限<br />
+all_squash 共享文件的UID和GID映射匿名用户anonymous，适合公用目录。<br />
+no_all_squash 保留共享文件的UID和GID（默认）<br />
+root_squash root用户的所有请求映射成如anonymous用户一样的权限（默认）<br />
+no_root_squas root用户具有根目录的完全管理访问权限<br />
+anonuid=xxx 指定NFS服务器/etc/passwd文件中匿名用户的UID<br />
 anongid=xxx 指定NFS服务器/etc/passwd文件中匿名用户的GID</p>
 
-<p>vi /etc/exports
+<p>vi /etc/exports<br />
 /nfsroot 192.168.122.*(rw,insecure,sync,all_squash)</p>
 
-<p>出错：
-mount.nfs: access denied by server while mounting 192.168.122.224:/
-检查出错信息：
-cat /var/log/messages | grep mount
-May 19 01:43:41 localhost mountd[1785]: refused mount request from 192.168.122.224 for /nfsroot (/): not exported
-执行：
-#exportfs -rv
+<p>出错：<br />
+mount.nfs: access denied by server while mounting 192.168.122.224:/<br />
+检查出错信息：<br />
+cat /var/log/messages | grep mount<br />
+May 19 01:43:41 localhost mountd[1785]: refused mount request from 192.168.122.224 for /nfsroot (/): not exported<br />
+执行：<br />
+#exportfs -rv<br />
 这句话相当于输出nfsroot，让mount端可以看到nfsroot目录。</p>
 
 <p>no_root_squash：登入 NFS 主机使用分享目录的使用者，如果是 root 的话，那么对于这个分享的目录来说，他就具有 root 的权限！这个项目『极不安全』，不建议使用！ root_squash：在登入 NFS 主机使用分享之目录的使用者如果是 root 时，那么这个使用者的权限将被压缩成为匿名使用者，通常他的 UID 与 GID 都会变成 nobody 那个系统账号的身份。</p>
 
-<p>Example:  /etc/export
-/rootfs *(sync,rw,insecure,no_root_squash,no_subtree_check)
+<p>Example:  /etc/export<br />
+/rootfs *(sync,rw,insecure,no_root_squash,no_subtree_check)<br />
 /tftpboot *(async,rw,insecure,no_root_squash,no_subtree_check)</p>
 
 <p>sync 适用在通信比较频繁且实时性比较高的场合，比如Linux系统的rootfs通过nfs挂载，如果搞成async，当执行大型网络通信程序如 gdbserver与client之类，则系统此时会无响应，报一些“NFS is not responding“之类的错误。</p>
 
-<p>当然并非sync就比async好，如果在远程挂载点处进行大批量数据生成，如解压一个大型tar包，此时速度会非常慢，我对比了一下在nfs server端解压只需半分多钟，在client端则要40来分钟，性能严重受到影响。
+<p>当然并非sync就比async好，如果在远程挂载点处进行大批量数据生成，如解压一个大型tar包，此时速度会非常慢，我对比了一下在nfs server端解压只需半分多钟，在client端则要40来分钟，性能严重受到影响。<br />
 当改成async后，在client端解压只需4分多钟，虽然比server端慢一些但性能已得到很大改善。所以当涉及到很多零碎文件操作时，选用async性能更高。</p>
 
 <h2 id="启动nfs">启动NFS</h2>
@@ -399,287 +400,287 @@ May 19 01:43:41 localhost mountd[1785]: refused mount request from 192.168.122.2
 
 <h2 id="0x01-nfs">0x01 NFS</h2>
 
-<p>服务器PC Linux
-ubuntu :
-    apt-cache search nfs
+<p>服务器PC Linux<br />
+ubuntu :<br />
+    apt-cache search nfs<br />
     apt-get install nfs-kernel-server</p>
 
-<pre><code>sudo service portmap start
-sudo service nfs-kernel-server start   
+<pre><code>sudo service portmap start  
+sudo service nfs-kernel-server start  
 </code></pre>
 
-<p>centos 5 :
-    yum install nfs-utils portmap
-centos 6 :
-    yum install nfs-utils rpcbind
-    yum search nfs* rpcbind*
+<p>centos 5 :<br />
+    yum install nfs-utils portmap<br />
+centos 6 :<br />
+    yum install nfs-utils rpcbind<br />
+    yum search nfs* rpcbind*<br />
     yum list installed nfs*  rpcbind* #查看已安装</p>
 
-<pre><code>sudo ntsysv      ##启用服务rpcbind nfs
-sudo /etc/init.d/nfs restart     ##重启服务rpcbind nfs
+<pre><code>sudo ntsysv      ##启用服务rpcbind nfs  
+sudo /etc/init.d/nfs restart     ##重启服务rpcbind nfs  
 sudo service nfs restart  
 
-sudo chkconfig --level 3 nfs on
+sudo chkconfig --level 3 nfs on  
 </code></pre>
 
-<p>##添加共享目录
-sudo vim /etc/exports
-    /home/work/rootfs   *(insecure,rw,sync,no_subtree_check)
-sudo exportfs -av
+<p>##添加共享目录<br />
+sudo vim /etc/exports<br />
+    /home/work/rootfs   *(insecure,rw,sync,no_subtree_check)<br />
+sudo exportfs -av<br />
 &gt;&gt;exporting  *:/rootfs #共享成功</p>
 
 <p>sudo mount -t nfs 127.0.0.1:/home/work/nfs /mnt</p>
 
-<p>##clnt_create: RPC: Program not registered
+<p>##clnt_create: RPC: Program not registered<br />
 sudo rpc.mountd</p>
 
-<p>##配置rpc，nfsd，rquotad，?mountd使用的端口
-sudo vim /etc/services
-   mountd          48620/tcp               #rpc.mountd
+<p>##配置rpc，nfsd，rquotad，?mountd使用的端口<br />
+sudo vim /etc/services<br />
+   mountd          48620/tcp               #rpc.mountd<br />
    mountd          48620/udp               #rpc.mountd</p>
 
-<p>##配置防火墙 直接关闭防火墙也可以
+<p>##配置防火墙 直接关闭防火墙也可以<br />
 sudo  vim /etc/sysconfig/iptables<br />
-       rpcinfo -p 192.168.100.30 #查看端口通过防火墙
- #portmapper
--A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 111 -j ACCEPT
--A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 111 -j ACCEPT
- #rpc
--A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 121 -j ACCEPT
--A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 121 -j ACCEPT
-#rquotad
--A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 875 -j ACCEPT
--A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 875 -j ACCEPT
-#nfsd
--A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 2049 -j ACCEPT
--A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 2049 -j ACCEPT
-#mountd
--A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 46940 -j ACCEPT
--A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 50038 -j ACCEPT
--A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 46280 -j ACCEPT
--A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 44001 -j ACCEPT
--A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 41314 -j ACCEPT
+       rpcinfo -p 192.168.100.30 #查看端口通过防火墙<br />
+ #portmapper<br />
+-A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 111 -j ACCEPT<br />
+-A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 111 -j ACCEPT<br />
+ #rpc<br />
+-A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 121 -j ACCEPT<br />
+-A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 121 -j ACCEPT<br />
+#rquotad<br />
+-A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 875 -j ACCEPT<br />
+-A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 875 -j ACCEPT<br />
+#nfsd<br />
+-A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 2049 -j ACCEPT<br />
+-A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 2049 -j ACCEPT<br />
+#mountd<br />
+-A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 46940 -j ACCEPT<br />
+-A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 50038 -j ACCEPT<br />
+-A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 46280 -j ACCEPT<br />
+-A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 44001 -j ACCEPT<br />
+-A INPUT -m state &ndash;state NEW -m tcp -p tcp &ndash;dport 41314 -j ACCEPT<br />
 -A INPUT -m state &ndash;state NEW -m udp -p udp &ndash;dport 45740 -j ACCEPT</p>
 
-<p>客户端 Windows
-   1. 程序功能 启用 NFS 服务
-   2. showmount -e 192.168.100.30
+<p>客户端 Windows<br />
+   1. 程序功能 启用 NFS 服务<br />
+   2. showmount -e 192.168.100.30<br />
    3. mount \192.168.100.30\home\lshl\ z:</p>
 
-<p>客户端 ARM开发板
-//制作ARM文件系统
-gunzip initrd.img.gz &ndash;&gt;initrd.img   取得启动映像
-sudo mount -t ext2 initrd.img ./swap/
-sudo cp -a ./swap/* /home/work/rootfs/ #-a 保留快捷方式 等属性的拷贝
-bootargs
-   root=/dev/nfs
+<p>客户端 ARM开发板<br />
+//制作ARM文件系统<br />
+gunzip initrd.img.gz &ndash;&gt;initrd.img   取得启动映像<br />
+sudo mount -t ext2 initrd.img ./swap/<br />
+sudo cp -a ./swap/* /home/work/rootfs/ #-a 保留快捷方式 等属性的拷贝<br />
+bootargs<br />
+   root=/dev/nfs<br />
    nfsroot=192.168.10.110:/home/work/rootfs #服务器ip<br />
-   ip=192.168.10.112 #armIP
-   init=/linuxrc
+   ip=192.168.10.112 #armIP<br />
+   init=/linuxrc<br />
    console=ttySAC0,115200</p>
 
 <p>1、服务查询</p>
 
-<pre><code>默认情况下，Linux系统在默认安装中已经安装了Samba服务包的一部分 ，为了对整个过程有一个完整的了解，在此先将这部分卸载掉。使用命令
+<pre><code>默认情况下，Linux系统在默认安装中已经安装了Samba服务包的一部分 ，为了对整个过程有一个完整的了解，在此先将这部分卸载掉。使用命令  
 </code></pre>
 
 <p>rpm -qa | grep samba ，默认情况下可以查询到两个已经存在的包：</p>
 
-<pre><code>samba-client-3.0.33-3.7.el5
+<pre><code>samba-client-3.0.33-3.7.el5  
 
-samba-common-3.0.33-3.7.el5
+samba-common-3.0.33-3.7.el5  
 </code></pre>
 
 <p>2、卸载Samba</p>
 
-<pre><code>用rpm -e 将两个包卸载掉。对于samba-common-3.0.33-3.7.el5，因为与其它rpm包之间存在依赖关系，所以必须加参数-f和--nodeps，-f是指强制，--nodeps是指不检查依赖关系，具体完整命令为：
+<pre><code>用rpm -e 将两个包卸载掉。对于samba-common-3.0.33-3.7.el5，因为与其它rpm包之间存在依赖关系，所以必须加参数-f和--nodeps，-f是指强制，--nodeps是指不检查依赖关系，具体完整命令为：  
 
-rpm -e samba-common-3.0.33-3.7.el5 -f --nodeps
+rpm -e samba-common-3.0.33-3.7.el5 -f --nodeps  
 
-rpm -e samba-client-3.0.33-3.7.el5 -f --nodeps
+rpm -e samba-client-3.0.33-3.7.el5 -f --nodeps  
 </code></pre>
 
 <p>3、安装Samba</p>
 
-<pre><code>用以下命令安装：
+<pre><code>用以下命令安装：  
 
-    rpm -ivh samba-3.0.33-3.29.el5_6.2.i386.rpm -f --nodeps
+    rpm -ivh samba-3.0.33-3.29.el5_6.2.i386.rpm -f --nodeps  
 
-    rpm -ivh samba-client-3.0.33-3.29.el5_6.2.i386.rpm  -f --nodeps
-    rpm -ivh samba-common-3.0.33-3.29.el5_6.2.i386.rpm -f --nodeps
-安装完成后，使用命令rpm -qa | grep samba进行查询，发现搭建samba服务器所依赖的所有服务器都已经安装好了即可。
+    rpm -ivh samba-client-3.0.33-3.29.el5_6.2.i386.rpm  -f --nodeps  
+    rpm -ivh samba-common-3.0.33-3.29.el5_6.2.i386.rpm -f --nodeps  
+安装完成后，使用命令rpm -qa | grep samba进行查询，发现搭建samba服务器所依赖的所有服务器都已经安装好了即可。  
 </code></pre>
 
 <p>4、配置smb.conf文件</p>
 
-<pre><code>Samba的配置文件一般就放在/etc/samba目录中，主配置文件名为smb.conf，文件中记录着大量的规则和共享信息，所以是samba服务非常重要的核心配置文件，完成samba服务器搭建的大部分主要配置都在该文件中进行。
+<pre><code>Samba的配置文件一般就放在/etc/samba目录中，主配置文件名为smb.conf，文件中记录着大量的规则和共享信息，所以是samba服务非常重要的核心配置文件，完成samba服务器搭建的大部分主要配置都在该文件中进行。  
 
-Samba服务器的工作原理是：客户端向Samba服务器发起请求，请求访问共享目录，Samba服务器接收请求，查询smb.conf文件，查看共享目录是否存在，以及来访者的访问权限，如果来访者具有相应的权限，则允许客户端访问，最后将访问过程中系统的信息以及采集的用户访问行为信息存放在日志文件中。
+Samba服务器的工作原理是：客户端向Samba服务器发起请求，请求访问共享目录，Samba服务器接收请求，查询smb.conf文件，查看共享目录是否存在，以及来访者的访问权限，如果来访者具有相应的权限，则允许客户端访问，最后将访问过程中系统的信息以及采集的用户访问行为信息存放在日志文件中。  
 
-第一步：修改配置文件
- 首先备份一下samba的配置文件
+第一步：修改配置文件  
+ 首先备份一下samba的配置文件  
 
-    cd /etc/samba
+    cd /etc/samba  
 
-    mv smb.conf smb.confbak
+    mv smb.conf smb.confbak  
 
-然后重新创建一个smb.conf文件
+然后重新创建一个smb.conf文件  
 
-    touch smb.conf
+    touch smb.conf  
 
-然后我们把这段写入smb.conf中
+然后我们把这段写入smb.conf中  
 
-    [global]
+    [global]  
 
-         workgroup = LinuxSir
-    netbios name = LinuxSir05
-    server string = Linux Samba Server TestServer
-    security = share
+         workgroup = LinuxSir  
+    netbios name = LinuxSir05  
+    server string = Linux Samba Server TestServer  
+    security = share  
 
- [linuxsir]
-        path = /opt/linuxsir
-            writeable = yes
-                browseable = yes
+ [linuxsir]  
+        path = /opt/linuxsir  
+            writeable = yes  
+                browseable = yes  
 
-   guest ok = yes
-
-
-
-注解：
-[global]这段是全局配置，是必段写的。其中有如下的几行；
-
-    workgroup 就是Windows中显示的工作组；在这里我设置的是LINUXSIR （用大写）；
-    netbios name 就是在Windows中显示出来的计算机名；
-    server string 就是Samba服务器说明，可以自己来定义；这个不是什么重要的；
-    security 这是验证和登录方式，这里我们用了share ；验证方式有好多种，这是其中一种；另外一种常用的是user的验证方式；如果用share呢，就是不用设置用户和密码了；
-
-[linuxsir] 这个在Windows中显示出来是共享的目录；
-    path = 可以设置要共享的目录放在哪里；
-    writeable 是否可写，这里我设置为可写；
-    browseable 是否可以浏览，可以；可以浏览意味着，我们在工作组下能看到共享文件夹。如果您不想显示出来，那就设置为 browseable=no
-
-    guest ok 匿名用户以guest身份是登录；
-
-第二步：建立相应目录并授权；
-
-            [root@localhost ~]# mkdir -p /opt/linuxsir
-
-            [root@localhost ~]# id nobody
-    uid=99(nobody) gid=99(nobody) groups=99(nobody)
-    [root@localhost ~]# chown -R nobody:nobody /opt/linuxsir
-    注释：
-
-    关于授权nobody，我们先用id命令查看了nobody用户的信息，发现他的用户组也是nobody，我们要以这个为准。有些系统nobody用户组并非是nobody ；
+   guest ok = yes  
 
 
 
-    第三步：启动smbd和nmbd服务器；
+注解：  
+[global]这段是全局配置，是必段写的。其中有如下的几行；  
 
-         [root@localhost ~]# smbd
-         [root@localhost ~]# nmbd
+    workgroup 就是Windows中显示的工作组；在这里我设置的是LINUXSIR （用大写）；  
+    netbios name 就是在Windows中显示出来的计算机名；  
+    server string 就是Samba服务器说明，可以自己来定义；这个不是什么重要的；  
+    security 这是验证和登录方式，这里我们用了share ；验证方式有好多种，这是其中一种；另外一种常用的是user的验证方式；如果用share呢，就是不用设置用户和密码了；  
+
+[linuxsir] 这个在Windows中显示出来是共享的目录；  
+    path = 可以设置要共享的目录放在哪里；  
+    writeable 是否可写，这里我设置为可写；  
+    browseable 是否可以浏览，可以；可以浏览意味着，我们在工作组下能看到共享文件夹。如果您不想显示出来，那就设置为 browseable=no  
+
+    guest ok 匿名用户以guest身份是登录；  
+
+第二步：建立相应目录并授权；  
+
+            [root@localhost ~]# mkdir -p /opt/linuxsir  
+
+            [root@localhost ~]# id nobody  
+    uid=99(nobody) gid=99(nobody) groups=99(nobody)  
+    [root@localhost ~]# chown -R nobody:nobody /opt/linuxsir  
+    注释：  
+
+    关于授权nobody，我们先用id命令查看了nobody用户的信息，发现他的用户组也是nobody，我们要以这个为准。有些系统nobody用户组并非是nobody ；  
+
+
+
+    第三步：启动smbd和nmbd服务器；  
+
+         [root@localhost ~]# smbd  
+         [root@localhost ~]# nmbd  
 </code></pre>
 
 <p>OS:Red Hat Linux As 5</p>
 
-<p>1.服务器上创建共享目录
-mkdir
-doc_share
+<p>1.服务器上创建共享目录<br />
+mkdir<br />
+doc_share<br />
 chmod o+rwx doc_share</p>
 
-<p>2.编辑exports文件
-vim /etc/exports
-写入
-/doc_share
-192.168.2.<sup>131</sup>&frasl;<sub>255</sub>.255.255.0(rw,sync)
-格式是:
-要共享的目录
+<p>2.编辑exports文件<br />
+vim /etc/exports<br />
+写入<br />
+/doc_share<br />
+192.168.2.<sup>131</sup>&frasl;<sub>255</sub>.255.255.0(rw,sync)<br />
+格式是:<br />
+要共享的目录<br />
 共享的IP及掩码或者域名(权限,同步更新)</p>
 
-<p>3.启动服务
-/etc/init.d/portmap restart
-/etc/init.d/nfs restart
-chkconfig nfs
-on
+<p>3.启动服务<br />
+/etc/init.d/portmap restart<br />
+/etc/init.d/nfs restart<br />
+chkconfig nfs<br />
+on<br />
 chkconfig portmap on</p>
 
-<p>然后关闭防火墙以及更改Selinux关于NIS的选项
-/etc/init.d/iptables stop (防护墙服务关闭)
-chkconfig iptables off
+<p>然后关闭防火墙以及更改Selinux关于NIS的选项<br />
+/etc/init.d/iptables stop (防护墙服务关闭)<br />
+chkconfig iptables off<br />
 system-config-selinux (设置selinux)</p>
 
-<p>查看共享的东西
-[root@rac1
-/]# exportfs -rv
+<p>查看共享的东西<br />
+[root@rac1<br />
+/]# exportfs -rv<br />
 exporting 192.168.2.<sup>131</sup>&frasl;<sub>255</sub>.255.255.0:/doc_share</p>
 
-<p>试着在本机看能否加载
-mount
+<p>试着在本机看能否加载<br />
+mount<br />
 192.168.2.131:/doc_share /mnt</p>
 
-<p>[root@rac1 doc_share]# echo
-aa&gt;aa.txt
-[root@rac1 doc_share]# ls
-aa.txt
-[root@rac1 /]# cd
-/mnt
-[root@rac1 mnt]# ls
+<p>[root@rac1 doc_share]# echo<br />
+aa&gt;aa.txt<br />
+[root@rac1 doc_share]# ls<br />
+aa.txt<br />
+[root@rac1 /]# cd<br />
+/mnt<br />
+[root@rac1 mnt]# ls<br />
 aa.txt</p>
 
-<p>4.客户端
-手工mount:
-mount -o nolock 192.168.2.131:/doc_share
-/mnt
-这个时候可以看到在节点1上内容了.
-[root@rac2
-mnt]# cd /mnt
-[root@rac2 mnt]# ls
+<p>4.客户端<br />
+手工mount:<br />
+mount -o nolock 192.168.2.131:/doc_share<br />
+/mnt<br />
+这个时候可以看到在节点1上内容了.<br />
+[root@rac2<br />
+mnt]# cd /mnt<br />
+[root@rac2 mnt]# ls<br />
 aa.txt</p>
 
-<p>自动mount:
-编辑fstab文件，实现开机自动挂载
-mount -t nfs IP:/目录 挂载到的目录
-(此为临时挂载)
-如：mount -t nfs
-192.168.0.9:/doce /doc
-vim /etc/fstab 添加如下内容
+<p>自动mount:<br />
+编辑fstab文件，实现开机自动挂载<br />
+mount -t nfs IP:/目录 挂载到的目录<br />
+(此为临时挂载)<br />
+如：mount -t nfs<br />
+192.168.0.9:/doce /doc<br />
+vim /etc/fstab 添加如下内容<br />
 192.168.2.131:/doc_share /mnt nfs defaults 0 0</p>
 
-<p>相关的一些命令:
-showmout命令对于NFS的操作和查错有很大的帮助.
+<p>相关的一些命令:<br />
+showmout命令对于NFS的操作和查错有很大的帮助.<br />
 showmout</p>
 
-<p>-a:这个参数是一般在NFS SERVER上使用,是用来显示已经mount上本机nfs目录的cline机器.
--e:显示指定的NFS
-SERVER上export出来的目录.
-例如：
+<p>-a:这个参数是一般在NFS SERVER上使用,是用来显示已经mount上本机nfs目录的cline机器.<br />
+-e:显示指定的NFS<br />
+SERVER上export出来的目录.<br />
+例如：<br />
 showmount -e 192.168.0.30</p>
 
-<p>Export list for localhost:
-/tmp *
+<p>Export list for localhost:<br />
+/tmp *<br />
 /home/linux *.linux.org</p>
 
-<p>/home/public (everyone)
+<p>/home/public (everyone)<br />
 /home/test 192.168.0.100</p>
 
-<p>exportfs命令:
-如果我们在启动了NFS之后又修改了/etc/exports,是不是还要重新启动nfs呢？这个时候我们就可以用exportfs命令来使改动立刻生效，该命令格式如下:
-exportfs
-[-aruv]
--a ：全部mount或者unmount /etc/exports中的内容
--r ：重新mount
-/etc/exports中分享出来的目录
--u ：umount 目录
--v ：在 export
-的时候,将详细的信息输出到屏幕上.
-具体例子:
-[root @test root]# exportfs
--rv &lt;==全部重新 export 一次！
-exporting
-192.168.0.100:/home/test
-exporting 192.168.0.*:/home/public
-exporting
-*.the9.com:/home/linux
-exporting *:/home/public
+<p>exportfs命令:<br />
+如果我们在启动了NFS之后又修改了/etc/exports,是不是还要重新启动nfs呢？这个时候我们就可以用exportfs命令来使改动立刻生效，该命令格式如下:<br />
+exportfs<br />
+[-aruv]<br />
+-a ：全部mount或者unmount /etc/exports中的内容<br />
+-r ：重新mount<br />
+/etc/exports中分享出来的目录<br />
+-u ：umount 目录<br />
+-v ：在 export<br />
+的时候,将详细的信息输出到屏幕上.<br />
+具体例子:<br />
+[root @test root]# exportfs<br />
+-rv &lt;==全部重新 export 一次！<br />
+exporting<br />
+192.168.0.100:/home/test<br />
+exporting 192.168.0.*:/home/public<br />
+exporting<br />
+*.the9.com:/home/linux<br />
+exporting *:/home/public<br />
 exporting *:/tmp</p>
 
 <p>reexporting 192.168.0.100:/home/test to kernel</p>
@@ -688,98 +689,98 @@ exporting *:/tmp</p>
 
 <h2 id="全部都卸载了">&lt;==全部都卸载了</h2>
 
-<p>今天在机器上配置NFS文件系统，在/etc/exports中加入以下信息：
-    /testfs 10.0.0.0/8(rw)
-    重启NFS服务以后，在客户机通过mount -o rw -t nfs 10.214.54.29:/testfs /rd1命令将网络文件mount到本地。执行完成之后，目录是可以访问了，但无法写入。感觉有点奇怪，明明在命令中指定可以写入了。于是到网上搜索资料，发现exports目录权限中，有这么一个参数no_root_squash。其作用是：登入 NFS 主机使用分享目录的使用者，如果是 root 的话，那么对于这个分享的目录来说，他就具有                      root 的权限！。默认情况使用的是相反参数                     root_squash：在登入 NFS 主机使用分享之目录的使用者如果是 root 时，那么这个使用者的权限将被压缩成为匿名使用者，通常他的                      UID 与 GID 都会变成 nobody 那个身份。
-    因为我的客户端是使用root登录的，自然权限被压缩为nobody了，难怪无法写入。将配置信息改为：
-    /testfs 10.0.0.0/8(rw,no_root_squash)
-    据说有点不安全，但问题是解决了。
+<p>今天在机器上配置NFS文件系统，在/etc/exports中加入以下信息：<br />
+    /testfs 10.0.0.0/8(rw)<br />
+    重启NFS服务以后，在客户机通过mount -o rw -t nfs 10.214.54.29:/testfs /rd1命令将网络文件mount到本地。执行完成之后，目录是可以访问了，但无法写入。感觉有点奇怪，明明在命令中指定可以写入了。于是到网上搜索资料，发现exports目录权限中，有这么一个参数no_root_squash。其作用是：登入 NFS 主机使用分享目录的使用者，如果是 root 的话，那么对于这个分享的目录来说，他就具有                      root 的权限！。默认情况使用的是相反参数                     root_squash：在登入 NFS 主机使用分享之目录的使用者如果是 root 时，那么这个使用者的权限将被压缩成为匿名使用者，通常他的                      UID 与 GID 都会变成 nobody 那个身份。<br />
+    因为我的客户端是使用root登录的，自然权限被压缩为nobody了，难怪无法写入。将配置信息改为：<br />
+    /testfs 10.0.0.0/8(rw,no_root_squash)<br />
+    据说有点不安全，但问题是解决了。<br />
     另外，在测试NFS文件系统时，会经常mount和umount文件，但有时会出现device is busy的错误提示。你肯定感到很奇怪，我明明没有使用啊，看看你当前所在的目录，是不是在mount的文件目录中？回退到上层目录重新umount，是不是OK了？</p>
 
-<pre><code>linux下Samba服务和NFS服务配置
+<pre><code>linux下Samba服务和NFS服务配置  
 </code></pre>
 
-<p>一、Samba服务配置过程
-samba的功能很简单，就是为了使linux和windows之间能够实现共享。并且利用samba搭建文件服务器，不仅比windows功能强大，而且访问速度快、安全。首先说明，samba服务器需要两个守护进程：smbd和nmbd。smbd进程监听139TCP端口，处理到来的SMB数据包;nmbd进程监听137、138UDP端口，使其他主机能浏览linux服务器。
-1、安装Samba服务
-首先用命令测试rpm -qi samba看是否安装了Samba软件包，若没有可以用yum install samba在线安装（fedora 11环境下）。
-2、启动Samba服务
-安装完成后，使用service smb start 命令启动samba服务。如果想让samba服务开机自动加载，可使用ntsysv命令（或setup命令中的system service选项）打开开机自动加载的服务，并勾选smb，确定后即可实现开机加载samba服务。
-3、关闭防火墙
-　　默认情况下防火墙关闭了139 TCP端口，也关闭了nmbd进程所需要的137、138端口。所以我们使用命令service iptables stop命令关闭防火墙。也可对防火墙进行修改，放行TCP139 UDP 137、138端口。
-4、配置samba服务
-　　samba服务的配置文件是 /etc/samba/smb.conf，使用VI编辑器打开vi /etc/samba/smb.conf文件，对samba进行配置
-　　smb.conf文件中包括4中结构，【Global】、【Homes】、【printers】、【Userdefined_shareName】，其中：
-　　Globa用于定义全局参数和缺省值
-　　Homes用于用户的home目录共享
-　　Printers用于定义打印机共享
-　　Userdefined_ShareName用于自定义共享(可有多个)
-　　说明：文件中开头带有“#”为说明文件，不执行。 开头带有“;”为举例文件，不执行(若想让其执行，去掉“;”)。
-配置全局参数【Global】
-　　◎基本全局参数
-　　workgroup＝MYGROUP 设置samba要加入的工作组
-　　server string =Samba Service 指定浏览列表里的机器描述
-　　netbios name=fedora 设置samba的NetBIOS名字 (需要自己添加)
-　　client code page=936 设置客户字符编码 936为简体中文(需要自己添加)
-◎日志全局参数
-　　log file 指定日志文件的名称
-　　max log size＝50 指定日志文件的最大尺寸(KB)
-◎安全全局参数
-    [security] 定义samba的安装等级
-    share&ndash;用户不需要用户名和密码即可登陆samba服务器;
-    user&ndash;由提供samba服务的samba服务器负责检查帐户及口令;
-    server&ndash;检查帐户及口令的工作指定由另一台WindowsNT/2000或samba服务器负责;
-    domain&ndash;指定windowsNT/2000域控制器来验证用户帐户、密码
-　　encrypt passwords = yes
-　　smb passwd file = /etc/samba/smbpasswd
-　　这两行用于设定是否对samba密码进行加密,并指定加密文件存放路径.
-◎配置自定义共享
-　　自定义共享，只需在文件最后加入【share】，名字随便取。其中一的参数我们来依依介绍
-　　comment 描述该共享的名称
-　　path 定义该共享的目录
-　　browseable 指定共享的目录是否可浏览
-　　writable 指定共享的目录是否有写入权限
-　　read only 指定共享的目录为只读权限
-　　public 指定是否可以允许Guest帐户访问
-　　guest ok 通public相同，yes为允许guest访问
-　　only guest 指定只有guest用户可以访问
-　　calid users 指定访问该共享的用户
-如：comment ＝my share
-path =/home/share
-browseable =yes
-read only =yes
-public =yes
-only guest =yes
-◎配置完成后的工作
-　　在配置完成后，我们只需新建path定义的共享目录mkdir /home/share，
-并使用chmod命令设置了其权限为777,chmod 777 /home/share。
+<p>一、Samba服务配置过程<br />
+samba的功能很简单，就是为了使linux和windows之间能够实现共享。并且利用samba搭建文件服务器，不仅比windows功能强大，而且访问速度快、安全。首先说明，samba服务器需要两个守护进程：smbd和nmbd。smbd进程监听139TCP端口，处理到来的SMB数据包;nmbd进程监听137、138UDP端口，使其他主机能浏览linux服务器。<br />
+1、安装Samba服务<br />
+首先用命令测试rpm -qi samba看是否安装了Samba软件包，若没有可以用yum install samba在线安装（fedora 11环境下）。<br />
+2、启动Samba服务<br />
+安装完成后，使用service smb start 命令启动samba服务。如果想让samba服务开机自动加载，可使用ntsysv命令（或setup命令中的system service选项）打开开机自动加载的服务，并勾选smb，确定后即可实现开机加载samba服务。<br />
+3、关闭防火墙<br />
+　　默认情况下防火墙关闭了139 TCP端口，也关闭了nmbd进程所需要的137、138端口。所以我们使用命令service iptables stop命令关闭防火墙。也可对防火墙进行修改，放行TCP139 UDP 137、138端口。<br />
+4、配置samba服务<br />
+　　samba服务的配置文件是 /etc/samba/smb.conf，使用VI编辑器打开vi /etc/samba/smb.conf文件，对samba进行配置<br />
+　　smb.conf文件中包括4中结构，【Global】、【Homes】、【printers】、【Userdefined_shareName】，其中：<br />
+　　Globa用于定义全局参数和缺省值<br />
+　　Homes用于用户的home目录共享<br />
+　　Printers用于定义打印机共享<br />
+　　Userdefined_ShareName用于自定义共享(可有多个)<br />
+　　说明：文件中开头带有“#”为说明文件，不执行。 开头带有“;”为举例文件，不执行(若想让其执行，去掉“;”)。<br />
+配置全局参数【Global】<br />
+　　◎基本全局参数<br />
+　　workgroup＝MYGROUP 设置samba要加入的工作组<br />
+　　server string =Samba Service 指定浏览列表里的机器描述<br />
+　　netbios name=fedora 设置samba的NetBIOS名字 (需要自己添加)<br />
+　　client code page=936 设置客户字符编码 936为简体中文(需要自己添加)<br />
+◎日志全局参数<br />
+　　log file 指定日志文件的名称<br />
+　　max log size＝50 指定日志文件的最大尺寸(KB)<br />
+◎安全全局参数<br />
+    [security] 定义samba的安装等级<br />
+    share&ndash;用户不需要用户名和密码即可登陆samba服务器;<br />
+    user&ndash;由提供samba服务的samba服务器负责检查帐户及口令;<br />
+    server&ndash;检查帐户及口令的工作指定由另一台WindowsNT/2000或samba服务器负责;<br />
+    domain&ndash;指定windowsNT/2000域控制器来验证用户帐户、密码<br />
+　　encrypt passwords = yes<br />
+　　smb passwd file = /etc/samba/smbpasswd<br />
+　　这两行用于设定是否对samba密码进行加密,并指定加密文件存放路径.<br />
+◎配置自定义共享<br />
+　　自定义共享，只需在文件最后加入【share】，名字随便取。其中一的参数我们来依依介绍<br />
+　　comment 描述该共享的名称<br />
+　　path 定义该共享的目录<br />
+　　browseable 指定共享的目录是否可浏览<br />
+　　writable 指定共享的目录是否有写入权限<br />
+　　read only 指定共享的目录为只读权限<br />
+　　public 指定是否可以允许Guest帐户访问<br />
+　　guest ok 通public相同，yes为允许guest访问<br />
+　　only guest 指定只有guest用户可以访问<br />
+　　calid users 指定访问该共享的用户<br />
+如：comment ＝my share<br />
+path =/home/share<br />
+browseable =yes<br />
+read only =yes<br />
+public =yes<br />
+only guest =yes<br />
+◎配置完成后的工作<br />
+　　在配置完成后，我们只需新建path定义的共享目录mkdir /home/share，<br />
+并使用chmod命令设置了其权限为777,chmod 777 /home/share。<br />
 　　这样在service smb restart重启smb服务后客户端就可以访问该服务器(我修改了全局参数中的security=share，所以进入服务器不需要输入用户名和密码)。在windows下运行中运行：//192.168.1.6(linux的IP地址)即可。</p>
 
-<p>二、NFS服务配置过程
-1、NFS服务器的安装
-检查linux系统中是否安装了nfs-utils和portmap两个软件包，#rpm –q nfs-utils（portmap）
-2、查看NFS服务器是否启动
-#service nfs status
-#service portmap status
-如果服务器没有启动，则开启服务（默认服务下nfs没有完全开启）
-#service nfs start
-#service portmap start
-也可以在ntsysv命令下关闭iptable和开启nfs让其自启动。
-3、指定NFS服务器的配置文件
-NFS服务器的配置文件保存“/etc/”目录中，文件名称是“exports”，该文件用于被指NFS服务器提供的目录共享
-#vi /etc/exports
-配置“exports”文件格式如下
-/tftpboot *（sync，ro）
-tftp：共享目录名
-* 表示所有主机
-（sync，ro） 设置选项
-exports文件中的“配置选项”字段放置在括号对（“（ ）”）中 ，多个选项间用逗号分隔
-sync：设置NFS服务器同步写磁盘，这样不会轻易丢失数据，建议所有的NFS共享目录都使用该选项
-ro：设置输出的共享目录只读，与rw不能共同使用
-rw：设置输出的共享目录可读写，与ro不能共同使用
-4、重新输出共享目录
-Exportfs管理工具可以对“exports”文件进行管理
-#exportfs –rv 可以让新设置的“exports”文件内容生效
+<p>二、NFS服务配置过程<br />
+1、NFS服务器的安装<br />
+检查linux系统中是否安装了nfs-utils和portmap两个软件包，#rpm –q nfs-utils（portmap）<br />
+2、查看NFS服务器是否启动<br />
+#service nfs status<br />
+#service portmap status<br />
+如果服务器没有启动，则开启服务（默认服务下nfs没有完全开启）<br />
+#service nfs start<br />
+#service portmap start<br />
+也可以在ntsysv命令下关闭iptable和开启nfs让其自启动。<br />
+3、指定NFS服务器的配置文件<br />
+NFS服务器的配置文件保存“/etc/”目录中，文件名称是“exports”，该文件用于被指NFS服务器提供的目录共享<br />
+#vi /etc/exports<br />
+配置“exports”文件格式如下<br />
+/tftpboot *（sync，ro）<br />
+tftp：共享目录名<br />
+* 表示所有主机<br />
+（sync，ro） 设置选项<br />
+exports文件中的“配置选项”字段放置在括号对（“（ ）”）中 ，多个选项间用逗号分隔<br />
+sync：设置NFS服务器同步写磁盘，这样不会轻易丢失数据，建议所有的NFS共享目录都使用该选项<br />
+ro：设置输出的共享目录只读，与rw不能共同使用<br />
+rw：设置输出的共享目录可读写，与ro不能共同使用<br />
+4、重新输出共享目录<br />
+Exportfs管理工具可以对“exports”文件进行管理<br />
+#exportfs –rv 可以让新设置的“exports”文件内容生效<br />
 显示当前主机中NFS服务器的输出列表</p>
 
 <h1 id="showmount-e">showmount -e</h1>
@@ -788,91 +789,91 @@ Exportfs管理工具可以对“exports”文件进行管理
 
 <h1 id="showmount-d">showmount -d</h1>
 
-<p>5、使用mount命令挂载NFS文件系统
-#mount 192.168.1.6:/tftpboot /home/share
-将主机IP地址为192.168.1.6中的/tftpboot目录挂载到/home/share
+<p>5、使用mount命令挂载NFS文件系统<br />
+#mount 192.168.1.6:/tftpboot /home/share<br />
+将主机IP地址为192.168.1.6中的/tftpboot目录挂载到/home/share<br />
 卸载系统中已挂载的NFS共享目录</p>
 
 <h1 id="umount-home-share">umount /home/share</h1>
 
-<p>卸载的时候不能在/home/share目录下卸载，必须注销系统后卸载。
-PS:
-如果portmap进程停止了运行或异常终止，那么该系统上的所有RPC服务器必须重新启动。首先停止NFS服务器上的所有NFS服务进程，然后启动portmap进程，再启动服务器上的NFS进程。
+<p>卸载的时候不能在/home/share目录下卸载，必须注销系统后卸载。<br />
+PS:<br />
+如果portmap进程停止了运行或异常终止，那么该系统上的所有RPC服务器必须重新启动。首先停止NFS服务器上的所有NFS服务进程，然后启动portmap进程，再启动服务器上的NFS进程。<br />
 但portmap只在第一次建立连接的时候起作用，帮助网络应用程序找到正确的通讯端口，但是一旦这个双方正确连接，端口和应用就绑定，portmap也就不起作用了。但对其他任何第一次需要找到端口建立通讯的应用仍然有用。简单的说，portmap就是应用和端口的婚姻介绍人，双方成事了以后，媒婆就没用了。</p>
 
-<p>首先当然是要安装samba了，呵呵：
-代码:
-sudo apt-get install samba
+<p>首先当然是要安装samba了，呵呵：<br />
+代码:<br />
+sudo apt-get install samba<br />
 sudo apt-get install smbfs</p>
 
 <p>下面我们来共享群组可读写文件夹，假设你要共享的文件夹为： /home/ray/share</p>
 
-<p>首先创建这个文件夹
-代码:
-mkdir /home/ray/share
+<p>首先创建这个文件夹<br />
+代码:<br />
+mkdir /home/ray/share<br />
 chmod 777 /home/ray/share</p>
 
-<p>备份并编辑smb.conf允许网络用户访问
-代码:
-sudo cp /etc/samba/smb.conf /etc/samba/smb.conf_backup
+<p>备份并编辑smb.conf允许网络用户访问<br />
+代码:<br />
+sudo cp /etc/samba/smb.conf /etc/samba/smb.conf_backup<br />
 sudo gedit /etc/samba/smb.conf</p>
 
-<p>搜寻这一行文字
-代码:
+<p>搜寻这一行文字<br />
+代码:<br />
 ; security = user</p>
 
-<p>用下面这几行取代
-代码:
-security = user
+<p>用下面这几行取代<br />
+代码:<br />
+security = user<br />
 username map = /etc/samba/smbusers</p>
 
 <p>将下列几行新增到文件的最后面，假设允许访问的用户为：newsfan。而文件夹的共享名为 Share</p>
 
-<p>代码:
-[Share]
-comment = Shared Folder with username and password
-path = /home/ray/share
-public = yes
-writable = yes
-valid users = newsfan
-create mask = 0700
-directory mask = 0700
-force user = nobody
-force group = nogroup
-available = yes
+<p>代码:<br />
+[Share]<br />
+comment = Shared Folder with username and password<br />
+path = /home/ray/share<br />
+public = yes<br />
+writable = yes<br />
+valid users = newsfan<br />
+create mask = 0700<br />
+directory mask = 0700<br />
+force user = nobody<br />
+force group = nogroup<br />
+available = yes<br />
 browseable = yes</p>
 
-<p>然后顺便把这里改一下，找到［global］把 workgroup = MSHOME 改成
-代码:
-workgroup = WORKGROUP
-display charset = UTF-8
-unix charset = UTF-8
+<p>然后顺便把这里改一下，找到［global］把 workgroup = MSHOME 改成<br />
+代码:<br />
+workgroup = WORKGROUP<br />
+display charset = UTF-8<br />
+unix charset = UTF-8<br />
 dos charset = cp936</p>
 
 <p>后面的三行是为了防止出现中文目录乱码的情况。其中根据你的local，UTF-8 有可能需要改成 cp936。自己看着办吧。</p>
 
-<p>现在要添加newsfan这个网络访问帐户。如果系统中当前没有这个帐户，那么
-代码:
+<p>现在要添加newsfan这个网络访问帐户。如果系统中当前没有这个帐户，那么<br />
+代码:<br />
 sudo useradd newsfan</p>
 
 <p>要注意，上面只是增加了newsfan这个用户，却没有给用户赋予本机登录密码。所以这个用户将只能从远程访问，不能从本机登录。而且samba的登录密码可以和本机登录密码不一样。</p>
 
-<p>现在要新增网络使用者的帐号：
-代码:
-sudo smbpasswd -a newsfan
+<p>现在要新增网络使用者的帐号：<br />
+代码:<br />
+sudo smbpasswd -a newsfan<br />
 sudo gedit /etc/samba/smbusers</p>
 
-<p>在新建立的文件内加入下面这一行并保存
-代码:
+<p>在新建立的文件内加入下面这一行并保存<br />
+代码:<br />
 newsfan = &ldquo;network username&rdquo;</p>
 
-<p>如果将来需要更改newsfan的网络访问密码，也用这个命令更改
-代码:
+<p>如果将来需要更改newsfan的网络访问密码，也用这个命令更改<br />
+代码:<br />
 sudo smbpasswd -a newsfan</p>
 
-<p>删除网络使用者的帐号的命令把上面的 -a 改成 -x
-代码:
-sudo testparm
+<p>删除网络使用者的帐号的命令把上面的 -a 改成 -x<br />
+代码:<br />
+sudo testparm<br />
 sudo /etc/init.d/samba restart</p>
 
 <p>最后退出重新登录或者重新启动一下机器。</p>
@@ -1042,7 +1043,7 @@ sudo /etc/init.d/samba restart</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -1265,6 +1266,8 @@ sudo /etc/init.d/samba restart</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -1287,7 +1290,9 @@ sudo /etc/init.d/samba restart</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1319,7 +1324,7 @@ sudo /etc/init.d/samba restart</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

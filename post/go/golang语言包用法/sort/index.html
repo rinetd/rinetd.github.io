@@ -253,64 +253,64 @@
 
 <hr />
 
-<pre><code>type Interface interface {
-    Len() int    // Len 为集合内元素的总数
-    Less(i, j int) bool　//如果index为i的元素小于index为j的元素，则返回true，否则返回false
-    Swap(i, j int)  // Swap 交换索引为 i 和 j 的元素
-}
+<pre><code>type Interface interface {  
+    Len() int    // Len 为集合内元素的总数  
+    Less(i, j int) bool　//如果index为i的元素小于index为j的元素，则返回true，否则返回false  
+    Swap(i, j int)  // Swap 交换索引为 i 和 j 的元素  
+}  
 </code></pre>
 
 <p>任何实现了 sort.Interface 的类型（一般为集合），均可使用该包中的方法进行排序。这些方法要求集合内列出元素的索引为整数。</p>
 
-<p>func Float64s(a float64)     //Float64s将类型为float64的slice a以升序方式进行排序
+<p>func Float64s(a float64)     //Float64s将类型为float64的slice a以升序方式进行排序<br />
 func Float64sAreSorted(a float64) bool　　//判定是否已经进行排序func Ints(a int)</p>
 
-<p>func Ints(a int)                       //Ints 以升序排列 int 切片。
-func IntsAreSorted(a int) bool　　　  //IntsAreSorted 判断 int 切片是否已经按升序排列。
+<p>func Ints(a int)                       //Ints 以升序排列 int 切片。<br />
+func IntsAreSorted(a int) bool　　　  //IntsAreSorted 判断 int 切片是否已经按升序排列。<br />
 func IsSorted(data Interface) bool    IsSorted 判断数据是否已经排序。包括各种可sort的数据类型的判断．</p>
 
-<p>func Strings(a string)//Strings 以升序排列 string 切片。
+<p>func Strings(a string)//Strings 以升序排列 string 切片。<br />
 func StringsAreSorted(a string) bool//StringsAreSorted 判断 string 切片是否已经按升序排列。</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;fmt&quot;
-    &quot;sort&quot;
-)
-
-//定义interface{},并实现sort.Interface接口的三个方法
-type IntSlice []int
-
-func (c IntSlice) Len() int {
-    return len(c)
-}
-func (c IntSlice) Swap(i, j int) {
-    c[i], c[j] = c[j], c[i]
-}
-func (c IntSlice) Less(i, j int) bool {
-    return c[i] &lt; c[j]
-}
-
-func main() {
-    a := IntSlice{1, 3, 5, 7, 2}
-    b := []float64{1.1, 2.3, 5.3, 3.4}
-    c := []int{1, 3, 5, 4, 2}
-    fmt.Println(sort.IsSorted(a)) //false
-    if !sort.IsSorted(a) {
-        sort.Sort(a)
-    }
-
-    if !sort.Float64sAreSorted(b) {
-        sort.Float64s(b)
-    }
-    if !sort.IntsAreSorted(c) {
-        sort.Ints(c)
-    }
-    fmt.Println(a)//[1 2 3 5 7]
-    fmt.Println(b)//[1.1 2.3 3.4 5.3]
-    fmt.Println(c)// [1 2 3 4 5]
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;fmt&quot;  
+    &quot;sort&quot;  
+)  
+  
+//定义interface{},并实现sort.Interface接口的三个方法  
+type IntSlice []int  
+  
+func (c IntSlice) Len() int {  
+    return len(c)  
+}  
+func (c IntSlice) Swap(i, j int) {  
+    c[i], c[j] = c[j], c[i]  
+}  
+func (c IntSlice) Less(i, j int) bool {  
+    return c[i] &lt; c[j]  
+}  
+  
+func main() {  
+    a := IntSlice{1, 3, 5, 7, 2}  
+    b := []float64{1.1, 2.3, 5.3, 3.4}  
+    c := []int{1, 3, 5, 4, 2}  
+    fmt.Println(sort.IsSorted(a)) //false  
+    if !sort.IsSorted(a) {  
+        sort.Sort(a)  
+    }  
+  
+    if !sort.Float64sAreSorted(b) {  
+        sort.Float64s(b)  
+    }  
+    if !sort.IntsAreSorted(c) {  
+        sort.Ints(c)  
+    }  
+    fmt.Println(a)//[1 2 3 5 7]  
+    fmt.Println(b)//[1.1 2.3 3.4 5.3]  
+    fmt.Println(c)// [1 2 3 4 5]  
+}  
 </code></pre>
 
 <p>func Search(n int, f func(int) bool) int   </p>
@@ -321,68 +321,68 @@ func main() {
 
 <p>为了查找某个值，而不是某一范围的值时，如果slice以升序排序，则　f func中应该使用＞＝,如果slice以降序排序，则应该使用&lt;=. 例子如下：package main</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;fmt&quot;
-    &quot;sort&quot;
-)
-
-func main() {
-    a := []int{1, 2, 3, 4, 5}
-    b := sort.Search(len(a), func(i int) bool { return a[i] &gt;= 30 })
-    fmt.Println(b)　　　　　　　//5，查找不到，返回a slice的长度５，而不是-1
-    c := sort.Search(len(a), func(i int) bool { return a[i] &lt;= 3 })
-    fmt.Println(c)                             //0，利用二分法进行查找，返回符合条件的最左边数值的index，即为０
-    d := sort.Search(len(a), func(i int) bool { return a[i] == 3 })
-    fmt.Println(d)                          //2　　　
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;fmt&quot;  
+    &quot;sort&quot;  
+)  
+  
+func main() {  
+    a := []int{1, 2, 3, 4, 5}  
+    b := sort.Search(len(a), func(i int) bool { return a[i] &gt;= 30 })  
+    fmt.Println(b)　　　　　　　//5，查找不到，返回a slice的长度５，而不是-1  
+    c := sort.Search(len(a), func(i int) bool { return a[i] &lt;= 3 })  
+    fmt.Println(c)                             //0，利用二分法进行查找，返回符合条件的最左边数值的index，即为０  
+    d := sort.Search(len(a), func(i int) bool { return a[i] == 3 })  
+    fmt.Println(d)                          //2　　　  
+}  
 </code></pre>
 
 <p>官网上面有趣的例子：</p>
 
-<pre><code class="language-go">    func GuessingGame() {
-        var s string
-        fmt.Printf(&quot;Pick an integer from 0 to 100.\n&quot;)
-        answer := sort.Search(100, func(i int) bool {
-            fmt.Printf(&quot;Is your number &lt;= %d? &quot;, i)
-            fmt.Scanf(&quot;%s&quot;, &amp;s)
-            return s != &quot;&quot; &amp;&amp; s[0] == 'y'
-        })
-        fmt.Printf(&quot;Your number is %d.\n&quot;, answer)
-    }
+<pre><code class="language-go">    func GuessingGame() {  
+        var s string  
+        fmt.Printf(&quot;Pick an integer from 0 to 100.\n&quot;)  
+        answer := sort.Search(100, func(i int) bool {  
+            fmt.Printf(&quot;Is your number &lt;= %d? &quot;, i)  
+            fmt.Scanf(&quot;%s&quot;, &amp;s)  
+            return s != &quot;&quot; &amp;&amp; s[0] == 'y'  
+        })  
+        fmt.Printf(&quot;Your number is %d.\n&quot;, answer)  
+    }  
 </code></pre>
 
-<p>func SearchFloat64s(a float64, x float64) int　　//SearchFloat64s 在float64s切片中搜索x并返回索引如Search函数所述. 返回可以插入x值的索引位置，如果x不存在，返回数组a的长度切片必须以升序排列
-func SearchInts(a int, x int) int  //SearchInts 在ints切片中搜索x并返回索引如Search函数所述. 返回可以插入x值的索引位置，如果x不存在，返回数组a的长度切片必须以升序排列
+<p>func SearchFloat64s(a float64, x float64) int　　//SearchFloat64s 在float64s切片中搜索x并返回索引如Search函数所述. 返回可以插入x值的索引位置，如果x不存在，返回数组a的长度切片必须以升序排列<br />
+func SearchInts(a int, x int) int  //SearchInts 在ints切片中搜索x并返回索引如Search函数所述. 返回可以插入x值的索引位置，如果x不存在，返回数组a的长度切片必须以升序排列<br />
 func SearchStrings(a string, x string) int//SearchFloat64s 在strings切片中搜索x并返回索引如Search函数所述. 返回可以插入x值的索引位置，如果x不存在，返回数组a的长度切片必须以升序排列</p>
 
 <p><span style="color:#FF0000">其中需要注意的是，以上三种search查找方法，其对应的slice必须按照升序进行排序，否则会出现奇怪的结果．</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;fmt&quot;
-    &quot;sort&quot;
-)
-
-func main() {
-    a := []string{&quot;a&quot;, &quot;c&quot;}
-    i := sort.SearchStrings(a, &quot;b&quot;)
-    fmt.Println(i) //1
-    b := []string{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;}
-    i = sort.SearchStrings(b, &quot;b&quot;)
-    fmt.Println(i) //1
-    c := []string{&quot;d&quot;, &quot;c&quot;}
-    i = sort.SearchStrings(c, &quot;b&quot;)
-    fmt.Println(i) //0
-    d := []string{&quot;c&quot;, &quot;d&quot;, &quot;b&quot;}
-    i = sort.SearchStrings(d, &quot;b&quot;)
-    fmt.Println(i) //0，由于d不是以升序方式排列，所以出现奇怪的结果，这可以根据SearchStrings的定义进行解释．见下方．
-}
-func SearchStrings(a []string, x string) int {
-return Search(len(a), func(i int) bool { return a[i] &gt;= x })
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;fmt&quot;  
+    &quot;sort&quot;  
+)  
+  
+func main() {  
+    a := []string{&quot;a&quot;, &quot;c&quot;}  
+    i := sort.SearchStrings(a, &quot;b&quot;)  
+    fmt.Println(i) //1  
+    b := []string{&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;}  
+    i = sort.SearchStrings(b, &quot;b&quot;)  
+    fmt.Println(i) //1  
+    c := []string{&quot;d&quot;, &quot;c&quot;}  
+    i = sort.SearchStrings(c, &quot;b&quot;)  
+    fmt.Println(i) //0  
+    d := []string{&quot;c&quot;, &quot;d&quot;, &quot;b&quot;}  
+    i = sort.SearchStrings(d, &quot;b&quot;)  
+    fmt.Println(i) //0，由于d不是以升序方式排列，所以出现奇怪的结果，这可以根据SearchStrings的定义进行解释．见下方．  
+}  
+func SearchStrings(a []string, x string) int {  
+return Search(len(a), func(i int) bool { return a[i] &gt;= x })  
+}  
 </code></pre>
 
 <p>由此可见，为了精确查找，必须对string　以升序方式进行排序．</p>
@@ -395,66 +395,66 @@ return Search(len(a), func(i int) bool { return a[i] &gt;= x })
 
 <p>type Float64Slice</p>
 
-<pre><code>type Float64Slice []float64
+<pre><code>type Float64Slice []float64  
 </code></pre>
 
 <p>Float64Slice 针对 float6 实现接口的方法，以升序排列。</p>
 
-<pre><code class="language-go">func (p Float64Slice) Len() int　　　　//求长度
-func (p Float64Slice) Less(i, j int) bool　//比大小
-func (p Float64Slice) Search(x float64) int　//查找
-func (p Float64Slice) Sort()　　　　　　//排序
-func (p Float64Slice) Swap(i, j int)　　　//交换位置
+<pre><code class="language-go">func (p Float64Slice) Len() int　　　　//求长度  
+func (p Float64Slice) Less(i, j int) bool　//比大小  
+func (p Float64Slice) Search(x float64) int　//查找  
+func (p Float64Slice) Sort()　　　　　　//排序  
+func (p Float64Slice) Swap(i, j int)　　　//交换位置  
 </code></pre>
 
 <p>type IntSlice</p>
 
-<pre><code>type IntSlice []int
+<pre><code>type IntSlice []int  
 </code></pre>
 
 <p>IntSlice 针对 int 实现接口的方法，以升序排列。</p>
 
-<pre><code class="language-go">func (p IntSlice) Len() int
-func (p IntSlice) Less(i, j int) bool
-func (p IntSlice) Search(x int) int
-func (p IntSlice) Sort()
-func (p IntSlice) Swap(i, j int)
+<pre><code class="language-go">func (p IntSlice) Len() int  
+func (p IntSlice) Less(i, j int) bool  
+func (p IntSlice) Search(x int) int  
+func (p IntSlice) Sort()  
+func (p IntSlice) Swap(i, j int)  
 </code></pre>
 
 <p>type StringSlice</p>
 
-<pre><code>type StringSlice []string
+<pre><code>type StringSlice []string  
 </code></pre>
 
 <p>StringSlice 针对 string 实现接口的方法，以升序排列。</p>
 
-<pre><code class="language-go">func (p StringSlice) Len() int
-func (p StringSlice) Less(i, j int) bool
-func (p StringSlice) Search(x string) int
-func (p StringSlice) Sort()
-func (p StringSlice) Swap(i, j int)
+<pre><code class="language-go">func (p StringSlice) Len() int  
+func (p StringSlice) Less(i, j int) bool  
+func (p StringSlice) Search(x string) int  
+func (p StringSlice) Sort()  
+func (p StringSlice) Swap(i, j int)  
 </code></pre>
 
 <p>func Reverse(data Interface) Interface</p>
 
-<pre><code>func Reverse(data Interface) Interface
+<pre><code>func Reverse(data Interface) Interface  
 </code></pre>
 
 <p>Reverse实现对data的逆序排列</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;fmt&quot;
-    &quot;sort&quot;
-)
-
-func main() {
-    a := []int{1, 2, 5, 3, 4}
-    fmt.Println(a)        // [1 2 5 3 4]
-    sort.Sort(sort.Reverse(sort.IntSlice(a)))
-    fmt.Println(a)        // [5 4 3 2 1]
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;fmt&quot;  
+    &quot;sort&quot;  
+)  
+  
+func main() {  
+    a := []int{1, 2, 5, 3, 4}  
+    fmt.Println(a)        // [1 2 5 3 4]  
+    sort.Sort(sort.Reverse(sort.IntSlice(a)))  
+    fmt.Println(a)        // [5 4 3 2 1]  
+}  
 </code></pre>
 
                       
@@ -622,7 +622,7 @@ func main() {
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -845,6 +845,8 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -867,7 +869,9 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -899,7 +903,7 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

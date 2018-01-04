@@ -241,55 +241,56 @@
 
 <h1 id="加密变量设置3种方式">加密变量设置3种方式</h1>
 
-<p>PASSWORD 123456                       # 变量设置
-SSH_KEY  ${cat /path/to/.ssh/id_rsa}  # 命令返回值
+<p>PASSWORD 123456                       # 变量设置<br />
+SSH_KEY  ${cat /path/to/.ssh/id_rsa}  # 命令返回值<br />
 SSH_KEY  @/path/to/.ssh/id_rsa        # 文件内容</p>
 
 <h1 id="原理-将script中的每个语句通过-拼接为一条语句">原理： 将script中的每个语句通过 &amp;&amp; 拼接为一条语句</h1>
 
 <ol>
-<li>多个子项之间用 &amp;&amp; 连接</li>
-<li>每个子项之间不能用 ;</li>
+<li>多个子项之间用 &amp;&amp; 连接<br /></li>
+<li>每个子项之间不能用 ;<br />
+<br /></li>
 </ol>
 
-<pre><code class="language-bash"># - export DRONE_COMMIT_MESSAGE=${DRONE_COMMIT_MESSAGE}
-- TARGET=/docker/tomcat/webapps/${DRONE_REPO_NAME}/ ;
-  echo &quot;$TARGET&quot;;
-  export DB_HOST=mysql;
-  export DB_NAME=${DRONE_REPO_NAME};
-  export DB_USER=lybb;
-  export DB_PASS=hyc@2017
-  # for f in `echo &quot;$DRONE_COMMIT_MESSAGE&quot; | sed 's/.*upgrade \(.*sql\).*/\1/'` ; do if [ -e $TARGET/$f  ]; then echo $f; fi; done
-# - sed -i &quot;s|^jdbc.url=jdbc:mysql.*|jdbc.url=jdbc:mysql://mysql:3306/${DRONE_REPO_NAME}?useUnicode=true\&amp;characterEncoding=UTF-8|g&quot;  $TARGET/WEB-INF/classes/jeesite.properties
-# - sed -i &quot;s|^jdbc.username=.*|jdbc.username=$DB_USER|g&quot; $TARGET/WEB-INF/classes/jeesite.properties
-# - sed -i &quot;s|^jdbc.password=.*|jdbc.password=${DB_PASS}|g&quot; ${TARGET}/WEB-INF/classes/jeesite.properties
-- PORT=10000 ; docker rm -f tomcat ; docker run --restart=always -d --name tomcat -p $PORT:8080 --link mariadb:mysql -v /docker/tomcat/webapps/:/usr/local/tomcat/webapps/ -v /docker/tomcat/logs:/usr/local/tomcat/logs  rinetd/tomcat:8.5
-# 这里脚本是在远程机器/root目录上执行
-
+<pre><code class="language-bash"># - export DRONE_COMMIT_MESSAGE=${DRONE_COMMIT_MESSAGE}  
+- TARGET=/docker/tomcat/webapps/${DRONE_REPO_NAME}/ ;  
+  echo &quot;$TARGET&quot;;  
+  export DB_HOST=mysql;  
+  export DB_NAME=${DRONE_REPO_NAME};  
+  export DB_USER=lybb;  
+  export DB_PASS=&quot;yourpassword&quot;  
+  # for f in `echo &quot;$DRONE_COMMIT_MESSAGE&quot; | sed 's/.*upgrade \(.*sql\).*/\1/'` ; do if [ -e $TARGET/$f  ]; then echo $f; fi; done  
+# - sed -i &quot;s|^jdbc.url=jdbc:mysql.*|jdbc.url=jdbc:mysql://mysql:3306/${DRONE_REPO_NAME}?useUnicode=true\&amp;characterEncoding=UTF-8|g&quot;  $TARGET/WEB-INF/classes/jeesite.properties  
+# - sed -i &quot;s|^jdbc.username=.*|jdbc.username=$DB_USER|g&quot; $TARGET/WEB-INF/classes/jeesite.properties  
+# - sed -i &quot;s|^jdbc.password=.*|jdbc.password=${DB_PASS}|g&quot; ${TARGET}/WEB-INF/classes/jeesite.properties  
+- PORT=10000 ; docker rm -f tomcat ; docker run --restart=always -d --name tomcat -p $PORT:8080 --link mariadb:mysql -v /docker/tomcat/webapps/:/usr/local/tomcat/webapps/ -v /docker/tomcat/logs:/usr/local/tomcat/logs  rinetd/tomcat:8.5  
+# 这里脚本是在远程机器/root目录上执行  
+  
 </code></pre>
 
 <h2 id="drone-0-6">drone 0.6</h2>
 
-<p>Name:   &ldquo;ssh-key&rdquo;,
-Usage:  &ldquo;private ssh key&rdquo;,
+<p>Name:   &ldquo;ssh-key&rdquo;,<br />
+Usage:  &ldquo;private ssh key&rdquo;,<br />
 EnvVar: &ldquo;PLUGIN_SSH_KEY,PLUGIN_KEY,SSH_KEY</p>
 
 <p>ssh-key 自动转换为<code>PLUGIN_SSH_KEY</code> 此外又重新定义了<code>PLUGIN_KEY,SSH_KEY</code>与<code>PLUGIN_SSH_KEY</code>等价</p>
 
-<pre><code class="language-yml">ssh:
-  image: appleboy/drone-ssh
-  host: demo.linyibr.com
-  # username: root
-  # password: ${SSH_PASSWORD}
-  # ssh-key: ${SSH_KEY}
-  port: 222
-  script:
-    - echo $SSH_PASSWORD
-    - echo ${SSH_PASSWORD}
-    - echo $${SSH_PASSWORD}
-  secrets: [ ssh_password,SSH_KEY ]
-# drone secret add --repository linyibr/zhongzhenghuijin --image=appleboy/drone-ssh --name SSH_KEY --value @/home/ubuntu/.ssh/id_rsa
-
+<pre><code class="language-yml">ssh:  
+  image: appleboy/drone-ssh  
+  host: demo.linyibr.com  
+  # username: root  
+  # password: ${SSH_PASSWORD}  
+  # ssh-key: ${SSH_KEY}  
+  port: 222  
+  script:  
+    - echo $SSH_PASSWORD  
+    - echo ${SSH_PASSWORD}  
+    - echo $${SSH_PASSWORD}  
+  secrets: [ ssh_password,SSH_KEY ]  
+# drone secret add --repository linyibr/zhongzhenghuijin --image=appleboy/drone-ssh --name SSH_KEY --value @/home/ubuntu/.ssh/id_rsa  
+  
 </code></pre>
 
 <h2 id="drone-0-5">drone 0.5</h2>
@@ -298,196 +299,196 @@ EnvVar: &ldquo;PLUGIN_SSH_KEY,PLUGIN_KEY,SSH_KEY</p>
 
 <p>The following parameters are used to configure the plugin:</p>
 
-<pre><code>host - address or IP of the remote machine
-port - port to connect to on the remote machine
-user - user to log in as on the remote machine
-key - private SSH key for the remote machine
-sleep - sleep for seconds between host connections
-timeout - timeout for the tcp connection attempt
-script - list of commands to execute
+<pre><code>host - address or IP of the remote machine  
+port - port to connect to on the remote machine  
+user - user to log in as on the remote machine  
+key - private SSH key for the remote machine  
+sleep - sleep for seconds between host connections  
+timeout - timeout for the tcp connection attempt  
+script - list of commands to execute  
 </code></pre>
 
 <p>The following secret values can be set to configure the plugin.</p>
 
-<pre><code>SSH_HOST - corresponds to host
-SSH_PORT - corresponds to port
-SSH_USER - corresponds to user
-SSH_KEY - corresponds to key
-SSH_SLEEP - corresponds to sleep
-SSH_TIMEOUT - corresponds to timeout
+<pre><code>SSH_HOST - corresponds to host  
+SSH_PORT - corresponds to port  
+SSH_USER - corresponds to user  
+SSH_KEY - corresponds to key  
+SSH_SLEEP - corresponds to sleep  
+SSH_TIMEOUT - corresponds to timeout  
 </code></pre>
 
-<pre><code>ssh:
-  image: plugins/ssh
-  host: [ qubuluo.com ]
-  user: root
-  port: 22
-  sleep: 5
-  script:
-    - echo hello &gt;word.txt
-    - echo world
+<pre><code>ssh:  
+  image: plugins/ssh  
+  host: [ qubuluo.com ]  
+  user: root  
+  port: 22  
+  sleep: 5  
+  script:  
+    - echo hello &gt;word.txt  
+    - echo world  
 </code></pre>
 
 <p>每次修改.drone.yml 需要重新签名</p>
 
 <p><code>drone secrets add  --image=busybox --image=busybox:* octocat/hello-world SSH_KEY @/path/to/.ssh/id_rsa</code></p>
 
-<p>export DRONE_SERVER=<a href="http://kbook.org">http://kbook.org</a>
-export DRONE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXh0IjoicmluZXRkIiwidHlwZSI6InVzZXIifQ.0ZFhdVjrBHert1yuWBk3QFO9sKVm4iPzjTkr1l024c8
-<code>drone secret add --image=plugins/ssh rinetd/drone-with-go SSH_KEY @/home/ubuntu/.ssh/id_rsa</code>
+<p>export DRONE_SERVER=<a href="http://kbook.org">http://kbook.org</a><br />
+export DRONE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXh0IjoicmluZXRkIiwidHlwZSI6InVzZXIifQ.0ZFhdVjrBHert1yuWBk3QFO9sKVm4iPzjTkr1l024c8<br />
+<code>drone secret add --image=plugins/ssh rinetd/drone-with-go SSH_KEY @/home/ubuntu/.ssh/id_rsa</code><br />
 <code>drone sign rinetd/drone-with-go</code></p>
 
 <p><a href="https://github.com/appleboy/drone-ssh/blob/master/main.go">https://github.com/appleboy/drone-ssh/blob/master/main.go</a></p>
 
 <p>Use the SSH plugin to execute commands on a remote server. The below pipeline configuration demonstrates simple usage:</p>
 
-<p>pipeline:
-  ssh:
-    image: appleboy/drone-ssh
-    host: foo.com
-    username: root
-    password: 1234
-    port: 22
-    script:
-      - echo hello
+<p>pipeline:<br />
+  ssh:<br />
+    image: appleboy/drone-ssh<br />
+    host: foo.com<br />
+    username: root<br />
+    password: 1234<br />
+    port: 22<br />
+    script:<br />
+      - echo hello<br />
       - echo world</p>
 
 <p>Example configuration in your .drone.yml file for multiple hosts:</p>
 
-<p>pipeline:
-  ssh:
-    image: appleboy/drone-ssh
-    host:
-+    - foo.com
-+    - bar.com
-    username: root
-    password: 1234
-    port: 22
-    script:
-      - echo hello
+<p>pipeline:<br />
+  ssh:<br />
+    image: appleboy/drone-ssh<br />
+    host:<br />
++    - foo.com<br />
++    - bar.com<br />
+    username: root<br />
+    password: 1234<br />
+    port: 22<br />
+    script:<br />
+      - echo hello<br />
       - echo world</p>
 
 <p>Example configuration for login with user private key:</p>
 
-<p>pipeline:
-  ssh:
-    image: appleboy/drone-ssh
-    host: foo.com
-    username: root
--   password: 1234
-+   key: ${DEPLOY_KEY}
-    port: 22
-    script:
-      - echo hello
+<p>pipeline:<br />
+  ssh:<br />
+    image: appleboy/drone-ssh<br />
+    host: foo.com<br />
+    username: root<br />
+-   password: 1234<br />
++   key: ${DEPLOY_KEY}<br />
+    port: 22<br />
+    script:<br />
+      - echo hello<br />
       - echo world</p>
 
 <p>Example configuration for login with file path of user private key:</p>
 
-<p>pipeline:
-  ssh:
-    image: appleboy/drone-ssh
-    host: foo.com
-    username: root
--   password: 1234
-+   key_path: ./deploy/key.pem
-    port: 22
-    script:
-      - echo hello
+<p>pipeline:<br />
+  ssh:<br />
+    image: appleboy/drone-ssh<br />
+    host: foo.com<br />
+    username: root<br />
+-   password: 1234<br />
++   key_path: ./deploy/key.pem<br />
+    port: 22<br />
+    script:<br />
+      - echo hello<br />
       - echo world</p>
 
 <p>Example configuration for command timeout (unit: second), default value is 60 seconds:</p>
 
-<p>pipeline:
-  ssh:
-    image: appleboy/drone-ssh
-    host: foo.com
-    username: root
-    password: 1234
-    port: 22
-+   command_timeout: 10
-    script:
-      - echo hello
+<p>pipeline:<br />
+  ssh:<br />
+    image: appleboy/drone-ssh<br />
+    host: foo.com<br />
+    username: root<br />
+    password: 1234<br />
+    port: 22<br />
++   command_timeout: 10<br />
+    script:<br />
+      - echo hello<br />
       - echo world</p>
 
 <p>Example configuration for execute commands on a remote server using ｀SSHProxyCommand｀:</p>
 
-<p>pipeline:
-  ssh:
-    image: appleboy/drone-ssh
-    host: foo.com
-    username: root
-    port: 22
-    key: ${DEPLOY_KEY}
-    script:
-      - echo hello
-      - echo world
-+   proxy_host: 10.130.33.145
-+   proxy_user: ubuntu
-+   proxy_port: 22
+<p>pipeline:<br />
+  ssh:<br />
+    image: appleboy/drone-ssh<br />
+    host: foo.com<br />
+    username: root<br />
+    port: 22<br />
+    key: ${DEPLOY_KEY}<br />
+    script:<br />
+      - echo hello<br />
+      - echo world<br />
++   proxy_host: 10.130.33.145<br />
++   proxy_user: ubuntu<br />
++   proxy_port: 22<br />
 +   proxy_key: ${PROXY_KEY}</p>
 
 <p>Example configuration for success build:</p>
 
-<p>pipeline:
-  ssh:
-    image: appleboy/drone-ssh
-    host: foo.com
-    username: root
-    password: 1234
-    port: 22
-    script:
-      - echo hello
-      - echo world
-+   when:
+<p>pipeline:<br />
+  ssh:<br />
+    image: appleboy/drone-ssh<br />
+    host: foo.com<br />
+    username: root<br />
+    password: 1234<br />
+    port: 22<br />
+    script:<br />
+      - echo hello<br />
+      - echo world<br />
++   when:<br />
 +     status: success</p>
 
 <p>Example configuration for tag event:</p>
 
-<p>pipeline:
-  ssh:
-    image: appleboy/drone-ssh
-    host: foo.com
-    username: root
-    password: 1234
-    port: 22
-    script:
-      - echo hello
-      - echo world
-+   when:
-+     status: success
+<p>pipeline:<br />
+  ssh:<br />
+    image: appleboy/drone-ssh<br />
+    host: foo.com<br />
+    username: root<br />
+    password: 1234<br />
+    port: 22<br />
+    script:<br />
+      - echo hello<br />
+      - echo world<br />
++   when:<br />
++     status: success<br />
 +     event: tag</p>
 
 <p>Parameter Reference</p>
 
-<p>host
-    target hostname or IP
-port
-    ssh port of target host
-username
-    account for target host user
-password
-    password for target host user
-key
-    plain text of user private key
-key_path
-    key path of user private key
-script
-    execute commands on a remote server
-timeout
-    Timeout is the maximum amount of time for the TCP connection to establish.
-command_timeout
-    Command timeout is the maximum amount of time for the execute commands, default is 60 secs.
-proxy_host
-    proxy hostname or IP
-proxy_port
-    ssh port of proxy host
-proxy_username
-    account for proxy host user
-proxy_password
-    password for proxy host user
-proxy_key
-    plain text of proxy private key
-proxy_key_path
+<p>host<br />
+    target hostname or IP<br />
+port<br />
+    ssh port of target host<br />
+username<br />
+    account for target host user<br />
+password<br />
+    password for target host user<br />
+key<br />
+    plain text of user private key<br />
+key_path<br />
+    key path of user private key<br />
+script<br />
+    execute commands on a remote server<br />
+timeout<br />
+    Timeout is the maximum amount of time for the TCP connection to establish.<br />
+command_timeout<br />
+    Command timeout is the maximum amount of time for the execute commands, default is 60 secs.<br />
+proxy_host<br />
+    proxy hostname or IP<br />
+proxy_port<br />
+    ssh port of proxy host<br />
+proxy_username<br />
+    account for proxy host user<br />
+proxy_password<br />
+    password for proxy host user<br />
+proxy_key<br />
+    plain text of proxy private key<br />
+proxy_key_path<br />
     key path of proxy private key</p>
 
                       
@@ -655,7 +656,7 @@ proxy_key_path
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -878,6 +879,8 @@ proxy_key_path
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -900,7 +903,9 @@ proxy_key_path
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -932,7 +937,7 @@ proxy_key_path
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

@@ -256,222 +256,222 @@
 
 <p>接下来对zip包进行讲解。</p>
 
-<p>zip包不支持跨硬盘进行操作为了向下兼容，FileHeader同时拥有32位和64位的Size字段。64位字段总是包含正确的值，对普通格式的档案未见它们的值是相同的。对zip64格式的档案文件32位字段将是0xffffffff，必须使用64位字段。
+<p>zip包不支持跨硬盘进行操作为了向下兼容，FileHeader同时拥有32位和64位的Size字段。64位字段总是包含正确的值，对普通格式的档案未见它们的值是相同的。对zip64格式的档案文件32位字段将是0xffffffff，必须使用64位字段。<br />
 Constants</p>
 
 <p>压缩算法</p>
 
-<pre><code class="language-go">const (
-        Store   uint16 = 0
-        Deflate uint16 = 8
-)
+<pre><code class="language-go">const (  
+        Store   uint16 = 0  
+        Deflate uint16 = 8  
+)  
 </code></pre>
 
 <p>Variables</p>
 
 <p>错误变量</p>
 
-<pre><code class="language-go">var (
-    ErrFormat    = errors.New(&quot;zip: not a valid zip file&quot;)
-    ErrAlgorithm = errors.New(&quot;zip: unsupported compression algorithm&quot;)
-    ErrChecksum  = errors.New(&quot;zip: checksum error&quot;)func_name
-)
+<pre><code class="language-go">var (  
+    ErrFormat    = errors.New(&quot;zip: not a valid zip file&quot;)  
+    ErrAlgorithm = errors.New(&quot;zip: unsupported compression algorithm&quot;)  
+    ErrChecksum  = errors.New(&quot;zip: checksum error&quot;)func_name  
+)  
 </code></pre>
 
-<p>func RegisterCompressor(method uint16, comp Compressor) //使用指定的方法id生成一个Compressor的类型函数。常用的方法Store和Deflate是内建的
+<p>func RegisterCompressor(method uint16, comp Compressor) //使用指定的方法id生成一个Compressor的类型函数。常用的方法Store和Deflate是内建的<br />
 func RegisterDecompressor(method uint16, d Decompressor)//使用指定的方法id注册一个Decompressor类型的函数</p>
 
 <p>type Compressor</p>
 
-<pre><code>type Compressor func(io.Writer) (io.WriteCloser, error)
+<pre><code>type Compressor func(io.Writer) (io.WriteCloser, error)  
 </code></pre>
 
 <p>Compressor函数类型会返回一个io.WriteCloser，该接口会将数据压缩后写入提供的接口。关闭时，应将缓存中的数据写入下层接口中。</p>
 
 <p>type Decompressor</p>
 
-<pre><code>type Decompressor func(io.Reader) io.ReadCloser
+<pre><code>type Decompressor func(io.Reader) io.ReadCloser  
 </code></pre>
 
 <p>Decompressor函数类型会把一个io.Reader包装成具有decompressing特性的io.Reader.Decompressor函数类型会返回一个io.ReadCloser，该接口的Read方法会将读取自提供的接口的数据提前解压缩。需要在读取结束时关闭该io.ReadCloser。</p>
 
 <p>type File</p>
 
-<pre><code class="language-go">type File struct {
-    FileHeader
-    // contains filtered or unexported fields
-}
+<pre><code class="language-go">type File struct {  
+    FileHeader  
+    // contains filtered or unexported fields  
+}  
 </code></pre>
 
-<pre><code>func (f * File) DataOffset() (offset int64, err error) //DataOffset返回文件的可能存在的压缩数据相对于zip文件起始的偏移量。大多数调用者应使用Open代替，该方法会主动解压缩数据并验证校验和。
+<pre><code>func (f * File) DataOffset() (offset int64, err error) //DataOffset返回文件的可能存在的压缩数据相对于zip文件起始的偏移量。大多数调用者应使用Open代替，该方法会主动解压缩数据并验证校验和。  
 </code></pre>
 
 <p>func (f *File) Open() (rc io.ReadCloser, err error) //Open方法返回一个io.ReadCloser接口，提供读取文件内容的方法。可以同时读取多个文件。</p>
 
 <p>type FileHeader</p>
 
-<pre><code class="language-go">type FileHeader struct {
-    Name string    // Name是文件名，它必须是相对路径， 不能以设备或斜杠开始，只接受'/'作为路径分隔符
-
-    CreatorVersion     uint16
-    ReaderVersion      uint16
-    Flags              uint16
-    Method             uint16
-    ModifiedTime       uint16 // MS-DOS time
-    ModifiedDate       uint16 // MS-DOS date
-    CRC32              uint32
-    CompressedSize     uint32 // deprecated; use CompressedSize64
-    UncompressedSize   uint32 // deprecated; use UncompressedSize64
-    CompressedSize64   uint64
-    UncompressedSize64 uint64
-    Extra              []byte
-    ExternalAttrs      uint32 // Meaning depends on CreatorVersion
-    Comment            string
-}
+<pre><code class="language-go">type FileHeader struct {  
+    Name string    // Name是文件名，它必须是相对路径， 不能以设备或斜杠开始，只接受'/'作为路径分隔符  
+  
+    CreatorVersion     uint16  
+    ReaderVersion      uint16  
+    Flags              uint16  
+    Method             uint16  
+    ModifiedTime       uint16 // MS-DOS time  
+    ModifiedDate       uint16 // MS-DOS date  
+    CRC32              uint32  
+    CompressedSize     uint32 // deprecated; use CompressedSize64  
+    UncompressedSize   uint32 // deprecated; use UncompressedSize64  
+    CompressedSize64   uint64  
+    UncompressedSize64 uint64  
+    Extra              []byte  
+    ExternalAttrs      uint32 // Meaning depends on CreatorVersion  
+    Comment            string  
+}  
 </code></pre>
 
-<p>func FileInfoHeader(fi os.FileInfo) (*FileHeader, error)//FileInfoHeader返回一个根据fi填写了部分字段的Header。因为os.FileInfo接口的Name方法只返回它描述的文件的无路径名，有可能需要将返回值的Name字段修改为文件的完整路径名。
-func (h *FileHeader) FileInfo() os.FileInfo //FileInfo返回一个根据h的信息生成的os.FileInfo。
-func (h *FileHeader) ModTime() time.Time  //获取最后一次修改时间
-func (h *FileHeader) Mode() (mode os.FileMode)  //Mode返回h的权限和模式位。
-func (h *FileHeader) SetModTime(t time.Time)  //设置更改时间
+<p>func FileInfoHeader(fi os.FileInfo) (*FileHeader, error)//FileInfoHeader返回一个根据fi填写了部分字段的Header。因为os.FileInfo接口的Name方法只返回它描述的文件的无路径名，有可能需要将返回值的Name字段修改为文件的完整路径名。<br />
+func (h *FileHeader) FileInfo() os.FileInfo //FileInfo返回一个根据h的信息生成的os.FileInfo。<br />
+func (h *FileHeader) ModTime() time.Time  //获取最后一次修改时间<br />
+func (h *FileHeader) Mode() (mode os.FileMode)  //Mode返回h的权限和模式位。<br />
+func (h *FileHeader) SetModTime(t time.Time)  //设置更改时间<br />
 func (h *FileHeader) SetMode(mode os.FileMode) //设置mode</p>
 
 <p>举例说明其用法</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;archive/zip&quot;
-    &quot;fmt&quot;
-    &quot;os&quot;
-    &quot;time&quot;
-)
-
-func main() {
-    fileinfo, err := os.Stat(&quot;../1.txt&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    fileheader, err := zip.FileInfoHeader(fileinfo)
-    if err != nil {
-        fmt.Println(err)
-    }
-    fmt.Println(fileheader.ModTime()) //2015-09-22 15:55:02 +0000 UTC
-    fileheader.SetModTime(time.Now().AddDate(1, 1, 1))
-    fmt.Println(fileheader.ModTime()) //2016-12-11 06:57:48 +0000 UTC
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;archive/zip&quot;  
+    &quot;fmt&quot;  
+    &quot;os&quot;  
+    &quot;time&quot;  
+)  
+  
+func main() {  
+    fileinfo, err := os.Stat(&quot;../1.txt&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    fileheader, err := zip.FileInfoHeader(fileinfo)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    fmt.Println(fileheader.ModTime()) //2015-09-22 15:55:02 +0000 UTC  
+    fileheader.SetModTime(time.Now().AddDate(1, 1, 1))  
+    fmt.Println(fileheader.ModTime()) //2016-12-11 06:57:48 +0000 UTC  
+}  
 </code></pre>
 
 <p>type ReadCloser</p>
 
-<pre><code class="language-go">type ReadCloser struct {
-    Reader
-    // contains filtered or unexported fields
-}
+<pre><code class="language-go">type ReadCloser struct {  
+    Reader  
+    // contains filtered or unexported fields  
+}  
 </code></pre>
 
-<p>func OpenReader(name string) (*ReadCloser, error) //打开指定名为name的zip类型的文件，返回一个ReadCloser
-func (rc *ReadCloser) Close() error //关闭ReadCloser
+<p>func OpenReader(name string) (*ReadCloser, error) //打开指定名为name的zip类型的文件，返回一个ReadCloser<br />
+func (rc *ReadCloser) Close() error //关闭ReadCloser<br />
 type Reader</p>
 
-<pre><code class="language-go">type Reader struct {
-    File    []*File
-    Comment string
-    // contains filtered or unexported fields
-}
+<pre><code class="language-go">type Reader struct {  
+    File    []*File  
+    Comment string  
+    // contains filtered or unexported fields  
+}  
 </code></pre>
 
 <p>func NewReader(r io.ReaderAt, size int64) (*Reader, error) //NewReader返回一个从r读取数据的*Reader，r被假设其大小为size字节。</p>
 
 <p>type Writer  //实现zip文件的写入</p>
 
-<pre><code class="language-go">type Writer struct {
-            cw     *countWriter
-            dir    []*header
-            last   *fileWriter
-            closed bool
-        }
+<pre><code class="language-go">type Writer struct {  
+            cw     *countWriter  
+            dir    []*header  
+            last   *fileWriter  
+            closed bool  
+        }  
 </code></pre>
 
-<p>func NewWriter(w io.Writer) *Writer  //NewWriter创建并返回一个将zip文件写入w的*Writer
-func (w *Writer) Close() error   //关闭writer w
-func (w *Writer) Create(name string) (io.Writer, error)  //使用给出的文件名添加一个文件进zip文件。本方法返回一个io.Writer接口（用于写入新添加文件的内容）。文件名必须是相对路径，不能以设备或斜杠开始，只接受&rsquo;/&lsquo;作为路径分隔。新增文件的内容必须在下一次调用CreateHeader、Create或Close方法之前全部写入。
-func (w *Writer) CreateHeader(fh *FileHeader) (io.Writer, error) //使用给出的*FileHeader来作为文件的元数据添加一个文件进zip文件。本方法返回一个io.Writer接口（用于写入新添加文件的内容）。新增文件的内容必须在下一次调用CreateHeader、Create或Close方法之前全部写入。
-func (w *Writer) Flush() error  //将缓存中数据写入底层io，通常情况下调用flush是没有必要的，调用close是必要的。
+<p>func NewWriter(w io.Writer) *Writer  //NewWriter创建并返回一个将zip文件写入w的*Writer<br />
+func (w *Writer) Close() error   //关闭writer w<br />
+func (w *Writer) Create(name string) (io.Writer, error)  //使用给出的文件名添加一个文件进zip文件。本方法返回一个io.Writer接口（用于写入新添加文件的内容）。文件名必须是相对路径，不能以设备或斜杠开始，只接受&rsquo;/&lsquo;作为路径分隔。新增文件的内容必须在下一次调用CreateHeader、Create或Close方法之前全部写入。<br />
+func (w *Writer) CreateHeader(fh *FileHeader) (io.Writer, error) //使用给出的*FileHeader来作为文件的元数据添加一个文件进zip文件。本方法返回一个io.Writer接口（用于写入新添加文件的内容）。新增文件的内容必须在下一次调用CreateHeader、Create或Close方法之前全部写入。<br />
+func (w *Writer) Flush() error  //将缓存中数据写入底层io，通常情况下调用flush是没有必要的，调用close是必要的。<br />
 func (w *Writer) SetOffset(n int64)  //该函数用来设置将zip数据写入底层writer中的开始偏移量，其经常用于将zip文件追加到一个文件的后面，比如将一个数据写入一个二进制数据之后，该函数必须在数据写入之前进行调用。</p>
 
 <p>举例说明zip的reader和writer用法。</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;archive/zip&quot;
-    &quot;fmt&quot;
-    &quot;io&quot;
-    &quot;io/ioutil&quot;
-    &quot;os&quot;
-    &quot;time&quot;
-)
-
-func main() {
-    CompressZip()   //压缩
-    DeCompressZip() //解压缩
-}
-
-func CompressZip() {
-    const dir = &quot;../img-50/&quot;
-    //获取源文件列表
-    f, err := ioutil.ReadDir(dir)
-    if err != nil {
-        fmt.Println(err)
-    }
-    fzip, _ := os.Create(&quot;img-50.zip&quot;)
-    w := zip.NewWriter(fzip)
-    defer w.Close()
-    for _, file := range f {
-        fw, _ := w.Create(file.Name())
-        filecontent, err := ioutil.ReadFile(dir + file.Name())
-        if err != nil {
-            fmt.Println(err)
-        }
-        n, err := fw.Write(filecontent)
-        if err != nil {
-            fmt.Println(err)
-        }
-        fmt.Println(n)
-    }
-}
-
-func DeCompressZip() {
-    const File = &quot;img-50.zip&quot;
-    const dir = &quot;img/&quot;
-    os.Mkdir(dir, 0777) //创建一个目录
-
-    cf, err := zip.OpenReader(File) //读取zip文件
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer cf.Close()
-    for _, file := range cf.File {
-        rc, err := file.Open()
-        if err != nil {
-            fmt.Println(err)
-        }
-
-        f, err := os.Create(dir + file.Name)
-        if err != nil {
-            fmt.Println(err)
-        }
-        defer f.Close()
-        n, err := io.Copy(f, rc)
-        if err != nil {
-            fmt.Println(err)
-        }
-        fmt.Println(n)
-    }
-
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;archive/zip&quot;  
+    &quot;fmt&quot;  
+    &quot;io&quot;  
+    &quot;io/ioutil&quot;  
+    &quot;os&quot;  
+    &quot;time&quot;  
+)  
+  
+func main() {  
+    CompressZip()   //压缩  
+    DeCompressZip() //解压缩  
+}  
+  
+func CompressZip() {  
+    const dir = &quot;../img-50/&quot;  
+    //获取源文件列表  
+    f, err := ioutil.ReadDir(dir)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    fzip, _ := os.Create(&quot;img-50.zip&quot;)  
+    w := zip.NewWriter(fzip)  
+    defer w.Close()  
+    for _, file := range f {  
+        fw, _ := w.Create(file.Name())  
+        filecontent, err := ioutil.ReadFile(dir + file.Name())  
+        if err != nil {  
+            fmt.Println(err)  
+        }  
+        n, err := fw.Write(filecontent)  
+        if err != nil {  
+            fmt.Println(err)  
+        }  
+        fmt.Println(n)  
+    }  
+}  
+  
+func DeCompressZip() {  
+    const File = &quot;img-50.zip&quot;  
+    const dir = &quot;img/&quot;  
+    os.Mkdir(dir, 0777) //创建一个目录  
+  
+    cf, err := zip.OpenReader(File) //读取zip文件  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    defer cf.Close()  
+    for _, file := range cf.File {  
+        rc, err := file.Open()  
+        if err != nil {  
+            fmt.Println(err)  
+        }  
+  
+        f, err := os.Create(dir + file.Name)  
+        if err != nil {  
+            fmt.Println(err)  
+        }  
+        defer f.Close()  
+        n, err := io.Copy(f, rc)  
+        if err != nil {  
+            fmt.Println(err)  
+        }  
+        fmt.Println(n)  
+    }  
+  
+}  
 </code></pre>
 
 <p>参考：<a href="https://golang.org/pkg/archive/zip/">https://golang.org/pkg/archive/zip/</a></p>
@@ -641,7 +641,7 @@ func DeCompressZip() {
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -864,6 +864,8 @@ func DeCompressZip() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -886,7 +888,9 @@ func DeCompressZip() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -918,7 +922,7 @@ func DeCompressZip() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

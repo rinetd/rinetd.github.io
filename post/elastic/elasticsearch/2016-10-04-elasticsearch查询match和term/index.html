@@ -237,135 +237,135 @@
                   <div class="entry">
                     <div class="entry-inner">
                       
-                      <p>elasticsearch 查询（match和term）(<a href="http://www.cnblogs.com/yjf512/p/4897294.html">http://www.cnblogs.com/yjf512/p/4897294.html</a>)
-把条件中match换成term，如果不特别测试，好像结果是一样的。
-但match和term的含义是不一样的：
-match：匹配的时候，会将查询的关键字进行分词，然后根据分词后的结果进行查询。
+                      <p>elasticsearch 查询（match和term）(<a href="http://www.cnblogs.com/yjf512/p/4897294.html">http://www.cnblogs.com/yjf512/p/4897294.html</a>)<br />
+把条件中match换成term，如果不特别测试，好像结果是一样的。<br />
+但match和term的含义是不一样的：<br />
+match：匹配的时候，会将查询的关键字进行分词，然后根据分词后的结果进行查询。<br />
 term：直接使用关键字进行查询，不对关键字进行分词。</p>
 
 <p>在大部分的使用场景下，应该使用match的用法，因为用户的输入往往是比较模糊、顺序不确定、带有多个条件的查询。</p>
 
-<p>es中的查询请求有两种方式，一种是简易版的查询，另外一种是使用JSON完整的请求体，叫做结构化查询（DSL）。
-由于DSL查询更为直观也更为简易，所以大都使用这种方式。
-DSL查询是POST过去一个json，由于post的请求是json格式的，所以存在很多灵活性，也有很多形式。
-这里有一个地方注意的是官方文档里面给的例子的json结构只是一部分，并不是可以直接黏贴复制进去使用的。一般要在外面加个query为key的机构。
+<p>es中的查询请求有两种方式，一种是简易版的查询，另外一种是使用JSON完整的请求体，叫做结构化查询（DSL）。<br />
+由于DSL查询更为直观也更为简易，所以大都使用这种方式。<br />
+DSL查询是POST过去一个json，由于post的请求是json格式的，所以存在很多灵活性，也有很多形式。<br />
+这里有一个地方注意的是官方文档里面给的例子的json结构只是一部分，并不是可以直接黏贴复制进去使用的。一般要在外面加个query为key的机构。<br />
 match</p>
 
 <p>最简单的一个match例子：</p>
 
 <p>查询和&rdquo;我的宝马多少马力&rdquo;这个查询语句匹配的文档。</p>
 
-<pre><code>{
-  &quot;query&quot;: {
-    &quot;match&quot;: {
-        &quot;content&quot; : {
-            &quot;query&quot; : &quot;我的宝马多少马力&quot;
-        }
-    }
-  }
-}
+<pre><code>{  
+  &quot;query&quot;: {  
+    &quot;match&quot;: {  
+        &quot;content&quot; : {  
+            &quot;query&quot; : &quot;我的宝马多少马力&quot;  
+        }  
+    }  
+  }  
+}  
 </code></pre>
 
-<p>上面的查询匹配就会进行分词，比如&rdquo;宝马多少马力&rdquo;会被分词为&rdquo;宝马 多少 马力&rdquo;, 所有有关&rdquo;宝马 多少 马力&rdquo;, 那么所有包含这三个词中的一个或多个的文档就会被搜索出来。
-并且根据lucene的评分机制(TF/IDF)来进行评分。
+<p>上面的查询匹配就会进行分词，比如&rdquo;宝马多少马力&rdquo;会被分词为&rdquo;宝马 多少 马力&rdquo;, 所有有关&rdquo;宝马 多少 马力&rdquo;, 那么所有包含这三个词中的一个或多个的文档就会被搜索出来。<br />
+并且根据lucene的评分机制(TF/IDF)来进行评分。<br />
 match_phrase</p>
 
 <p>比如上面一个例子，一个文档&rdquo;我的保时捷马力不错&rdquo;也会被搜索出来，那么想要精确匹配所有同时包含&rdquo;宝马 多少 马力&rdquo;的文档怎么做？就要使用 match_phrase 了</p>
 
-<p>{
-  &ldquo;query&rdquo;: {
-    &ldquo;match_phrase&rdquo;: {
-        &ldquo;content&rdquo; : {
-            &ldquo;query&rdquo; : &ldquo;我的宝马多少马力&rdquo;
-        }
-    }
-  }
+<p>{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;match_phrase&rdquo;: {<br />
+        &ldquo;content&rdquo; : {<br />
+            &ldquo;query&rdquo; : &ldquo;我的宝马多少马力&rdquo;<br />
+        }<br />
+    }<br />
+  }<br />
 }</p>
 
 <p>完全匹配可能比较严，我们会希望有个可调节因子，少匹配一个也满足，那就需要使用到slop。</p>
 
-<p>{
-  &ldquo;query&rdquo;: {
-    &ldquo;match_phrase&rdquo;: {
-        &ldquo;content&rdquo; : {
-            &ldquo;query&rdquo; : &ldquo;我的宝马多少马力&rdquo;,
-            &ldquo;slop&rdquo; : 1
-        }
-    }
-  }
+<p>{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;match_phrase&rdquo;: {<br />
+        &ldquo;content&rdquo; : {<br />
+            &ldquo;query&rdquo; : &ldquo;我的宝马多少马力&rdquo;,<br />
+            &ldquo;slop&rdquo; : 1<br />
+        }<br />
+    }<br />
+  }<br />
 }</p>
 
 <p>multi_match</p>
 
 <p>如果我们希望两个字段进行匹配，其中一个字段有这个文档就满足的话，使用multi_match</p>
 
-<p>{
-  &ldquo;query&rdquo;: {
-    &ldquo;multi_match&rdquo;: {
-        &ldquo;query&rdquo; : &ldquo;我的宝马多少马力&rdquo;,
-        &ldquo;fields&rdquo; : [&ldquo;title&rdquo;, &ldquo;content&rdquo;]
-    }
-  }
+<p>{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;multi_match&rdquo;: {<br />
+        &ldquo;query&rdquo; : &ldquo;我的宝马多少马力&rdquo;,<br />
+        &ldquo;fields&rdquo; : [&ldquo;title&rdquo;, &ldquo;content&rdquo;]<br />
+    }<br />
+  }<br />
 }</p>
 
-<p>但是multi_match就涉及到匹配评分的问题了。
+<p>但是multi_match就涉及到匹配评分的问题了。<br />
 我们希望完全匹配的文档占的评分比较高，则需要使用best_fields</p>
 
-<p>{
-  &ldquo;query&rdquo;: {
-    &ldquo;multi_match&rdquo;: {
-      &ldquo;query&rdquo;: &ldquo;我的宝马发动机多少&rdquo;,
-      &ldquo;type&rdquo;: &ldquo;best_fields&rdquo;,
-      &ldquo;fields&rdquo;: [
-        &ldquo;tag&rdquo;,
-        &ldquo;content&rdquo;
-      ],
-      &ldquo;tie_breaker&rdquo;: 0.3
-    }
-  }
+<p>{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;multi_match&rdquo;: {<br />
+      &ldquo;query&rdquo;: &ldquo;我的宝马发动机多少&rdquo;,<br />
+      &ldquo;type&rdquo;: &ldquo;best_fields&rdquo;,<br />
+      &ldquo;fields&rdquo;: [<br />
+        &ldquo;tag&rdquo;,<br />
+        &ldquo;content&rdquo;<br />
+      ],<br />
+      &ldquo;tie_breaker&rdquo;: 0.3<br />
+    }<br />
+  }<br />
 }</p>
 
-<p>意思就是完全匹配&rdquo;宝马 发动机&rdquo;的文档评分会比较靠前，如果只匹配宝马的文档评分乘以0.3的系数
+<p>意思就是完全匹配&rdquo;宝马 发动机&rdquo;的文档评分会比较靠前，如果只匹配宝马的文档评分乘以0.3的系数<br />
 我们希望越多字段匹配的文档评分越高，就要使用most_fields</p>
 
-<p>{
-  &ldquo;query&rdquo;: {
-    &ldquo;multi_match&rdquo;: {
-      &ldquo;query&rdquo;: &ldquo;我的宝马发动机多少&rdquo;,
-      &ldquo;type&rdquo;: &ldquo;most_fields&rdquo;,
-      &ldquo;fields&rdquo;: [
-        &ldquo;tag&rdquo;,
-        &ldquo;content&rdquo;
-      ]
-    }
-  }
+<p>{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;multi_match&rdquo;: {<br />
+      &ldquo;query&rdquo;: &ldquo;我的宝马发动机多少&rdquo;,<br />
+      &ldquo;type&rdquo;: &ldquo;most_fields&rdquo;,<br />
+      &ldquo;fields&rdquo;: [<br />
+        &ldquo;tag&rdquo;,<br />
+        &ldquo;content&rdquo;<br />
+      ]<br />
+    }<br />
+  }<br />
 }</p>
 
 <p>我们会希望这个词条的分词词汇是分配到不同字段中的，那么就使用cross_fields</p>
 
-<p>{
-  &ldquo;query&rdquo;: {
-    &ldquo;multi_match&rdquo;: {
-      &ldquo;query&rdquo;: &ldquo;我的宝马发动机多少&rdquo;,
-      &ldquo;type&rdquo;: &ldquo;cross_fields&rdquo;,
-      &ldquo;fields&rdquo;: [
-        &ldquo;tag&rdquo;,
-        &ldquo;content&rdquo;
-      ]
-    }
-  }
+<p>{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;multi_match&rdquo;: {<br />
+      &ldquo;query&rdquo;: &ldquo;我的宝马发动机多少&rdquo;,<br />
+      &ldquo;type&rdquo;: &ldquo;cross_fields&rdquo;,<br />
+      &ldquo;fields&rdquo;: [<br />
+        &ldquo;tag&rdquo;,<br />
+        &ldquo;content&rdquo;<br />
+      ]<br />
+    }<br />
+  }<br />
 }</p>
 
 <p>term</p>
 
 <p>term是代表完全匹配，即不进行分词器分析，文档中必须包含整个搜索的词汇</p>
 
-<p>{
-  &ldquo;query&rdquo;: {
-    &ldquo;term&rdquo;: {
-      &ldquo;content&rdquo;: &ldquo;汽车保养&rdquo;
-    }
-  }
+<p>{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;term&rdquo;: {<br />
+      &ldquo;content&rdquo;: &ldquo;汽车保养&rdquo;<br />
+    }<br />
+  }<br />
 }</p>
 
 <p>查出的所有文档都包含&rdquo;汽车保养&rdquo;这个词组的词汇。</p>
@@ -376,26 +376,26 @@ match_phrase</p>
 
 <p>mapping是这样的：</p>
 
-<p>PUT my_index
-{
-  &ldquo;mappings&rdquo;: {
-    &ldquo;my_type&rdquo;: {
-      &ldquo;properties&rdquo;: {
-        &ldquo;full_text&rdquo;: {
-          &ldquo;type&rdquo;:  &ldquo;string&rdquo;
-        },
-        &ldquo;exact_value&rdquo;: {
-          &ldquo;type&rdquo;:  &ldquo;string&rdquo;,
-          &ldquo;index&rdquo;: &ldquo;not_analyzed&rdquo;
-        }
-      }
-    }
-  }
+<p>PUT my_index<br />
+{<br />
+  &ldquo;mappings&rdquo;: {<br />
+    &ldquo;my_type&rdquo;: {<br />
+      &ldquo;properties&rdquo;: {<br />
+        &ldquo;full_text&rdquo;: {<br />
+          &ldquo;type&rdquo;:  &ldquo;string&rdquo;<br />
+        },<br />
+        &ldquo;exact_value&rdquo;: {<br />
+          &ldquo;type&rdquo;:  &ldquo;string&rdquo;,<br />
+          &ldquo;index&rdquo;: &ldquo;not_analyzed&rdquo;<br />
+        }<br />
+      }<br />
+    }<br />
+  }<br />
 }</p>
 
-<p>PUT my_index/my_type/1
-{
-  &ldquo;full_text&rdquo;:   &ldquo;Quick Foxes!&rdquo;,
+<p>PUT my_index/my_type/1<br />
+{<br />
+  &ldquo;full_text&rdquo;:   &ldquo;Quick Foxes!&rdquo;,<br />
   &ldquo;exact_value&rdquo;: &ldquo;Quick Foxes!&rdquo;<br />
 }</p>
 
@@ -403,56 +403,56 @@ match_phrase</p>
 
 <p>那下面的几个请求：</p>
 
-<p>GET my_index/my_type/_search
-{
-  &ldquo;query&rdquo;: {
-    &ldquo;term&rdquo;: {
-      &ldquo;exact_value&rdquo;: &ldquo;Quick Foxes!&rdquo;
-    }
-  }
+<p>GET my_index/my_type/_search<br />
+{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;term&rdquo;: {<br />
+      &ldquo;exact_value&rdquo;: &ldquo;Quick Foxes!&rdquo;<br />
+    }<br />
+  }<br />
 }</p>
 
 <p>请求的出数据，因为完全匹配</p>
 
-<p>GET my_index/my_type/_search
-{
-  &ldquo;query&rdquo;: {
-    &ldquo;term&rdquo;: {
-      &ldquo;full_text&rdquo;: &ldquo;Quick Foxes!&rdquo;
-    }
-  }
+<p>GET my_index/my_type/_search<br />
+{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;term&rdquo;: {<br />
+      &ldquo;full_text&rdquo;: &ldquo;Quick Foxes!&rdquo;<br />
+    }<br />
+  }<br />
 }</p>
 
-<p>请求不出数据的，因为full_text分词后的结果中没有[Quick Foxes!]这个分词。
+<p>请求不出数据的，因为full_text分词后的结果中没有[Quick Foxes!]这个分词。<br />
 bool联合查询: must,should,must_not</p>
 
-<p>如果我们想要请求&rdquo;content中带宝马，但是tag中不带宝马&rdquo;这样类似的需求，就需要用到bool联合查询。
+<p>如果我们想要请求&rdquo;content中带宝马，但是tag中不带宝马&rdquo;这样类似的需求，就需要用到bool联合查询。<br />
 联合查询就会使用到must,should,must_not三种关键词。</p>
 
 <p>这三个可以这么理解</p>
 
-<pre><code>must: 文档必须完全匹配条件
-should: should下面会带一个以上的条件，至少满足一个条件，这个文档就符合should
-must_not: 文档必须不匹配条件
+<pre><code>must: 文档必须完全匹配条件  
+should: should下面会带一个以上的条件，至少满足一个条件，这个文档就符合should  
+must_not: 文档必须不匹配条件  
 </code></pre>
 
 <p>比如上面那个需求：</p>
 
-<p>{
-  &ldquo;query&rdquo;: {
-    &ldquo;bool&rdquo;: {
-      &ldquo;must&rdquo;: {
-        &ldquo;term&rdquo;: {
-          &ldquo;content&rdquo;: &ldquo;宝马&rdquo;
-        }
-      },
-      &ldquo;must_not&rdquo;: {
-        &ldquo;term&rdquo;: {
-          &ldquo;tags&rdquo;: &ldquo;宝马&rdquo;
-        }
-      }
-    }
-  }
+<p>{<br />
+  &ldquo;query&rdquo;: {<br />
+    &ldquo;bool&rdquo;: {<br />
+      &ldquo;must&rdquo;: {<br />
+        &ldquo;term&rdquo;: {<br />
+          &ldquo;content&rdquo;: &ldquo;宝马&rdquo;<br />
+        }<br />
+      },<br />
+      &ldquo;must_not&rdquo;: {<br />
+        &ldquo;term&rdquo;: {<br />
+          &ldquo;tags&rdquo;: &ldquo;宝马&rdquo;<br />
+        }<br />
+      }<br />
+    }<br />
+  }<br />
 }</p>
 
                       
@@ -620,7 +620,7 @@ must_not: 文档必须不匹配条件
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -843,6 +843,8 @@ must_not: 文档必须不匹配条件
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -865,7 +867,9 @@ must_not: 文档必须不匹配条件
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -897,7 +901,7 @@ must_not: 文档必须不匹配条件
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

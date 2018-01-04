@@ -252,37 +252,37 @@
 
 <h2 id="nginx配置proxy-pass转发的-路径问题">Nginx配置proxy_pass转发的/路径问题</h2>
 
-<p>在nginx中配置proxy_pass时，如果是按照^~匹配路径时,要注意proxy_pass后的url最后的/
-1. 当加上了/，相当于是绝对根路径，则nginx不会把location中匹配的路径部分代理走;
+<p>在nginx中配置proxy_pass时，如果是按照^~匹配路径时,要注意proxy_pass后的url最后的/<br />
+1. 当加上了/，相当于是绝对根路径，则nginx不会把location中匹配的路径部分代理走;<br />
 2. 如果没有/，则会把匹配的路径部分也给代理走。</p>
 
-<p>location ^~ /static_js/
-{
-proxy_cache js_cache;
-proxy_set_header Host js.test.com;
-proxy_pass <a href="http://js.test.com/">http://js.test.com/</a>;
+<p>location ^~ /static_js/<br />
+{<br />
+proxy_cache js_cache;<br />
+proxy_set_header Host js.test.com;<br />
+proxy_pass <a href="http://js.test.com/">http://js.test.com/</a>;<br />
 }</p>
 
-<p>如上面的配置，如果请求的url是<a href="http://127.0.0.1/static_js/test.html">http://127.0.0.1/static_js/test.html</a>
-会被代理成<a href="http://js.test.com/test.html">http://js.test.com/test.html</a>
+<p>如上面的配置，如果请求的url是<a href="http://127.0.0.1/static_js/test.html">http://127.0.0.1/static_js/test.html</a><br />
+会被代理成<a href="http://js.test.com/test.html">http://js.test.com/test.html</a><br />
 当然，我们可以用如下的rewrite来实现/的功能</p>
 
-<p>location ^~ /static_js/
-{
-proxy_cache js_cache;
-proxy_set_header Host js.test.com;
-rewrite /static_js/(.+)$ /$1 break;
+<p>location ^~ /static_js/<br />
+{<br />
+proxy_cache js_cache;<br />
+proxy_set_header Host js.test.com;<br />
+rewrite /static_js/(.+)$ /$1 break;<br />
 proxy_pass <a href="http://js.test.com">http://js.test.com</a>;</p>
 
 <p>}</p>
 
 <p>而如果这么配置</p>
 
-<p>location ^~ /static_js/
-{
-proxy_cache js_cache;
-proxy_set_header Host js.test.com;
-proxy_pass <a href="http://js.test.com">http://js.test.com</a>;
+<p>location ^~ /static_js/<br />
+{<br />
+proxy_cache js_cache;<br />
+proxy_set_header Host js.test.com;<br />
+proxy_pass <a href="http://js.test.com">http://js.test.com</a>;<br />
 }</p>
 
 <p>则会被代理到<a href="http://js.test.com/static_js/test.htm">http://js.test.com/static_js/test.htm</a></p>
@@ -292,36 +292,37 @@ proxy_pass <a href="http://js.test.com">http://js.test.com</a>;
 <p>注：</p>
 
 <ol>
-<li>[是不是带 / ] 是在proxy_pass 指令后面,而不是 location后面，location后面的/对proxy_pass没有影响</li>
-<li>proxy_pass 后是否有 / 决定代理结果 url是否加上匹配的 location</li>
+<li>[是不是带 / ] 是在proxy_pass 指令后面,而不是 location后面，location后面的/对proxy_pass没有影响<br /></li>
+<li>proxy_pass 后是否有 / 决定代理结果 url是否加上匹配的 location<br />
+<br /></li>
 </ol>
 
-<p>在nginx中配置proxy_pass时，当在后面的url加上了/，相当于是绝对根路径，则nginx向proxy请求时不会把location中匹配的路径部分代理走;，但是浏览器url中是带location路径的
+<p>在nginx中配置proxy_pass时，当在后面的url加上了/，相当于是绝对根路径，则nginx向proxy请求时不会把location中匹配的路径部分代理走;，但是浏览器url中是带location路径的<br />
 如果没有/，则会把匹配的路径部分也给代理走。</p>
 
 <p>下面四种情况分别用GET  进行访问。</p>
 
 <p>浏览器请求url都是一致的: <a href="http://linyibr.com/proxy/index.html">http://linyibr.com/proxy/index.html</a></p>
 
-<pre><code># location后面的/对proxy_pass没有影响 只决定匹配的是文件还是目录
-location  /proxy {
-      proxy_pass http://127.0.0.1:81;
-      #代理url:   http://127.0.0.1:81/proxy/index.html
-
-      # 技巧：在配置子目录做为子站点的时候增加'/'非常好用
-      proxy_pass http://127.0.0.1:81/;
-      #代理url:   http://127.0.0.1:81/index.html
-
-      proxy_pass http://127.0.0.1:81/ftlynx;
-      #代理url:   http://127.0.0.1:81/ftlynxindex.html
-
-      proxy_pass http://127.0.0.1:81/ftlynx/;
-      #代理url:   http://127.0.0.1:81/ftlynx/index.html
-
-}
+<pre><code># location后面的/对proxy_pass没有影响 只决定匹配的是文件还是目录  
+location  /proxy {  
+      proxy_pass http://127.0.0.1:81;  
+      #代理url:   http://127.0.0.1:81/proxy/index.html  
+  
+      # 技巧：在配置子目录做为子站点的时候增加'/'非常好用  
+      proxy_pass http://127.0.0.1:81/;  
+      #代理url:   http://127.0.0.1:81/index.html  
+  
+      proxy_pass http://127.0.0.1:81/ftlynx;  
+      #代理url:   http://127.0.0.1:81/ftlynxindex.html  
+  
+      proxy_pass http://127.0.0.1:81/ftlynx/;  
+      #代理url:   http://127.0.0.1:81/ftlynx/index.html  
+  
+}  
 </code></pre>
 
-<p>上面的结果都是本人结合日志文件测试过的。从结果可以看出，应该说分为两种情况才正确。即<a href="http://127.0.0.1:81">http://127.0.0.1:81</a> (上面的第二种) 这种和 <a href="http://127.0.0.1:81/…">http://127.0.0.1:81/…</a>. （上面的第1，3，4种） 这种。
+<p>上面的结果都是本人结合日志文件测试过的。从结果可以看出，应该说分为两种情况才正确。即<a href="http://127.0.0.1:81">http://127.0.0.1:81</a> (上面的第二种) 这种和 <a href="http://127.0.0.1:81/…">http://127.0.0.1:81/…</a>. （上面的第1，3，4种） 这种。<br />
 在以上配置中，192.168.1.202没有“/”，而192.168.1.203有一个“/”,但是由于location 配置的URI为/server/，所以，访问到192.168.1.202正常为/server/，访问192.168.1.203的时候，则直接变成了 / ,也就是说 访问的时候变成了：192.168.1.202/server/index.html     192.168.1.203/index.html</p>
 
 <p>以上就是 &ldquo;/&rdquo; 的区别！</p>
@@ -332,26 +333,26 @@ location  /proxy {
 
 <p>proxy_redirect会将应用服务器返回[nginx代理服务器]的响应头中的location字段进行修改后返回给客户端</p>
 
-<p>proxy_redirect <a href="http://localhost:8000/two/">http://localhost:8000/two/</a> <a href="http://frontend/one/">http://frontend/one/</a>;
-将Location字段重写为<a href="http://frontend/one/some/uri/。">http://frontend/one/some/uri/。</a>
+<p>proxy_redirect <a href="http://localhost:8000/two/">http://localhost:8000/two/</a> <a href="http://frontend/one/">http://frontend/one/</a>;<br />
+将Location字段重写为<a href="http://frontend/one/some/uri/。">http://frontend/one/some/uri/。</a><br />
 在代替的字段中可以不写服务器名：</p>
 
-<p>proxy_redirect <a href="http://localhost:8000/two/">http://localhost:8000/two/</a> /;
-这样就使用服务器的基本名称和端口，即使它来自非80端口。
-如果使用“default”参数，将根据location和proxy_pass参数的设置来决定。
+<p>proxy_redirect <a href="http://localhost:8000/two/">http://localhost:8000/two/</a> /;<br />
+这样就使用服务器的基本名称和端口，即使它来自非80端口。<br />
+如果使用“default”参数，将根据location和proxy_pass参数的设置来决定。<br />
 例如下列两个配置等效：</p>
 
-<p>location /one/ {
-    proxy_pass       <a href="http://upstream:port/two/">http://upstream:port/two/</a>;
+<p>location /one/ {<br />
+    proxy_pass       <a href="http://upstream:port/two/">http://upstream:port/two/</a>;<br />
     proxy_redirect   default;</p>
 
-<pre><code>#proxy_redirect   http://upstream:port/two/   /one/;
-}
+<pre><code>#proxy_redirect   http://upstream:port/two/   /one/;  
+}  
 </code></pre>
 
 <p>在指令中可以使用一些变量：</p>
 
-<p>proxy_redirect   <a href="http://localhost:8000/">http://localhost:8000/</a>    http://$host:$server_port/;
+<p>proxy_redirect   <a href="http://localhost:8000/">http://localhost:8000/</a>    http://$host:$server_port/;<br />
 这个指令有时可以重复：</p>
 
 <p>proxy_redirect   default;<br />
@@ -360,167 +361,167 @@ proxy_redirect   ;  /;</p>
 
 <p>利用这个指令可以为被代理服务器发出的相对重定向增加主机名：</p>
 
-<p>用于修改被代理服务器返回的响应头中的location头域和“Rsfresh”头域，与proxy_pass配合使用，该指令可以把代理服务器返回的地址信息更改为需要的地址信息
-语法如下三种：
-            (1)<code>proxy_redirect redirect replacement</code>;
-               redirect 匹配location头域值得字符串
-               replacement 用于替换redirect 变量内容的字符串
-             eg:
-                假如被代理服务器返回的响应头中“location”头域为：
-                 Location:<a href="http://localhost:8081/proxy/some/uri/">http://localhost:8081/proxy/some/uri/</a>
-                设置为：
-                 proxy_redirect <a href="http://localhost:8081/proxy/">http://localhost:8081/proxy/</a> <a href="http://mylinuxer/frontend/">http://mylinuxer/frontend/</a>;
-                Nginx服务器会将Location头域信息更改为
+<p>用于修改被代理服务器返回的响应头中的location头域和“Rsfresh”头域，与proxy_pass配合使用，该指令可以把代理服务器返回的地址信息更改为需要的地址信息<br />
+语法如下三种：<br />
+            (1)<code>proxy_redirect redirect replacement</code>;<br />
+               redirect 匹配location头域值得字符串<br />
+               replacement 用于替换redirect 变量内容的字符串<br />
+             eg:<br />
+                假如被代理服务器返回的响应头中“location”头域为：<br />
+                 Location:<a href="http://localhost:8081/proxy/some/uri/">http://localhost:8081/proxy/some/uri/</a><br />
+                设置为：<br />
+                 proxy_redirect <a href="http://localhost:8081/proxy/">http://localhost:8081/proxy/</a> <a href="http://mylinuxer/frontend/">http://mylinuxer/frontend/</a>;<br />
+                Nginx服务器会将Location头域信息更改为<br />
                  Location:<a href="http://mylinuxer/frintend//some/uri/">http://mylinuxer/frintend//some/uri/</a><br />
-            (2)<code>proxy_redirect default</code>;
-             eg:
-                location块的uri变量作为replacement,并使用proxy_pass变量作为redirect
-                location /server/
-                  {
-                     proxy_pass <a href="http://proxyserver/source/">http://proxyserver/source/</a>;
-                     proxy_redirect default;
-                  }
-            (3)<code>proxy_redirect off</code>;
+            (2)<code>proxy_redirect default</code>;<br />
+             eg:<br />
+                location块的uri变量作为replacement,并使用proxy_pass变量作为redirect<br />
+                location /server/<br />
+                  {<br />
+                     proxy_pass <a href="http://proxyserver/source/">http://proxyserver/source/</a>;<br />
+                     proxy_redirect default;<br />
+                  }<br />
+            (3)<code>proxy_redirect off</code>;<br />
               使用此方法，可将当前作用域下面的所有的proxy_redirect指令配置全部设置为无效</p>
 
-<p>1.6
-proxy_set_header field value;
-更改nginx服务器接收到的客户端请求的请求头信息，然后将心的请求头发送给被代理的服务器
-field  要更改的信息所在的头域
-value  更改的值，支持使用文本、变量或者变量的组合
-默认情况下为以下设置：
+<p>1.6<br />
+proxy_set_header field value;<br />
+更改nginx服务器接收到的客户端请求的请求头信息，然后将心的请求头发送给被代理的服务器<br />
+field  要更改的信息所在的头域<br />
+value  更改的值，支持使用文本、变量或者变量的组合<br />
+默认情况下为以下设置：<br />
    proxy_set_header Host $proxy_host;<br />
    proxy_set_header Connection close;</p>
 
 <p>proxy_set_header Host $http_host;</p>
 
-<p>这句话把我和 nginx 通信的 HTTP 头原封不动的发给了 目的服务器
-我以为这句话的意思是： Nginx 向目的服务器请求的时候替换成目的服务器的 Host ，实际没有
-真正的做法是 <code>proxy_set_header Host $proxy_host;</code>
+<p>这句话把我和 nginx 通信的 HTTP 头原封不动的发给了 目的服务器<br />
+我以为这句话的意思是： Nginx 向目的服务器请求的时候替换成目的服务器的 Host ，实际没有<br />
+真正的做法是 <code>proxy_set_header Host $proxy_host;</code><br />
 proxy_set_header Host       $host:$proxy_port;</p>
 
-<p>1.2
-proxy_hide_header field;
+<p>1.2<br />
+proxy_hide_header field;<br />
 设置nginx服务器在发送HTTP相应时，隐藏一些头域信息，field为需要隐藏的头域</p>
 
-<p>1.3
-proxy_pass_header field;
+<p>1.3<br />
+proxy_pass_header field;<br />
 设置nginx服务器在发送响应报文时候，报文中不包含&rdquo;Date&rdquo; &ldquo;Server&rdquo; &ldquo;X-Accel&rdquo;等来自被代理服务器的头域信息，field为需要发送的头域.</p>
 
-<p>1.4
-proxy_pass_request_body on|off;
+<p>1.4<br />
+proxy_pass_request_body on|off;<br />
 设置是否将客户端请求的请求体发送给代理服务器，默认设置为开启on</p>
 
-<p>1.5
-proxy_pass_request_headers on|off;
+<p>1.5<br />
+proxy_pass_request_headers on|off;<br />
 设置是否将客户端请求的请求头发送给代理服务器，默认设置为开启on</p>
 
-<p>1.7
-proxy_set_body value;
+<p>1.7<br />
+proxy_set_body value;<br />
 更改nginx服务器接收到的客户端请求的请求体信息，value为更改的信息</p>
 
-<p>1.8
-proxy_bind address;
+<p>1.8<br />
+proxy_bind address;<br />
 如果我们希望代理连接由指定主机处理，可修改此配置，address为IP地址</p>
 
-<p>1.9
-proxy_connect_timeout time;
+<p>1.9<br />
+proxy_connect_timeout time;<br />
 配置nginx服务器与后端被代理服务器尝试建立连接的超时时间，默认为60s</p>
 
-<p>1.10
-proxy_read_timeout time;
+<p>1.10<br />
+proxy_read_timeout time;<br />
 配置nginx服务器向后端被代理服务器发出read请求后，等待响应的超时时间，默认为60s</p>
 
-<p>1.11
-proxy_send_timeout time;
+<p>1.11<br />
+proxy_send_timeout time;<br />
 配置nginx服务器向后端被代理服务器发出write请求后，等待响应的超时时间，默认为60s</p>
 
-<p>1.12
-proxy_http_version 1.0|1.1
+<p>1.12<br />
+proxy_http_version 1.0|1.1<br />
 设置nginx服务器提供代理服务的HTTP协议版本，默认为1.0,1.1版本支持upsteam服务器组设置中的keepalive指令</p>
 
-<p>1.13
-proxy_method method;
+<p>1.13<br />
+proxy_method method;<br />
 设置Nginx服务器请求被代理服务器时使用的请求方法，method可设置为POST和GET，不加引号，设置了该指令，客户端的请求方法将被忽略</p>
 
-<p>1.14
-proxy_ignore_client_abort on|off;
+<p>1.14<br />
+proxy_ignore_client_abort on|off;<br />
 设置在客户端终端网络请求时，Nginx服务器是否中断对被代理服务器的请求，默认为off中断</p>
 
-<p>1.15
-proxy_ignore_headers field &hellip;;
+<p>1.15<br />
+proxy_ignore_headers field &hellip;;<br />
 设置一些HTTP的响应头中的头域，field为要设置的HTTP响应头的头域，如&rdquo;X-Accel-Redirect&rdquo;、&rdquo;X-Accel-Expires&rdquo;、&rdquo;Expires&rdquo;、&rdquo;Cache-Control&rdquo;、&rdquo;Set-Cookie&rdquo;等</p>
 
-<p>1.17
-proxy_intercept_errors on|off;
+<p>1.17<br />
+proxy_intercept_errors on|off;<br />
 配置一个状态是否开启，在开启时，如果被代理的服务器返回的HTTP状态代码为400或者大于400，则nginx服务器使用自己预定义的错误页（使用error_page指令），如果是关闭状态，则直接将被代理服务器返回的HTTP状态返回给客户端</p>
 
-<p>1.18
-proxy_headers_hash_max_size size;
+<p>1.18<br />
+proxy_headers_hash_max_size size;<br />
 配置存放http报文头的哈希表的容量，默认为512个字符，siez为字符大小</p>
 
-<p>1.19
-proxy_headers_hash_bucket_size size;
+<p>1.19<br />
+proxy_headers_hash_bucket_size size;<br />
 设置nginx服务器申请存放http报文头的哈希表容量的单位大小，默认为64个字符</p>
 
-<p>1.20
-proxy_next_upstream status &hellip;.；
-可以使用该指令配置在服务器(组)发生哪些异常情况时，将请求顺序交个下一个服务器处理
-status设置服务器返回状态，可以是一个或多个
-error 连接错误
-timeout 超时
-invalid_header响应头为空或无效
-http_500|http_502|http_504|http_404，被代理服务器返回500 502 504 404状态代码
+<p>1.20<br />
+proxy_next_upstream status &hellip;.；<br />
+可以使用该指令配置在服务器(组)发生哪些异常情况时，将请求顺序交个下一个服务器处理<br />
+status设置服务器返回状态，可以是一个或多个<br />
+error 连接错误<br />
+timeout 超时<br />
+invalid_header响应头为空或无效<br />
+http_500|http_502|http_504|http_404，被代理服务器返回500 502 504 404状态代码<br />
 off 无法将请求发送给被代理服务器</p>
 
-<p>1.21
-proxy_ssl_session_reuse on|off;
+<p>1.21<br />
+proxy_ssl_session_reuse on|off;<br />
 配置是否基于SSL安全协议的会话连接(https://)，默认为开启状态</p>
 
-<p>URI 在于I(Identifier)是统一资源标示符，可以唯一标识一个资源。URL在于Locater，一般来说（URL）统一资源定位符，可以提供找到该资源的路径，比如<a href="http://www.zhihu.com/question/21950864，但URL又是URI，因为它可以标识一个资源，所以URL又是URI的子集。">http://www.zhihu.com/question/21950864，但URL又是URI，因为它可以标识一个资源，所以URL又是URI的子集。</a>
+<p>URI 在于I(Identifier)是统一资源标示符，可以唯一标识一个资源。URL在于Locater，一般来说（URL）统一资源定位符，可以提供找到该资源的路径，比如<a href="http://www.zhihu.com/question/21950864，但URL又是URI，因为它可以标识一个资源，所以URL又是URI的子集。">http://www.zhihu.com/question/21950864，但URL又是URI，因为它可以标识一个资源，所以URL又是URI的子集。</a><br />
 举个是个URI但不是URL的例子：urn:isbn:0-486-27557-4，这个是一本书的isbn，可以唯一标识这本书，更确切说这个是URN。总的来说，locators are also identifiers, so every URL is also a URI, but there are URIs which are not URLs.</p>
 
-<p>#对 &ldquo;/&rdquo; 启用反向代理
-location / {
-proxy_pass <a href="http://127.0.0.1:88">http://127.0.0.1:88</a>;
-proxy_redirect off;
-proxy_set_header X-Real-IP $remote_addr;
-#后端的Web服务器可以通过X-Forwarded-For获取用户真实IP
+<p>#对 &ldquo;/&rdquo; 启用反向代理<br />
+location / {<br />
+proxy_pass <a href="http://127.0.0.1:88">http://127.0.0.1:88</a>;<br />
+proxy_redirect off;<br />
+proxy_set_header X-Real-IP $remote_addr;<br />
+#后端的Web服务器可以通过X-Forwarded-For获取用户真实IP<br />
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</p>
 
-<p>#以下是一些反向代理的配置，可选。
-proxy_set_header Host $host;
-client_max_body_size 10m; #允许客户端请求的最大单文件字节数
-client_body_buffer_size 128k; #缓冲区代理缓冲用户端请求的最大字节数，
-proxy_connect_timeout 90; #nginx跟后端服务器连接超时时间(代理连接超时)
-proxy_send_timeout 90; #后端服务器数据回传时间(代理发送超时)
-proxy_read_timeout 90; #连接成功后，后端服务器响应时间(代理接收超时)
-proxy_buffer_size 4k; #设置代理服务器（nginx）保存用户头信息的缓冲区大小
-proxy_buffers 4 32k; #proxy_buffers缓冲区，网页平均在32k以下的设置
-proxy_busy_buffers_size 64k; #高负荷下缓冲大小（proxy_buffers*2）
-proxy_temp_file_write_size 64k;
-#设定缓存文件夹大小，大于这个值，将从upstream服务器传
+<p>#以下是一些反向代理的配置，可选。<br />
+proxy_set_header Host $host;<br />
+client_max_body_size 10m; #允许客户端请求的最大单文件字节数<br />
+client_body_buffer_size 128k; #缓冲区代理缓冲用户端请求的最大字节数，<br />
+proxy_connect_timeout 90; #nginx跟后端服务器连接超时时间(代理连接超时)<br />
+proxy_send_timeout 90; #后端服务器数据回传时间(代理发送超时)<br />
+proxy_read_timeout 90; #连接成功后，后端服务器响应时间(代理接收超时)<br />
+proxy_buffer_size 4k; #设置代理服务器（nginx）保存用户头信息的缓冲区大小<br />
+proxy_buffers 4 32k; #proxy_buffers缓冲区，网页平均在32k以下的设置<br />
+proxy_busy_buffers_size 64k; #高负荷下缓冲大小（proxy_buffers*2）<br />
+proxy_temp_file_write_size 64k;<br />
+#设定缓存文件夹大小，大于这个值，将从upstream服务器传<br />
 }</p>
 
-<p>proxy.conf配置文件：
-proxy_redirect off;
-proxy_set_header Host $host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-client_max_body_size 50m; # 允许客户端请求的最大单个文件字节数
-client_body_buffer_size 256k; # 缓冲区代理缓冲客户端请求的最大字节数
-proxy_connect_timeout 30; # 连接后端服务器超时时间
-proxy_send_timeout 30; # 后端服务器发送数据超时时间,连接以及建立
-proxy_read_timeout 60; # 后端服务器响应请求超时时间,从开始发送到接受完毕
-proxy_buffer_size 4k; # 代理请求缓存区大小
-proxy_buffers 4 32k;
-proxy_busy_buffers_size 64k; #系统繁忙时可申请的proxy_buffers大小
-proxy_temp_file_write_size 64k; #proxy缓存临时文件的大小
+<p>proxy.conf配置文件：<br />
+proxy_redirect off;<br />
+proxy_set_header Host $host;<br />
+proxy_set_header X-Real-IP $remote_addr;<br />
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;<br />
+client_max_body_size 50m; # 允许客户端请求的最大单个文件字节数<br />
+client_body_buffer_size 256k; # 缓冲区代理缓冲客户端请求的最大字节数<br />
+proxy_connect_timeout 30; # 连接后端服务器超时时间<br />
+proxy_send_timeout 30; # 后端服务器发送数据超时时间,连接以及建立<br />
+proxy_read_timeout 60; # 后端服务器响应请求超时时间,从开始发送到接受完毕<br />
+proxy_buffer_size 4k; # 代理请求缓存区大小<br />
+proxy_buffers 4 32k;<br />
+proxy_busy_buffers_size 64k; #系统繁忙时可申请的proxy_buffers大小<br />
+proxy_temp_file_write_size 64k; #proxy缓存临时文件的大小<br />
 proxy_next_upstream error timeout invalid_header http_500 http_503 http_404;</p>
 
 <h1 id="故障转移">故障转移</h1>
 
-<p>proxy_max_temp_file_size 128m;
+<p>proxy_max_temp_file_size 128m;<br />
 proxy_set_header指令用于在向反向代理的后端web服务器发起请求时添加指定Header头信息，当后端web服务器上有多个基于域名的虚拟主机时，要通过添加Header头信息Host，来指定请求的域名，这样后端web服务器才能识别该反向代理访问请求由哪个虚拟主机来处理。</p>
 
 <p>技巧：在配置子目录做为子站点的时候增加&rsquo;/&lsquo;非常好用</p>
@@ -529,15 +530,15 @@ proxy_set_header指令用于在向反向代理的后端web服务器发起请求�
 
 <p>默认情况下proxy_max_temp_file_size值为1024MB,也就是说后端服务器的文件不大于1G都可以缓存到nginx代理硬盘中，如果超过1G，那么文件不缓存，而是直接中转发送给客户端.如果proxy_max_temp_file_size设置为0，表示不使用临时缓存。</p>
 
-<p>在大文件的环境下，如果想启用临时缓存，那么可以修改配置，值改成你想要的。
+<p>在大文件的环境下，如果想启用临时缓存，那么可以修改配置，值改成你想要的。<br />
 修改nginx配置</p>
 
-<pre><code>location /
- {
- ...
- proxy_max_temp_file_size 2048m;
- ...
- }
+<pre><code>location /  
+ {  
+ ...  
+ proxy_max_temp_file_size 2048m;  
+ ...  
+ }  
 </code></pre>
 
 <h1 id="nginx-proxy-buffer-解释">nginx proxy buffer 解释</h1>
@@ -546,17 +547,17 @@ proxy_set_header指令用于在向反向代理的后端web服务器发起请求�
 
 <p>下面总结下 nginx buffer 设置：</p>
 
-<pre><code>proxy_buffer_size 4k;
-proxy_buffering on;
-proxy_buffers 4 4k;
-proxy_busy_buffers_size 8k;
-proxy_max_temp_file_size 1024m;
+<pre><code>proxy_buffer_size 4k;  
+proxy_buffering on;  
+proxy_buffers 4 4k;  
+proxy_busy_buffers_size 8k;  
+proxy_max_temp_file_size 1024m;  
 </code></pre>
 
-<p>首先，这些参数都是针对每一个http request ，不是全局的。
+<p>首先，这些参数都是针对每一个http request ，不是全局的。<br />
 proxy_buffering</p>
 
-<p>proxy_buffering 开启的时候，proxy_buffers 和proxy_busy_buffers_size 才会起作用，无论proxy_buffering 是否开启，proxy_buffer_size 都起作用。
+<p>proxy_buffering 开启的时候，proxy_buffers 和proxy_busy_buffers_size 才会起作用，无论proxy_buffering 是否开启，proxy_buffer_size 都起作用。<br />
 proxy_buffer_size</p>
 
 <p>proxy_buffer_size 用来接受后端服务器 response 的第一部分，小的response header 通常位于这部分响应内容里边。默认proxy_buffer_size 被设置成 proxy_buffers 里一个buffer 的大小，当然可以设置更小些。</p>
@@ -567,7 +568,7 @@ proxy_buffer_size</p>
 
 <p>② 如果 proxy_buffers 打开</p>
 
-<p>Nginx将会尽可能的读取后端服务器的数据到buffer，直到proxy_buffers设置的所有buffer们被写满或者数据被读取完(EOF)，此时Nginx开始向客户端传输数据，会同时传输这一整串buffer们。如果数据很大的话，Nginx会接收并把他们写入到temp_file里去，大小由proxy_max_temp_file_size 控制。「当数据没有完全读完的时候」，Nginx同时向客户端传送的buffer 大小 不能超过 proxy_busy_buffers_size 「此句可能理解有误」。
+<p>Nginx将会尽可能的读取后端服务器的数据到buffer，直到proxy_buffers设置的所有buffer们被写满或者数据被读取完(EOF)，此时Nginx开始向客户端传输数据，会同时传输这一整串buffer们。如果数据很大的话，Nginx会接收并把他们写入到temp_file里去，大小由proxy_max_temp_file_size 控制。「当数据没有完全读完的时候」，Nginx同时向客户端传送的buffer 大小 不能超过 proxy_busy_buffers_size 「此句可能理解有误」。<br />
 proxy_busy_buffers_size 的官方解释：</p>
 
 <p>When buffering of responses from the proxied server is enabled, limits the total sizeof buffers that can be busy sending a response to the client while the response is not yet fully read. In the meantime, the rest of the buffers can be used for reading the response and, if needed, buffering part of the response to a temporary file. By default, size is limited by the size of two buffers set by the proxy_buffer_size andproxy_buffers directives.</p>
@@ -739,7 +740,7 @@ proxy_busy_buffers_size 的官方解释：</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -962,6 +963,8 @@ proxy_busy_buffers_size 的官方解释：</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -984,7 +987,9 @@ proxy_busy_buffers_size 的官方解释：</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1016,7 +1021,7 @@ proxy_busy_buffers_size 的官方解释：</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

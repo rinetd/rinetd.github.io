@@ -253,168 +253,168 @@
 
 <p>type Interface</p>
 
-<pre><code>type Interface interface {
-    sort.Interface
-    Push(x interface{}) // add x as element Len()
-    Pop() interface{}   // remove and return element Len() - 1.
-}
+<pre><code>type Interface interface {  
+    sort.Interface  
+    Push(x interface{}) // add x as element Len()  
+    Pop() interface{}   // remove and return element Len() - 1.  
+}  
 </code></pre>
 
 <p>可以看出，这个堆结构继承自sort.Interface, 而sort.Interface，需要实现三个方法：Len() int /   Less(i, j int) bool  /  Swap(i, j int) 再加上堆接口定义的两个方法：Push(x interface{})   /  Pop() interface{}。故只要实现了这五个方法，变定义了一个堆。</p>
 
 <p>任何实现了本接口的类型都可以用于构建最小堆。最小堆可以通过heap.Init建立，数据是递增顺序或者空的话也是最小堆。最小堆的约束条件是：</p>
 
-<pre><code>!h.Less(j, i) for 0 &lt;= i &lt; h.Len() and 2*i+1 &lt;= j &lt;= 2*i+2 and j &lt; h.Len()
+<pre><code>!h.Less(j, i) for 0 &lt;= i &lt; h.Len() and 2*i+1 &lt;= j &lt;= 2*i+2 and j &lt; h.Len()  
 </code></pre>
 
-<p>注意接口的Push和Pop方法是供heap包调用的，请使用heap.Push和heap.Pop来向一个堆添加或者删除元素。
-func Fix(h Interface, i int)  //  在修改第i个元素后，调用本函数修复堆，比删除第i个元素后插入新元素更有效率。复杂度O(log(n))，其中n等于h.Len()。
-func Init(h Interface)  //初始化一个堆。一个堆在使用任何堆操作之前应先初始化。Init函数对于堆的约束性是幂等的（多次执行无意义），并可能在任何时候堆的约束性被破坏时被调用。本函数复杂度为O(n)，其中n等于h.Len()。
-func Pop(h Interface) interface{}  //删除并返回堆h中的最小元素（不影响约束性）。复杂度O(log(n))，其中n等于h.Len()。该函数等价于Remove(h, 0)。
-func Push(h Interface, x interface{})  //向堆h中插入元素x，并保持堆的约束性。复杂度O(log(n))，其中n等于h.Len()。
+<p>注意接口的Push和Pop方法是供heap包调用的，请使用heap.Push和heap.Pop来向一个堆添加或者删除元素。<br />
+func Fix(h Interface, i int)  //  在修改第i个元素后，调用本函数修复堆，比删除第i个元素后插入新元素更有效率。复杂度O(log(n))，其中n等于h.Len()。<br />
+func Init(h Interface)  //初始化一个堆。一个堆在使用任何堆操作之前应先初始化。Init函数对于堆的约束性是幂等的（多次执行无意义），并可能在任何时候堆的约束性被破坏时被调用。本函数复杂度为O(n)，其中n等于h.Len()。<br />
+func Pop(h Interface) interface{}  //删除并返回堆h中的最小元素（不影响约束性）。复杂度O(log(n))，其中n等于h.Len()。该函数等价于Remove(h, 0)。<br />
+func Push(h Interface, x interface{})  //向堆h中插入元素x，并保持堆的约束性。复杂度O(log(n))，其中n等于h.Len()。<br />
 func Remove(h Interface, i int) interface{}  //删除堆中的第i个元素，并保持堆的约束性。复杂度O(log(n))，其中n等于h.Len()。</p>
 
 <p>举例说明其用法：</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;container/heap&quot;
-    &quot;fmt&quot;
-)
-
-// An IntHeap is a min-heap of ints.
-type IntHeap []int
-
-func (h IntHeap) Len() int           { return len(h) }
-func (h IntHeap) Less(i, j int) bool { return h[i] &lt; h[j] }
-func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
-
-func (h *IntHeap) Push(x interface{}) {
-    // Push and Pop use pointer receivers because they modify the slice's length,
-    // not just its contents.
-    *h = append(*h, x.(int))
-}
-
-func (h *IntHeap) Pop() interface{} {
-    old := *h
-    n := len(old)
-    x := old[n-1]
-    *h = old[0 : n-1]
-    return x
-}
-
-// This example inserts several ints into an IntHeap, checks the minimum,
-// and removes them in order of priority.
-func main() {
-    h := &amp;IntHeap{2, 1, 5, 100, 3, 6, 4, 5}
-    heap.Init(h)
-    heap.Push(h, 3)
-    heap.Fix(h, 3)
-    fmt.Printf(&quot;minimum: %d\n&quot;, (*h)[0])
-    for h.Len() &gt; 0 {
-        fmt.Printf(&quot;%d &quot;, heap.Pop(h))
-    }
-
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;container/heap&quot;  
+    &quot;fmt&quot;  
+)  
+  
+// An IntHeap is a min-heap of ints.  
+type IntHeap []int  
+  
+func (h IntHeap) Len() int           { return len(h) }  
+func (h IntHeap) Less(i, j int) bool { return h[i] &lt; h[j] }  
+func (h IntHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }  
+  
+func (h *IntHeap) Push(x interface{}) {  
+    // Push and Pop use pointer receivers because they modify the slice's length,  
+    // not just its contents.  
+    *h = append(*h, x.(int))  
+}  
+  
+func (h *IntHeap) Pop() interface{} {  
+    old := *h  
+    n := len(old)  
+    x := old[n-1]  
+    *h = old[0 : n-1]  
+    return x  
+}  
+  
+// This example inserts several ints into an IntHeap, checks the minimum,  
+// and removes them in order of priority.  
+func main() {  
+    h := &amp;IntHeap{2, 1, 5, 100, 3, 6, 4, 5}  
+    heap.Init(h)  
+    heap.Push(h, 3)  
+    heap.Fix(h, 3)  
+    fmt.Printf(&quot;minimum: %d\n&quot;, (*h)[0])  
+    for h.Len() &gt; 0 {  
+        fmt.Printf(&quot;%d &quot;, heap.Pop(h))  
+    }  
+  
+}  
 </code></pre>
 
 <p>利用heap创建一个优先级队列</p>
 
-<pre><code class="language-go">// This example demonstrates a priority queue built using the heap interface.
-package main
-
-import (
-    &quot;container/heap&quot;
-    &quot;fmt&quot;
-)
-
-// An Item is something we manage in a priority queue.
-type Item struct {
-    value    string // The value of the item; arbitrary.
-    priority int    // The priority of the item in the queue.
-    // The index is needed by update and is maintained by the heap.Interface methods.
-    index int // The index of the item in the heap.
-}
-
-// A PriorityQueue implements heap.Interface and holds Items.
-type PriorityQueue []*Item
-
-func (pq PriorityQueue) Len() int { return len(pq) }
-
-func (pq PriorityQueue) Less(i, j int) bool {
-    // We want Pop to give us the highest, not lowest, priority so we use greater than here.
-    return pq[i].priority &gt; pq[j].priority
-}
-
-func (pq PriorityQueue) Swap(i, j int) {
-    pq[i], pq[j] = pq[j], pq[i]
-    pq[i].index = i
-    pq[j].index = j
-}
-
-func (pq *PriorityQueue) Push(x interface{}) {
-    n := len(*pq)
-    item := x.(*Item)
-    item.index = n
-    *pq = append(*pq, item)
-}
-
-func (pq *PriorityQueue) Pop() interface{} {
-    old := *pq
-    n := len(old)
-    item := old[n-1]
-    item.index = -1 // for safety
-    *pq = old[0 : n-1]
-    return item
-}
-
-// update modifies the priority and value of an Item in the queue.
-func (pq *PriorityQueue) update(item *Item, value string, priority int) {
-    item.value = value
-    item.priority = priority
-    heap.Fix(pq, item.index)
-}
-
-// This example creates a PriorityQueue with some items, adds and manipulates an item,
-// and then removes the items in priority order.
-func main() {
-    // Some items and their priorities.
-    items := map[string]int{
-        &quot;banana&quot;: 3, &quot;apple&quot;: 2, &quot;pear&quot;: 4,
-    }
-
-    // Create a priority queue, put the items in it, and
-    // establish the priority queue (heap) invariants.
-    pq := make(PriorityQueue, len(items))
-    i := 0
-    for value, priority := range items {
-        pq[i] = &amp;Item{
-            value:    value,
-            priority: priority,
-            index:    i,
-        }
-        i++
-    }
-    heap.Init(&amp;pq)
-
-    // Insert a new item and then modify its priority.
-    item := &amp;Item{
-        value:    &quot;orange&quot;,
-        priority: 1,
-    }
-    heap.Push(&amp;pq, item)
-    pq.update(item, item.value, 5)
-
-    // Take the items out; they arrive in decreasing priority order.
-    for pq.Len() &gt; 0 {
-        item := heap.Pop(&amp;pq).(*Item)
-        fmt.Printf(&quot;%.2d:%s \n&quot;, item.priority, item.value)
-    }
-}
+<pre><code class="language-go">// This example demonstrates a priority queue built using the heap interface.  
+package main  
+  
+import (  
+    &quot;container/heap&quot;  
+    &quot;fmt&quot;  
+)  
+  
+// An Item is something we manage in a priority queue.  
+type Item struct {  
+    value    string // The value of the item; arbitrary.  
+    priority int    // The priority of the item in the queue.  
+    // The index is needed by update and is maintained by the heap.Interface methods.  
+    index int // The index of the item in the heap.  
+}  
+  
+// A PriorityQueue implements heap.Interface and holds Items.  
+type PriorityQueue []*Item  
+  
+func (pq PriorityQueue) Len() int { return len(pq) }  
+  
+func (pq PriorityQueue) Less(i, j int) bool {  
+    // We want Pop to give us the highest, not lowest, priority so we use greater than here.  
+    return pq[i].priority &gt; pq[j].priority  
+}  
+  
+func (pq PriorityQueue) Swap(i, j int) {  
+    pq[i], pq[j] = pq[j], pq[i]  
+    pq[i].index = i  
+    pq[j].index = j  
+}  
+  
+func (pq *PriorityQueue) Push(x interface{}) {  
+    n := len(*pq)  
+    item := x.(*Item)  
+    item.index = n  
+    *pq = append(*pq, item)  
+}  
+  
+func (pq *PriorityQueue) Pop() interface{} {  
+    old := *pq  
+    n := len(old)  
+    item := old[n-1]  
+    item.index = -1 // for safety  
+    *pq = old[0 : n-1]  
+    return item  
+}  
+  
+// update modifies the priority and value of an Item in the queue.  
+func (pq *PriorityQueue) update(item *Item, value string, priority int) {  
+    item.value = value  
+    item.priority = priority  
+    heap.Fix(pq, item.index)  
+}  
+  
+// This example creates a PriorityQueue with some items, adds and manipulates an item,  
+// and then removes the items in priority order.  
+func main() {  
+    // Some items and their priorities.  
+    items := map[string]int{  
+        &quot;banana&quot;: 3, &quot;apple&quot;: 2, &quot;pear&quot;: 4,  
+    }  
+  
+    // Create a priority queue, put the items in it, and  
+    // establish the priority queue (heap) invariants.  
+    pq := make(PriorityQueue, len(items))  
+    i := 0  
+    for value, priority := range items {  
+        pq[i] = &amp;Item{  
+            value:    value,  
+            priority: priority,  
+            index:    i,  
+        }  
+        i++  
+    }  
+    heap.Init(&amp;pq)  
+  
+    // Insert a new item and then modify its priority.  
+    item := &amp;Item{  
+        value:    &quot;orange&quot;,  
+        priority: 1,  
+    }  
+    heap.Push(&amp;pq, item)  
+    pq.update(item, item.value, 5)  
+  
+    // Take the items out; they arrive in decreasing priority order.  
+    for pq.Len() &gt; 0 {  
+        item := heap.Pop(&amp;pq).(*Item)  
+        fmt.Printf(&quot;%.2d:%s \n&quot;, item.priority, item.value)  
+    }  
+}  
 </code></pre>
 
-<p>参考：<a href="https://golang.org/pkg/container/heap/">https://golang.org/pkg/container/heap/</a>
+<p>参考：<a href="https://golang.org/pkg/container/heap/">https://golang.org/pkg/container/heap/</a><br />
  </p>
 
                       
@@ -582,7 +582,7 @@ func main() {
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -805,6 +805,8 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -827,7 +829,9 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -859,7 +863,7 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

@@ -244,14 +244,16 @@
 <blockquote>
 <p>摘要：本文属于原创，欢迎转载，转载请保留出处：<a href="https://github.com/jasonGeng88/blog">https://github.com/jasonGeng88/blog</a></p>
 
-<p>ELK环境是基于docker进行的容器化部署 <br>
+<p>ELK环境是基于docker进行的容器化部署 <br><br />
 关于容器化部署，详情见上一篇 <a href="https://github.com/jasonGeng88/blog/blob/master/201703/elk.md">“ELK：基于ELK+Filebeat的日志搭建”</a></p>
 </blockquote>
 
 <h2 id="当前环境">当前环境</h2>
 
 <ol>
-<li>logstash：5.2</li>
+<li>logstash：5.2<br />
+<br />
+<br /></li>
 </ol>
 
 <h2 id="介绍">介绍</h2>
@@ -266,98 +268,106 @@
 
 <p>依照前文，使用filebeat来上传日志数据，logstash进行日志收集与处理，elasticsearch作为日志存储与搜索引擎，最后使用kibana展现日志的可视化输出。所以不难发现，日志解析主要还是logstash做的事情。<br></p>
 
-<p>说到logstash，它到底有哪些东西呢？我们来简单看下：
+<p>说到logstash，它到底有哪些东西呢？我们来简单看下：<br />
 <img src="assets/elk_parse_log_01.png" alt="" /></p>
 
 <p>从上图中可以看到，logstash主要包含三大模块：</p>
 
 <ol>
-<li>INPUTS: 收集所有数据源的日志数据（<a href="https://www.elastic.co/guide/en/logstash/current/input-plugins.html">源有file、redis、beats等</a>,*filebeat就是使用了beats源*）；</li>
-<li>FILTERS: 解析、整理日志数据（<strong>本文重点</strong>）；</li>
-<li>OUTPUTS: 将解析的日志数据输出至存储器（<a href="https://www.elastic.co/guide/en/logstash/current/output-plugins.html">elasticseach、file、syslog等</a>）；</li>
+<li>INPUTS: 收集所有数据源的日志数据（<a href="https://www.elastic.co/guide/en/logstash/current/input-plugins.html">源有file、redis、beats等</a>,*filebeat就是使用了beats源*）；<br /></li>
+<li>FILTERS: 解析、整理日志数据（<strong>本文重点</strong>）；<br /></li>
+<li>OUTPUTS: 将解析的日志数据输出至存储器（<a href="https://www.elastic.co/guide/en/logstash/current/output-plugins.html">elasticseach、file、syslog等</a>）；<br />
+<br />
+<br /></li>
 </ol>
 
 <p>看来FILTERS是我们探究的重点，先来来看看它常用到的几个插件（*后面日志解析会用到*）：</p>
 
 <ol>
-<li>grok：采用正则的方式，解析原始日志格式，使其结构化；</li>
-<li>geoip：根据IP字段，解析出对应的地理位置、经纬度等；</li>
-<li>date：解析选定时间字段，将其时间作为logstash每条记录产生的时间（*若没有指定该字段，默认使用read line的时间作为该条记录时间*）；</li>
+<li>grok：采用正则的方式，解析原始日志格式，使其结构化；<br /></li>
+<li>geoip：根据IP字段，解析出对应的地理位置、经纬度等；<br /></li>
+<li>date：解析选定时间字段，将其时间作为logstash每条记录产生的时间（*若没有指定该字段，默认使用read line的时间作为该条记录时间*）；<br />
+<br /></li>
 </ol>
 
 <p><em>注意：codec也是经常会使用到的，它主要作用在INPUTS和OUTPUTS中，<a href="https://www.elastic.co/guide/en/logstash/current/codec-plugins.html">提供有json的格式转换、multiline的多行日志合并等</a></em></p>
 
 <h2 id="场景">场景</h2>
 
-<p>说了这么多，到底怎么用呢？我们还是通过几个例子，具体来看看是怎么实现的吧。<br>
+<p>说了这么多，到底怎么用呢？我们还是通过几个例子，具体来看看是怎么实现的吧。<br><br />
 秉承先易后难的原则，希望大家全部看完后，对以后遇到更复杂的日志，也能处理的游刃有余。</p>
 
 <p><strong>1. NodeJS 日志</strong></p>
 
 <ul>
-<li>日志格式</li>
+<li>日志格式<br />
+<br /></li>
 </ul>
 
-<pre><code>$time - $remote_addr $log_level $path - $msg
+<pre><code>$time - $remote_addr $log_level $path - $msg  
 </code></pre>
 
 <ul>
-<li>日志内容</li>
+<li>日志内容<br />
+<br /></li>
 </ul>
 
-<pre><code>2017-03-15 18:34:14.535 - 112.65.171.98 INFO /root/ws/socketIo.js - xxxxxx与ws server断开连接
+<pre><code>2017-03-15 18:34:14.535 - 112.65.171.98 INFO /root/ws/socketIo.js - xxxxxx与ws server断开连接  
 </code></pre>
 
 <ul>
-<li>filebeat配置（*建议filebeat使用rpm安装，以systemctl start filebeat方式启动*）</li>
+<li>filebeat配置（*建议filebeat使用rpm安装，以systemctl start filebeat方式启动*）<br />
+<br /></li>
 </ul>
 
-<pre><code>filebeat:
-  prospectors:
-    - document_type: nodejs #申明type字段为nodejs，默认为log
-      paths:
-        - /var/log/nodejs/log #日志文件地址
-      input_type: log #从文件中读取
-      tail_files: true #以文件末尾开始读取数据
-output:
-  logstash:
-      hosts: [&quot;${LOGSTASH_IP}:5044&quot;]
-
-#General Setting
-name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
+<pre><code>filebeat:  
+  prospectors:  
+    - document_type: nodejs #申明type字段为nodejs，默认为log  
+      paths:  
+        - /var/log/nodejs/log #日志文件地址  
+      input_type: log #从文件中读取  
+      tail_files: true #以文件末尾开始读取数据  
+output:  
+  logstash:  
+      hosts: [&quot;${LOGSTASH_IP}:5044&quot;]  
+  
+#General Setting  
+name: &quot;server1&quot; #设置beat的名称，默认为主机hostname  
 </code></pre>
 
 <ul>
-<li>logstash中FILTERS配置</li>
+<li>logstash中FILTERS配置<br />
+<br /></li>
 </ul>
 
-<pre><code>filter {
-	if [type] == &quot;nodejs&quot; { #根据filebeat中设置的type字段，来过滤不同的解析规则
-    	grok{
-       		match =&gt; { &quot;message&quot; =&gt; &quot;%{TIMESTAMP_ISO8601:timestamp} - %{IPORHOST:clientip} %{LOGLEVEL:level} %{PATH:path} - %{GREEDYDATA:msg}&quot; }
-	    }
-    	geoip {
-       		source =&gt; &quot;clientip&quot; #填写IP字段
-    	}
-    }
-}
+<pre><code>filter {  
+	if [type] == &quot;nodejs&quot; { #根据filebeat中设置的type字段，来过滤不同的解析规则  
+    	grok{  
+       		match =&gt; { &quot;message&quot; =&gt; &quot;%{TIMESTAMP_ISO8601:timestamp} - %{IPORHOST:clientip} %{LOGLEVEL:level} %{PATH:path} - %{GREEDYDATA:msg}&quot; }  
+	    }  
+    	geoip {  
+       		source =&gt; &quot;clientip&quot; #填写IP字段  
+    	}  
+    }  
+}  
 </code></pre>
 
 <ul>
-<li><p>结果（*为方便演示，数据有删减*）
+<li><p>结果（*为方便演示，数据有删减*）<br />
 <img src="assets/elk_parse_log_node.png" alt="" /></p></li>
 
 <li><p><strong>Filter配置讲解</strong></p>
 
 <ol>
-<li>grok中的match内容：
+<li>grok中的match内容：<br />
 
 <ol>
-<li>key：表示所需解析的内容；</li>
-<li>value：表示解析的匹配规则，提取出对应的字段；</li>
-<li>解析语法：%{正则模板:自定义字段}，其中TIMESTAMP_ISO8601、IPORHOST等都是grok提供的正则模板（<a href="https://github.com/logstash-plugins/logstash-patterns-core/blob/master/patterns/grok-patterns">可在此查阅</a>）；</li>
+<li>key：表示所需解析的内容；<br /></li>
+<li>value：表示解析的匹配规则，提取出对应的字段；<br /></li>
+<li>解析语法：%{正则模板:自定义字段}，其中TIMESTAMP_ISO8601、IPORHOST等都是grok提供的正则模板（<a href="https://github.com/logstash-plugins/logstash-patterns-core/blob/master/patterns/grok-patterns">可在此查阅</a>）；<br /></li>
 </ol></li>
-<li>geoip：通过分析IP值，产生IP对应的地理位置信息；</li>
+<li>geoip：通过分析IP值，产生IP对应的地理位置信息；<br />
+<br /></li>
 </ol>
 
 <p><em>这里是否发现@timestamp与timestamp不一致，@timestamp表示该日志的读取时间，在elasticsearch中作为时间检索索引。下面讲解Nginx日志时，会去修正这一问题。</em></p></li>
@@ -368,69 +378,74 @@ name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
 <p><strong>2. Nginx 访问日志</strong></p>
 
 <ul>
-<li>日志格式</li>
+<li>日志格式<br />
+<br /></li>
 </ul>
 
-<pre><code>$remote_addr - $remote_user [$time_local]
-&quot;$request&quot; $status $body_bytes_sent &quot;$http_referer&quot;
-&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;
+<pre><code>$remote_addr - $remote_user [$time_local]  
+&quot;$request&quot; $status $body_bytes_sent &quot;$http_referer&quot;  
+&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;  
 </code></pre>
 
 <ul>
-<li>日志内容</li>
+<li>日志内容<br />
+<br /></li>
 </ul>
 
-<pre><code>112.65.171.98 - - [15/Mar/2017:18:18:06 +0800] &quot;GET /index.html HTTP/1.1&quot; 200 1150 &quot;http://www.yourdomain.com/&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36&quot; &quot;-&quot;
+<pre><code>112.65.171.98 - - [15/Mar/2017:18:18:06 +0800] &quot;GET /index.html HTTP/1.1&quot; 200 1150 &quot;http://www.yourdomain.com/&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36&quot; &quot;-&quot;  
 </code></pre>
 
 <ul>
-<li>filebeat中prospectors的配置</li>
+<li>filebeat中prospectors的配置<br />
+<br /></li>
 </ul>
 
-<pre><code>- document_type: nginx
-  paths:
-    - /var/log/nginx/access.log #日志文件地址
-  input_type: log #从文件中读取
-  tail_files: true #以文件末尾开始读取数据
+<pre><code>- document_type: nginx  
+  paths:  
+    - /var/log/nginx/access.log #日志文件地址  
+  input_type: log #从文件中读取  
+  tail_files: true #以文件末尾开始读取数据  
 </code></pre>
 
 <ul>
-<li>logstash中FILTERS配置</li>
+<li>logstash中FILTERS配置<br />
+<br /></li>
 </ul>
 
-<pre><code>filter {
-	if [type] == &quot;nginx&quot; {
-		grok{
-	       match =&gt; { &quot;message&quot; =&gt; &quot;%{COMBINEDAPACHELOG}&quot; }
-	    }
-
-	   date {
-	        match =&gt; [ &quot;timestamp&quot; , &quot;dd/MMM/yyyy:HH:mm:ss Z&quot;, &quot;ISO8601&quot; ]
-	        target =&gt; &quot;@timestamp&quot; #可省略
-	    }
-	}
-
-}
+<pre><code>filter {  
+	if [type] == &quot;nginx&quot; {  
+		grok{  
+	       match =&gt; { &quot;message&quot; =&gt; &quot;%{COMBINEDAPACHELOG}&quot; }  
+	    }  
+  
+	   date {  
+	        match =&gt; [ &quot;timestamp&quot; , &quot;dd/MMM/yyyy:HH:mm:ss Z&quot;, &quot;ISO8601&quot; ]  
+	        target =&gt; &quot;@timestamp&quot; #可省略  
+	    }  
+	}  
+  
+}  
 </code></pre>
 
 <ul>
-<li><p>结果
+<li><p>结果<br />
 <img src="assets/elk_parse_log_nginx.png" alt="" /></p></li>
 
 <li><p><strong>Filter配置讲解</strong></p>
 
 <ol>
-<li>grok：
+<li>grok：<br />
 
 <ol>
-<li>是不是很不可思议，上一示例中我们匹配规则写了一长串，这个仅仅一个COMBINEDAPACHELOG就搞定了！</li>
-<li>grok除了提供上面那种基础的正则规则，还对常用的日志（java,http,syslog等）提供的相应解析模板，本质还是那么一长串正则，<a href="https://github.com/logstash-plugins/logstash-patterns-core/tree/master/patterns">详情见grok的120中正则模板</a>；</li>
+<li>是不是很不可思议，上一示例中我们匹配规则写了一长串，这个仅仅一个COMBINEDAPACHELOG就搞定了！<br /></li>
+<li>grok除了提供上面那种基础的正则规则，还对常用的日志（java,http,syslog等）提供的相应解析模板，本质还是那么一长串正则，<a href="https://github.com/logstash-plugins/logstash-patterns-core/tree/master/patterns">详情见grok的120中正则模板</a>；<br /></li>
 </ol></li>
-<li>date:
+<li>date:<br />
 
 <ol>
-<li>match：数组中第一个值为要匹配的时间字段，后面的n个是匹配规则，它们的关系是or的关系，满足一个即可；</li>
-<li>target：将match中匹配的时间替换该字段，默认替换@timestamp；</li>
+<li>match：数组中第一个值为要匹配的时间字段，后面的n个是匹配规则，它们的关系是or的关系，满足一个即可；<br /></li>
+<li>target：将match中匹配的时间替换该字段，默认替换@timestamp；<br />
+<br /></li>
 </ol></li>
 </ol>
 
@@ -442,56 +457,59 @@ name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
 <p><strong>3. JAVA Log4j 日志</strong></p>
 
 <ul>
-<li>日志内容</li>
+<li>日志内容<br />
+<br /></li>
 </ul>
 
-<pre><code>'2017-03-16 15:52:39,580 ERROR TestController:26 - test:
-java.lang.NullPointerException
-	at com.test.TestController.tests(TestController.java:22)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-	at java.lang.reflect.Method.invoke(Method.java:497)
-	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:221)
-	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:137)'
-
+<pre><code>'2017-03-16 15:52:39,580 ERROR TestController:26 - test:  
+java.lang.NullPointerException  
+	at com.test.TestController.tests(TestController.java:22)  
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)  
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)  
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)  
+	at java.lang.reflect.Method.invoke(Method.java:497)  
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:221)  
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:137)'  
+  
 </code></pre>
 
 <ul>
-<li>filebeat中prospectors的配置</li>
+<li>filebeat中prospectors的配置<br />
+<br /></li>
 </ul>
 
-<pre><code>- document_type: tomcat
-  paths:
-    - /var/log/java/log #日志文件地址
-  input_type: log #从文件中读取
-  tail_files: true #以文件末尾开始读取数据
-  multiline:
-    pattern: ^\d{4}
-    match: after
-    negate: true
+<pre><code>- document_type: tomcat  
+  paths:  
+    - /var/log/java/log #日志文件地址  
+  input_type: log #从文件中读取  
+  tail_files: true #以文件末尾开始读取数据  
+  multiline:  
+    pattern: ^\d{4}  
+    match: after  
+    negate: true  
 </code></pre>
 
 <ul>
-<li>logstash中FILTERS配置</li>
+<li>logstash中FILTERS配置<br />
+<br /></li>
 </ul>
 
-<pre><code>filter {
-	if [type] == &quot;tomcat&quot; {
-		grok{
-			match =&gt; { &quot;message&quot; =&gt; &quot;%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{JAVALOGMESSAGE:msg}&quot; }
-		}
-
-		date {
-	   		match =&gt; [ &quot;timestamp&quot; , &quot;yyyy-MM-dd HH:mm:ss,S&quot;, &quot;ISO8601&quot; ]
-		}
-	}
-
-}I
+<pre><code>filter {  
+	if [type] == &quot;tomcat&quot; {  
+		grok{  
+			match =&gt; { &quot;message&quot; =&gt; &quot;%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{JAVALOGMESSAGE:msg}&quot; }  
+		}  
+  
+		date {  
+	   		match =&gt; [ &quot;timestamp&quot; , &quot;yyyy-MM-dd HH:mm:ss,S&quot;, &quot;ISO8601&quot; ]  
+		}  
+	}  
+  
+}I  
 </code></pre>
 
 <ul>
-<li><p>结果
+<li><p>结果<br />
 <img src="assets/elk_parse_log_java.png" alt="" /></p></li>
 
 <li><p><strong>Filebeat配置讲解</strong></p>
@@ -500,9 +518,10 @@ java.lang.NullPointerException
 <li><p>multiline 合并多行日志：</p>
 
 <ol>
-<li>pattern：匹配规则，这里指匹配每条日志开始的年份；</li>
-<li>match：有before与after，这里指从该行开始向后匹配；</li>
-<li>negate：是否开始一个新记录，这里指当pattern匹配后，结束之前的记录，创建一条新日志记录；</li>
+<li>pattern：匹配规则，这里指匹配每条日志开始的年份；<br /></li>
+<li>match：有before与after，这里指从该行开始向后匹配；<br /></li>
+<li>negate：是否开始一个新记录，这里指当pattern匹配后，结束之前的记录，创建一条新日志记录；<br />
+<br /></li>
 </ol>
 
 <p><em>当然在logstash input中使用codec multiline设置是一样的</em></p></li>
@@ -684,7 +703,7 @@ java.lang.NullPointerException
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -907,6 +926,8 @@ java.lang.NullPointerException
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -929,7 +950,9 @@ java.lang.NullPointerException
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -961,7 +984,7 @@ java.lang.NullPointerException
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

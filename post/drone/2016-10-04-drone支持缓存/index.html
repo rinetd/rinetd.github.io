@@ -229,7 +229,7 @@ matrix: include: - REPO_URL: &quot;git.yimengapp.com&quot; LOCAL_VOLUME: &quot;/
                   <h1 class="post-title">drone支持缓存</h1>
 
                   <p class="post-byline">
-                    by  · 2016年10月04日 04:15:26 · 612 Words ·
+                    by  · 2016年10月04日 04:15:26 · 624 Words ·
                     ~3min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Post/drone/2016-10-04%20Drone%e6%94%af%e6%8c%81%e7%bc%93%e5%ad%98.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
@@ -243,109 +243,109 @@ matrix: include: - REPO_URL: &quot;git.yimengapp.com&quot; LOCAL_VOLUME: &quot;/
                       <p><a href="http://plugins.drone.io/drillster/drone-volume-cache/">Volume Cache | Plugins | Drone</a>
 <a href="https://stackoverflow.com/questions/41412481/whether-drone-io-support-reusing-docker-container-for-build">https://stackoverflow.com/questions/41412481/whether-drone-io-support-reusing-docker-container-for-build</a></p>
 
-<pre><code class="language-yaml">matrix:
-  include:
-    - REPO_URL: &quot;git.yimengapp.com&quot;
-      LOCAL_VOLUME: &quot;/var/www/yimeng&quot;
-      #
-pipeline:
-  clone:
-    image: plugins/git
-    volumes:
-      - ${LOCAL_VOLUME}/master:/drone/src/${REPO_URL}/${DRONE_REPO}
-    when:
-      branch: master
-
-  clone:
-    image: plugins/git
-    volumes:
-      - ${LOCAL_VOLUME}/release:/drone/src/${REPO_URL}/${DRONE_REPO}
-    when:
-      branch: release
-
-  clone:
-    image: plugins/git
-    volumes:
-      - ${LOCAL_VOLUME}/develop:/drone/src/${REPO_URL}/${DRONE_REPO}
-    when:
-      branch: [ dev, develop ]
-
-  busybox:
-    image: busybox
-    volumes:
-      - ${LOCAL_VOLUME}/:${LOCAL_VOLUME}
-    commands:
-      - if [ ${DRONE_BRANCH} == master ]; then chown -R 33:33 ${LOCAL_VOLUME}/master ; fi
-      - if [ ${DRONE_BRANCH} == release ]; then chown -R 33:33 ${LOCAL_VOLUME}/release ; fi
-      - if [ ${DRONE_BRANCH} == develop ]; then chown -R 33:33 ${LOCAL_VOLUME}/develop ; fi
-
-# drone secret add --image=plugins/ssh yimeng/php-yimeng SSH_KEY @/home/ubuntu/.ssh/id_rsa
-# drone sign yimeng/php-yimeng
+<pre><code class="language-yaml">matrix:  
+  include:  
+    - REPO_URL: &quot;git.yimengapp.com&quot;  
+      LOCAL_VOLUME: &quot;/var/www/yimeng&quot;  
+      #  
+pipeline:  
+  clone:  
+    image: plugins/git  
+    volumes:  
+      - ${LOCAL_VOLUME}/master:/drone/src/${REPO_URL}/${DRONE_REPO}  
+    when:  
+      branch: master  
+  
+  clone:  
+    image: plugins/git  
+    volumes:  
+      - ${LOCAL_VOLUME}/release:/drone/src/${REPO_URL}/${DRONE_REPO}  
+    when:  
+      branch: release  
+  
+  clone:  
+    image: plugins/git  
+    volumes:  
+      - ${LOCAL_VOLUME}/develop:/drone/src/${REPO_URL}/${DRONE_REPO}  
+    when:  
+      branch: [ dev, develop ]  
+  
+  busybox:  
+    image: busybox  
+    volumes:  
+      - ${LOCAL_VOLUME}/:${LOCAL_VOLUME}  
+    commands:  
+      - if [ ${DRONE_BRANCH} == master ]; then chown -R 33:33 ${LOCAL_VOLUME}/master ; fi  
+      - if [ ${DRONE_BRANCH} == release ]; then chown -R 33:33 ${LOCAL_VOLUME}/release ; fi  
+      - if [ ${DRONE_BRANCH} == develop ]; then chown -R 33:33 ${LOCAL_VOLUME}/develop ; fi  
+  
+# drone secret add --image=plugins/ssh yimeng/php-yimeng SSH_KEY @/home/ubuntu/.ssh/id_rsa  
+# drone sign yimeng/php-yimeng  
 </code></pre>
 
-<pre><code>pipeline:
-  restore-cache:
-    image: drillster/drone-volume-cache
-    restore: true
-    mount:
-      - .git
-    volumes:
-      - /tmp/cache:/cache
-  clone:
-    image: plugins/git
-    # PUT YOUR BUILD STEPS HERE #
-
-  ssh-master:
-    image: plugins/ssh
-    host: [ qubuluo.com ]
-    user: root
-    port: 22
-    script:
-      - echo master &gt;master.txt
-      - echo master
-    when:
-      branch: master
-  ssh-dev:
-    image: plugins/ssh
-    host: [ qubuluo.com ]
-    user: root
-    port: 22
-    script:
-      - echo dev &gt;dev.txt
-      - echo dev
-    when:
-      branch: dev
-
-  rebuild-cache:
-    image: drillster/drone-volume-cache
-    rebuild: true
-    mount:
-      - .git
-    volumes:
-      - /tmp/cache:/cache
-
-# drone secret add --image=plugins/ssh yimeng/php-yimeng SSH_KEY @/home/ubuntu/.ssh/id_rsa
-# drone sign yimeng/php-yimeng
+<pre><code>pipeline:  
+  restore-cache:  
+    image: drillster/drone-volume-cache  
+    restore: true  
+    mount:  
+      - .git  
+    volumes:  
+      - /tmp/cache:/cache  
+  clone:  
+    image: plugins/git  
+    # PUT YOUR BUILD STEPS HERE #  
+  
+  ssh-master:  
+    image: plugins/ssh  
+    host: [ qubuluo.com ]  
+    user: root  
+    port: 22  
+    script:  
+      - echo master &gt;master.txt  
+      - echo master  
+    when:  
+      branch: master  
+  ssh-dev:  
+    image: plugins/ssh  
+    host: [ qubuluo.com ]  
+    user: root  
+    port: 22  
+    script:  
+      - echo dev &gt;dev.txt  
+      - echo dev  
+    when:  
+      branch: dev  
+  
+  rebuild-cache:  
+    image: drillster/drone-volume-cache  
+    rebuild: true  
+    mount:  
+      - .git  
+    volumes:  
+      - /tmp/cache:/cache  
+  
+# drone secret add --image=plugins/ssh yimeng/php-yimeng SSH_KEY @/home/ubuntu/.ssh/id_rsa  
+# drone sign yimeng/php-yimeng  
 </code></pre>
 
-<pre><code>pipeline:
-  restore-cache:
-  image: drillster/drone-volume-cache
-  restore: true
-  mount:
-    - .git
-  volumes:
-    - /tmp/cache:/cache
-  clone:
-    image: plugins/git
-    # PUT YOUR BUILD STEPS HERE #
-  rebuild-cache:
-    image: drillster/drone-volume-cache
-    rebuild: true
-    mount:
-      - .git
-    volumes:
-      - /tmp/cache:/cache
+<pre><code>pipeline:  
+  restore-cache:  
+  image: drillster/drone-volume-cache  
+  restore: true  
+  mount:  
+    - .git  
+  volumes:  
+    - /tmp/cache:/cache  
+  clone:  
+    image: plugins/git  
+    # PUT YOUR BUILD STEPS HERE #  
+  rebuild-cache:  
+    image: drillster/drone-volume-cache  
+    rebuild: true  
+    mount:  
+      - .git  
+    volumes:  
+      - /tmp/cache:/cache  
 </code></pre>
 
 <p>I have setup drone.io locally and created a .drone.yml for CI build. But I found <strong>drone removes the docker container after finishing the build</strong> Whether it support reusing the docker container? I am working on gradle project and the initial build takes a long time to download java dependencies.</p>
@@ -354,71 +354,71 @@ pipeline:
 
 <p>I used below command to set the admin user on running drone-server container.</p>
 
-<p>docker run -d <br />
- -e DRONE_GITHUB=true <br />
- -e DRONE_GITHUB_CLIENT=&ldquo;xxxx&rdquo; <br />
- -e DRONE_GITHUB_SECRET=&ldquo;xxxx&rdquo; <br />
- -e DRONE_SECRET=&ldquo;xxxx&rdquo; <br />
- -e DRONE_OPEN=true  <br />
- -e DRONE_DATABASE_DRIVER=mysql <br />
- -e DRONE_DATABASE_DATASOURCE=&ldquo;root:root@tcp(mysql:3306)/drone?parseTime=true&rdquo; <br />
- -e DRONE_ADMIN=&ldquo;joeyzhao0113&rdquo; <br />
- &ndash;restart=always <br />
- &ndash;name=drone-server <br />
- &ndash;link=mysql <br />
+<p>docker run -d \<br />
+ -e DRONE_GITHUB=true \<br />
+ -e DRONE_GITHUB_CLIENT=&ldquo;xxxx&rdquo; \<br />
+ -e DRONE_GITHUB_SECRET=&ldquo;xxxx&rdquo; \<br />
+ -e DRONE_SECRET=&ldquo;xxxx&rdquo; \<br />
+ -e DRONE_OPEN=true  \<br />
+ -e DRONE_DATABASE_DRIVER=mysql \<br />
+ -e DRONE_DATABASE_DATASOURCE=&ldquo;root:root@tcp(mysql:3306)/drone?parseTime=true&rdquo; \<br />
+ -e DRONE_ADMIN=&ldquo;joeyzhao0113&rdquo; \<br />
+ &ndash;restart=always \<br />
+ &ndash;name=drone-server \<br />
+ &ndash;link=mysql \<br />
  drone/drone:0.5</p>
 
-<p>After doing this, I use the user joeyzhao0113 to login drone server but failed to enable the Trusted flag on the setting page. The popup message dialog shows setting successfully see below screenshot. But the flag keep showing disabled always.
-0
+<p>After doing this, I use the user joeyzhao0113 to login drone server but failed to enable the Trusted flag on the setting page. The popup message dialog shows setting successfully see below screenshot. But the flag keep showing disabled always.<br />
+0<br />
 down vote</p>
 
 <p>No, it is not possible to re-use a Docker container for your Drone build. Build containers are ephemeral and are destroyed at the end of every build.</p>
 
 <p>That being said, it doesn&rsquo;t mean your problem cannot be solved.</p>
 
-<p>I think a better way to phrase this question would be &ldquo;how do I prevent my builds from having to re-download dependencies&rdquo;? There are two solutions to this problem.
+<p>I think a better way to phrase this question would be &ldquo;how do I prevent my builds from having to re-download dependencies&rdquo;? There are two solutions to this problem.<br />
 Option 1, Cache Plugin</p>
 
 <p>The first, recommended solution, is to use a plugin to cache and restore your dependencies. Cache plugins such as the volume cache and s3 cache are community contributed plugins.</p>
 
-<pre><code>pipeline:
- # restores the cache from a local volume
- restore-cache:
-   image: drillster/drone-volume-cache
-   restore: true
-   mount: [ /drone/.gradle, /drone/.m2 ]
-   volumes: /tmp/cache:/cache
-
- build:
-   image: maven
-   environment:
-     - M2_HOME=/drone/.m2
-     - MAVEN_HOME=/drone/.m2
-     - GRADLE_USER_HOME=/drone/.gradle
-   commands:
-     - mvn install
-     - mvn package
-
- # rebuild the cache in case new dependencies were
- # downloaded during your build
- rebuild-cache:
-   image: drillster/drone-volume-cache
-   rebuild: true
-   mount: [ /drone/.gradle, /drone/.m2 ]
-   volumes: /tmp/cache:/cache
+<pre><code>pipeline:  
+ # restores the cache from a local volume  
+ restore-cache:  
+   image: drillster/drone-volume-cache  
+   restore: true  
+   mount: [ /drone/.gradle, /drone/.m2 ]  
+   volumes: /tmp/cache:/cache  
+  
+ build:  
+   image: maven  
+   environment:  
+     - M2_HOME=/drone/.m2  
+     - MAVEN_HOME=/drone/.m2  
+     - GRADLE_USER_HOME=/drone/.gradle  
+   commands:  
+     - mvn install  
+     - mvn package  
+  
+ # rebuild the cache in case new dependencies were  
+ # downloaded during your build  
+ rebuild-cache:  
+   image: drillster/drone-volume-cache  
+   rebuild: true  
+   mount: [ /drone/.gradle, /drone/.m2 ]  
+   volumes: /tmp/cache:/cache  
 </code></pre>
 
 <p>Option 2, Custom Image</p>
 
 <p>The second solution is to create a Docker image with your dependencies, publish to DockerHub, and use this as your build image in your .drone.yml file.</p>
 
-<p>pipeline:
- build:
-   image: some-image-with-all-my-dependencies
-   commands:
+<p>pipeline:<br />
+ build:<br />
+   image: some-image-with-all-my-dependencies<br />
+   commands:<br />
      - mvn package</p>
 
-<pre><code> the default workspace base is /drone assuming you didn't override the default base value. This means you can set GRADLE_USER_HOME=/drone/.gradle to instruct gradle to store the dependencies in your workspace, making accessible to the cache plugin. I've updated the example in my answer to show how this could work. – Brad Rydzewski
+<pre><code> the default workspace base is /drone assuming you didn't override the default base value. This means you can set GRADLE_USER_HOME=/drone/.gradle to instruct gradle to store the dependencies in your workspace, making accessible to the cache plugin. I've updated the example in my answer to show how this could work. – Brad Rydzewski  
 </code></pre>
 
                       
@@ -586,7 +586,7 @@ Option 1, Cache Plugin</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -809,6 +809,8 @@ Option 1, Cache Plugin</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -831,7 +833,9 @@ Option 1, Cache Plugin</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -863,7 +867,7 @@ Option 1, Cache Plugin</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

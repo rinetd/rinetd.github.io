@@ -242,65 +242,66 @@
 <p>在爬取网页的过程中最常见的任务就是从HTML中提取数据，有很多库可以做到这一点：</p>
 
 <ul>
-<li>BeautifulSoup 缺点：慢</li>
-<li>lxml</li>
+<li>BeautifulSoup 缺点：慢<br /></li>
+<li>lxml<br />
+<br /></li>
 </ul>
 
 <p>scrapy 有自己的机制来提取数据，叫做selectors 因为它们通过xpath或css 选择文档的一部分。</p>
 
 <p>scrapy selectors 构建在lxml之上，也就是说二者在速度和准确性上类似。但是scrapy selectors 的API比lxml的API简单很多，因为lxml除了可用来选择标记文档，还可以干其他很多工作。</p>
 
-<p>##使用selectors
-###构建selectors
+<p>##使用selectors<br />
+###构建selectors<br />
 Scrapy selectors 是Selector类的实例。通过传入<code>text</code>或<code>TextResponse</code> 对象构建。它会根据输入类型自动选择最优解析规则（XML还是HTML）</p>
 
-<pre><code>&gt;&gt;&gt; from scrapy.selector import Selector
-&gt;&gt;&gt; from scrapy.http import HtmlResponse
+<pre><code>&gt;&gt;&gt; from scrapy.selector import Selector  
+&gt;&gt;&gt; from scrapy.http import HtmlResponse  
 </code></pre>
 
 <p>由text构建</p>
 
-<pre><code>&gt;&gt;&gt; body = '&lt;html&gt;&lt;body&gt;&lt;span&gt;good&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;'
-&gt;&gt;&gt; Selector(text=body).xpath('//span/text()').extract()
-[u'good']
+<pre><code>&gt;&gt;&gt; body = '&lt;html&gt;&lt;body&gt;&lt;span&gt;good&lt;/span&gt;&lt;/body&gt;&lt;/html&gt;'  
+&gt;&gt;&gt; Selector(text=body).xpath('//span/text()').extract()  
+[u'good']  
 </code></pre>
 
 <p>由response构建</p>
 
-<pre><code>&gt;&gt;&gt; response = HtmlResponse(url='http://example.com', body=body)
-&gt;&gt;&gt; Selector(response=response).xpath('//span/text()').extract()
-[u'good']
+<pre><code>&gt;&gt;&gt; response = HtmlResponse(url='http://example.com', body=body)  
+&gt;&gt;&gt; Selector(response=response).xpath('//span/text()').extract()  
+[u'good']  
 </code></pre>
 
 <p>简便起见，response对象提供了一个<code>.selector</code>属性，方便引用</p>
 
-<pre><code>&gt;&gt;&gt; response.selector.xpath('//span/text()').extract()
-[u'good']
+<pre><code>&gt;&gt;&gt; response.selector.xpath('//span/text()').extract()  
+[u'good']  
 </code></pre>
 
-<p>###使用selectors
+<p>###使用selectors<br />
 为了展示如何使用selectors,我们使用scrapy shell (可以利用它的交互来测试)，和一个示例网页，HTML代码如下：</p>
 
-<pre><code>&lt;html&gt;
- &lt;head&gt;
-  &lt;base href='http://example.com/' /&gt;
-  &lt;title&gt;Example website&lt;/title&gt;
- &lt;/head&gt;
- &lt;body&gt;
-  &lt;div id='images'&gt;
-   &lt;a href='image1.html'&gt;Name: My image 1 &lt;br /&gt;&lt;img src='image1_thumb.jpg' /&gt;&lt;/a&gt;
-   &lt;a href='image2.html'&gt;Name: My image 2 &lt;br /&gt;&lt;img src='image2_thumb.jpg' /&gt;&lt;/a&gt;
-   &lt;a href='image3.html'&gt;Name: My image 3 &lt;br /&gt;&lt;img src='image3_thumb.jpg' /&gt;&lt;/a&gt;
-   &lt;a href='image4.html'&gt;Name: My image 4 &lt;br /&gt;&lt;img src='image4_thumb.jpg' /&gt;&lt;/a&gt;
-   &lt;a href='image5.html'&gt;Name: My image 5 &lt;br /&gt;&lt;img src='image5_thumb.jpg' /&gt;&lt;/a&gt;
-  &lt;/div&gt;
- &lt;/body&gt;
-&lt;/html&gt;
+<pre><code>&lt;html&gt;  
+ &lt;head&gt;  
+  &lt;base href='http://example.com/' /&gt;  
+  &lt;title&gt;Example website&lt;/title&gt;  
+ &lt;/head&gt;  
+ &lt;body&gt;  
+  &lt;div id='images'&gt;  
+   &lt;a href='image1.html'&gt;Name: My image 1 &lt;br /&gt;&lt;img src='image1_thumb.jpg' /&gt;&lt;/a&gt;  
+   &lt;a href='image2.html'&gt;Name: My image 2 &lt;br /&gt;&lt;img src='image2_thumb.jpg' /&gt;&lt;/a&gt;  
+   &lt;a href='image3.html'&gt;Name: My image 3 &lt;br /&gt;&lt;img src='image3_thumb.jpg' /&gt;&lt;/a&gt;  
+   &lt;a href='image4.html'&gt;Name: My image 4 &lt;br /&gt;&lt;img src='image4_thumb.jpg' /&gt;&lt;/a&gt;  
+   &lt;a href='image5.html'&gt;Name: My image 5 &lt;br /&gt;&lt;img src='image5_thumb.jpg' /&gt;&lt;/a&gt;  
+  &lt;/div&gt;  
+ &lt;/body&gt;  
+&lt;/html&gt;  
 </code></pre>
 
 <p>首先，打开shell:</p>
 
-<pre><code>scrapy shell http://doc.scrapy.org/en/latest/_static/selectors-sample1.html
+<pre><code>scrapy shell http://doc.scrapy.org/en/latest/_static/selectors-sample1.html  
 </code></pre>
 
 <p>shell 加载完之后，你就可以使用response变量了，它有属性<code>selector</code>。</p>
@@ -309,139 +310,139 @@ Scrapy selectors 是Selector类的实例。通过传入<code>text</code>或<code
 
 <p>我们先通过xpath选择title标签里的文本</p>
 
-<pre><code>&gt;&gt;&gt; response.selector.xpath('//title/text()')
-[&lt;Selector (text) xpath=//title/text()&gt;]
+<pre><code>&gt;&gt;&gt; response.selector.xpath('//title/text()')  
+[&lt;Selector (text) xpath=//title/text()&gt;]  
 </code></pre>
 
 <p>由于通过xpath和css选择太常见了，所以response包含了两个快捷引用：<code>response.xpath()</code>和<code>response.css()</code>:</p>
 
-<pre><code>&gt;&gt;&gt; response.xpath('//title/text()')
-[&lt;Selector (text) xpath=//title/text()&gt;]
-&gt;&gt;&gt; response.css('title::text')
-[&lt;Selector (text) xpath=//title/text()&gt;]
+<pre><code>&gt;&gt;&gt; response.xpath('//title/text()')  
+[&lt;Selector (text) xpath=//title/text()&gt;]  
+&gt;&gt;&gt; response.css('title::text')  
+[&lt;Selector (text) xpath=//title/text()&gt;]  
 </code></pre>
 
 <p><code>xpath()</code>和<code>css()</code>方法会返回一个<code>SelectorList</code>实例，它是一系列新selectors 的列表。这样设计方便你快速选取嵌套的数据。</p>
 
-<pre><code>&gt;&gt;&gt; response.css('img').xpath('@src').extract()
-[u'image1_thumb.jpg',
- u'image2_thumb.jpg',
- u'image3_thumb.jpg',
- u'image4_thumb.jpg',
- u'image5_thumb.jpg']
+<pre><code>&gt;&gt;&gt; response.css('img').xpath('@src').extract()  
+[u'image1_thumb.jpg',  
+ u'image2_thumb.jpg',  
+ u'image3_thumb.jpg',  
+ u'image4_thumb.jpg',  
+ u'image5_thumb.jpg']  
 </code></pre>
 
 <p>为了提取文本数据，你必须调用selector的<code>extract()</code>方法，如下：</p>
 
-<pre><code>&gt;&gt;&gt; response.xpath('//title/text()').extract()
-[u'Example website']
+<pre><code>&gt;&gt;&gt; response.xpath('//title/text()').extract()  
+[u'Example website']  
 </code></pre>
 
 <p>css selectors 可以通过css3伪元素来选择文本或属性节点：</p>
 
-<pre><code>&gt;&gt;&gt; response.css('title::text').extract()
-[u'Example website']
+<pre><code>&gt;&gt;&gt; response.css('title::text').extract()  
+[u'Example website']  
 </code></pre>
 
 <p>下面我们将提取base URL  和一些图片链接</p>
 
-<pre><code>&gt;&gt;&gt; response.xpath('//base/@href').extract()
-[u'http://example.com/']
+<pre><code>&gt;&gt;&gt; response.xpath('//base/@href').extract()  
+[u'http://example.com/']  
 
-&gt;&gt;&gt; response.css('base::attr(href)').extract()
-[u'http://example.com/']
+&gt;&gt;&gt; response.css('base::attr(href)').extract()  
+[u'http://example.com/']  
 
-&gt;&gt;&gt; response.xpath('//a[contains(@href, &quot;image&quot;)]/@href').extract()
-[u'image1.html',
- u'image2.html',
- u'image3.html',
- u'image4.html',
- u'image5.html']
+&gt;&gt;&gt; response.xpath('//a[contains(@href, &quot;image&quot;)]/@href').extract()  
+[u'image1.html',  
+ u'image2.html',  
+ u'image3.html',  
+ u'image4.html',  
+ u'image5.html']  
 
-&gt;&gt;&gt; response.css('a[href*=image]::attr(href)').extract()
-[u'image1.html',
- u'image2.html',
- u'image3.html',
- u'image4.html',
- u'image5.html']
+&gt;&gt;&gt; response.css('a[href*=image]::attr(href)').extract()  
+[u'image1.html',  
+ u'image2.html',  
+ u'image3.html',  
+ u'image4.html',  
+ u'image5.html']  
 
-&gt;&gt;&gt; response.xpath('//a[contains(@href, &quot;image&quot;)]/img/@src').extract()
-[u'image1_thumb.jpg',
- u'image2_thumb.jpg',
- u'image3_thumb.jpg',
- u'image4_thumb.jpg',
- u'image5_thumb.jpg']
+&gt;&gt;&gt; response.xpath('//a[contains(@href, &quot;image&quot;)]/img/@src').extract()  
+[u'image1_thumb.jpg',  
+ u'image2_thumb.jpg',  
+ u'image3_thumb.jpg',  
+ u'image4_thumb.jpg',  
+ u'image5_thumb.jpg']  
 
-&gt;&gt;&gt; response.css('a[href*=image] img::attr(src)').extract()
-[u'image1_thumb.jpg',
- u'image2_thumb.jpg',
- u'image3_thumb.jpg',
- u'image4_thumb.jpg',
- u'image5_thumb.jpg']
+&gt;&gt;&gt; response.css('a[href*=image] img::attr(src)').extract()  
+[u'image1_thumb.jpg',  
+ u'image2_thumb.jpg',  
+ u'image3_thumb.jpg',  
+ u'image4_thumb.jpg',  
+ u'image5_thumb.jpg']  
 </code></pre>
 
-<p>###嵌套selectors
+<p>###嵌套selectors<br />
 <code>xpath()</code>和<code>css()</code>返回一个selectors的列表，所以你可以调用这些selector的选取方法，如下：</p>
 
-<pre><code>&gt;&gt;&gt; links = response.xpath('//a[contains(@href, &quot;image&quot;)]')
-&gt;&gt;&gt; links.extract()
-[u'&lt;a href=&quot;image1.html&quot;&gt;Name: My image 1 &lt;br&gt;&lt;img src=&quot;image1_thumb.jpg&quot;&gt;&lt;/a&gt;',
- u'&lt;a href=&quot;image2.html&quot;&gt;Name: My image 2 &lt;br&gt;&lt;img src=&quot;image2_thumb.jpg&quot;&gt;&lt;/a&gt;',
- u'&lt;a href=&quot;image3.html&quot;&gt;Name: My image 3 &lt;br&gt;&lt;img src=&quot;image3_thumb.jpg&quot;&gt;&lt;/a&gt;',
- u'&lt;a href=&quot;image4.html&quot;&gt;Name: My image 4 &lt;br&gt;&lt;img src=&quot;image4_thumb.jpg&quot;&gt;&lt;/a&gt;',
- u'&lt;a href=&quot;image5.html&quot;&gt;Name: My image 5 &lt;br&gt;&lt;img src=&quot;image5_thumb.jpg&quot;&gt;&lt;/a&gt;']
+<pre><code>&gt;&gt;&gt; links = response.xpath('//a[contains(@href, &quot;image&quot;)]')  
+&gt;&gt;&gt; links.extract()  
+[u'&lt;a href=&quot;image1.html&quot;&gt;Name: My image 1 &lt;br&gt;&lt;img src=&quot;image1_thumb.jpg&quot;&gt;&lt;/a&gt;',  
+ u'&lt;a href=&quot;image2.html&quot;&gt;Name: My image 2 &lt;br&gt;&lt;img src=&quot;image2_thumb.jpg&quot;&gt;&lt;/a&gt;',  
+ u'&lt;a href=&quot;image3.html&quot;&gt;Name: My image 3 &lt;br&gt;&lt;img src=&quot;image3_thumb.jpg&quot;&gt;&lt;/a&gt;',  
+ u'&lt;a href=&quot;image4.html&quot;&gt;Name: My image 4 &lt;br&gt;&lt;img src=&quot;image4_thumb.jpg&quot;&gt;&lt;/a&gt;',  
+ u'&lt;a href=&quot;image5.html&quot;&gt;Name: My image 5 &lt;br&gt;&lt;img src=&quot;image5_thumb.jpg&quot;&gt;&lt;/a&gt;']  
 
-&gt;&gt;&gt; for index, link in enumerate(links):
-... args = (index, link.xpath('@href').extract(), link.xpath('img/@src').extract())
-... print 'Link number %d points to url %s and image %s' % args
+&gt;&gt;&gt; for index, link in enumerate(links):  
+... args = (index, link.xpath('@href').extract(), link.xpath('img/@src').extract())  
+... print 'Link number %d points to url %s and image %s' % args  
 
-Link number 0 points to url [u'image1.html'] and image [u'image1_thumb.jpg']
-Link number 1 points to url [u'image2.html'] and image [u'image2_thumb.jpg']
-Link number 2 points to url [u'image3.html'] and image [u'image3_thumb.jpg']
-Link number 3 points to url [u'image4.html'] and image [u'image4_thumb.jpg']
-Link number 4 points to url [u'image5.html'] and image [u'image5_thumb.jpg']
+Link number 0 points to url [u'image1.html'] and image [u'image1_thumb.jpg']  
+Link number 1 points to url [u'image2.html'] and image [u'image2_thumb.jpg']  
+Link number 2 points to url [u'image3.html'] and image [u'image3_thumb.jpg']  
+Link number 3 points to url [u'image4.html'] and image [u'image4_thumb.jpg']  
+Link number 4 points to url [u'image5.html'] and image [u'image5_thumb.jpg']  
 </code></pre>
 
-<p>###使用selector的正则
+<p>###使用selector的正则<br />
 Selector有一个<code>.re()</code>方法用来在提取数据时使用正则。不像xpath()和css(),re()方法返回一个Unicode字符串，所以你不能构建嵌套的.re()调用。</p>
 
-<pre><code>&gt;&gt;&gt; response.xpath('//a[contains(@href, &quot;image&quot;)]/text()').re(r'Name:\s*(.*)')
-[u'My image 1',
- u'My image 2',
- u'My image 3',
- u'My image 4',
- u'My image 5']
+<pre><code>&gt;&gt;&gt; response.xpath('//a[contains(@href, &quot;image&quot;)]/text()').re(r'Name:\s*(.*)')  
+[u'My image 1',  
+ u'My image 2',  
+ u'My image 3',  
+ u'My image 4',  
+ u'My image 5']  
 </code></pre>
 
-<p>###使用相对xpath
+<p>###使用相对xpath<br />
 需要记住的是，如果你使用嵌套选择器，用到了以/开头的xpath，那么该xpath will be absolute to the document and not relative to the Selector you’re calling it from</p>
 
 <p>例如：你想提取<div>元素中所有的<p>元素。首先，你要得到所有的<div>：</p>
 
-<pre><code>&gt;&gt;&gt; divs = response.xpath('//div')
+<pre><code>&gt;&gt;&gt; divs = response.xpath('//div')  
 </code></pre>
 
 <p>接下来，你可能会试图使用下面的方法，下面的方法是错误的，因为它实际上提取的是document下所有的<p>元素，而不只是那些在<div>里的元素：</p>
 
-<pre><code>&gt;&gt;&gt; for p in divs.xpath('//p'):  # this is wrong - gets all &lt;p&gt; from the whole document
-... print p.extract()
+<pre><code>&gt;&gt;&gt; for p in divs.xpath('//p'):  # this is wrong - gets all &lt;p&gt; from the whole document  
+... print p.extract()  
 </code></pre>
 
 <p>正确的方式应该是：注意前缀 .//p</p>
 
-<pre><code>&gt;&gt;&gt; for p in divs.xpath('.//p'):  # extracts all &lt;p&gt; inside
-... print p.extract()
+<pre><code>&gt;&gt;&gt; for p in divs.xpath('.//p'):  # extracts all &lt;p&gt; inside  
+... print p.extract()  
 </code></pre>
 
 <p>另一种常见的方式是提取所有直属<p>子元素</p>
 
-<pre><code>&gt;&gt;&gt; for p in divs.xpath('p'):
-... print p.extract()
+<pre><code>&gt;&gt;&gt; for p in divs.xpath('p'):  
+... print p.extract()  
 </code></pre>
 
 <p>###使用EXSLT 扩展</p>
 
-<p>###一些有关Xpath的tip
+<p>###一些有关Xpath的tip<br />
 ##Built-in Selectors reference</p>
 
                       
@@ -609,7 +610,7 @@ Selector有一个<code>.re()</code>方法用来在提取数据时使用正则。
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -832,6 +833,8 @@ Selector有一个<code>.re()</code>方法用来在提取数据时使用正则。
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -854,7 +857,9 @@ Selector有一个<code>.re()</code>方法用来在提取数据时使用正则。
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -886,7 +891,7 @@ Selector有一个<code>.re()</code>方法用来在提取数据时使用正则。
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

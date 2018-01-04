@@ -238,51 +238,51 @@
                     <div class="entry-inner">
                       
                       <p>ISO-9141-2协议是最常用的通信协议之一，也是属于OBD II标准协议的一种。下面从物理层特性、系统进入、帧结构、命令交互、交互时间参数、常用命令字等几个方面来介绍这种协议。
-Ø  物理层特性：空闲电平通常为12V；数据位格式为1+8+1，没有校验位；使用的波特率通常为10416BPS和9600BPS两种。
-Ø  系统进入初始化：ISO协议采用地址码进入方式，先使用5BPS发送地址码，ECU响应55H，KW1，KW2，设备对KW2取反发回给ECU，ECU对地址码取反发回给设备，完成系统初始化交互。其中55H这个字节用来规定后面的通信波特率。参见下图：
-       Tool————&gt;    &lt;—   &lt;—   &lt;—      —&gt;     &lt;—   ECU
-<img src="http://www.dpfdoctor.net/upLoad/news/month_1401/201401031028319025.png" alt="" />
+Ø  物理层特性：空闲电平通常为12V；数据位格式为1+8+1，没有校验位；使用的波特率通常为10416BPS和9600BPS两种。<br />
+Ø  系统进入初始化：ISO协议采用地址码进入方式，先使用5BPS发送地址码，ECU响应55H，KW1，KW2，设备对KW2取反发回给ECU，ECU对地址码取反发回给设备，完成系统初始化交互。其中55H这个字节用来规定后面的通信波特率。参见下图：<br />
+       Tool————&gt;    &lt;—   &lt;—   &lt;—      —&gt;     &lt;—   ECU<br />
+<img src="http://www.dpfdoctor.net/upLoad/news/month_1401/201401031028319025.png" alt="" /><br />
                  T1 |&lt;-&gt;|  T2 |&lt;-&gt;|T3|&lt;-&gt;|T4|&lt;-&gt;| T5  |&lt;-&gt;|  T6 |&lt;-&gt;|  T7</p>
 
-<pre><code>                                                    图 2-2-1
+<pre><code>                                                    图 2-2-1  
 </code></pre>
 
-<p>其中：           T1 ≥ 300  ms
-               60 ms ≤ T2≤ 300 ms
-5  ms ≤ T3 ≤20 ms
-0  ms ≤ T4 ≤ 20 ms
-25 ms ≤ T5 ≤ 50 ms
-25 ms ≤ T6 ≤ 50 ms
+<p>其中：           T1 ≥ 300  ms<br />
+               60 ms ≤ T2≤ 300 ms<br />
+5  ms ≤ T3 ≤20 ms<br />
+0  ms ≤ T4 ≤ 20 ms<br />
+25 ms ≤ T5 ≤ 50 ms<br />
+25 ms ≤ T6 ≤ 50 ms<br />
 55 ms ≤ T7 ≤ 5000 ms</p>
 
 <p>Ø  帧结构：帧头（3个字节）+数据（最大为7个字节）+校验（通常为校验和）。数据帧有两种：命令帧和响应帧。命令帧由Tools发出，响应帧是ECU对命令帧的响应。帧头结构如下图：</p>
 
-<pre><code>帧头字节1   帧头字节2   帧头字节3
-Priority/Type   目标地址    源地址
+<pre><code>帧头字节1   帧头字节2   帧头字节3  
+Priority/Type   目标地址    源地址  
 </code></pre>
 
-<p>Request(Tools-&gt;ECU)     68H     6AH     F1H
-Response(ECU-&gt;Tools)    48H     6BH     28H
+<p>Request(Tools-&gt;ECU)     68H     6AH     F1H<br />
+Response(ECU-&gt;Tools)    48H     6BH     28H<br />
                      图 2-2-2</p>
 
-<p>数据区包含传送的数据。对于命令帧，DATA区是命令字节及命令参数；对于响应帧，DATA区是命令响应及响应的数据。
+<p>数据区包含传送的数据。对于命令帧，DATA区是命令字节及命令参数；对于响应帧，DATA区是命令响应及响应的数据。<br />
 校验是校验字节，为前面字节的累加和，包括帧头和数据区。</p>
 
-<p>Ø  命令交互：命令交互通常情况下为1对1，但也存在1对多或者多对1的情况。下面是一组命令交互举例：
-Tools: 68H  6AH  F1H  BEH  81H
-ECU:   48H  6BH  28H  FEH  31H  32H  33H  40H  42H  43H  34H
-在命令中，目标地址是固定的；ECU响应设备的命令字在设备命令字的基础上+0x40。
-Ø  交互时间参数：包括4个时间参数，如下：
-设备发送命令字节间的时间间隔P1，通常为5ms-20ms，取6ms；
-ECU返回命令字节间的时间间隔P2，通常为0ms
-设备发送完一帧命令后等待ECU响应的时间P3，为25ms-50ms，一般取30ms；
+<p>Ø  命令交互：命令交互通常情况下为1对1，但也存在1对多或者多对1的情况。下面是一组命令交互举例：<br />
+Tools: 68H  6AH  F1H  BEH  81H<br />
+ECU:   48H  6BH  28H  FEH  31H  32H  33H  40H  42H  43H  34H<br />
+在命令中，目标地址是固定的；ECU响应设备的命令字在设备命令字的基础上+0x40。<br />
+Ø  交互时间参数：包括4个时间参数，如下：<br />
+设备发送命令字节间的时间间隔P1，通常为5ms-20ms，取6ms；<br />
+ECU返回命令字节间的时间间隔P2，通常为0ms<br />
+设备发送完一帧命令后等待ECU响应的时间P3，为25ms-50ms，一般取30ms；<br />
 设备接收到ECU响应后到发送下一帧命令的时间P4，通常为55ms-5000ms，一般取60ms。</p>
 
-<p>Ø  常用命令字：
-系统退出：20H
-读故障码：03H
-清除故障码：14H
-读版本信息：BEH
+<p>Ø  常用命令字：<br />
+系统退出：20H<br />
+读故障码：03H<br />
+清除故障码：14H<br />
+读版本信息：BEH<br />
 读数据流：B1H</p>
 
                       
@@ -450,7 +450,7 @@ ECU返回命令字节间的时间间隔P2，通常为0ms
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -673,6 +673,8 @@ ECU返回命令字节间的时间间隔P2，通常为0ms
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -695,7 +697,9 @@ ECU返回命令字节间的时间间隔P2，通常为0ms
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -727,7 +731,7 @@ ECU返回命令字节间的时间间隔P2，通常为0ms
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

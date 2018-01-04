@@ -241,144 +241,144 @@
                   <div class="entry">
                     <div class="entry-inner">
                       
-                      <p><a href="http://www.cnblogs.com/hupengcool/p/4143238.html">Golang操作数据库 - 纵酒挥刀斩人头 - 博客园</a>
+                      <p><a href="http://www.cnblogs.com/hupengcool/p/4143238.html">Golang操作数据库 - 纵酒挥刀斩人头 - 博客园</a><br />
 基本概念</p>
 
-<pre><code>Open() – creates a DB
-Close() - closes the DB
-Query() - 查询
-QueryRow() -查询行
-Exec() -执行操作，update，insert，delete
-Row - A row is not a hash map, but an abstraction of a cursor
-Next()
-Scan()
+<pre><code>Open() – creates a DB  
+Close() - closes the DB  
+Query() - 查询  
+QueryRow() -查询行  
+Exec() -执行操作，update，insert，delete  
+Row - A row is not a hash map, but an abstraction of a cursor  
+Next()  
+Scan()  
 </code></pre>
 
-<p>注意：DB并不是指的一个connection
+<p>注意：DB并不是指的一个connection<br />
 连接到数据库</p>
 
 <p>我们以mysql为例，使用github.com/go-sql-driver/mysql，首先我们需要导入我们需要的包</p>
 
-<p>import (
-    &ldquo;database/sql&rdquo;
-    _ &ldquo;github.com/go-sql-driver/mysql&rdquo;
+<p>import (<br />
+    &ldquo;database/sql&rdquo;<br />
+    _ &ldquo;github.com/go-sql-driver/mysql&rdquo;<br />
 )</p>
 
-<p>注意我们导入github.com/go-sql-driver/mysql 前面用了一个&rdquo;_&ldquo;,_操作其实是引入该包，而不直接使用包里面的函数，而是调用了该包里面的init函数,import的时候其实是执行了该包里面的init函数，初始化了里面的变量，_操作只是说该包引入了，我只初始化里面的 init函数和一些变量，但是往往这些init函数里面是注册自己包里面的引擎，让外部可以方便的使用，就很多实现database/sql的包，在 init函数里面都是调用了sql.Register(name string, driver driver.Driver)注册自己，然后外部就可以使用了。
+<p>注意我们导入github.com/go-sql-driver/mysql 前面用了一个&rdquo;_&ldquo;,_操作其实是引入该包，而不直接使用包里面的函数，而是调用了该包里面的init函数,import的时候其实是执行了该包里面的init函数，初始化了里面的变量，_操作只是说该包引入了，我只初始化里面的 init函数和一些变量，但是往往这些init函数里面是注册自己包里面的引擎，让外部可以方便的使用，就很多实现database/sql的包，在 init函数里面都是调用了sql.Register(name string, driver driver.Driver)注册自己，然后外部就可以使用了。<br />
 我们用Open()函数来打开一个database handle</p>
 
 <p>db, err := sql.Open(&ldquo;mysql&rdquo;, &ldquo;user:password@tcp(ip:port)/database&rdquo;)</p>
 
 <p>写一个完整的：</p>
 
-<p>import (
-    &ldquo;database/sql&rdquo;
-    _ &ldquo;github.com/go-sql-driver/mysql&rdquo;
-    &ldquo;log&rdquo;
-)
-func main() {
-    db, err := sql.Open(&ldquo;mysql&rdquo;, &ldquo;user:password@tcp(ip:port)/database&rdquo;)
-    if err != nil {
-        log.Println(err)
+<p>import (<br />
+    &ldquo;database/sql&rdquo;<br />
+    _ &ldquo;github.com/go-sql-driver/mysql&rdquo;<br />
+    &ldquo;log&rdquo;<br />
+)<br />
+func main() {<br />
+    db, err := sql.Open(&ldquo;mysql&rdquo;, &ldquo;user:password@tcp(ip:port)/database&rdquo;)<br />
+    if err != nil {<br />
+        log.Println(err)<br />
     }</p>
 
-<pre><code>//在这里进行一些数据库操作
+<pre><code>//在这里进行一些数据库操作  
 
-defer db.Close()
+defer db.Close()  
 </code></pre>
 
 <p>}</p>
 
 <p>我们在执行Open函数的时候，并不会去获得数据库连接有效性，当执行数据库操作的时候才会去连接，当我们需要在Open之后就知道连接的有效性的时候，可以通过Ping()来进行</p>
 
-<p>err = db.Ping()
-if err != nil {
-    log.Println(err)
+<p>err = db.Ping()<br />
+if err != nil {<br />
+    log.Println(err)<br />
 }</p>
 
-<p>我们通常习惯使用Close来关闭数据库连接，但是sql.DB是被设计成长期有效的类型，我们不应该频繁的Open和Close，相反，我们应该建立一个sql.DB，在程序需要进行数据库操作的时候一直使用它，不要在一个方法里面进行Open和Close，应该把sql.DB作为参数传递给方法
-进行数据库操作
+<p>我们通常习惯使用Close来关闭数据库连接，但是sql.DB是被设计成长期有效的类型，我们不应该频繁的Open和Close，相反，我们应该建立一个sql.DB，在程序需要进行数据库操作的时候一直使用它，不要在一个方法里面进行Open和Close，应该把sql.DB作为参数传递给方法<br />
+进行数据库操作<br />
 增删改操作</p>
 
 <p>Exec()方法一般用于增删改操作，这里以增加为例:</p>
 
-<p>stmt, err := db.Prepare(&ldquo;insert into user(name,age)values(?,?)&rdquo;)
-if err != nil {
-    log.Println(err)
+<p>stmt, err := db.Prepare(&ldquo;insert into user(name,age)values(?,?)&rdquo;)<br />
+if err != nil {<br />
+    log.Println(err)<br />
 }</p>
 
-<p>rs, err := stmt.Exec(&ldquo;go-test&rdquo;, 12)
-if err != nil {
-    log.Println(err)
-}
-//我们可以获得插入的id
-id, err := rs.LastInsertId()
-//可以获得影响行数
+<p>rs, err := stmt.Exec(&ldquo;go-test&rdquo;, 12)<br />
+if err != nil {<br />
+    log.Println(err)<br />
+}<br />
+//我们可以获得插入的id<br />
+id, err := rs.LastInsertId()<br />
+//可以获得影响行数<br />
 affect, err := rs.RowsAffected()</p>
 
-<p>查询操作
+<p>查询操作<br />
 一般的查询</p>
 
-<pre><code>var name string
-var age int
-rows, err := db.Query(&quot;select name,age from user where id = ? &quot;, 1)
-if err != nil {
-    fmt.Println(err)
-}
-defer rows.Close()
+<pre><code>var name string  
+var age int  
+rows, err := db.Query(&quot;select name,age from user where id = ? &quot;, 1)  
+if err != nil {  
+    fmt.Println(err)  
+}  
+defer rows.Close()  
 
-for rows.Next() {
-    err := rows.Scan(&amp;name, &amp;age)
-    if err != nil {
-        fmt.Println(err)
-    }
-}
+for rows.Next() {  
+    err := rows.Scan(&amp;name, &amp;age)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+}  
 
-err = rows.Err()
-if err != nil {
-    fmt.Println(err)
-}
+err = rows.Err()  
+if err != nil {  
+    fmt.Println(err)  
+}  
 
-fmt.Println(&quot;name:&quot;, url, &quot;age:&quot;, description)
+fmt.Println(&quot;name:&quot;, url, &quot;age:&quot;, description)  
 </code></pre>
 
-<p>我们应该养成关闭rows的习惯，在任何时候，都不要忘记rows.Close().哪怕这个rows在确实循环完之后，已经自动关闭掉了，我们定义rows.Close()也是对我们没有坏处的，因为我们无法保证，rows是否会正常的循环完。
+<p>我们应该养成关闭rows的习惯，在任何时候，都不要忘记rows.Close().哪怕这个rows在确实循环完之后，已经自动关闭掉了，我们定义rows.Close()也是对我们没有坏处的，因为我们无法保证，rows是否会正常的循环完。<br />
 查询单条记录，</p>
 
 <p>我们使用db.QueryRow()</p>
 
-<pre><code>var name string
-err = db.QueryRow(&quot;select name from user where id = ?&quot;, 222).Scan(&amp;name)
+<pre><code>var name string  
+err = db.QueryRow(&quot;select name from user where id = ?&quot;, 222).Scan(&amp;name)  
 </code></pre>
 
-<p>没有结果的时候会返回err
+<p>没有结果的时候会返回err<br />
 处理空值</p>
 
 <p>我们用一个name字段为空的记录来举例</p>
 
-<p>var name NullString
-err := db.QueryRow(&ldquo;SELECT name FROM names WHERE id = ?&rdquo;, id).Scan(&amp;name)
-&hellip;
-if name.Valid {
-        // use name.String
-} else {
-        // value is NULL
+<p>var name NullString<br />
+err := db.QueryRow(&ldquo;SELECT name FROM names WHERE id = ?&rdquo;, id).Scan(&amp;name)<br />
+&hellip;<br />
+if name.Valid {<br />
+        // use name.String<br />
+} else {<br />
+        // value is NULL<br />
 }</p>
 
 <p>在这种情况下我们通常使用NullString，但是有时候我们并不关心值是不是Null,我们只需要吧他当一个空字符串来对待就行。这时候我们可以使用[]byte（null byte[]可以转化为空string） 或者 sql.RawBytes,</p>
 
 <p>var col1, col2 []byte</p>
 
-<p>for rows.Next() {
-    // Scan the value to []byte
+<p>for rows.Next() {<br />
+    // Scan the value to []byte<br />
     err = rows.Scan(&amp;col1, &amp;col2)</p>
 
-<pre><code>if err != nil {
-    panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic
-}
+<pre><code>if err != nil {  
+    panic(err.Error()) // Just for example purpose. You should use proper error handling instead of panic  
+}  
 
-// Use the string value
-fmt.Println(string(col1), string(col2))
+// Use the string value  
+fmt.Println(string(col1), string(col2))  
 </code></pre>
 
 <p>}</p>
@@ -387,68 +387,68 @@ fmt.Println(string(col1), string(col2))
 
 <p>package main</p>
 
-<p>import (
-    &ldquo;database/sql&rdquo;
-    &ldquo;fmt&rdquo;
-    _ &ldquo;github.com/go-sql-driver/mysql&rdquo;
+<p>import (<br />
+    &ldquo;database/sql&rdquo;<br />
+    &ldquo;fmt&rdquo;<br />
+    _ &ldquo;github.com/go-sql-driver/mysql&rdquo;<br />
 )</p>
 
-<p>func main() {
-    // Open database connection
-    db, err := sql.Open(&ldquo;mysql&rdquo;, &ldquo;user:password@/dbname&rdquo;)
-    if err != nil {
-        panic(err.Error())  // Just for example purpose. You should use proper error handling instead of panic
-    }
+<p>func main() {<br />
+    // Open database connection<br />
+    db, err := sql.Open(&ldquo;mysql&rdquo;, &ldquo;user:password@/dbname&rdquo;)<br />
+    if err != nil {<br />
+        panic(err.Error())  // Just for example purpose. You should use proper error handling instead of panic<br />
+    }<br />
     defer db.Close()</p>
 
-<pre><code>// Execute the query
-rows, err := db.Query(&quot;SELECT * FROM table&quot;)
-if err != nil {
-    panic(err.Error()) // proper error handling instead of panic in your app
-}
+<pre><code>// Execute the query  
+rows, err := db.Query(&quot;SELECT * FROM table&quot;)  
+if err != nil {  
+    panic(err.Error()) // proper error handling instead of panic in your app  
+}  
 
-// Get column names
-columns, err := rows.Columns()
-if err != nil {
-    panic(err.Error()) // proper error handling instead of panic in your app
-}
+// Get column names  
+columns, err := rows.Columns()  
+if err != nil {  
+    panic(err.Error()) // proper error handling instead of panic in your app  
+}  
 
-// Make a slice for the values
-values := make([]sql.RawBytes, len(columns))
+// Make a slice for the values  
+values := make([]sql.RawBytes, len(columns))  
 
-// rows.Scan wants '[]interface{}' as an argument, so we must copy the
-// references into such a slice
-// See http://code.google.com/p/go-wiki/wiki/InterfaceSlice for details
-scanArgs := make([]interface{}, len(values))
-for i := range values {
-    scanArgs[i] = &amp;values[i]
-}
+// rows.Scan wants '[]interface{}' as an argument, so we must copy the  
+// references into such a slice  
+// See http://code.google.com/p/go-wiki/wiki/InterfaceSlice for details  
+scanArgs := make([]interface{}, len(values))  
+for i := range values {  
+    scanArgs[i] = &amp;values[i]  
+}  
 
-// Fetch rows
-for rows.Next() {
-    // get RawBytes from data
-    err = rows.Scan(scanArgs...)
-    if err != nil {
-        panic(err.Error()) // proper error handling instead of panic in your app
-    }
+// Fetch rows  
+for rows.Next() {  
+    // get RawBytes from data  
+    err = rows.Scan(scanArgs...)  
+    if err != nil {  
+        panic(err.Error()) // proper error handling instead of panic in your app  
+    }  
 
-    // Now do something with the data.
-    // Here we just print each column as a string.
-    var value string
-    for i, col := range values {
-        // Here we can check if the value is nil (NULL value)
-        if col == nil {
-            value = &quot;NULL&quot;
-        } else {
-            value = string(col)
-        }
-        fmt.Println(columns[i], &quot;: &quot;, value)
-    }
-    fmt.Println(&quot;-----------------------------------&quot;)
-}
-if err = rows.Err(); err != nil {
-    panic(err.Error()) // proper error handling instead of panic in your app
-}
+    // Now do something with the data.  
+    // Here we just print each column as a string.  
+    var value string  
+    for i, col := range values {  
+        // Here we can check if the value is nil (NULL value)  
+        if col == nil {  
+            value = &quot;NULL&quot;  
+        } else {  
+            value = string(col)  
+        }  
+        fmt.Println(columns[i], &quot;: &quot;, value)  
+    }  
+    fmt.Println(&quot;-----------------------------------&quot;)  
+}  
+if err = rows.Err(); err != nil {  
+    panic(err.Error()) // proper error handling instead of panic in your app  
+}  
 </code></pre>
 
 <p>}</p>
@@ -457,18 +457,18 @@ if err = rows.Err(); err != nil {
 
 <p>使用db.Begin()来开启一个事务, 通过Commit()和Rollback()方法来关闭。</p>
 
-<pre><code>tx := db.Begin()
-tx.Rollback()
-tx.Commit()
+<pre><code>tx := db.Begin()  
+tx.Rollback()  
+tx.Commit()  
 </code></pre>
 
-<p>Exec, Query, QueryRow and Prepare 方法已经全部可以在tx上面使用。使用方法和在*sql.DB是一样的，事务必须以Commit()或者Rollback()结束
+<p>Exec, Query, QueryRow and Prepare 方法已经全部可以在tx上面使用。使用方法和在*sql.DB是一样的，事务必须以Commit()或者Rollback()结束<br />
 The Connection Pool</p>
 
 <p>在database/sql中有一个很基本的连接池，你并没有多大的控制权，仅仅可以设置SetMaxIdleConns和SetMaxOpenConns，也就是最大空闲连接和最大连接数。</p>
 
-<pre><code>db.SetMaxIdleConns(n)
-db.SetMaxOpenConns(n)
+<pre><code>db.SetMaxIdleConns(n)  
+db.SetMaxOpenConns(n)  
 </code></pre>
 
                       
@@ -636,7 +636,7 @@ db.SetMaxOpenConns(n)
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -859,6 +859,8 @@ db.SetMaxOpenConns(n)
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -881,7 +883,9 @@ db.SetMaxOpenConns(n)
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -913,7 +917,7 @@ db.SetMaxOpenConns(n)
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

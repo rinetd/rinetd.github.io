@@ -245,60 +245,60 @@
 
 <h2 id="config">Config</h2>
 
-<p>The following parameters are used to configure the plugin:
-- <strong>user</strong> - user to log in as on the remote machines, defaults to <code>root</code> <code>PLUGIN_USER RSYNC_USER</code>
-- <strong>key</strong> - private SSH key for the remote machines
-- <strong>hosts</strong> - hostnames or ip-addresses of the remote machines
-- <strong>port</strong> - port to connect to on the remote machines, defaults to <code>22</code>
-- <strong>source</strong> - source folder to synchronize from, defaults to <code>./</code>
-- <strong>target</strong> - target folder on remote machines to synchronize to
-- <strong>include</strong> - rsync include filter
-- <strong>exclude</strong> - rsync exclude filter
-- <strong>recursive</strong> - recursively synchronize, defaults to <code>false</code>
-- <strong>delete</strong> - delete target folder contents, defaults to <code>false</code>
+<p>The following parameters are used to configure the plugin:<br />
+- <strong>user</strong> - user to log in as on the remote machines, defaults to <code>root</code> <code>PLUGIN_USER RSYNC_USER</code><br />
+- <strong>key</strong> - private SSH key for the remote machines<br />
+- <strong>hosts</strong> - hostnames or ip-addresses of the remote machines<br />
+- <strong>port</strong> - port to connect to on the remote machines, defaults to <code>22</code><br />
+- <strong>source</strong> - source folder to synchronize from, defaults to <code>./</code><br />
+- <strong>target</strong> - target folder on remote machines to synchronize to<br />
+- <strong>include</strong> - rsync include filter<br />
+- <strong>exclude</strong> - rsync exclude filter<br />
+- <strong>recursive</strong> - recursively synchronize, defaults to <code>false</code><br />
+- <strong>delete</strong> - delete target folder contents, defaults to <code>false</code><br />
 - <strong>script</strong> - list of commands to execute on remote machines</p>
 
 <p>It is highly recommended to put your <strong>key</strong> into a secret so it is not exposed to users. This can be done using the drone-cli.</p>
 
-<pre><code class="language-sh">drone secret add octocat/hello-world RSYNC_KEY @path/to/.ssh/id_rsa
+<pre><code class="language-sh">drone secret add octocat/hello-world RSYNC_KEY @path/to/.ssh/id_rsa  
 </code></pre>
 
 <p>Add the secret to your <code>.drone.yml</code>:</p>
 
-<pre><code class="language-yaml">pipeline:
-  rsync:
-    image: drillster/drone-rsync
-    user: some-user
-    key: ${PLUGIN_KEY}
-    hosts:
-      - remote1
-    source: ./dist
-    target: ~/packages
+<pre><code class="language-yaml">pipeline:  
+  rsync:  
+    image: drillster/drone-rsync  
+    user: some-user  
+    key: ${PLUGIN_KEY}  
+    hosts:  
+      - remote1  
+    source: ./dist  
+    target: ~/packages  
 </code></pre>
 
 <p>See the <a href="http://readme.drone.io/usage/secret-guide/">Secret Guide</a> for additional information on secrets.</p>
 
 <h2 id="examples">Examples</h2>
 
-<pre><code class="language-yaml">pipeline:
-  rsync:
-    image: drillster/drone-rsync
-    user: some-user
-    key: ${RSYNC_KEY}
-    hosts:
-      - remote1
-      - remote2
-    source: ./dist
-    target: ~/packages
-    include:
-      - &quot;app.tar.gz&quot;
-      - &quot;app.tar.gz.md5&quot;
-    exclude:
-      - &quot;**.*&quot;
-    script:
-      - cd ~/packages
-      - md5sum -c app.tar.gz.md5
-      - tar -xf app.tar.gz -C ~/app
+<pre><code class="language-yaml">pipeline:  
+  rsync:  
+    image: drillster/drone-rsync  
+    user: some-user  
+    key: ${RSYNC_KEY}  
+    hosts:  
+      - remote1  
+      - remote2  
+    source: ./dist  
+    target: ~/packages  
+    include:  
+      - &quot;app.tar.gz&quot;  
+      - &quot;app.tar.gz.md5&quot;  
+    exclude:  
+      - &quot;**.*&quot;  
+    script:  
+      - cd ~/packages  
+      - md5sum -c app.tar.gz.md5  
+      - tar -xf app.tar.gz -C ~/app  
 </code></pre>
 
 <p>The example above illustrates a situation where an app package (<code>app.tar.gz</code>) will be deployed to 2 remote hosts (<code>remote1</code> and <code>remote2</code>). An md5 checksum will be deployed as well. After deploying, the md5 checksum is used to check the deployed package. If successful the package is extracted.</p>
@@ -313,47 +313,47 @@
 
 <p>Sensitive plugin attributes can be replaced with the below secret environment variables. Please see the Drone documentation to learn more about secrets.</p>
 
-<p>RSYNC_USER
-    corresponds to user
-RSYNC_KEY
+<p>RSYNC_USER<br />
+    corresponds to user<br />
+RSYNC_KEY<br />
     corresponds to key</p>
 
-<p>hosts    list of hosts (remote machines)
-port    port to connect to on the remote machines, defaults to 22
-user    user to log in as on the remote machines, defaults to root
-key    private SSH key for the remote machines
-source    source folder to copy from, defaults to ./
-target    target folder on remote machines to copy to
-include    rsync include filter
-exclude    rsync exclude filter
-recursive    instruct plugin to recursively copy, can be true or false, defaults to false
-delete    instruct plugin to delete the target folder before copying, can be true or false, defaults to false
+<p>hosts    list of hosts (remote machines)<br />
+port    port to connect to on the remote machines, defaults to 22<br />
+user    user to log in as on the remote machines, defaults to root<br />
+key    private SSH key for the remote machines<br />
+source    source folder to copy from, defaults to ./<br />
+target    target folder on remote machines to copy to<br />
+include    rsync include filter<br />
+exclude    rsync exclude filter<br />
+recursive    instruct plugin to recursively copy, can be true or false, defaults to false<br />
+delete    instruct plugin to delete the target folder before copying, can be true or false, defaults to false<br />
 script    list of commands to execute on remote machines over SSH</p>
 
-<pre><code>pipeline:
-  build:
-    image: maven:alpine
-    commands:
-      - mvn -B clean package
-      - md5sum target/app.jar &gt; app.jar.md5
-  deploy:
-    image: drillster/drone-rsync
-    hosts: [ &quot;server-prod1&quot;, &quot;server-prod2&quot; ]
-    source: ./target
-    target: ~/packages
-    include: [ &quot;app.jar&quot;, &quot;app.jar.md5&quot; ]
-    exclude: [ &quot;**.*&quot; ]
-    script:
-      - cd ~/packages
-      - md5sum -c app.jar.md5
+<pre><code>pipeline:  
+  build:  
+    image: maven:alpine  
+    commands:  
+      - mvn -B clean package  
+      - md5sum target/app.jar &gt; app.jar.md5  
+  deploy:  
+    image: drillster/drone-rsync  
+    hosts: [ &quot;server-prod1&quot;, &quot;server-prod2&quot; ]  
+    source: ./target  
+    target: ~/packages  
+    include: [ &quot;app.jar&quot;, &quot;app.jar.md5&quot; ]  
+    exclude: [ &quot;**.*&quot; ]  
+    script:  
+      - cd ~/packages  
+      - md5sum -c app.jar.md5  
 </code></pre>
 
-<p>export DRONE_SERVER=<a href="http://kbook.org">http://kbook.org</a>
-export DRONE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXh0IjoicmluZXRkIiwidHlwZSI6InVzZXIifQ.0ZFhdVjrBHert1yuWBk3QFO9sKVm4iPzjTkr1l024c8
-<code>drone secret add --image=drillster/drone-rsync rinetd/drone-with-go RSYNC_KEY @/home/ubuntu/.ssh/id_rsa</code>
+<p>export DRONE_SERVER=<a href="http://kbook.org">http://kbook.org</a><br />
+export DRONE_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0ZXh0IjoicmluZXRkIiwidHlwZSI6InVzZXIifQ.0ZFhdVjrBHert1yuWBk3QFO9sKVm4iPzjTkr1l024c8<br />
+<code>drone secret add --image=drillster/drone-rsync rinetd/drone-with-go RSYNC_KEY @/home/ubuntu/.ssh/id_rsa</code><br />
 <code>drone sign rinetd/drone-with-go</code></p>
 
-<p>$ drone secret ls rinetd/drone-with-go          #查看
+<p>$ drone secret ls rinetd/drone-with-go          #查看<br />
 $ drone secret rm rinetd/drone-with-go SSH_KEY  #移除</p>
 
                       
@@ -521,7 +521,7 @@ $ drone secret rm rinetd/drone-with-go SSH_KEY  #移除</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -744,6 +744,8 @@ $ drone secret rm rinetd/drone-with-go SSH_KEY  #移除</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -766,7 +768,9 @@ $ drone secret rm rinetd/drone-with-go SSH_KEY  #移除</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -798,7 +802,7 @@ $ drone secret rm rinetd/drone-with-go SSH_KEY  #移除</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

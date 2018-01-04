@@ -247,297 +247,297 @@
 
 <p><a href="http://blog.pytool.com/chenbaoke/article/details/40317721">golang 中bufio包的用法</a></p>
 
-<p>本文转自GOlove博客：<a href="http://www.cnblogs.com/golove/p/3282667.html">http://www.cnblogs.com/golove/p/3282667.html </a>  并在此基础上进行了一些添加修改．     <a href="http://www.cnblogs.com/golove/p/3282667.html">
+<p>本文转自GOlove博客：<a href="http://www.cnblogs.com/golove/p/3282667.html">http://www.cnblogs.com/golove/p/3282667.html </a>  并在此基础上进行了一些添加修改．     <a href="http://www.cnblogs.com/golove/p/3282667.html"><br />
 </a></p>
 
-<p>bufio 包中的函数和方法
-// bufio 包实现了带缓存的 I/O 操作
+<p>bufio 包中的函数和方法<br />
+// bufio 包实现了带缓存的 I/O 操作<br />
 // 它封装一个 io.Reader 或 io.Writer 对象</p>
 
 <h2 id="使其具有缓存和一些文本读写功能">// 使其具有缓存和一些文本读写功能</h2>
 
 <h2 id="bufio-go">// bufio.go</h2>
 
-<pre><code class="language-go">type Reader struct {
-            buf          []byte
-            rd           io.Reader // reader provided by the client
-            r, w         int       // buf read and write positions
-            err          error
-            lastByte     int
-            lastRuneSize int
-        }
+<pre><code class="language-go">type Reader struct {  
+            buf          []byte  
+            rd           io.Reader // reader provided by the client  
+            r, w         int       // buf read and write positions  
+            err          error  
+            lastByte     int  
+            lastRuneSize int  
+        }  
 </code></pre>
 
-<p>// NewReaderSize 将 rd 封装成一个拥有 size 大小缓存的 bufio.Reader 对象
-// 如果 rd 的基类型就是 bufio.Reader 类型，而且拥有足够的缓存
-// 则直接将  rd 转换为基类型并返回
-func NewReaderSize(rd io.Reader, size int) *Reader
+<p>// NewReaderSize 将 rd 封装成一个拥有 size 大小缓存的 bufio.Reader 对象<br />
+// 如果 rd 的基类型就是 bufio.Reader 类型，而且拥有足够的缓存<br />
+// 则直接将  rd 转换为基类型并返回<br />
+func NewReaderSize(rd io.Reader, size int) *Reader<br />
 // NewReader 相当于 NewReaderSize(rd, 4096)</p>
 
 <h2 id="func-newreader-rd-io-reader-reader">func NewReader(rd io.Reader) *Reader</h2>
 
-<p>// Peek 返回缓存的一个切片，该切片引用缓存中前 n 字节数据
-// 该操作不会将数据读出，只是引用
-// 引用的数据在下一次读取操作之前是有效的
-// 如果引用的数据长度小于 n，则返回一个错误信息
-// 如果 n 大于缓存的总大小，则返回 ErrBufferFull
-// 通过 Peek 的返回值，可以修改缓存中的数据
+<p>// Peek 返回缓存的一个切片，该切片引用缓存中前 n 字节数据<br />
+// 该操作不会将数据读出，只是引用<br />
+// 引用的数据在下一次读取操作之前是有效的<br />
+// 如果引用的数据长度小于 n，则返回一个错误信息<br />
+// 如果 n 大于缓存的总大小，则返回 ErrBufferFull<br />
+// 通过 Peek 的返回值，可以修改缓存中的数据<br />
 // 但是不能修改底层 io.Reader 中的数据</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABCDEFG&quot;)
-br := bufio.NewReader(s)
-
-b, _ := br.Peek(5)
-fmt.Printf(&quot;%s\n&quot;, b)
-// ABCDE
-
-b[0] = 'a'
-b, _ = br.Peek(5)
-fmt.Printf(&quot;%s\n&quot;, b)
-// aBCDE
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABCDEFG&quot;)  
+br := bufio.NewReader(s)  
+  
+b, _ := br.Peek(5)  
+fmt.Printf(&quot;%s\n&quot;, b)  
+// ABCDE  
+  
+b[0] = 'a'  
+b, _ = br.Peek(5)  
+fmt.Printf(&quot;%s\n&quot;, b)  
+// aBCDE  
+}  
 </code></pre>
 
 <hr />
 
-<p>// Read 从 b 中读出数据到 p 中，返回读出的字节数
-// 如果 p 的大小 &gt;= 缓存的总大小，而且缓存不为空
-// 则只能读出缓存中的数据，不会从底层 io.Reader 中提取数据
-// 如果 p 的大小 &gt;= 缓存的总大小，而且缓存为空
-// 则直接从底层 io.Reader 向 p 中读出数据，不经过缓存
-// 只有当 b 中无可读数据时，才返回 (0, io.EOF)
+<p>// Read 从 b 中读出数据到 p 中，返回读出的字节数<br />
+// 如果 p 的大小 &gt;= 缓存的总大小，而且缓存不为空<br />
+// 则只能读出缓存中的数据，不会从底层 io.Reader 中提取数据<br />
+// 如果 p 的大小 &gt;= 缓存的总大小，而且缓存为空<br />
+// 则直接从底层 io.Reader 向 p 中读出数据，不经过缓存<br />
+// 只有当 b 中无可读数据时，才返回 (0, io.EOF)<br />
 func (b *Reader) Read(p []byte) (n int, err error)</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890&quot;)
-br := bufio.NewReader(s)
-b := make([]byte, 20)
-
-n, err := br.Read(b)
-fmt.Printf(&quot;%-20s %-2v %v\n&quot;, b[:n], n, err)
-// ABCDEFGHIJKLMNOPQRST 20 &lt;nil&gt;
-
-n, err = br.Read(b)
-fmt.Printf(&quot;%-20s %-2v %v\n&quot;, b[:n], n, err)
-// UVWXYZ1234567890 16 &lt;nil&gt;
-
-n, err = br.Read(b)
-fmt.Printf(&quot;%-20s %-2v %v\n&quot;, b[:n], n, err)
-// 0 EOF
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890&quot;)  
+br := bufio.NewReader(s)  
+b := make([]byte, 20)  
+  
+n, err := br.Read(b)  
+fmt.Printf(&quot;%-20s %-2v %v\n&quot;, b[:n], n, err)  
+// ABCDEFGHIJKLMNOPQRST 20 &lt;nil&gt;  
+  
+n, err = br.Read(b)  
+fmt.Printf(&quot;%-20s %-2v %v\n&quot;, b[:n], n, err)  
+// UVWXYZ1234567890 16 &lt;nil&gt;  
+  
+n, err = br.Read(b)  
+fmt.Printf(&quot;%-20s %-2v %v\n&quot;, b[:n], n, err)  
+// 0 EOF  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ReadByte 从 b 中读出一个字节并返回
-// 如果 b 中无可读数据，则返回一个错误
-func (b *Reader) ReadByte() (c byte, err error)
-// UnreadByte 撤消最后一次读出的字节
-// 只有最后读出的字节可以被撤消
-// 无论任何操作，只要有内容被读出，就可以用 UnreadByte 撤消一个字节
+<p>// ReadByte 从 b 中读出一个字节并返回<br />
+// 如果 b 中无可读数据，则返回一个错误<br />
+func (b *Reader) ReadByte() (c byte, err error)<br />
+// UnreadByte 撤消最后一次读出的字节<br />
+// 只有最后读出的字节可以被撤消<br />
+// 无论任何操作，只要有内容被读出，就可以用 UnreadByte 撤消一个字节<br />
 func (b *Reader) UnreadByte() error</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABCDEFG&quot;)
-br := bufio.NewReader(s)
-
-c, _ := br.ReadByte()
-fmt.Printf(&quot;%c\n&quot;, c)
-// A
-
-c, _ = br.ReadByte()
-fmt.Printf(&quot;%c\n&quot;, c)
-// B
-
-br.UnreadByte()
-c, _ = br.ReadByte()
-fmt.Printf(&quot;%c\n&quot;, c)
-// B
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABCDEFG&quot;)  
+br := bufio.NewReader(s)  
+  
+c, _ := br.ReadByte()  
+fmt.Printf(&quot;%c\n&quot;, c)  
+// A  
+  
+c, _ = br.ReadByte()  
+fmt.Printf(&quot;%c\n&quot;, c)  
+// B  
+  
+br.UnreadByte()  
+c, _ = br.ReadByte()  
+fmt.Printf(&quot;%c\n&quot;, c)  
+// B  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ReadRune 从 b 中读出一个 UTF8 编码的字符并返回
-// 同时返回该字符的 UTF8 编码长度
-// 如果 UTF8 序列无法解码出一个正确的 Unicode 字符
-// 则只读出 b 中的一个字节，并返回 U+FFFD 字符，size 返回 1
-func (b *Reader) ReadRune() (r rune, size int, err error)
-// UnreadRune 撤消最后一次读出的 Unicode 字符
-// 如果最后一次执行的不是 ReadRune 操作，则返回一个错误
-// 因此，UnreadRune 比 UnreadByte 更严格
+<p>// ReadRune 从 b 中读出一个 UTF8 编码的字符并返回<br />
+// 同时返回该字符的 UTF8 编码长度<br />
+// 如果 UTF8 序列无法解码出一个正确的 Unicode 字符<br />
+// 则只读出 b 中的一个字节，并返回 U+FFFD 字符，size 返回 1<br />
+func (b *Reader) ReadRune() (r rune, size int, err error)<br />
+// UnreadRune 撤消最后一次读出的 Unicode 字符<br />
+// 如果最后一次执行的不是 ReadRune 操作，则返回一个错误<br />
+// 因此，UnreadRune 比 UnreadByte 更严格<br />
 func (b *Reader) UnreadRune() error</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;你好，世界！&quot;)
-br := bufio.NewReader(s)
-
-c, size, _ := br.ReadRune()
-fmt.Printf(&quot;%c %v\n&quot;, c, size)
-// 你 3
-
-c, size, _ = br.ReadRune()
-fmt.Printf(&quot;%c %v\n&quot;, c, size)
-// 好 3
-
-br.UnreadRune()
-c, size, _ = br.ReadRune()
-fmt.Printf(&quot;%c %v\n&quot;, c, size)
-// 好 3
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;你好，世界！&quot;)  
+br := bufio.NewReader(s)  
+  
+c, size, _ := br.ReadRune()  
+fmt.Printf(&quot;%c %v\n&quot;, c, size)  
+// 你 3  
+  
+c, size, _ = br.ReadRune()  
+fmt.Printf(&quot;%c %v\n&quot;, c, size)  
+// 好 3  
+  
+br.UnreadRune()  
+c, size, _ = br.ReadRune()  
+fmt.Printf(&quot;%c %v\n&quot;, c, size)  
+// 好 3  
+}  
 </code></pre>
 
 <hr />
 
 <p>// Buffered 返回缓存中数据的长度</p>
 
-<pre><code class="language-go">func (b *Reader) Buffered() int
-
-func main() {
-s := strings.NewReader(&quot;你好，世界！&quot;)
-br := bufio.NewReader(s)
-
-fmt.Println(br.Buffered())
-// 0
-
-br.Peek(1)
-fmt.Println(br.Buffered())
-// 18
-}
+<pre><code class="language-go">func (b *Reader) Buffered() int  
+  
+func main() {  
+s := strings.NewReader(&quot;你好，世界！&quot;)  
+br := bufio.NewReader(s)  
+  
+fmt.Println(br.Buffered())  
+// 0  
+  
+br.Peek(1)  
+fmt.Println(br.Buffered())  
+// 18  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ReadSlice 在 b 中查找 delim 并返回 delim 及其之前的所有数据的切片
-// 该操作会读出数据，返回的切片是已读出数据的引用
-// 切片中的数据在下一次读取操作之前是有效的
-//
-// 如果 ReadSlice 在找到 delim 之前遇到错误
-// 则读出缓存中的所有数据并返回，同时返回遇到的错误（通常是 io.EOF）
-// 如果在整个缓存中都找不到 delim，则 err 返回 ErrBufferFull
-// 如果 ReadSlice 能找到 delim，则 err 始终返回 nil
-//
-// 因为返回的切片中的数据有可能被下一次读写操作修改
-// 因此大多数操作应该使用 ReadBytes 或 ReadString，它们返回的不是数据引用
+<p>// ReadSlice 在 b 中查找 delim 并返回 delim 及其之前的所有数据的切片<br />
+// 该操作会读出数据，返回的切片是已读出数据的引用<br />
+// 切片中的数据在下一次读取操作之前是有效的<br />
+//<br />
+// 如果 ReadSlice 在找到 delim 之前遇到错误<br />
+// 则读出缓存中的所有数据并返回，同时返回遇到的错误（通常是 io.EOF）<br />
+// 如果在整个缓存中都找不到 delim，则 err 返回 ErrBufferFull<br />
+// 如果 ReadSlice 能找到 delim，则 err 始终返回 nil<br />
+//<br />
+// 因为返回的切片中的数据有可能被下一次读写操作修改<br />
+// 因此大多数操作应该使用 ReadBytes 或 ReadString，它们返回的不是数据引用<br />
 func (b *Reader) ReadSlice(delim byte) (line []byte, err error)</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABC DEF GHI JKL&quot;)
-br := bufio.NewReader(s)
-
-w, _ := br.ReadSlice(' ')
-fmt.Printf(&quot;%q\n&quot;, w)
-// &quot;ABC &quot;
-
-w, _ = br.ReadSlice(' ')
-fmt.Printf(&quot;%q\n&quot;, w)
-// &quot;DEF &quot;
-
-w, _ = br.ReadSlice(' ')
-fmt.Printf(&quot;%q\n&quot;, w)
-// &quot;GHI &quot;
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABC DEF GHI JKL&quot;)  
+br := bufio.NewReader(s)  
+  
+w, _ := br.ReadSlice(' ')  
+fmt.Printf(&quot;%q\n&quot;, w)  
+// &quot;ABC &quot;  
+  
+w, _ = br.ReadSlice(' ')  
+fmt.Printf(&quot;%q\n&quot;, w)  
+// &quot;DEF &quot;  
+  
+w, _ = br.ReadSlice(' ')  
+fmt.Printf(&quot;%q\n&quot;, w)  
+// &quot;GHI &quot;  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ReadLine 是一个低级的原始的行读取操作
-// 大多数情况下，应该使用 ReadBytes(&rsquo;\n&rsquo;) 或 ReadString(&rsquo;\n&rsquo;)
-// 或者使用一个 Scanner
-//
-// ReadLine 通过调用 ReadSlice 方法实现，返回的也是缓存的切片
-// ReadLine 尝试返回一个单行数据，不包括行尾标记（\n 或 \r\n）
-// 如果在缓存中找不到行尾标记，则设置 isPrefix 为 true，表示查找未完成
-// 同时读出缓存中的数据并作为切片返回
-// 只有在当前缓存中找到行尾标记，才将 isPrefix 设置为 false，表示查找完成
-// 可以多次调用 ReadLine 来读出一行
-// 返回的数据在下一次读取操作之前是有效的
-// 如果 ReadLine 无法获取任何数据，则返回一个错误信息（通常是 io.EOF）
+<p>// ReadLine 是一个低级的原始的行读取操作<br />
+// 大多数情况下，应该使用 ReadBytes(&rsquo;\n&rsquo;) 或 ReadString(&rsquo;\n&rsquo;)<br />
+// 或者使用一个 Scanner<br />
+//<br />
+// ReadLine 通过调用 ReadSlice 方法实现，返回的也是缓存的切片<br />
+// ReadLine 尝试返回一个单行数据，不包括行尾标记（\n 或 \r\n）<br />
+// 如果在缓存中找不到行尾标记，则设置 isPrefix 为 true，表示查找未完成<br />
+// 同时读出缓存中的数据并作为切片返回<br />
+// 只有在当前缓存中找到行尾标记，才将 isPrefix 设置为 false，表示查找完成<br />
+// 可以多次调用 ReadLine 来读出一行<br />
+// 返回的数据在下一次读取操作之前是有效的<br />
+// 如果 ReadLine 无法获取任何数据，则返回一个错误信息（通常是 io.EOF）<br />
 func (b *Reader) ReadLine() (line []byte, isPrefix bool, err error)</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABC\nDEF\r\nGHI\r\nJKL&quot;)
-br := bufio.NewReader(s)
-
-w, isPrefix, _ := br.ReadLine()
-fmt.Printf(&quot;%q %v\n&quot;, w, isPrefix)
-// &quot;ABC&quot; false
-
-w, isPrefix, _ = br.ReadLine()
-fmt.Printf(&quot;%q %v\n&quot;, w, isPrefix)
-// &quot;DEF&quot; false
-
-w, isPrefix, _ = br.ReadLine()
-fmt.Printf(&quot;%q %v\n&quot;, w, isPrefix)
-// &quot;GHI&quot; false
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABC\nDEF\r\nGHI\r\nJKL&quot;)  
+br := bufio.NewReader(s)  
+  
+w, isPrefix, _ := br.ReadLine()  
+fmt.Printf(&quot;%q %v\n&quot;, w, isPrefix)  
+// &quot;ABC&quot; false  
+  
+w, isPrefix, _ = br.ReadLine()  
+fmt.Printf(&quot;%q %v\n&quot;, w, isPrefix)  
+// &quot;DEF&quot; false  
+  
+w, isPrefix, _ = br.ReadLine()  
+fmt.Printf(&quot;%q %v\n&quot;, w, isPrefix)  
+// &quot;GHI&quot; false  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ReadBytes 在 b 中查找 delim 并读出 delim 及其之前的所有数据
-// 如果 ReadBytes 在找到 delim 之前遇到错误
-// 则返回遇到错误之前的所有数据，同时返回遇到的错误（通常是 io.EOF）
-// 只有当 ReadBytes 找不到 delim 时，err 才不为 nil
-// 对于简单的用途，使用 Scanner 可能更方便
+<p>// ReadBytes 在 b 中查找 delim 并读出 delim 及其之前的所有数据<br />
+// 如果 ReadBytes 在找到 delim 之前遇到错误<br />
+// 则返回遇到错误之前的所有数据，同时返回遇到的错误（通常是 io.EOF）<br />
+// 只有当 ReadBytes 找不到 delim 时，err 才不为 nil<br />
+// 对于简单的用途，使用 Scanner 可能更方便<br />
 func (b *Reader) ReadBytes(delim byte) (line []byte, err error)</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABC DEF GHI JKL&quot;)
-br := bufio.NewReader(s)
-
-w, _ := br.ReadBytes(' ')
-fmt.Printf(&quot;%q\n&quot;, w)
-// &quot;ABC &quot;
-
-w, _ = br.ReadBytes(' ')
-fmt.Printf(&quot;%q\n&quot;, w)
-// &quot;DEF &quot;
-
-w, _ = br.ReadBytes(' ')
-fmt.Printf(&quot;%q\n&quot;, w)
-// &quot;GHI &quot;
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABC DEF GHI JKL&quot;)  
+br := bufio.NewReader(s)  
+  
+w, _ := br.ReadBytes(' ')  
+fmt.Printf(&quot;%q\n&quot;, w)  
+// &quot;ABC &quot;  
+  
+w, _ = br.ReadBytes(' ')  
+fmt.Printf(&quot;%q\n&quot;, w)  
+// &quot;DEF &quot;  
+  
+w, _ = br.ReadBytes(' ')  
+fmt.Printf(&quot;%q\n&quot;, w)  
+// &quot;GHI &quot;  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ReadString 功能同 ReadBytes，只不过返回的是一个字符串
+<p>// ReadString 功能同 ReadBytes，只不过返回的是一个字符串<br />
 func (b *Reader) ReadString(delim byte) (line string, err error)</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABC DEF GHI JKL&quot;)
-br := bufio.NewReader(s)
-
-w, _ := br.ReadString(' ')
-fmt.Printf(&quot;%q\n&quot;, w)
-// &quot;ABC &quot;
-
-w, _ = br.ReadString(' ')
-fmt.Printf(&quot;%q\n&quot;, w)
-// &quot;DEF &quot;
-
-w, _ = br.ReadString(' ')
-fmt.Printf(&quot;%q\n&quot;, w)
-// &quot;GHI &quot;
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABC DEF GHI JKL&quot;)  
+br := bufio.NewReader(s)  
+  
+w, _ := br.ReadString(' ')  
+fmt.Printf(&quot;%q\n&quot;, w)  
+// &quot;ABC &quot;  
+  
+w, _ = br.ReadString(' ')  
+fmt.Printf(&quot;%q\n&quot;, w)  
+// &quot;DEF &quot;  
+  
+w, _ = br.ReadString(' ')  
+fmt.Printf(&quot;%q\n&quot;, w)  
+// &quot;GHI &quot;  
+}  
 </code></pre>
 
 <hr />
 
-<p>// WriteTo 实现了 io.WriterTo 接口
+<p>// WriteTo 实现了 io.WriterTo 接口<br />
 func (b *Reader) WriteTo(w io.Writer) (n int64, err error)</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABCEFG&quot;)
-br := bufio.NewReader(s)
-b := bytes.NewBuffer(make([]byte, 0))
-
-br.WriteTo(b)
-fmt.Printf(&quot;%s\n&quot;, b)
-// ABCEFG
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABCEFG&quot;)  
+br := bufio.NewReader(s)  
+b := bytes.NewBuffer(make([]byte, 0))  
+  
+br.WriteTo(b)  
+fmt.Printf(&quot;%s\n&quot;, b)  
+// ABCEFG  
+}  
 </code></pre>
 
 <hr />
@@ -546,336 +546,336 @@ fmt.Printf(&quot;%s\n&quot;, b)
 
 <p>reset丢弃任何的缓存数据，丛植所有状态并且将缓存读切换到r</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;bufio&quot;
-    &quot;fmt&quot;
-    &quot;strings&quot;
-)
-
-func main() {
-    s := strings.NewReader(&quot;ABCEFG&quot;)
-    str := strings.NewReader(&quot;123455&quot;)
-    br := bufio.NewReader(s)
-    b, _ := br.ReadString('\n')
-    fmt.Println(b)     //ABCEFG
-    br.Reset(str)
-    b, _ = br.ReadString('\n')
-    fmt.Println(b)     //123455
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;bufio&quot;  
+    &quot;fmt&quot;  
+    &quot;strings&quot;  
+)  
+  
+func main() {  
+    s := strings.NewReader(&quot;ABCEFG&quot;)  
+    str := strings.NewReader(&quot;123455&quot;)  
+    br := bufio.NewReader(s)  
+    b, _ := br.ReadString('\n')  
+    fmt.Println(b)     //ABCEFG  
+    br.Reset(str)  
+    b, _ = br.ReadString('\n')  
+    fmt.Println(b)     //123455  
+}  
 </code></pre>
 
 <hr />
 
 <hr />
 
-<p><span style="font-size:18px">// Writer 实现了带缓存的 io.Writer 对象
-// 如果在向 Writer 中写入数据的过程中遇到错误
-// 则 Writer 不会再接受任何数据
-// 而且后续的写入操作都将返回错误信息
-type Writer struct {
+<p><span style="font-size:18px">// Writer 实现了带缓存的 io.Writer 对象<br />
+// 如果在向 Writer 中写入数据的过程中遇到错误<br />
+// 则 Writer 不会再接受任何数据<br />
+// 而且后续的写入操作都将返回错误信息<br />
+type Writer struct {<br />
 </span></p>
 
-<pre><code>   err   error
-   buf  []byte
-   n     int
-   wr   io.Writer
+<pre><code>   err   error  
+   buf  []byte  
+   n     int  
+   wr   io.Writer  
 </code></pre>
 
-<p>}
-// NewWriterSize 将 wr 封装成一个拥有 size 大小缓存的 bufio.Writer 对象
-// 如果 wr 的基类型就是 bufio.Writer 类型，而且拥有足够的缓存
-// 则直接将 wr 转换为基类型并返回
-func NewWriterSize(wr io.Writer, size int) *Writer
+<p>}<br />
+// NewWriterSize 将 wr 封装成一个拥有 size 大小缓存的 bufio.Writer 对象<br />
+// 如果 wr 的基类型就是 bufio.Writer 类型，而且拥有足够的缓存<br />
+// 则直接将 wr 转换为基类型并返回<br />
+func NewWriterSize(wr io.Writer, size int) *Writer<br />
 // NewWriter 相当于 NewWriterSize(wr, 4096)</p>
 
 <h2 id="func-newwriter-wr-io-writer-writer">func NewWriter(wr io.Writer) *Writer</h2>
 
-<p>// Flush 将缓存中的数据提交到底层的 io.Writer 中
-func (b *Writer) Flush() error
-// Available 返回缓存中的可以空间
-func (b *Writer) Available() int
-// Buffered 返回缓存中未提交的数据长度
-func (b *Writer) Buffered() int
-// Write 将 p 中的数据写入 b 中，返回写入的字节数
-// 如果写入的字节数小于 p 的长度，则返回一个错误信息
-func (b *Writer) Write(p []byte) (nn int, err error)
-// WriteString 同 Write，只不过写入的是字符串
+<p>// Flush 将缓存中的数据提交到底层的 io.Writer 中<br />
+func (b *Writer) Flush() error<br />
+// Available 返回缓存中的可以空间<br />
+func (b *Writer) Available() int<br />
+// Buffered 返回缓存中未提交的数据长度<br />
+func (b *Writer) Buffered() int<br />
+// Write 将 p 中的数据写入 b 中，返回写入的字节数<br />
+// 如果写入的字节数小于 p 的长度，则返回一个错误信息<br />
+func (b *Writer) Write(p []byte) (nn int, err error)<br />
+// WriteString 同 Write，只不过写入的是字符串<br />
 func (b *Writer) WriteString(s string) (int, error)</p>
 
-<pre><code class="language-go">func main() {
-    b := bytes.NewBuffer(make([]byte, 0))
-    bw := bufio.NewWriter(b)
-    fmt.Println(bw.Available()) // 4096
-    fmt.Println(bw.Buffered())  // 0
-
-    bw.WriteString(&quot;ABCDEFGH&quot;)
-    fmt.Println(bw.Available()) // 4088
-    fmt.Println(bw.Buffered())  // 8
-    fmt.Printf(&quot;%q\n&quot;, b)       // &quot;&quot;
-
-    bw.Flush()
-    fmt.Println(bw.Available()) // 4096
-    fmt.Println(bw.Buffered())  // 0
-    fmt.Printf(&quot;%q\n&quot;, b)       // &quot;ABCEFG&quot;
-}
+<pre><code class="language-go">func main() {  
+    b := bytes.NewBuffer(make([]byte, 0))  
+    bw := bufio.NewWriter(b)  
+    fmt.Println(bw.Available()) // 4096  
+    fmt.Println(bw.Buffered())  // 0  
+  
+    bw.WriteString(&quot;ABCDEFGH&quot;)  
+    fmt.Println(bw.Available()) // 4088  
+    fmt.Println(bw.Buffered())  // 8  
+    fmt.Printf(&quot;%q\n&quot;, b)       // &quot;&quot;  
+  
+    bw.Flush()  
+    fmt.Println(bw.Available()) // 4096  
+    fmt.Println(bw.Buffered())  // 0  
+    fmt.Printf(&quot;%q\n&quot;, b)       // &quot;ABCEFG&quot;  
+}  
 </code></pre>
 
 <hr />
 
-<p>// WriteByte 向 b 中写入一个字节
-func (b *Writer) WriteByte(c byte) error
-// WriteRune 向 b 中写入 r 的 UTF8 编码
-// 返回 r 的编码长度
+<p>// WriteByte 向 b 中写入一个字节<br />
+func (b *Writer) WriteByte(c byte) error<br />
+// WriteRune 向 b 中写入 r 的 UTF8 编码<br />
+// 返回 r 的编码长度<br />
 func (b *Writer) WriteRune(r rune) (size int, err error)</p>
 
-<pre><code class="language-go">func main() {
-    b := bytes.NewBuffer(make([]byte, 0))
-    bw := bufio.NewWriter(b)
-    bw.WriteByte('H')
-    bw.WriteByte('e')
-    bw.WriteByte('l')
-    bw.WriteByte('l')
-    bw.WriteByte('o')
-    bw.WriteByte(' ')
-    bw.WriteRune('世')
-    bw.WriteRune('界')
-    bw.WriteRune('！')
-    bw.Flush()
-    fmt.Println(b) // Hello 世界！
-
-}
+<pre><code class="language-go">func main() {  
+    b := bytes.NewBuffer(make([]byte, 0))  
+    bw := bufio.NewWriter(b)  
+    bw.WriteByte('H')  
+    bw.WriteByte('e')  
+    bw.WriteByte('l')  
+    bw.WriteByte('l')  
+    bw.WriteByte('o')  
+    bw.WriteByte(' ')  
+    bw.WriteRune('世')  
+    bw.WriteRune('界')  
+    bw.WriteRune('！')  
+    bw.Flush()  
+    fmt.Println(b) // Hello 世界！  
+  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ReadFrom 实现了 io.ReaderFrom 接口
+<p>// ReadFrom 实现了 io.ReaderFrom 接口<br />
 func (b *Writer) ReadFrom(r io.Reader) (n int64, err error)</p>
 
-<pre><code class="language-go">func main() {
-b := bytes.NewBuffer(make([]byte, 0))
-s := strings.NewReader(&quot;Hello 世界！&quot;)
-bw := bufio.NewWriter(b)
-bw.ReadFrom(s)
-//bw.Flush()            //ReadFrom无需使用Flush，其自己已经写入．
-fmt.Println(b) // Hello 世界！
-}
+<pre><code class="language-go">func main() {  
+b := bytes.NewBuffer(make([]byte, 0))  
+s := strings.NewReader(&quot;Hello 世界！&quot;)  
+bw := bufio.NewWriter(b)  
+bw.ReadFrom(s)  
+//bw.Flush()            //ReadFrom无需使用Flush，其自己已经写入．  
+fmt.Println(b) // Hello 世界！  
+}  
 </code></pre>
 
 <hr />
 
-<pre><code>func (b *Writer) Reset(w io.Writer)
+<pre><code>func (b *Writer) Reset(w io.Writer)  
 </code></pre>
 
 <p>Reset丢弃任何没有写入的缓存数据，清除任何错误并且重新将b指定它的输出结果指向w</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;bufio&quot;
-    &quot;bytes&quot;
-    &quot;fmt&quot;
-)
-
-func main() {
-    b := bytes.NewBuffer(make([]byte, 0))
-    bw := bufio.NewWriter(b)
-    bw.WriteString(&quot;123&quot;)
-    c := bytes.NewBuffer(make([]byte, 0))
-    bw.Reset(c)
-    bw.WriteString(&quot;456&quot;)
-    bw.Flush()
-    fmt.Println(b)       //输出为空
-    fmt.Println(c)　　//输出456
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;bufio&quot;  
+    &quot;bytes&quot;  
+    &quot;fmt&quot;  
+)  
+  
+func main() {  
+    b := bytes.NewBuffer(make([]byte, 0))  
+    bw := bufio.NewWriter(b)  
+    bw.WriteString(&quot;123&quot;)  
+    c := bytes.NewBuffer(make([]byte, 0))  
+    bw.Reset(c)  
+    bw.WriteString(&quot;456&quot;)  
+    bw.Flush()  
+    fmt.Println(b)       //输出为空  
+    fmt.Println(c)　　//输出456  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ReadWriter 集成了 bufio.Reader 和 bufio.Writer
+<p>// ReadWriter 集成了 bufio.Reader 和 bufio.Writer<br />
 // 它实现了 io.ReadWriter 接口</p>
 
-<pre><code class="language-go">type ReadWriter struct {
-*Reader
-*Writer
-}
+<pre><code class="language-go">type ReadWriter struct {  
+*Reader  
+*Writer  
+}  
 </code></pre>
 
-<p>// NewReadWriter 封装 r 和 w 为一个 bufio.ReadWriter 对象
+<p>// NewReadWriter 封装 r 和 w 为一个 bufio.ReadWriter 对象<br />
 func NewReadWriter(r *Reader, w *Writer) *ReadWriter</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;bufio&quot;
-    &quot;bytes&quot;
-    &quot;fmt&quot;
-    &quot;strings&quot;
-)
-
-func main() {
-    b := bytes.NewBuffer(make([]byte, 0))
-    bw := bufio.NewWriter(b)
-    s := strings.NewReader(&quot;123&quot;)
-    br := bufio.NewReader(s)
-    rw := bufio.NewReadWriter(br, bw)
-    p, _ := rw.ReadString('\n')
-    fmt.Println(string(p))              //123
-    rw.WriteString(&quot;asdf&quot;)
-    rw.Flush()
-    fmt.Println(b)                          //asdf
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;bufio&quot;  
+    &quot;bytes&quot;  
+    &quot;fmt&quot;  
+    &quot;strings&quot;  
+)  
+  
+func main() {  
+    b := bytes.NewBuffer(make([]byte, 0))  
+    bw := bufio.NewWriter(b)  
+    s := strings.NewReader(&quot;123&quot;)  
+    br := bufio.NewReader(s)  
+    rw := bufio.NewReadWriter(br, bw)  
+    p, _ := rw.ReadString('\n')  
+    fmt.Println(string(p))              //123  
+    rw.WriteString(&quot;asdf&quot;)  
+    rw.Flush()  
+    fmt.Println(b)                          //asdf  
+}  
 </code></pre>
 
 <hr />
 
 <h2 id="scan-go">// scan.go</h2>
 
-<p><span style="font-size:18px">// Scanner 提供了一个方便的接口来读取数据，例如读取一个多行文本
-// 连续调用 Scan 方法将扫描数据中的“指定部分”，跳过各个“指定部分”之间的数据
-// Scanner 使用了缓存，所以“指定部分”的长度不能超出缓存的长度
-// Scanner 需要一个 SplitFunc 类型的“切分函数”来确定“指定部分”的格式
-// 本包中提供的“切分函数”有<span style="color:#FF0000">“行切分函数”、“字节切分函数”、“UTF8字符编码切分函数”
-// 和“单词切分函数”，用户也可以自定义“切分函数”
-// 默认的“切分函数”为“行切分函数”，用于获取数据中的一行数据（不包括行尾符）</span>
-//
-// 扫描在遇到下面的情况时会停止：
-// 1、数据扫描完毕，遇到 io.EOF
-// 2、遇到读写错误
-// 3、“指定部分”的长度超过了缓存的长度
-// 如果要对数据进行更多的控制，比如的错误处理或扫描更大的“指定部分”或顺序扫描
-// 则应该使用 bufio.Reader
+<p><span style="font-size:18px">// Scanner 提供了一个方便的接口来读取数据，例如读取一个多行文本<br />
+// 连续调用 Scan 方法将扫描数据中的“指定部分”，跳过各个“指定部分”之间的数据<br />
+// Scanner 使用了缓存，所以“指定部分”的长度不能超出缓存的长度<br />
+// Scanner 需要一个 SplitFunc 类型的“切分函数”来确定“指定部分”的格式<br />
+// 本包中提供的“切分函数”有<span style="color:#FF0000">“行切分函数”、“字节切分函数”、“UTF8字符编码切分函数”<br />
+// 和“单词切分函数”，用户也可以自定义“切分函数”<br />
+// 默认的“切分函数”为“行切分函数”，用于获取数据中的一行数据（不包括行尾符）</span><br />
+//<br />
+// 扫描在遇到下面的情况时会停止：<br />
+// 1、数据扫描完毕，遇到 io.EOF<br />
+// 2、遇到读写错误<br />
+// 3、“指定部分”的长度超过了缓存的长度<br />
+// 如果要对数据进行更多的控制，比如的错误处理或扫描更大的“指定部分”或顺序扫描<br />
+// 则应该使用 bufio.Reader<br />
 </span></p>
 
-<pre><code>type Scanner struct {
-    r            io.Reader // The reader provided by the client.
-    split        SplitFunc // The function to split the tokens.
-    maxTokenSize int       // Maximum size of a token; modified by tests.
-    token        []byte    // Last token returned by split.
-    buf          []byte    // Buffer used as argument to split.
-    start        int       // First non-processed byte in buf.
-    end          int       // End of data in buf.
-    err          error     // Sticky error.
-}
+<pre><code>type Scanner struct {  
+    r            io.Reader // The reader provided by the client.  
+    split        SplitFunc // The function to split the tokens.  
+    maxTokenSize int       // Maximum size of a token; modified by tests.  
+    token        []byte    // Last token returned by split.  
+    buf          []byte    // Buffer used as argument to split.  
+    start        int       // First non-processed byte in buf.  
+    end          int       // End of data in buf.  
+    err          error     // Sticky error.  
+}  
 </code></pre>
 
-<p>// SplitFunc 用来定义“切分函数”类型
-// data 是要扫描的数据
-// atEOF 标记底层 io.Reader 中的数据是否已经读完
-// advance 返回 data 中已处理的数据长度
-// token 返回找到的“指定部分”
-// err 返回错误信息
-// 如果在 data 中无法找到一个完整的“指定部分”
-// 则 SplitFunc 返回 (0, nil) 来告诉 Scanner
-// 向缓存中填充更多数据，然后再次扫描
-//
-// 如果返回的 err 是非 nil 值，扫描将被终止，并返回错误信息
-//
-// 如果 data 为空，则“切分函数”将不被调用
-// 意思是在 SplitFunc 中不必考虑 data 为空的情况
-//
-// SplitFunc 的作用很简单，从 data 中找出你感兴趣的数据，然后返回
-// 并告诉调用者，data 中有多少数据你已经处理过了
-type SplitFunc func(data []byte, atEOF bool) (advance int, token []byte, err error)
-// NewScanner 创建一个 Scanner 来扫描 r
-// 默认切分函数为 ScanLines
-func NewScanner(r io.Reader) *Scanner
-// Err 返回扫描过程中遇到的非 EOF 错误
+<p>// SplitFunc 用来定义“切分函数”类型<br />
+// data 是要扫描的数据<br />
+// atEOF 标记底层 io.Reader 中的数据是否已经读完<br />
+// advance 返回 data 中已处理的数据长度<br />
+// token 返回找到的“指定部分”<br />
+// err 返回错误信息<br />
+// 如果在 data 中无法找到一个完整的“指定部分”<br />
+// 则 SplitFunc 返回 (0, nil) 来告诉 Scanner<br />
+// 向缓存中填充更多数据，然后再次扫描<br />
+//<br />
+// 如果返回的 err 是非 nil 值，扫描将被终止，并返回错误信息<br />
+//<br />
+// 如果 data 为空，则“切分函数”将不被调用<br />
+// 意思是在 SplitFunc 中不必考虑 data 为空的情况<br />
+//<br />
+// SplitFunc 的作用很简单，从 data 中找出你感兴趣的数据，然后返回<br />
+// 并告诉调用者，data 中有多少数据你已经处理过了<br />
+type SplitFunc func(data []byte, atEOF bool) (advance int, token []byte, err error)<br />
+// NewScanner 创建一个 Scanner 来扫描 r<br />
+// 默认切分函数为 ScanLines<br />
+func NewScanner(r io.Reader) *Scanner<br />
+// Err 返回扫描过程中遇到的非 EOF 错误<br />
 // 供用户调用，以便获取错误信息</p>
 
 <h2 id="func-s-scanner-err-error">func (s *Scanner) Err() error</h2>
 
-<p>// Bytes 将最后一次扫描出的“指定部分”作为一个切片返回（引用传递）
-// 下一次的 Scan 操作会覆盖本次返回的结果
-func (s *Scanner) Bytes() []byte
+<p>// Bytes 将最后一次扫描出的“指定部分”作为一个切片返回（引用传递）<br />
+// 下一次的 Scan 操作会覆盖本次返回的结果<br />
+func (s *Scanner) Bytes() []byte<br />
 // Text 将最后一次扫描出的“指定部分”作为字符串返回（值传递）</p>
 
 <h2 id="func-s-scanner-text-string">func (s *Scanner) Text() string</h2>
 
-<p>// Scan 在 Scanner 的数据中扫描“指定部分”
-// 找到后，用户可以通过 Bytes 或 Text 方法来取出“指定部分”
-// 如果扫描过程中遇到错误，则终止扫描，并返回 false
+<p>// Scan 在 Scanner 的数据中扫描“指定部分”<br />
+// 找到后，用户可以通过 Bytes 或 Text 方法来取出“指定部分”<br />
+// 如果扫描过程中遇到错误，则终止扫描，并返回 false<br />
 func (s *Scanner) Scan() bool</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABC\nDEF\r\nGHI\nJKL&quot;)
-bs := bufio.NewScanner(s)
-for bs.Scan() {
-fmt.Printf(&quot;%s %v\n&quot;, bs.Bytes(), bs.Text())
-}
-// ABC ABC
-// DEF DEF
-// GHI GHI
-// JKL JKL
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABC\nDEF\r\nGHI\nJKL&quot;)  
+bs := bufio.NewScanner(s)  
+for bs.Scan() {  
+fmt.Printf(&quot;%s %v\n&quot;, bs.Bytes(), bs.Text())  
+}  
+// ABC ABC  
+// DEF DEF  
+// GHI GHI  
+// JKL JKL  
+}  
 </code></pre>
 
 <hr />
 
-<p>// Split 用于设置 Scanner 的“切分函数”
-// 这个函数必须在调用 Scan 前执行
+<p>// Split 用于设置 Scanner 的“切分函数”<br />
+// 这个函数必须在调用 Scan 前执行<br />
 func (s *Scanner) Split(split SplitFunc)</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;ABC DEF GHI JKL&quot;)
-bs := bufio.NewScanner(s)
-bs.Split(bufio.ScanWords)
-for bs.Scan() {
-fmt.Println(bs.Text())
-}
-// ABC
-// DEF
-// GHI
-// JKL
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;ABC DEF GHI JKL&quot;)  
+bs := bufio.NewScanner(s)  
+bs.Split(bufio.ScanWords)  
+for bs.Scan() {  
+fmt.Println(bs.Text())  
+}  
+// ABC  
+// DEF  
+// GHI  
+// JKL  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ScanBytes 是一个“切分函数”
-// 用来找出 data 中的单个字节并返回
+<p>// ScanBytes 是一个“切分函数”<br />
+// 用来找出 data 中的单个字节并返回<br />
 func ScanBytes(data []byte, atEOF bool) (advance int, token []byte, err error)</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;Hello 世界！&quot;)
-bs := bufio.NewScanner(s)
-bs.Split(bufio.ScanBytes)
-for bs.Scan() {
-fmt.Printf(&quot;%s &quot;, bs.Text())
-}
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;Hello 世界！&quot;)  
+bs := bufio.NewScanner(s)  
+bs.Split(bufio.ScanBytes)  
+for bs.Scan() {  
+fmt.Printf(&quot;%s &quot;, bs.Text())  
+}  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ScanRunes 是一个“切分函数”
-// 用来找出 data 中的单个 UTF8 字符的编码并返回
-// 如果 UTF8 解码出错，则返回的 U+FFFD 会被做为 &ldquo;\xef\xbf\xbd&rdquo; 返回
-// 这使得用户无法区分“真正的U+FFFD字符”和“解码错误的返回值”
+<p>// ScanRunes 是一个“切分函数”<br />
+// 用来找出 data 中的单个 UTF8 字符的编码并返回<br />
+// 如果 UTF8 解码出错，则返回的 U+FFFD 会被做为 &ldquo;\xef\xbf\xbd&rdquo; 返回<br />
+// 这使得用户无法区分“真正的U+FFFD字符”和“解码错误的返回值”<br />
 func ScanRunes(data []byte, atEOF bool) (advance int, token []byte, err error)</p>
 
-<pre><code class="language-go">func main() {
-s := strings.NewReader(&quot;Hello 世界！&quot;)
-bs := bufio.NewScanner(s)
-bs.Split(bufio.ScanRunes)
-for bs.Scan() {
-fmt.Printf(&quot;%s &quot;, bs.Text())
-} // H e l l o 世 界 ！
-}
+<pre><code class="language-go">func main() {  
+s := strings.NewReader(&quot;Hello 世界！&quot;)  
+bs := bufio.NewScanner(s)  
+bs.Split(bufio.ScanRunes)  
+for bs.Scan() {  
+fmt.Printf(&quot;%s &quot;, bs.Text())  
+} // H e l l o 世 界 ！  
+}  
 </code></pre>
 
 <hr />
 
-<p>// ScanLines 是一个“切分函数”
-// 用来找出 data 中的单行数据并返回（包括空行）
+<p>// ScanLines 是一个“切分函数”<br />
+// 用来找出 data 中的单行数据并返回（包括空行）<br />
 // 行尾标记可能是 \n 或 \r\n（返回值不包括行尾标记）</p>
 
 <h2 id="func-scanlines-data-byte-ateof-bool-advance-int-token-byte-err-error">func ScanLines(data []byte, atEOF bool) (advance int, token []byte, err error)</h2>
 
-<p>// ScanWords 是一个“切分函数”
-// 用来找出 data 中的单词
-// 单词以空白字符分隔，空白字符由 unicode.IsSpace 定义
+<p>// ScanWords 是一个“切分函数”<br />
+// 用来找出 data 中的单词<br />
+// 单词以空白字符分隔，空白字符由 unicode.IsSpace 定义<br />
 func ScanWords(data []byte, atEOF bool) (advance int, token []byte, err error)</p>
 
                       
@@ -1043,7 +1043,7 @@ func ScanWords(data []byte, atEOF bool) (advance int, token []byte, err error)</
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -1266,6 +1266,8 @@ func ScanWords(data []byte, atEOF bool) (advance int, token []byte, err error)</
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -1288,7 +1290,9 @@ func ScanWords(data []byte, atEOF bool) (advance int, token []byte, err error)</
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1320,7 +1324,7 @@ func ScanWords(data []byte, atEOF bool) (advance int, token []byte, err error)</
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

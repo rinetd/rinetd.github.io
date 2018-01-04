@@ -230,7 +230,7 @@
                   <h1 class="post-title">iproute2 策略路由与流量控制笔记</h1>
 
                   <p class="post-byline">
-                    by  · 2016年03月29日 21:25:45 · 2650 Words ·
+                    by  · 2016年03月29日 21:25:45 · 2651 Words ·
                     ~6min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Hacker/00_nettools/2015-03-29%20iproute2%e7%ad%96%e7%95%a5%e8%b7%af%e7%94%b1%e4%b8%8e%e6%b5%81%e9%87%8f%e6%8e%a7%e5%88%b6%e7%ac%94%e8%ae%b0.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
@@ -243,7 +243,7 @@
                       
                       <p>iproute2 策略路由与流量控制笔记</p>
 
-<p>&ndash; 前提知识: &ndash;
+<p>&ndash; 前提知识: &ndash;<br />
 如果需要使用策略路由需确认编译内核时配置中带有IP:advanced route和IP:policy routing</p>
 
 <p>iproute匹配条件:from源地址,to目的地址，Tos域,Dev物理接口,Fwmark防火墙标记  这些做为匹配条件</p>
@@ -258,105 +258,105 @@
 
 <p>iptables -A FORWARD -p tcp -m tcp &ndash;tcp-flags SYN,RST SYN -j TCPMSS &ndash;clamp-mss-to-pmtu 允许调整tcp syn包里的MSS域，用于控制连接包的最大长度。一些防火墙或主机会很不适当的过滤掉type 3、code 4（需要分片）的icmp包。目前发行的linux的内核从2.4.7开始已经包含了这个补丁。</p>
 
-<p>IMQ 中介队列设备
+<p>IMQ 中介队列设备<br />
 被打了特定标记的数据包在netfilter的NF_IP_PRE_ROUTING和NF_IP_POST_ROUTING两个钩子函数处被拦截，并被送到一个队列规定中,该队列规定附加到一个IMQ设备上。可以实现对入口流量整形，而且可以把网卡当成一个个的类来看待而进行全局整形设置。</p>
 
 <p>&ndash;应用案例1 &ndash;</p>
 
-<p>通过iptables与iproute2协同实现根据 应用 的策略路由
-实现要点： iptables根据端口将服务类的数据包打上标示，iptables -t mangle -A PREROUTING -p tcp &ndash;dport 80 -j MARK &ndash;set-mark 100 （用这些标记我们可以做带宽限制和基于请求的分类）
-根据情况做nat iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE
+<p>通过iptables与iproute2协同实现根据 应用 的策略路由<br />
+实现要点： iptables根据端口将服务类的数据包打上标示，iptables -t mangle -A PREROUTING -p tcp &ndash;dport 80 -j MARK &ndash;set-mark 100 （用这些标记我们可以做带宽限制和基于请求的分类）<br />
+根据情况做nat iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE<br />
 然后设置路由策略ip rule add fwmark 100 table 100</p>
 
 <p>&ndash; 应用案例2 &ndash;</p>
 
-<p>普通双ISP的设置 外网接口$IF1 IF1接口地址$IP1 ISP1网关地址$P1 ISP1的网络地址P1_NET
-#分别指定两条默认网关负责单独的上行流
-ip route add $P1_NET dev $IF1 src $IP1 table T1 源地址为IP1且目的为ISP1网段从IF1接口发出(必需的,它能够让我们找到该子网内的主机及本网关) 将这条路由加入表T1
-ip route add default via $P1 table T1
-ip route add $P2_NET dev $IF2 src $IP2 table T2 源地址为IP2且目的为ISP2网段从IF2接口发出((必需的,它能够让我们找到该子网内的主机及本网关) 将这条路由加入表T2
+<p>普通双ISP的设置 外网接口$IF1 IF1接口地址$IP1 ISP1网关地址$P1 ISP1的网络地址P1_NET<br />
+#分别指定两条默认网关负责单独的上行流<br />
+ip route add $P1_NET dev $IF1 src $IP1 table T1 源地址为IP1且目的为ISP1网段从IF1接口发出(必需的,它能够让我们找到该子网内的主机及本网关) 将这条路由加入表T1<br />
+ip route add default via $P1 table T1<br />
+ip route add $P2_NET dev $IF2 src $IP2 table T2 源地址为IP2且目的为ISP2网段从IF2接口发出((必需的,它能够让我们找到该子网内的主机及本网关) 将这条路由加入表T2<br />
 ip route add default via $P2 table T2</p>
 
-<p>#也加入到main路由表
-ip route add $P1_NET dev $IF1 src $IP1
-ip route add $P2_NET dev $IF2 src $IP2
-  main缺省走ISP1
+<p>#也加入到main路由表<br />
+ip route add $P1_NET dev $IF1 src $IP1<br />
+ip route add $P2_NET dev $IF2 src $IP2<br />
+  main缺省走ISP1<br />
 ip route add default via $P1</p>
 
-<p>#设置路由规则
-ip rule add from $IP1 table T1
-ip rule add from $IP2 table T2
-#设置负载均衡
-ip route add default scope global nexthop via $P1 dev $IF1 weight 1 <br />
+<p>#设置路由规则<br />
+ip rule add from $IP1 table T1<br />
+ip rule add from $IP2 table T2<br />
+#设置负载均衡<br />
+ip route add default scope global nexthop via $P1 dev $IF1 weight 1 \<br />
 nexthop via $P2 dev $IF2 weight 1</p>
 
 <p>均衡是基于路由进行的，而路由是经过缓冲的,所以这样的均衡并不是100%精确.</p>
 
-<p>&ndash; 应用案例3 &ndash;
- TC带宽管理的主要实现步骤 主要是在输出端口处建立一个队列进行流量控制，控制的方式是基于路由，亦即基于目的IP地址或目的子网的网络号的流量控制。
-1 编译内核时注意事项
-以下实例:发往A主机8M带宽 发往B主机1M带宽 发往C主机1M带宽
-2 　1) 针对网络物理设备(如以太网卡eth0)绑定一个CBQ队列；
- tc qdisc add dev eth0 root handle 1: cbq bandwidth 10Mbit avpkt 1000 cell 8 mpu 64
-　　2) 在该队列上建立分类；
- tc class add dev eth0 parent 1:0 classid 1:1 cbq bandwidth 10Mbit rate 10Mbit maxburst 20 allot \ 1514 prio 8 avpkt 1000 cell 8 weight 1Mbit
- tc class add dev eth0 parent 1:1 classid 1:2 cbq bandwidth 10Mbit rate 8Mbit maxburst 20 allot \ 1514 prio 2 avpkt 1000 cell 8 weight 800Kbit split 1:0 bounded
- tc class add dev eth0 parent 1:1 classid 1:3 cbq bandwidth 10Mbit rate 1Mbit maxburst 20 allot \ 1514 prio 1 avpkt 1000 cell 8 weight 100Kbit split 1:0
- tc class add dev eth0 parent 1:1 classid 1:4 cbq bandwidth 10Mbit rate 1Mbit maxburst 20 allot \ 1514 prio 6 avpkt 1000 cell 8 weight 100Kbit split 1:0
-　　3) 为每一分类建立一个基于路由的过滤器；
-tc filter add dev eth0 parent 1:0 protocol ip prio 100 route
-tc filter add dev eth0 parent 1:0 protocol ip prio 100 route to 2 flowid 1:2
-tc filter add dev eth0 parent 1:0 protocol ip prio 100 route to 3 flowid 1:3
-tc filter add dev eth0 parent 1:0 protocol ip prio 100 route to 4 flowid 1:4
-　　4) 最后与过滤器相配合，建立特定的路由表。
-ip route add 192.168.1.24 dev eth0 via 192.168.1.66 realm 2
-ip route add 192.168.1.30 dev eth0 via 192.168.1.66 realm 3
-ip route add 192.168.1.0/24 dev eth0 via 192.168.1.66 realm 4
+<p>&ndash; 应用案例3 &ndash;<br />
+ TC带宽管理的主要实现步骤 主要是在输出端口处建立一个队列进行流量控制，控制的方式是基于路由，亦即基于目的IP地址或目的子网的网络号的流量控制。<br />
+1 编译内核时注意事项<br />
+以下实例:发往A主机8M带宽 发往B主机1M带宽 发往C主机1M带宽<br />
+2 　1) 针对网络物理设备(如以太网卡eth0)绑定一个CBQ队列；<br />
+ tc qdisc add dev eth0 root handle 1: cbq bandwidth 10Mbit avpkt 1000 cell 8 mpu 64<br />
+　　2) 在该队列上建立分类；<br />
+ tc class add dev eth0 parent 1:0 classid 1:1 cbq bandwidth 10Mbit rate 10Mbit maxburst 20 allot \ 1514 prio 8 avpkt 1000 cell 8 weight 1Mbit<br />
+ tc class add dev eth0 parent 1:1 classid 1:2 cbq bandwidth 10Mbit rate 8Mbit maxburst 20 allot \ 1514 prio 2 avpkt 1000 cell 8 weight 800Kbit split 1:0 bounded<br />
+ tc class add dev eth0 parent 1:1 classid 1:3 cbq bandwidth 10Mbit rate 1Mbit maxburst 20 allot \ 1514 prio 1 avpkt 1000 cell 8 weight 100Kbit split 1:0<br />
+ tc class add dev eth0 parent 1:1 classid 1:4 cbq bandwidth 10Mbit rate 1Mbit maxburst 20 allot \ 1514 prio 6 avpkt 1000 cell 8 weight 100Kbit split 1:0<br />
+　　3) 为每一分类建立一个基于路由的过滤器；<br />
+tc filter add dev eth0 parent 1:0 protocol ip prio 100 route<br />
+tc filter add dev eth0 parent 1:0 protocol ip prio 100 route to 2 flowid 1:2<br />
+tc filter add dev eth0 parent 1:0 protocol ip prio 100 route to 3 flowid 1:3<br />
+tc filter add dev eth0 parent 1:0 protocol ip prio 100 route to 4 flowid 1:4<br />
+　　4) 最后与过滤器相配合，建立特定的路由表。<br />
+ip route add 192.168.1.24 dev eth0 via 192.168.1.66 realm 2<br />
+ip route add 192.168.1.30 dev eth0 via 192.168.1.66 realm 3<br />
+ip route add 192.168.1.0/24 dev eth0 via 192.168.1.66 realm 4<br />
 3 应用,监控</p>
 
-<p>&ndash;关于负载平衡&ndash;
+<p>&ndash;关于负载平衡&ndash;<br />
 关于负载平衡 CONFIG_IP_ROUTE_MULTIPATH内核选项将把所有这些路径(缺省路由)等同看待，然后再根据/usr/src/linux /Documentation/Configure.help来选择其特定的方式。Ip route命令的equalize选项，会让Linux内核基于IP地址平衡外部连接。对于一个特定的IP地址，内核会选择一个接口用于传输流出的数据包，然后内核会为该IP地址在路由缓冲中建一个记录。这样，其它到达的有相同IP地址的数据包就会使用同一个接口，直到该记录从路由缓冲中删除。我们可以使用ip route list cache命令来查看路由缓冲。</p>
 
-<p>通过DNS循环来实现的服务的负载平衡
-各种不同的服务(DNS、SMTP、HTTP、LDAP、SSH等) 可以通过DNS循环来实现。
+<p>通过DNS循环来实现的服务的负载平衡<br />
+各种不同的服务(DNS、SMTP、HTTP、LDAP、SSH等) 可以通过DNS循环来实现。<br />
 循环复用DNS还有太多的限制(DNS缓存,忽略TTL值，修改后的刷新时间,不能意识到服务器的可用性)，只能算是一种勉强可接受的负载平衡方案</p>
 
-<p>&ndash;相关命令 &ndash;
-ip link list 显示链路
-ip address show 显示IP地址 对于PPP0接口还会告诉我们链路另一端的地址
+<p>&ndash;相关命令 &ndash;<br />
+ip link list 显示链路<br />
+ip address show 显示IP地址 对于PPP0接口还会告诉我们链路另一端的地址<br />
 ip route show 输出结果之一default via x.x.x.x dev x</p>
 
-<p>ip neigh show 查看缓存的ARP表
+<p>ip neigh show 查看缓存的ARP表<br />
 ip neigh delete x.x.x.x dev x</p>
 
-<p>&ndash;TC流量控制：&ndash;
-我们只能对发送数据进行整形
-默认整形方式是Pfifo_fast队列规定。特点为先进先出。只看数据包的TOS字节节来判断应该放到哪个频道(优先).一般的应用程序会如何设置他们的TOS值。
-HTB分层的令牌桶
+<p>&ndash;TC流量控制：&ndash;<br />
+我们只能对发送数据进行整形<br />
+默认整形方式是Pfifo_fast队列规定。特点为先进先出。只看数据包的TOS字节节来判断应该放到哪个频道(优先).一般的应用程序会如何设置他们的TOS值。<br />
+HTB分层的令牌桶<br />
 HTB 可以保障提供给每个类带宽的数量是它所需求的最小需求或者等于分配给它的数量.当一个类需要的带宽少于分配的带宽时,剩余的带宽被分配给其他需要服务的类.</p>
 
-<p>SFQ随机公平队列
+<p>SFQ随机公平队列<br />
 简单轮转。使用一个散列算法，把所有的会话映射到有限的几个队列中去。(只有当你的出口网卡确实已经挤满了的时候,SFQ才会起作用)</p>
 
 <p>（如果你并不希望进行流量整形，只是想看看你的网卡是否有比较高的负载而需要使用队列，可使用pfifo队列。它缺乏内部频道但是可以统计backlog）</p>
 
-<p>&ndash;HTB应用案例4&ndash;
-1)
-tc qdisc add dev eth0 root handle 1: htb default 12
-2)
-tc class add dev eth0 parent 1: classid 1:1 htb rate 100kbps ceil 100kbps
-tc class add dev eth0 parent 1:1 classid 1:10 htb rate 30kbps ceil 100kbps
-tc class add dev eth0 parent 1:1 classid 1:11 htb rate 10kbps ceil 100kbps
-tc class add dev eth0 parent 1:1 classid 1:12 htb rate 60kbps ceil 100kbps
-3)为队列规定分配子类, 如果没有指定缺省是pfifo
-tc qdisc add dev eth0 parent 1:10 handle 20: pfifo limit 5
-tc qdisc add dev eth0 parent 1:11 handle 30: pfifo limit 5
-tc qdisc add dev eth0 parent 1:12 handle 40: sfq perturb 10
+<p>&ndash;HTB应用案例4&ndash;<br />
+1)<br />
+tc qdisc add dev eth0 root handle 1: htb default 12<br />
+2)<br />
+tc class add dev eth0 parent 1: classid 1:1 htb rate 100kbps ceil 100kbps<br />
+tc class add dev eth0 parent 1:1 classid 1:10 htb rate 30kbps ceil 100kbps<br />
+tc class add dev eth0 parent 1:1 classid 1:11 htb rate 10kbps ceil 100kbps<br />
+tc class add dev eth0 parent 1:1 classid 1:12 htb rate 60kbps ceil 100kbps<br />
+3)为队列规定分配子类, 如果没有指定缺省是pfifo<br />
+tc qdisc add dev eth0 parent 1:10 handle 20: pfifo limit 5<br />
+tc qdisc add dev eth0 parent 1:11 handle 30: pfifo limit 5<br />
+tc qdisc add dev eth0 parent 1:12 handle 40: sfq perturb 10<br />
 1:12队列的类不定义时，即所有不匹配其它类规则的数据包。</p>
 
-<p>&ndash;流量分析与故障诊断&ndash;
-tc -s -d qdisc show dev eth0 队列状态
-tc -s class show dev eth0 类状态
+<p>&ndash;流量分析与故障诊断&ndash;<br />
+tc -s -d qdisc show dev eth0 队列状态<br />
+tc -s class show dev eth0 类状态<br />
 tc filter show dev eth0 过滤器状态</p>
 
                       
@@ -524,7 +524,7 @@ tc filter show dev eth0 过滤器状态</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -747,6 +747,8 @@ tc filter show dev eth0 过滤器状态</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -769,7 +771,9 @@ tc filter show dev eth0 过滤器状态</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -801,7 +805,7 @@ tc filter show dev eth0 过滤器状态</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

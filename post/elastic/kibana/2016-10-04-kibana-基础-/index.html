@@ -244,77 +244,77 @@
 
 <p>/scripts/import_dashboards -es <a href="http://120.92.36.21:9200">http://120.92.36.21:9200</a> -user elastic -pass changeme</p>
 
-<pre><code># mapping
-# 先建立一个索引
-
-curl -XPUT localhost:9200/abc
-
-# 然后定义映射，注意：只有刚刚新建、还没有任何数据的索引，才能定义映射。定义映射Mapping可以使用_mapping RESTAPI，符合下面的标准语法：
-
-curl -XPUT localhost:9200/索引名称/类型名称/_mapping?pretty -d '{&quot;类型名称&quot;:{&quot;properties&quot;:{&quot;字段名称&quot;:{&quot;type&quot;:&quot;字段类型&quot;,&quot;store&quot;:&quot;是否存储&quot;,&quot;index&quot;:&quot;索引方式、是否分析&quot;}}}}'
-
-# index-pattern
-$CURL -XPOST &quot;$ELASTICSEARCH/.kibana/index-pattern/$name&quot; -d &quot;@$file&quot;
-# search
-$CURL -XPUT &quot;$ELASTICSEARCH/.kibana/search/$name&quot; -d &quot;@$file&quot; || exit 1
-# visualization
-$CURL -XPUT &quot;$ELASTICSEARCH/.kibana/visualization/$name&quot; -d &quot;@$file&quot; || exit 1
-# dashboard
-$CURL -XPUT &quot;$ELASTICSEARCH/.kibana/dashboard/$name&quot; -d &quot;@$file&quot; || exit 1
-# config
-$CURL -XPOST $ELASTICSEARCH/.kibana/config/4.3.1 -d @dashboards/config.json || exit 1
+<pre><code># mapping  
+# 先建立一个索引  
+  
+curl -XPUT localhost:9200/abc  
+  
+# 然后定义映射，注意：只有刚刚新建、还没有任何数据的索引，才能定义映射。定义映射Mapping可以使用_mapping RESTAPI，符合下面的标准语法：  
+  
+curl -XPUT localhost:9200/索引名称/类型名称/_mapping?pretty -d '{&quot;类型名称&quot;:{&quot;properties&quot;:{&quot;字段名称&quot;:{&quot;type&quot;:&quot;字段类型&quot;,&quot;store&quot;:&quot;是否存储&quot;,&quot;index&quot;:&quot;索引方式、是否分析&quot;}}}}'  
+  
+# index-pattern  
+$CURL -XPOST &quot;$ELASTICSEARCH/.kibana/index-pattern/$name&quot; -d &quot;@$file&quot;  
+# search  
+$CURL -XPUT &quot;$ELASTICSEARCH/.kibana/search/$name&quot; -d &quot;@$file&quot; || exit 1  
+# visualization  
+$CURL -XPUT &quot;$ELASTICSEARCH/.kibana/visualization/$name&quot; -d &quot;@$file&quot; || exit 1  
+# dashboard  
+$CURL -XPUT &quot;$ELASTICSEARCH/.kibana/dashboard/$name&quot; -d &quot;@$file&quot; || exit 1  
+# config  
+$CURL -XPOST $ELASTICSEARCH/.kibana/config/4.3.1 -d @dashboards/config.json || exit 1  
 </code></pre>
 
-<pre><code>## 创建index并导入mapping
-curl -s -XPUT -H &quot;Content-Type: application/json&quot; --data @twitter_mapping.json \
-http://elasticsearch:9200/twitter/; echo
-
-curl -s -XPUT -H &quot;Content-Type: application/json&quot; --data @kibana_mapping.json \
-http://elasticsearch:9200/.kibana/; echo
-
-curl -s -XPOST -H &quot;Content-Type: application/json&quot; --data @kibana_config.json \
-http://elasticsearch:9200/.kibana/config/4.1.0; echo
-
-curl -s -XPOST http://elasticsearch:9200/.kibana/index-pattern/twitter -d '{
-	&quot;title&quot;: &quot;twitter&quot;,
-	&quot;timeFieldName&quot;: &quot;created_at&quot;
-}'; echo
-
-curl -s -H &quot;Content-Type: application/json&quot; --data @${RIVER_FILE} \
-http://elasticsearch:9200/_river/twitter/_meta; echo
+<pre><code>## 创建index并导入mapping  
+curl -s -XPUT -H &quot;Content-Type: application/json&quot; --data @twitter_mapping.json \  
+http://elasticsearch:9200/twitter/; echo  
+  
+curl -s -XPUT -H &quot;Content-Type: application/json&quot; --data @kibana_mapping.json \  
+http://elasticsearch:9200/.kibana/; echo  
+  
+curl -s -XPOST -H &quot;Content-Type: application/json&quot; --data @kibana_config.json \  
+http://elasticsearch:9200/.kibana/config/4.1.0; echo  
+  
+curl -s -XPOST http://elasticsearch:9200/.kibana/index-pattern/twitter -d '{  
+	&quot;title&quot;: &quot;twitter&quot;,  
+	&quot;timeFieldName&quot;: &quot;created_at&quot;  
+}'; echo  
+  
+curl -s -H &quot;Content-Type: application/json&quot; --data @${RIVER_FILE} \  
+http://elasticsearch:9200/_river/twitter/_meta; echo  
 </code></pre>
 
-<pre><code># 创建ingest
-PUT _ingest/pipeline/my-pipeline-id
+<pre><code># 创建ingest  
+PUT _ingest/pipeline/my-pipeline-id  
 </code></pre>
 
 <h2 id="快照备份">快照备份</h2>
 
 <p>curl -XPUT -u elastic:P@ssw0rd <a href="http://120.92.36.21:9200/_snapshot/backup/snapshot_`date">http://120.92.36.21:9200/_snapshot/backup/snapshot_`date</a> +%Y.%m.%d<code>?wait_for_completion=true &amp;&amp; curl -XDELETE -u elastic:infra321 http://120.92.36.21:9200/access-</code>date +%Y.%m.%d -d &ldquo;-31 day&rdquo;<code>
-#curl -XDELETE http://120.92.36.21:9200/access-</code>date +%Y.%m.%d -d &ldquo;-1 day&rdquo;`
+#curl -XDELETE http://120.92.36.21:9200/access-</code>date +%Y.%m.%d -d &ldquo;-1 day&rdquo;`<br />
 #curator_cli &ndash;host 192.168.19.12 snapshot &ndash;repository backup</p>
 
 <h1 id="close-the-kibana-index-restore-it-from-snapshot-and-reopen-it">close the kibana index, restore it from snapshot, and reopen it</h1>
 
-<p>closeKibanaIndexCmd=&ldquo;curl -XPOST /.kibana/_close\&ldquo;&rdquo;
-restoreSnapshotCmd=&ldquo;curl -XPOST /_snapshot/elk_backup/$1/_restore\&ldquo;&rdquo;
-reopenKibanaIndexCmd=&ldquo;curl -XPOST /.kibana/_open\&ldquo;&rdquo;
-snapshotRepoCmd=&ldquo;curl -XPUT -s $authString \&ldquo;$elk_base_url/_snapshot/elk_backup\&rdquo; -d &lsquo;{
-      \&ldquo;type\&rdquo;: \&ldquo;fs\&ldquo;,
-      \&ldquo;settings\&rdquo;: {
-          \&ldquo;location\&rdquo;: \&ldquo;/tmp/elkinstalldir/snapshots/\&rdquo;
-      }
+<p>closeKibanaIndexCmd=&ldquo;curl -XPOST /.kibana/_close\&ldquo;&rdquo;<br />
+restoreSnapshotCmd=&ldquo;curl -XPOST /_snapshot/elk_backup/$1/_restore\&ldquo;&rdquo;<br />
+reopenKibanaIndexCmd=&ldquo;curl -XPOST /.kibana/_open\&ldquo;&rdquo;<br />
+snapshotRepoCmd=&ldquo;curl -XPUT -s $authString \&ldquo;$elk_base_url/_snapshot/elk_backup\&rdquo; -d &lsquo;{<br />
+      \&ldquo;type\&rdquo;: \&ldquo;fs\&ldquo;,<br />
+      \&ldquo;settings\&rdquo;: {<br />
+          \&ldquo;location\&rdquo;: \&ldquo;/tmp/elkinstalldir/snapshots/\&rdquo;<br />
+      }<br />
   }&lsquo;&rdquo;</p>
 
-<p>echo &ldquo;creating repo&hellip;&rdquo;
-eval $snapshotRepoCmd
-echo &ldquo;closing kibana index&hellip;&rdquo;
+<p>echo &ldquo;creating repo&hellip;&rdquo;<br />
+eval $snapshotRepoCmd<br />
+echo &ldquo;closing kibana index&hellip;&rdquo;<br />
 echo &ldquo;restoring snapshot&hellip;&rdquo;</p>
 
 <p>echo &ldquo;reopening kibana index&hellip;&rdquo;</p>
 
-<p>#curl -XPOST -u esadmin:esadmin  -s &ldquo;<a href="http://120.92.36.21:9200/.kibana/_close&quot;">http://120.92.36.21:9200/.kibana/_close&quot;</a>
-#curl -XPOST -u esadmin:esadmin  -s &ldquo;<a href="http://120.92.36.21:9200/_snapshot/elk_backup/$1/_restore&quot;">http://120.92.36.21:9200/_snapshot/elk_backup/$1/_restore&quot;</a>
+<p>#curl -XPOST -u esadmin:esadmin  -s &ldquo;<a href="http://120.92.36.21:9200/.kibana/_close&quot;">http://120.92.36.21:9200/.kibana/_close&quot;</a><br />
+#curl -XPOST -u esadmin:esadmin  -s &ldquo;<a href="http://120.92.36.21:9200/_snapshot/elk_backup/$1/_restore&quot;">http://120.92.36.21:9200/_snapshot/elk_backup/$1/_restore&quot;</a><br />
 #curl -XPOST -u esadmin:esadmin  -s &ldquo;<a href="http://120.92.36.21:9200/.kibana/_open&quot;">http://120.92.36.21:9200/.kibana/_open&quot;</a></p>
 
                       
@@ -482,7 +482,7 @@ echo &ldquo;restoring snapshot&hellip;&rdquo;</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -705,6 +705,8 @@ echo &ldquo;restoring snapshot&hellip;&rdquo;</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -727,7 +729,9 @@ echo &ldquo;restoring snapshot&hellip;&rdquo;</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -759,7 +763,7 @@ echo &ldquo;restoring snapshot&hellip;&rdquo;</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

@@ -375,148 +375,148 @@
 
 <p>所有REST API都支持可用于减少elasticsearch返回的<code>filter_path</code>参数。此参数是采用<code>,</code>分隔，且支持<code>.</code>符号表达：</p>
 
-<pre><code>GET /_search?q=elasticsearch&amp;filter_path=took,hits.hits._id,hits.hits._score
+<pre><code>GET /_search?q=elasticsearch&amp;filter_path=took,hits.hits._id,hits.hits._score  
 </code></pre>
 
 <p>响应（Responds）：</p>
 
-<pre><code>{
-  &quot;took&quot; : 3,
-  &quot;hits&quot; : {
-    &quot;hits&quot; : [
-      {
-        &quot;_id&quot; : &quot;0&quot;,
-        &quot;_score&quot; : 1.6375021
-      }
-    ]
-  }
-}
+<pre><code>{  
+  &quot;took&quot; : 3,  
+  &quot;hits&quot; : {  
+    &quot;hits&quot; : [  
+      {  
+        &quot;_id&quot; : &quot;0&quot;,  
+        &quot;_score&quot; : 1.6375021  
+      }  
+    ]  
+  }  
+}  
 </code></pre>
 
 <p>并且<code>*</code>通配符可以用于包括不知道确切路径的字段。例如：</p>
 
-<pre><code>GET /_cluster/state?filter_path=routing_table.indices.**.state
+<pre><code>GET /_cluster/state?filter_path=routing_table.indices.**.state  
 </code></pre>
 
 <p>响应（Responds）：</p>
 
-<pre><code>{
-  &quot;routing_table&quot;: {
-    &quot;indices&quot;: {
-      &quot;twitter&quot;: {
-        &quot;shards&quot;: {
-          &quot;0&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}],
-          &quot;1&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}],
-          &quot;2&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}],
-          &quot;3&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}],
-          &quot;4&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}]
-        }
-      }
-    }
-  }
-}
+<pre><code>{  
+  &quot;routing_table&quot;: {  
+    &quot;indices&quot;: {  
+      &quot;twitter&quot;: {  
+        &quot;shards&quot;: {  
+          &quot;0&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}],  
+          &quot;1&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}],  
+          &quot;2&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}],  
+          &quot;3&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}],  
+          &quot;4&quot;: [{&quot;state&quot;: &quot;STARTED&quot;}, {&quot;state&quot;: &quot;UNASSIGNED&quot;}]  
+        }  
+      }  
+    }  
+  }  
+}  
 </code></pre>
 
 <p>也可以通过使用字符<code>-</code>过滤器来排除一个或多个字段：</p>
 
-<pre><code>GET /_count?filter_path=-_shards
+<pre><code>GET /_count?filter_path=-_shards  
 </code></pre>
 
 <p>响应（Responds）：</p>
 
-<pre><code>{
-  &quot;count&quot; : 5
-}
+<pre><code>{  
+  &quot;count&quot; : 5  
+}  
 </code></pre>
 
 <p>为了更多的控制，包含和独占过滤器可以组合在同一个表达式。在这种情况下，将首先应用独占过滤器，并使用包含过滤器再次过滤：</p>
 
-<pre><code>GET /_cluster/state?filter_path=metadata.indices.*.state,-metadata.indices.logstash-*
+<pre><code>GET /_cluster/state?filter_path=metadata.indices.*.state,-metadata.indices.logstash-*  
 </code></pre>
 
 <p>响应（Responds）：</p>
 
-<pre><code>{
-  &quot;metadata&quot; : {
-    &quot;indices&quot; : {
-      &quot;index-1&quot; : {&quot;state&quot; : &quot;open&quot;},
-      &quot;index-2&quot; : {&quot;state&quot; : &quot;open&quot;},
-      &quot;index-3&quot; : {&quot;state&quot; : &quot;open&quot;}
-    }
-  }
-}
+<pre><code>{  
+  &quot;metadata&quot; : {  
+    &quot;indices&quot; : {  
+      &quot;index-1&quot; : {&quot;state&quot; : &quot;open&quot;},  
+      &quot;index-2&quot; : {&quot;state&quot; : &quot;open&quot;},  
+      &quot;index-3&quot; : {&quot;state&quot; : &quot;open&quot;}  
+    }  
+  }  
+}  
 </code></pre>
 
 <p>请注意， <code>elasticsearch</code>有时直接返回字段的原始值，如<code>_source</code>字段。如果要过滤<code>_source</code>字段，你需要结合<code>filter_path</code>参数来考虑已存在<code>_source</code>参数。（请参阅<a href="../Document_APIS/Get_API.md#get-source-filtering">Get API</a>了解更多详细信息 ），如下所示：</p>
 
-<pre><code>POST /library/book?refresh
-{&quot;title&quot;: &quot;Book #1&quot;, &quot;rating&quot;: 200.1}
-POST /library/book?refresh
-{&quot;title&quot;: &quot;Book #2&quot;, &quot;rating&quot;: 1.7}
-POST /library/book?refresh
-{&quot;title&quot;: &quot;Book #3&quot;, &quot;rating&quot;: 0.1}
-GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:desc
+<pre><code>POST /library/book?refresh  
+{&quot;title&quot;: &quot;Book #1&quot;, &quot;rating&quot;: 200.1}  
+POST /library/book?refresh  
+{&quot;title&quot;: &quot;Book #2&quot;, &quot;rating&quot;: 1.7}  
+POST /library/book?refresh  
+{&quot;title&quot;: &quot;Book #3&quot;, &quot;rating&quot;: 0.1}  
+GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:desc  
 </code></pre>
 
-<pre><code class="language-json">{
-  &quot;hits&quot; : {
-    &quot;hits&quot; : [ {
-      &quot;_source&quot;:{&quot;title&quot;:&quot;Book #1&quot;}
-    }, {
-      &quot;_source&quot;:{&quot;title&quot;:&quot;Book #2&quot;}
-    }, {
-      &quot;_source&quot;:{&quot;title&quot;:&quot;Book #3&quot;}
-    } ]
-  }
-}
+<pre><code class="language-json">{  
+  &quot;hits&quot; : {  
+    &quot;hits&quot; : [ {  
+      &quot;_source&quot;:{&quot;title&quot;:&quot;Book #1&quot;}  
+    }, {  
+      &quot;_source&quot;:{&quot;title&quot;:&quot;Book #2&quot;}  
+    }, {  
+      &quot;_source&quot;:{&quot;title&quot;:&quot;Book #3&quot;}  
+    } ]  
+  }  
+}  
 </code></pre>
 
 <h2 id="扁平设置">扁平设置</h2>
 
 <p><code>flat_settings</code>参数影响设置列表的呈现。当<code>flat_settings</code>设置为<code>true</code>时，结果将以扁平的格式返回：</p>
 
-<pre><code>GET twitter/_settings?flat_settings=true
+<pre><code>GET twitter/_settings?flat_settings=true  
 </code></pre>
 
 <p>返回（Returns）：</p>
 
-<pre><code class="language-json">{
-  &quot;twitter&quot; : {
-    &quot;settings&quot;: {
-      &quot;index.number_of_replicas&quot;: &quot;1&quot;,
-      &quot;index.number_of_shards&quot;: &quot;1&quot;,
-      &quot;index.creation_date&quot;: &quot;1474389951325&quot;,
-      &quot;index.uuid&quot;: &quot;n6gzFZTgS664GUfx0Xrpjw&quot;,
-      &quot;index.version.created&quot;: ...,
-      &quot;index.provided_name&quot; : &quot;twitter&quot;
-    }
-  }
-}
+<pre><code class="language-json">{  
+  &quot;twitter&quot; : {  
+    &quot;settings&quot;: {  
+      &quot;index.number_of_replicas&quot;: &quot;1&quot;,  
+      &quot;index.number_of_shards&quot;: &quot;1&quot;,  
+      &quot;index.creation_date&quot;: &quot;1474389951325&quot;,  
+      &quot;index.uuid&quot;: &quot;n6gzFZTgS664GUfx0Xrpjw&quot;,  
+      &quot;index.version.created&quot;: ...,  
+      &quot;index.provided_name&quot; : &quot;twitter&quot;  
+    }  
+  }  
+}  
 </code></pre>
 
 <p>当<code>flat_settings</code>设置为<code>false</code>时，设置以更易于阅读的结构化格式返回：</p>
 
-<pre><code>GET twitter/_settings?flat_settings=false
+<pre><code>GET twitter/_settings?flat_settings=false  
 </code></pre>
 
 <p>返回（Returns）：</p>
 
-<pre><code class="language-json">{
-  &quot;twitter&quot; : {
-    &quot;settings&quot; : {
-      &quot;index&quot; : {
-        &quot;number_of_replicas&quot;: &quot;1&quot;,
-        &quot;number_of_shards&quot;: &quot;1&quot;,
-        &quot;creation_date&quot;: &quot;1474389951325&quot;,
-        &quot;uuid&quot;: &quot;n6gzFZTgS664GUfx0Xrpjw&quot;,
-        &quot;version&quot;: {
-          &quot;created&quot;: ...
-        },
-        &quot;provided_name&quot; : &quot;twitter&quot;
-      }
-    }
-  }
-}
+<pre><code class="language-json">{  
+  &quot;twitter&quot; : {  
+    &quot;settings&quot; : {  
+      &quot;index&quot; : {  
+        &quot;number_of_replicas&quot;: &quot;1&quot;,  
+        &quot;number_of_shards&quot;: &quot;1&quot;,  
+        &quot;creation_date&quot;: &quot;1474389951325&quot;,  
+        &quot;uuid&quot;: &quot;n6gzFZTgS664GUfx0Xrpjw&quot;,  
+        &quot;version&quot;: {  
+          &quot;created&quot;: ...  
+        },  
+        &quot;provided_name&quot; : &quot;twitter&quot;  
+      }  
+    }  
+  }  
+}  
 </code></pre>
 
 <p>默认情况下， <code>flat_settings</code>被设置为<code>false</code>。</p>
@@ -638,7 +638,7 @@ GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:des
 
 <h2 id="无单位数量-unit-less-quantities">无单位数量（unit-less quantities）</h2>
 
-<p>无单位数量意味着它们没有像“字节（bytes）”或者“赫兹（Hertz）”或者“米（meter）”或者“长吨（long tonne）” 的“单位”。
+<p>无单位数量意味着它们没有像“字节（bytes）”或者“赫兹（Hertz）”或者“米（meter）”或者“长吨（long tonne）” 的“单位”。<br />
 如果这些数量中的一个很大，我们将打印出来，如10,000万的 10m 或者 7,000 的 7k 。我们仍然打印 87 ，当我们的意思是 87 。这些是支持的乘数（multipliers）：</p>
 
 <table>
@@ -754,24 +754,24 @@ GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:des
 
 <p><code>0， 1， 2</code></p>
 
-<pre><code>最大允许 Levenshtein Edit Distance （或者编辑次数）。
+<pre><code>最大允许 Levenshtein Edit Distance （或者编辑次数）。  
 </code></pre>
 
 <p><code>AUTO</code></p>
 
-<pre><code>基于该项的长度生成编辑距离（generates an edit distance）。对于长度：
+<pre><code>基于该项的长度生成编辑距离（generates an edit distance）。对于长度：  
 
-  0..2
+  0..2  
 
-     必须完全匹配
+     必须完全匹配  
 
-  3..5
+  3..5  
 
-    允许编辑一次（one edit allowed）
+    允许编辑一次（one edit allowed）  
 
-  &gt;5
+  &gt;5  
 
-    允许编辑两次（two edits allowed）
+    允许编辑两次（two edits allowed）  
 </code></pre>
 
 <p>AUTO一般应该是<code>fuzziness</code>的首选值。</p>
@@ -780,57 +780,57 @@ GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:des
 
 <p>默认情况下，当请求返回错误时，Elasticsearch不包括错误的堆栈跟踪。您可以将<code>error_trace</code>参数设置为<code>true</code>来启用该行为。例如，默认情况下，当您向<code>_search</code>API 发送无效的<code>size</code>参数时：</p>
 
-<pre><code>POST /twitter/_search?size=surprise_me
+<pre><code>POST /twitter/_search?size=surprise_me  
 </code></pre>
 
 <p>响应看起来像下面这样：</p>
 
-<pre><code>{
-  &quot;error&quot; : {
-    &quot;root_cause&quot; : [
-      {
-        &quot;type&quot; : &quot;illegal_argument_exception&quot;,
-        &quot;reason&quot; : &quot;Failed to parse int parameter [size] with value [surprise_me]&quot;
-      }
-    ],
-    &quot;type&quot; : &quot;illegal_argument_exception&quot;,
-    &quot;reason&quot; : &quot;Failed to parse int parameter [size] with value [surprise_me]&quot;,
-    &quot;caused_by&quot; : {
-      &quot;type&quot; : &quot;number_format_exception&quot;,
-      &quot;reason&quot; : &quot;For input string: \&quot;surprise_me\&quot;&quot;
-    }
-  },
-  &quot;status&quot; : 400
-}
+<pre><code>{  
+  &quot;error&quot; : {  
+    &quot;root_cause&quot; : [  
+      {  
+        &quot;type&quot; : &quot;illegal_argument_exception&quot;,  
+        &quot;reason&quot; : &quot;Failed to parse int parameter [size] with value [surprise_me]&quot;  
+      }  
+    ],  
+    &quot;type&quot; : &quot;illegal_argument_exception&quot;,  
+    &quot;reason&quot; : &quot;Failed to parse int parameter [size] with value [surprise_me]&quot;,  
+    &quot;caused_by&quot; : {  
+      &quot;type&quot; : &quot;number_format_exception&quot;,  
+      &quot;reason&quot; : &quot;For input string: \&quot;surprise_me\&quot;&quot;  
+    }  
+  },  
+  &quot;status&quot; : 400  
+}  
 </code></pre>
 
 <p>但是，如果您设置<code>error_trace=true</code>：</p>
 
-<pre><code>POST /twitter/_search?size=surprise_me&amp;error_trace=true
+<pre><code>POST /twitter/_search?size=surprise_me&amp;error_trace=true  
 </code></pre>
 
 <p>响应看起来像这样：</p>
 
-<pre><code class="language-json">{
-  &quot;error&quot;: {
-    &quot;root_cause&quot;: [
-      {
-        &quot;type&quot;: &quot;illegal_argument_exception&quot;,
-        &quot;reason&quot;: &quot;Failed to parse int parameter [size] with value [surprise_me]&quot;,
-        &quot;stack_trace&quot;: &quot;Failed to parse int parameter [size] with value [surprise_me]]; nested: IllegalArgumentException...&quot;
-      }
-    ],
-    &quot;type&quot;: &quot;illegal_argument_exception&quot;,
-    &quot;reason&quot;: &quot;Failed to parse int parameter [size] with value [surprise_me]&quot;,
-    &quot;stack_trace&quot;: &quot;java.lang.IllegalArgumentException: Failed to parse int parameter [size] with value [surprise_me]\n    at org.elasticsearch.rest.RestRequest.paramAsInt(RestRequest.java:175)...&quot;,
-    &quot;caused_by&quot;: {
-      &quot;type&quot;: &quot;number_format_exception&quot;,
-      &quot;reason&quot;: &quot;For input string: \&quot;surprise_me\&quot;&quot;,
-      &quot;stack_trace&quot;: &quot;java.lang.NumberFormatException: For input string: \&quot;surprise_me\&quot;\n    at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)...&quot;
-    }
-  },
-  &quot;status&quot;: 400
-}
+<pre><code class="language-json">{  
+  &quot;error&quot;: {  
+    &quot;root_cause&quot;: [  
+      {  
+        &quot;type&quot;: &quot;illegal_argument_exception&quot;,  
+        &quot;reason&quot;: &quot;Failed to parse int parameter [size] with value [surprise_me]&quot;,  
+        &quot;stack_trace&quot;: &quot;Failed to parse int parameter [size] with value [surprise_me]]; nested: IllegalArgumentException...&quot;  
+      }  
+    ],  
+    &quot;type&quot;: &quot;illegal_argument_exception&quot;,  
+    &quot;reason&quot;: &quot;Failed to parse int parameter [size] with value [surprise_me]&quot;,  
+    &quot;stack_trace&quot;: &quot;java.lang.IllegalArgumentException: Failed to parse int parameter [size] with value [surprise_me]\n    at org.elasticsearch.rest.RestRequest.paramAsInt(RestRequest.java:175)...&quot;,  
+    &quot;caused_by&quot;: {  
+      &quot;type&quot;: &quot;number_format_exception&quot;,  
+      &quot;reason&quot;: &quot;For input string: \&quot;surprise_me\&quot;&quot;,  
+      &quot;stack_trace&quot;: &quot;java.lang.NumberFormatException: For input string: \&quot;surprise_me\&quot;\n    at java.lang.NumberFormatException.forInputString(NumberFormatException.java:65)...&quot;  
+    }  
+  },  
+  &quot;status&quot;: 400  
+}  
 </code></pre>
 
 <h2 id="请求体作为查询字符串">请求体作为查询字符串</h2>
@@ -843,7 +843,7 @@ GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:des
 
 <p>严格的模式可以开启禁用自动探测，然后需要在请求头的<code>Content-Type</code>中设置支持的格式。若要开启严格模式，请添加如下行到<code>elasticsearch.yml</code>文件：</p>
 
-<pre><code class="language-yaml">http.content_type.required: true
+<pre><code class="language-yaml">http.content_type.required: true  
 </code></pre>
 
 <p>它的默认值为false。</p>
@@ -1013,7 +1013,7 @@ GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:des
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -1236,6 +1236,8 @@ GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:des
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -1258,7 +1260,9 @@ GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:des
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1290,7 +1294,7 @@ GET /_search?filter_path=hits.hits._source&amp;_source=title&amp;sort=rating:des
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

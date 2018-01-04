@@ -230,7 +230,7 @@
                   <h1 class="post-title">Linux命令 lvm2</h1>
 
                   <p class="post-byline">
-                    by  · 2016年01月06日 16:46:14 · 4649 Words ·
+                    by  · 2016年01月06日 16:46:14 · 4648 Words ·
                     ~10min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/cmd/2016-01-01%20Linux%e5%91%bd%e4%bb%a4%20lvm2.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
@@ -244,77 +244,79 @@
                       
 
 <p><a href="http://blog.csdn.net/u013008795/article/details/51151624">Linux中LVM2原理及制作LVM2 - 兰枫 - CSDN博客</a>
-<a href="https://segmentfault.com/a/1190000004632775">LVM逻辑卷管理器配置小结</a>
-<a href="https://yq.aliyun.com/articles/120473?spm=5176.8067842.tagmain.31.wWJdsP">Linux存储入门：简易数据恢复方案&ndash;分区和LVM实战-博客-云栖社区-阿里云</a>
+<a href="https://segmentfault.com/a/1190000004632775">LVM逻辑卷管理器配置小结</a><br />
+<a href="https://yq.aliyun.com/articles/120473?spm=5176.8067842.tagmain.31.wWJdsP">Linux存储入门：简易数据恢复方案&ndash;分区和LVM实战-博客-云栖社区-阿里云</a><br />
 <a href="https://linux.cn/article-3218-2.html">LVM简明教程</a></p>
 
-<p>lsblk  能够显示每个设备的更多信息，如标签和型号，更多请查看信息手册。
+<p>lsblk  能够显示每个设备的更多信息，如标签和型号，更多请查看信息手册。<br />
 blkid  显示块设备（分区和存储介质）属性，例如UUID和文件系统类型，不报告分区空间</p>
 
-<p>一、LVM原理
-【MD】:Multi Device 多设备  [RAID]
-      Mdadm是一个用户空间工具，是RAID的管理工具，与真正的RAID工作没有太大关系。真正的RAID集成在linux内核中
-【DM】Device Mapper设备映射也是linux中一种常用的管理机制 [LVM2]
-     DM 与MD近似，也能够提供一种逻辑设备
-     DM比MD的功能要强大。因为DM不仅仅能提供MD的RAID的功能，它还是逻辑卷（LVM2）基础，同时，在逻辑卷的基础上我们也能实现RAID0,RAID1。这样的功能。所有DM与MD中有某些功能是重叠的，但并不完全重叠。所以，我们通常使用MD做RAID用DM做LVM2
-RAID：只是为了避免硬件损坏而导致业务终止或数据损失的。并不能保证人为错误的操作，导致数据损失。说以通常即使有RAID后数据依然要做备份。
+<p>一、LVM原理<br />
+【MD】:Multi Device 多设备  [RAID]<br />
+      Mdadm是一个用户空间工具，是RAID的管理工具，与真正的RAID工作没有太大关系。真正的RAID集成在linux内核中<br />
+【DM】Device Mapper设备映射也是linux中一种常用的管理机制 [LVM2]<br />
+     DM 与MD近似，也能够提供一种逻辑设备<br />
+     DM比MD的功能要强大。因为DM不仅仅能提供MD的RAID的功能，它还是逻辑卷（LVM2）基础，同时，在逻辑卷的基础上我们也能实现RAID0,RAID1。这样的功能。所有DM与MD中有某些功能是重叠的，但并不完全重叠。所以，我们通常使用MD做RAID用DM做LVM2<br />
+RAID：只是为了避免硬件损坏而导致业务终止或数据损失的。并不能保证人为错误的操作，导致数据损失。说以通常即使有RAID后数据依然要做备份。<br />
 DM除了快照外，还支持动态缩减磁盘大小。</p>
 
-<pre><code class="language-bash">
-set -e
-set -x
-
-sudo fdisk /dev/vdb &lt;&lt;EOF
-d
-n
-p
-1
-
-
-t
-8e
-w
-EOF
-yum install -y lvm2
-pvcreate /dev/vdb1
-## 1. 创建
-vgcreate VolGroup /dev/vdb1
-lvcreate -l +100%FREE -n lv_data VolGroup
-mkfs.ext4 /dev/VolGroup/lv_data
-echo &quot;/dev/VolGroup/lv_data /docker/ ext4 defaults 0 0&quot;|sudo tee -a /etc/fstab
-e2fsck -y /dev/VolGroup/lv_data
-mkdir /docker
-mount -a
-## 2. 扩展
-# vgextend VolGroup /dev/vdb1                  
-# lvextend -l +100%FREE /dev/VolGroup/lv_data
-
-# for ext4
-# resize2fs /dev/vagrant-vg/root
-# for xfs
-# xfs_growfs /dev/centos/root
-
+<pre><code class="language-bash">  
+set -e  
+set -x  
+  
+sudo fdisk /dev/vdb &lt;&lt;EOF  
+d  
+n  
+p  
+1  
+  
+  
+t  
+8e  
+w  
+EOF  
+yum install -y lvm2  
+pvcreate /dev/vdb1  
+## 1. 创建  
+vgcreate VolGroup /dev/vdb1  
+lvcreate -l +100%FREE -n lv_data VolGroup  
+mkfs.ext4 /dev/VolGroup/lv_data  
+echo &quot;/dev/VolGroup/lv_data /docker/ ext4 defaults 0 0&quot;|sudo tee -a /etc/fstab  
+e2fsck -y /dev/VolGroup/lv_data  
+mkdir /docker  
+mount -a  
+## 2. 扩展  
+# vgextend VolGroup /dev/vdb1  
+# lvextend -l +100%FREE /dev/VolGroup/lv_data  
+  
+# for ext4  
+# resize2fs /dev/vagrant-vg/root  
+# for xfs  
+# xfs_growfs /dev/centos/root  
+  
 </code></pre>
 
 <h1 id="拓普扩容">拓普扩容</h1>
 
-<p>lvextend -l +100%FREE /dev/VolGroup/lv_root
-e2fsck -f /dev/mapper/VolGroup-lv_root   //调整大小前要做的步骤
+<p>lvextend -l +100%FREE /dev/VolGroup/lv_root<br />
+e2fsck -f /dev/mapper/VolGroup-lv_root   //调整大小前要做的步骤<br />
 resize2fs /dev/mapper/VolGroup-lv_root</p>
 
 <ol>
-<li>创建分区
-sudo fdisk -u /dev/vdb &lt;&lt;EOF
-n
-p
-1</li>
+<li>创建分区<br />
+sudo fdisk -u /dev/vdb &lt;&lt;EOF<br />
+n<br />
+p<br />
+1<br />
+<br />
+<br /></li>
 </ol>
 
-<p>t
-8e
-w
-EOF
-2. 创建文件系统
+<p>t<br />
+8e<br />
+w<br />
+EOF<br />
+2. 创建文件系统<br />
 mkfs.ext4 /dev/vdb1</p>
 
 <p>mount /dev/vdb1 /mnt/</p>
@@ -322,143 +324,150 @@ mkfs.ext4 /dev/vdb1</p>
 <h1 id="linux-无损扩展分区">linux  无损扩展分区</h1>
 
 <ol>
-<li><p>检查文件系统
+<li><p>检查文件系统<br />
 fsck -f /dev/vdb1</p></li>
 
-<li><p>按d删除现在的分区1，注意：删除后千万不要按w保存！直接按n创建新的分区，然后从原有的柱面开始，一直分到最后的尺寸(默认值两次回车即可，如果之前的分区不是从第一柱面开始，则需要记录之前分区的起始柱面)，新的分区操作完毕后，按w保存
-fdisk /dev/xvdc &lt; &lt;EOF
-d
-n
+<li><p>按d删除现在的分区1，注意：删除后千万不要按w保存！直接按n创建新的分区，然后从原有的柱面开始，一直分到最后的尺寸(默认值两次回车即可，如果之前的分区不是从第一柱面开始，则需要记录之前分区的起始柱面)，新的分区操作完毕后，按w保存<br />
+fdisk /dev/xvdc &lt; &lt;EOF<br />
+d<br />
+n<br />
 p</p></li>
 </ol>
 
-<p>w
+<p>w<br />
 EOF</p>
 
 <ol>
-<li>resize2fs /dev/vdb1</li>
+<li>resize2fs /dev/vdb1<br />
+<br />
+<br />
+<br /></li>
 </ol>
 
 <h1 id="lvm2">LVM2</h1>
 
 <h2 id="问题解决">问题解决</h2>
 
-<p>/run/lvm/lvmetad.socket: connect failed: No such file or directory
+<p>/run/lvm/lvmetad.socket: connect failed: No such file or directory<br />
 WARNING: Failed to connect to lvmetad. Falling back to internal scanning.</p>
 
 <p><code>vi /etc/lvm/lvm.conf</code> and change use_lvmetad=1 to <code>use_lvmetad=0</code></p>
 
 <ol>
-<li>创建lvm分区</li>
+<li>创建lvm分区<br />
+<br /></li>
 </ol>
 
-<p>fdisk /dev/vdb
-n    #创建分区
+<p>fdisk /dev/vdb<br />
+n    #创建分区<br />
 p<br />
 <!-- +10G #指定大小10G --></p>
 
-<p>t    #更改分区类型为[8e] linux lvm
-8e
+<p>t    #更改分区类型为[8e] linux lvm<br />
+8e<br />
 w</p>
 
 <ol>
-<li><p>将物理分区PE与硬盘创建为物理卷PV (pvcreate)
-<code>pvcreate /dev/sdb[1-3]</code>                      #将sdb上的三个分区创建为物理卷
-pvcreate /dev/sdc                            #将硬盘sdc创建为物理卷
+<li><p>将物理分区PE与硬盘创建为物理卷PV (pvcreate)<br />
+<code>pvcreate /dev/sdb[1-3]</code>                      #将sdb上的三个分区创建为物理卷<br />
+pvcreate /dev/sdc                            #将硬盘sdc创建为物理卷<br />
 pvs                                          #查看创建的物理卷</p></li>
 
-<li><p>将物理卷(pv)创建为卷组（vgcreate），名为myvg：
-<code>vgcreate VolGroup /dev/sdb[1-3] /dev/sdc</code>     #创建卷组（VG），卷组名为VolGroup，使用物理卷:
-vgcreate VolGroup -s 8M /dev/sdb{10,11,12}   #指定VG的pe大小为8MB
+<li><p>将物理卷(pv)创建为卷组（vgcreate），名为myvg：<br />
+<code>vgcreate VolGroup /dev/sdb[1-3] /dev/sdc</code>     #创建卷组（VG），卷组名为VolGroup，使用物理卷:<br />
+vgcreate VolGroup -s 8M /dev/sdb{10,11,12}   #指定VG的pe大小为8MB<br />
 vgs                                          #查看创建的卷组；</p></li>
 
-<li><p>在卷组里创建逻辑卷并格式化、挂载使用；
-<code>lvcreate -l +100%FREE -n lv_data VolGroup</code>   #使用全部物理卷创建逻辑卷
-lvcreate -L 5G -n lv_data VolGroup           #创建逻辑卷，卷名为lv_data，卷大小为5G；
+<li><p>在卷组里创建逻辑卷并格式化、挂载使用；<br />
+<code>lvcreate -l +100%FREE -n lv_data VolGroup</code>   #使用全部物理卷创建逻辑卷<br />
+lvcreate -L 5G -n lv_data VolGroup           #创建逻辑卷，卷名为lv_data，卷大小为5G；<br />
 lvs                                          #查看逻辑卷；</p></li>
 </ol>
 
-<p>#格式化逻辑卷
-mkfs -t ext4 /dev/VolGroup/lv_data
+<p>#格式化逻辑卷<br />
+mkfs -t ext4 /dev/VolGroup/lv_data<br />
 <code>mkfs.ext4 /dev/VolGroup/lv_data</code></p>
 
-<p>#挂载逻辑卷
+<p>#挂载逻辑卷<br />
 mkdir /docker</p>
 
-<p>#修改fstab
-vi /etc/fstab
-/dev/VolGroup/lv_data /docker ext4 dafaults 0 0
-#测试lv是否可以挂载
-mount -a
-mount /dev/VolGroup/lv_data /docker
-df -h
+<p>#修改fstab<br />
+vi /etc/fstab<br />
+/dev/VolGroup/lv_data /docker ext4 dafaults 0 0<br />
+#测试lv是否可以挂载<br />
+mount -a<br />
+mount /dev/VolGroup/lv_data /docker<br />
+df -h<br />
 这里我们可以看到挂载的lv_data是/dev/mapper/VolGroup-lv_data，其实/dev/mapper/VolGroup-lv_data才是真正的设备文件，在/dev/VolGroup/lv_data只是个链接文件。</p>
 
-<p>#删除逻辑卷
-fuser -m /docker
-umount /docker
+<p>#删除逻辑卷<br />
+fuser -m /docker<br />
+umount /docker<br />
 lvremove /dev/VolGroup/lv_data</p>
 
 <h2 id="扩展-无损">扩展[无损]</h2>
 
 <ol>
 <li>pvcreate /dev/vdb2<br /></li>
-<li>vgextend VolGroup /dev/vdb2</li>
-<li>lvextend -l +100%FREE /dev/VolGroup/lv_data</li>
+<li>vgextend VolGroup /dev/vdb2<br /></li>
+<li>lvextend -l +100%FREE /dev/VolGroup/lv_data<br />
+<br /></li>
 </ol>
 
 <h2 id="缩减-有损-当想移除卷时必须删除逻辑卷">缩减[有损] 当想移除卷时必须删除逻辑卷</h2>
 
 <ol>
-<li>lvremove /dev/VolGroup/lv_data</li>
-<li>vgreduce VolGroup /dev/vdb2         # 将/dev/vdb2从VolGroup移除 必须先移除lv_data才能执行</li>
-<li>vgremove VolGroup                   # 移除VolGroup</li>
-<li>pvremove /dev/vdb2</li>
+<li>lvremove /dev/VolGroup/lv_data<br /></li>
+<li>vgreduce VolGroup /dev/vdb2         # 将/dev/vdb2从VolGroup移除 必须先移除lv_data才能执行<br /></li>
+<li>vgremove VolGroup                   # 移除VolGroup<br /></li>
+<li>pvremove /dev/vdb2<br />
+<br /></li>
 </ol>
 
-<p>一、扩展逻辑卷：
-【lvextend 】扩展磁盘的逻辑卷
-             -L [+]# /PATH/TO/LV
-【resize2fs】扩展文件系统逻辑编辑
+<p>一、扩展逻辑卷：<br />
+【lvextend 】扩展磁盘的逻辑卷<br />
+             -L [+]# /PATH/TO/LV<br />
+【resize2fs】扩展文件系统逻辑编辑<br />
             resize2fs /PATH/TO/LV 5G</p>
 
-<p>例如：#lvextend -L 7G /dev/myvg/testlv    //将testlv物理边界扩展为7G
+<p>例如：#lvextend -L 7G /dev/myvg/testlv    //将testlv物理边界扩展为7G<br />
       #resize2fs  -p /dev/myvg/testlv     //将testlv的文件系统边界扩展为最大（即物理边界有多少就用多少）</p>
 
 <h2 id="扩容-先扩展物理边界-pvresize-后扩展逻辑边界-lvextend-最后扩展文件系统边界-resize2fs">扩容 先扩展物理边界<code>pvresize</code> 后扩展逻辑边界<code>lvextend</code> 最后扩展文件系统边界<code>resize2fs</code></h2>
 
 <ol>
-<li>扩展物理分区
-<code>fdisk /dev/vdb</code>
-p   # 记下扩容前的
-d   # 要扩展分区
-n   # 创建新分区
-p</li>
+<li>扩展物理分区<br />
+<code>fdisk /dev/vdb</code><br />
+p   # 记下扩容前的<br />
+d   # 要扩展分区<br />
+n   # 创建新分区<br />
+p<br />
+<br /></li>
 </ol>
 
-<p>t   # 分区类型为 linux lvm
-8e
+<p>t   # 分区类型为 linux lvm<br />
+8e<br />
 w</p>
 
-<p><code>partprobe</code>包含在parted的rpm软件包中。partprobe可以修改kernel中分区表，使kernel重新读取分区表。
-因此，使用该命令就可以创建分区并且在不重新启动机器的情况下系统能够识别这些分区。
-2. 扩展pv
+<p><code>partprobe</code>包含在parted的rpm软件包中。partprobe可以修改kernel中分区表，使kernel重新读取分区表。<br />
+因此，使用该命令就可以创建分区并且在不重新启动机器的情况下系统能够识别这些分区。<br />
+2. 扩展pv<br />
 pvresize /dev/vdb1  # 单分区扩容</p>
 
-<p>pvcreate /dev/vdb2  # 多分区扩容
-vgextend VolGroup /dev/vdb2
-3. 扩展 lv
-<code>lvextend -l +100%FREE /dev/VolGroup/lv_data</code>
-<code>lvextend -l 100%VG /dev/VolGroup/lv_data</code>
-4. 扩展文件系统
-<code>e2fsck -f /dev/mapper/VolGroup-lv_data</code>
-<code>resize2fs /dev/mapper/VolGroup-lv_data</code>
-<code>mount /dev/mapper/VolGroup-lv_data  /data/</code>
+<p>pvcreate /dev/vdb2  # 多分区扩容<br />
+vgextend VolGroup /dev/vdb2<br />
+3. 扩展 lv<br />
+<code>lvextend -l +100%FREE /dev/VolGroup/lv_data</code><br />
+<code>lvextend -l 100%VG /dev/VolGroup/lv_data</code><br />
+4. 扩展文件系统<br />
+<code>e2fsck -f /dev/mapper/VolGroup-lv_data</code><br />
+<code>resize2fs /dev/mapper/VolGroup-lv_data</code><br />
+<code>mount /dev/mapper/VolGroup-lv_data  /data/</code><br />
 <code>df -h</code></p>
 
-<p>二、缩减逻辑卷：
-注意：1、不能在线缩减，得先卸载;
-    2、确保缩减后的空间大小依然能存储原有的所有数据：
+<p>二、缩减逻辑卷：<br />
+注意：1、不能在线缩减，得先卸载;<br />
+    2、确保缩减后的空间大小依然能存储原有的所有数据：<br />
     3、在缩减之前应该先强行检查文件，以确保文件系统处于以至性状态</p>
 
 <h1 id="缩减一个lvm卷-先缩小文件系统边界-resize2fs-后缩小逻辑边界-lvresize-lvreduce-最后缩小物理边界-pv">缩减一个LVM卷 先缩小文件系统边界<code>resize2fs</code> 后缩小逻辑边界<code>lvresize,lvreduce</code> 最后缩小物理边界<code>pv</code></h1>
@@ -487,121 +496,120 @@ vgextend VolGroup /dev/vdb2
 <h1 id="lvdisplay"><code>lvdisplay</code></h1></li>
 </ol>
 
-<p>Lvm详解
-【pv】Physical Volume 物理卷
-【vg】Volume Group VG卷组
+<p>Lvm详解<br />
+【pv】Physical Volume 物理卷<br />
+【vg】Volume Group VG卷组<br />
 【lv】logical Volume逻辑卷</p>
 
-<p>创建pv及查看pv相关命令
-pv ：注意pv是由磁盘分区构成，分区格式为（8e(linux)）
-         【pvcreate】创建pv
-                            例如：
-                                               pvcreate/dev/sda1 /dev/sda2   //级可以将sda1和sda2设备创建称为pv设备
-         【pvremove】删除pv
-         【pvscan】扫描pv(扫描系统上有多少个pv物理磁盘)
-         【pvdisplay】查看系统上pv的详细信息
-         【pvs】查看当前系统上的pv设备(简单查看)
+<p>创建pv及查看pv相关命令<br />
+pv ：注意pv是由磁盘分区构成，分区格式为（8e(linux)）<br />
+         【pvcreate】创建pv<br />
+                            例如：<br />
+                                               pvcreate/dev/sda1 /dev/sda2   //级可以将sda1和sda2设备创建称为pv设备<br />
+         【pvremove】删除pv<br />
+         【pvscan】扫描pv(扫描系统上有多少个pv物理磁盘)<br />
+         【pvdisplay】查看系统上pv的详细信息<br />
+         【pvs】查看当前系统上的pv设备(简单查看)<br />
          【pvmove】移动pv</p>
 
-<p>vg:注意：vg是由pv构成构成后对系统看来相当于一个磁盘
-         【vgcreate】创建vg将pv创建为vg
-                                                        例如：
-                                                        vgcreatemyvg /dev/sdb1 /dev/sdb2  //将已经用pv创建好了的磁盘sdb1和sdb2创建成vg名称为myvg
-                                               参数：
-                                                        【-s #】指定盘区大小（PESize）默认盘区大小为4MB
-                                                                 例如：
+<p>vg:注意：vg是由pv构成构成后对系统看来相当于一个磁盘<br />
+         【vgcreate】创建vg将pv创建为vg<br />
+                                                        例如：<br />
+                                                        vgcreatemyvg /dev/sdb1 /dev/sdb2  //将已经用pv创建好了的磁盘sdb1和sdb2创建成vg名称为myvg<br />
+                                               参数：<br />
+                                                        【-s #】指定盘区大小（PESize）默认盘区大小为4MB<br />
+                                                                 例如：<br />
                                                                            gcreate-s 8M myvg /dev/sdb{5,6} //创建名称为myvg 使用pv已经创建好了的设备sdb5,sdb6构成，盘区PE大小为8M</p>
 
-<pre><code>     【vgremove】移除vg                            
-               例如：     #vgremovemyvg  //将myvg删除
-     【vgmove】移动，把物理盘区移动到其他设备上         #pvmove/dev/sdb5  //将物理盘区sdb5上的数据移走（方便之后卸载该物理盘区）
-     【vgdisplay】查看vg设备的详细信息
-     【vgs】查看vg设备的基本信息
-     【vgscan】扫描系统上有多少个vg设备
-     【vgchange】
-          vgchange -ay VolGroup #激活
-          vgchange -an VolGroup #失效
-     【vgreduce】缩减vg   
-       #vgreduce myvg /dev/sdb5 //将myvg设备上的sda5移除（即myvg的空间会缩小）
-       #pvremove /dev/sdb5(接着可以将pv磁盘设备sdb5移除)
-     【vgxtend】扩展vg     
-         #vgextendmyvg /dev/sdb7 //将myvg设备扩展个pv的磁盘sdb7
-         #pvcreate/dev/sdb7(在上面之前要先创建)
+<pre><code>     【vgremove】移除vg  
+               例如：     #vgremovemyvg  //将myvg删除  
+     【vgmove】移动，把物理盘区移动到其他设备上         #pvmove/dev/sdb5  //将物理盘区sdb5上的数据移走（方便之后卸载该物理盘区）  
+     【vgdisplay】查看vg设备的详细信息  
+     【vgs】查看vg设备的基本信息  
+     【vgscan】扫描系统上有多少个vg设备  
+     【vgchange】  
+          vgchange -ay VolGroup #激活  
+          vgchange -an VolGroup #失效  
+     【vgreduce】缩减vg  
+       #vgreduce myvg /dev/sdb5 //将myvg设备上的sda5移除（即myvg的空间会缩小）  
+       #pvremove /dev/sdb5(接着可以将pv磁盘设备sdb5移除)  
+     【vgxtend】扩展vg  
+         #vgextendmyvg /dev/sdb7 //将myvg设备扩展个pv的磁盘sdb7  
+         #pvcreate/dev/sdb7(在上面之前要先创建)  
 </code></pre>
 
-<p>lv ：注意：lv是属于vg的，需要在vg中创建
+<p>lv ：注意：lv是属于vg的，需要在vg中创建<br />
 【lvcreate】创建lv需要在vg上创建</p>
 
-<p>参数：
-         【-n】:指定名称
-         【-L】:指定空间大小
-              例如：lvcreate -L 50M -n testlv myvg      //在myvg中创建一个lv，名称为testlv，大小为50M
-                   mke2fs -j /dev/myvg/testlv          //即格式化testlv.格式化的文件系统为ext3
-                   mount /dev/myvg/testlv /mnt         //将testlv挂载到mnt目录下面
-         【-p】:指定权限
+<p>参数：<br />
+         【-n】:指定名称<br />
+         【-L】:指定空间大小<br />
+              例如：lvcreate -L 50M -n testlv myvg      //在myvg中创建一个lv，名称为testlv，大小为50M<br />
+                   mke2fs -j /dev/myvg/testlv          //即格式化testlv.格式化的文件系统为ext3<br />
+                   mount /dev/myvg/testlv /mnt         //将testlv挂载到mnt目录下面<br />
+         【-p】:指定权限<br />
          【-s】:指定为快照卷</p>
 
-<p>【创建快照卷】
-1、生命周期为整个数据时长:在这段时长内，数据的增长量不能超出快照卷大小：
-2、快照卷应该是只读的：
-3、快照卷和原卷在同一卷组内
-语法【lvcreate-L # -n SLV_NAME -p r /PATH/TO/LV】
-          #lvcreate -L 50M -n lv1-snap -s -p r/dev/myvg/lv1  //为lv1设备创建一个大小为50M,名称为：lv1-snap，权限为只读的快照卷
-          #mount /dev/myvg/lv1-snap /ftpftp/gandian     //将快照卷挂载在gandian文件夹下
-          #tar -jcf /beifeng.tar.bz2 /ftpftp/gandian     //将快照卷内容全部备份为beifeng.tar.bz2文件
-          #umount /dev/myvg/lv1-snap                         //卸载快照卷
+<p>【创建快照卷】<br />
+1、生命周期为整个数据时长:在这段时长内，数据的增长量不能超出快照卷大小：<br />
+2、快照卷应该是只读的：<br />
+3、快照卷和原卷在同一卷组内<br />
+语法【lvcreate-L # -n SLV_NAME -p r /PATH/TO/LV】<br />
+          #lvcreate -L 50M -n lv1-snap -s -p r/dev/myvg/lv1  //为lv1设备创建一个大小为50M,名称为：lv1-snap，权限为只读的快照卷<br />
+          #mount /dev/myvg/lv1-snap /ftpftp/gandian     //将快照卷挂载在gandian文件夹下<br />
+          #tar -jcf /beifeng.tar.bz2 /ftpftp/gandian     //将快照卷内容全部备份为beifeng.tar.bz2文件<br />
+          #umount /dev/myvg/lv1-snap                         //卸载快照卷<br />
           #lvremove /dev/myvg/lv1-snap                              //移除快照卷（即将快照卷删除）</p>
 
-<p>相关命令
-lv ：注意：lv是属于vg的，需要在vg中创建
+<p>相关命令<br />
+lv ：注意：lv是属于vg的，需要在vg中创建<br />
          【lvremove】移除<br />
-         #lvremove /dev/myvg/testlv  //将testlv移除
-         #lvremove /dev/mapper/myvg-testlv      //也可以移除testlv(注意：/dev/myvg/testlv只是个连接文件，真正的文件在/dev/mapper/myvg-testlv)
-         【lvs】
-         【lvdisplay】
-         【lvcan】
-         【lvextend】扩展
-          #lvextend -L 7G /dev/myvg/testlv     //将testlv物理边界扩展到7G
+         #lvremove /dev/myvg/testlv  //将testlv移除<br />
+         #lvremove /dev/mapper/myvg-testlv      //也可以移除testlv(注意：/dev/myvg/testlv只是个连接文件，真正的文件在/dev/mapper/myvg-testlv)<br />
+         【lvs】<br />
+         【lvdisplay】<br />
+         【lvcan】<br />
+         【lvextend】扩展<br />
+          #lvextend -L 7G /dev/myvg/testlv     //将testlv物理边界扩展到7G<br />
           #resize2fs  -p /dev/myvg/testlv      //将testlv的文件系统边界扩展为最大（即物理边界有多少就用多少）</p>
 
-<pre><code>     【lvreduce】缩小
-               注意：    1、不能在线缩减，得先卸载;
-                        2、确保缩减后的空间大小依然能存储原有的所有数据：
-                        3、在缩减之前应该先强行检查文件，以确保文件系统处于以至性状态
-               例如：
-                        #df -lh               //查看文件系统大小，以及已经使用大小
-                        #umount/dev/myvg/testlv          //卸载testlv设备
-                        #e2fsck -k/dev/myvg/testlv               //强行检查testlv设备的文件系统
-                        #resize2fs/dev/myvg/testlv 1G            //缩减文件系统大小到1G
-                        #lvreduce -L 1G/dev/myvg/testlv          //缩减testlv物理边界到1G
-                        #mount/dev/myvg/testlv /users                   //挂载
-     【lvresize】既可以扩展又可以缩小
+<pre><code>     【lvreduce】缩小  
+               注意：    1、不能在线缩减，得先卸载;  
+                        2、确保缩减后的空间大小依然能存储原有的所有数据：  
+                        3、在缩减之前应该先强行检查文件，以确保文件系统处于以至性状态  
+               例如：  
+                        #df -lh               //查看文件系统大小，以及已经使用大小  
+                        #umount/dev/myvg/testlv          //卸载testlv设备  
+                        #e2fsck -k/dev/myvg/testlv               //强行检查testlv设备的文件系统  
+                        #resize2fs/dev/myvg/testlv 1G            //缩减文件系统大小到1G  
+                        #lvreduce -L 1G/dev/myvg/testlv          //缩减testlv物理边界到1G  
+                        #mount/dev/myvg/testlv /users                   //挂载  
+     【lvresize】既可以扩展又可以缩小  
 </code></pre>
 
-<p>######
-#sda为HDD   sdb为SSD</p>
+<p>#sda为HDD   sdb为SSD</p>
 
-<p>1、创建物理卷
-pvcreate /dev/sda
+<p>1、创建物理卷<br />
+pvcreate /dev/sda<br />
 pvcreate /dev/sdb</p>
 
-<p>2、创建卷组vg
-vgcreate vg /dev/sda
+<p>2、创建卷组vg<br />
+vgcreate vg /dev/sda<br />
 vgextend vg /dev/sdb</p>
 
-<p>3、创建逻辑卷(data为存储卷，cache为缓存卷,meta为缓冲卷索引,其中cache:meta不能大于1000：1,meta最小为8M)
-lvcreate -L 500G -n data /dev/sda
-lvcreate -L 220G -n cache /dev/sdb
+<p>3、创建逻辑卷(data为存储卷，cache为缓存卷,meta为缓冲卷索引,其中cache:meta不能大于1000：1,meta最小为8M)<br />
+lvcreate -L 500G -n data /dev/sda<br />
+lvcreate -L 220G -n cache /dev/sdb<br />
 lvcreate -L 220M -n meta  /dev/sdb</p>
 
-<p>4、创建缓存池(注意cache和meta的顺序不能颠倒)
+<p>4、创建缓存池(注意cache和meta的顺序不能颠倒)<br />
 lvconvert &ndash;type cache-pool &ndash;poolmetadata vg/meta vg/cache</p>
 
-<p>5、将存储卷加入到缓存池中（cachemode有writeback和writethrough两种模式，默认为writethrough）
-lvconvert &ndash;type cache &ndash;cachepool vg/cache &ndash;cachemode writeback vg/data
-注：writeback会在写入cache完成后，再写入date中
-    writethrough会在写入cache的同时，写入date（写入date慢于cache）
-    两种模式比较下writeback在使用过程中写入加速，但如果数据在缓存层中服务器掉电数据会丢失（现在已解决丢失问题，未研究）
+<p>5、将存储卷加入到缓存池中（cachemode有writeback和writethrough两种模式，默认为writethrough）<br />
+lvconvert &ndash;type cache &ndash;cachepool vg/cache &ndash;cachemode writeback vg/data<br />
+注：writeback会在写入cache完成后，再写入date中<br />
+    writethrough会在写入cache的同时，写入date（写入date慢于cache）<br />
+    两种模式比较下writeback在使用过程中写入加速，但如果数据在缓存层中服务器掉电数据会丢失（现在已解决丢失问题，未研究）<br />
     writethrough写入较慢，但数据不易丢失</p>
 
 <p>I&rsquo;ve seen the same error today on a laptop running Ubuntu 15.10 which I always kept up-to-date but had not rebooted for a month until I wanted to test a current kernel (i.e., there might have been a recent change).</p>
@@ -620,8 +628,8 @@ lvconvert &ndash;type cache &ndash;cachepool vg/cache &ndash;cachemode writeback
 
 <p>I&rsquo;m using btrfs (as you might have guessed from the mentioned subvolume name), so lvmetad can easily be disabled as follows without loss of functionality:</p>
 
-<p>edit /etc/lvm/lvm.conf and change use_lvmetad=1 to use_lvmetad=0
- execute update-initramfs -k <em>KERNEL_VERSION</em> -u ; sync
+<p>edit /etc/lvm/lvm.conf and change use_lvmetad=1 to use_lvmetad=0<br />
+ execute update-initramfs -k <em>KERNEL_VERSION</em> -u ; sync<br />
  Now, you could reboot and the error message should be gone. However, in my case, the next error message[1] pointed me to the underlying problem mentioned above, so while we&rsquo;re at it, &hellip;</p>
 
 <p>Step 3: Make sure that /etc/crypttab points to the correct, undamaged partitions</p>
@@ -632,10 +640,10 @@ lvconvert &ndash;type cache &ndash;cachepool vg/cache &ndash;cachemode writeback
 
 <p>If the dedicated encrypted swap partition is nowhere to be found below /dev/disk/by-uuid, that&rsquo;s because it&rsquo;s currently in use by your rescue system. In that case, do the following:</p>
 
-<p>make sure to stop using the partition: swapoff -a
- reformat it: mkfs.ext2 /dev/sdX2 (this is crucial, especially when using GPT partitions[2], as it undoes the glitch I mentioned earlier. The likely cause of the partition showing up as type &ldquo;swap&rdquo; in the sfdisk listing is that you/I mistakenly used mkswap /dev/sdX2 when setting up the partition in the beginning.)
- follow the tutorial to encrypt the partition and set a passphrase; afterwards, open it using cryptsetup and properly reformat the now-decrypted partition (using something like mkswap /dev/mapper/swap)
- ensure that sfdisk &ndash;list /dev/sdX will not identify the swap partition as such (in that case, repeat the last steps)
+<p>make sure to stop using the partition: swapoff -a<br />
+ reformat it: mkfs.ext2 /dev/sdX2 (this is crucial, especially when using GPT partitions[2], as it undoes the glitch I mentioned earlier. The likely cause of the partition showing up as type &ldquo;swap&rdquo; in the sfdisk listing is that you/I mistakenly used mkswap /dev/sdX2 when setting up the partition in the beginning.)<br />
+ follow the tutorial to encrypt the partition and set a passphrase; afterwards, open it using cryptsetup and properly reformat the now-decrypted partition (using something like mkswap /dev/mapper/swap)<br />
+ ensure that sfdisk &ndash;list /dev/sdX will not identify the swap partition as such (in that case, repeat the last steps)<br />
  Now, recheck that the UUIDs listed in /etc/crypttab are in line which what you see below /dev/disk/by-uuid for your respective encrypted partitions.</p>
 
 <p>Again, to make the changes permanent, you must execute update-initramfs as shown above.</p>
@@ -811,7 +819,7 @@ lvconvert &ndash;type cache &ndash;cachepool vg/cache &ndash;cachemode writeback
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -1034,6 +1042,8 @@ lvconvert &ndash;type cache &ndash;cachepool vg/cache &ndash;cachemode writeback
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -1056,7 +1066,9 @@ lvconvert &ndash;type cache &ndash;cachepool vg/cache &ndash;cachemode writeback
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1088,7 +1100,7 @@ lvconvert &ndash;type cache &ndash;cachepool vg/cache &ndash;cachemode writeback
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

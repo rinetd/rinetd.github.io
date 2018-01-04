@@ -226,7 +226,7 @@
                   <h1 class="post-title">Prometheus 详解</h1>
 
                   <p class="post-byline">
-                    by  · 2018年01月03日 17:17:45 · 839 Words ·
+                    by  · 2018年01月03日 17:17:45 · 856 Words ·
                     ~2min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Post/prometheus/prometheus.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
@@ -242,26 +242,30 @@
 <p>prometheus缺点</p>
 
 <ol>
-<li>单机缺点，单机下存储量有限，根据你的监控量局限你的存储时间。</li>
-<li>内存占用率大，prometheus集成了leveldb，一个能高效插入数据的数据库，在ssd盘下io占用比较高。同时可能会有大量数据堆积内</li>
+<li>单机缺点，单机下存储量有限，根据你的监控量局限你的存储时间。<br /></li>
+<li>内存占用率大，prometheus集成了leveldb，一个能高效插入数据的数据库，在ssd盘下io占用比较高。同时可能会有大量数据堆积内<br />
+<br /></li>
 </ol>
 
 <h2 id="docker运行prometheus">docker运行prometheus</h2>
 
 <ol>
-<li>docker run -p 9090:9090 -v /docker/prometheus-data:/prometheus-data prom/prometheus</li>
+<li>docker run -p 9090:9090 -v /docker/prometheus-data:/prometheus-data prom/prometheus<br />
+<br /></li>
 </ol>
 
-<p>docker run -p 9090:9090 -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml <br />
-       -v /docker/prometheus-data:/prometheus-data <br />
+<p>docker run -p 9090:9090 -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml \<br />
+       -v /docker/prometheus-data:/prometheus-data \<br />
        prom/prometheus</p>
 
 <ol>
-<li>访问<a href="http://192.168.99.100:9090/graph">http://192.168.99.100:9090/graph</a>
-计算实例，指标可以从<a href="http://192.168.99.100:9090/me...中找">http://192.168.99.100:9090/me...中找</a>
-prometheus_target_interval_length_seconds{quantile=&ldquo;0.99&rdquo;}
-或者
-count(prometheus_target_interval_length_seconds)</li>
+<li>访问<a href="http://192.168.99.100:9090/graph">http://192.168.99.100:9090/graph</a><br />
+计算实例，指标可以从<a href="http://192.168.99.100:9090/me...中找">http://192.168.99.100:9090/me...中找</a><br />
+prometheus_target_interval_length_seconds{quantile=&ldquo;0.99&rdquo;}<br />
+或者<br />
+count(prometheus_target_interval_length_seconds)<br />
+<br />
+<br /></li>
 </ol>
 
 <p>怎么使用prometheus监控容器</p>
@@ -270,50 +274,50 @@ count(prometheus_target_interval_length_seconds)</li>
 
 <p>这里假设你有10台机器部署了容器需要监控，你在10台机器上分别部署cAdvisor容器</p>
 
-<p>sudo docker run <br />
-    &ndash;volume=/:/rootfs:ro <br />
-    &ndash;volume=/var/run:/var/run:rw <br />
-    &ndash;volume=/sys:/sys:ro <br />
-    &ndash;volume=/var/lib/docker/:/var/lib/docker:ro <br />
-    &ndash;publish=8080:8080 <br />
-    &ndash;detach=true <br />
-    &ndash;name=cadvisor <br />
+<p>sudo docker run \<br />
+    &ndash;volume=/:/rootfs:ro \<br />
+    &ndash;volume=/var/run:/var/run:rw \<br />
+    &ndash;volume=/sys:/sys:ro \<br />
+    &ndash;volume=/var/lib/docker/:/var/lib/docker:ro \<br />
+    &ndash;publish=8080:8080 \<br />
+    &ndash;detach=true \<br />
+    &ndash;name=cadvisor \<br />
     google/cadvisor:latest</p>
 
 <p>找一台机器部署prometheus服务，这里依然使用容器部署：</p>
 
-<p>docker run <br />
-  -p 9090:9090 <br />
-  &ndash;log-driver none <br />
-  -v /hdd1/prometheus/etc/:/etc/prometheus/ <br />
-  -v /hdd1/prometheus/data/:/prometheus/ <br />
-  -v /etc/localtime:/etc/localtime <br />
-  &ndash;name prometheus <br />
+<p>docker run \<br />
+  -p 9090:9090 \<br />
+  &ndash;log-driver none \<br />
+  -v /hdd1/prometheus/etc/:/etc/prometheus/ \<br />
+  -v /hdd1/prometheus/data/:/prometheus/ \<br />
+  -v /etc/localtime:/etc/localtime \<br />
+  &ndash;name prometheus \<br />
   prom/prometheus</p>
 
 <p>创建/hdd1/prometheus/etc/prometheus.yml配置文件</p>
 
 <p>my global config</p>
 
-<pre><code class="language-yaml">  global:
-    scrape_interval:     15s # By default, scrape targets every 15 seconds.
-    evaluation_interval: 15s # By default, scrape targets every 15 seconds.
-    # scrape_timeout is set to the global default (10s).
-    # Attach these labels to any time series or alerts when communicating with
-    # external systems (federation, remote storage, Alertmanager).
-    external_labels:
-        monitor: 'container-monitor'
-  # Load and evaluate rules in this file every 'evaluation_interval' seconds.
-  rule_files:
-     - &quot;/etc/prometheus/rules/common.rules&quot;
-  # A scrape configuration containing exactly one endpoint to scrape:
-  # Here it's Prometheus itself.
-  scrape_configs:
-    # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.
-    - job_name: 'container'
-      static_configs:
-      - targets: ['10.12.1.129:9090','10.12.1.130:9090','10.50.1.92:9090','10.50.1.93:9090','10.50.1.119:9090']
-
+<pre><code class="language-yaml">  global:  
+    scrape_interval:     15s # By default, scrape targets every 15 seconds.  
+    evaluation_interval: 15s # By default, scrape targets every 15 seconds.  
+    # scrape_timeout is set to the global default (10s).  
+    # Attach these labels to any time series or alerts when communicating with  
+    # external systems (federation, remote storage, Alertmanager).  
+    external_labels:  
+        monitor: 'container-monitor'  
+  # Load and evaluate rules in this file every 'evaluation_interval' seconds.  
+  rule_files:  
+     - &quot;/etc/prometheus/rules/common.rules&quot;  
+  # A scrape configuration containing exactly one endpoint to scrape:  
+  # Here it's Prometheus itself.  
+  scrape_configs:  
+    # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.  
+    - job_name: 'container'  
+      static_configs:  
+      - targets: ['10.12.1.129:9090','10.12.1.130:9090','10.50.1.92:9090','10.50.1.93:9090','10.50.1.119:9090']  
+  
 </code></pre>
 
 <p>配置文件中 -targets中的端点填写你的实际cadvisor所在的ip和暴露的端口.正确启动后访问ip:9090就能查询数据了哦</p>
@@ -483,7 +487,7 @@ count(prometheus_target_interval_length_seconds)</li>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -706,6 +710,8 @@ count(prometheus_target_interval_length_seconds)</li>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -728,7 +734,9 @@ count(prometheus_target_interval_length_seconds)</li>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -760,7 +768,7 @@ count(prometheus_target_interval_length_seconds)</li>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

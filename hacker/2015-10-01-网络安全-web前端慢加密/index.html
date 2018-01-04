@@ -249,7 +249,7 @@
 
 <p>天下武功，唯快不破。但密码加密不同。算法越快，越容易破。</p>
 
-<!-- more -->
+<!-- more -->  
 
 <h2 id="0x01-暴力破解">0x01 暴力破解</h2>
 
@@ -277,9 +277,9 @@
 
 <p>例如，原本 1 微秒的加密，重复一万次，就慢一万倍了：</p>
 
-<p>for i = 0 ~ 10000
-    x = md5(x)
-end
+<p>for i = 0 ~ 10000<br />
+    x = md5(x)<br />
+end<br />
 加密时多花一点时间，就可以换取攻击者大量的破解时间。</p>
 
 <p>事实上，这样的「慢加密」算法早已存在，例如 bcrypt、scrypt 等等。它们都有一个难度系数因子，可以控制加密时间，想多慢就多慢。</p>
@@ -338,10 +338,10 @@ end
 
 <p>所以「慢加密结果」是无法通过数据库里泄露的密文「逆推」出来的。</p>
 
-<p>或许你在想，即使不知道明文密码，也可以直接用「慢加密结果」来登录。事实上后端储存时再次加密，就无法逆推出这个散列值了。
+<p>或许你在想，即使不知道明文密码，也可以直接用「慢加密结果」来登录。事实上后端储存时再次加密，就无法逆推出这个散列值了。<br />
 当然，不能逆推，但可以顺推。把字典里的词组，用前后端的算法各调用一次：</p>
 
-<p>back_fast_hash( front_slow_hash(password) )
+<p>back_fast_hash( front_slow_hash(password) )<br />
 然后对比密文，即可判断有没有猜中。这样就可以用跑字典来破解。</p>
 
 <p>但是有 front_slow_hash 这个障碍，破解速度就大幅降低了。</p>
@@ -354,7 +354,7 @@ end
 
 <p>对抗这种方法，还得用经典的手段：加盐。最简单的，将用户名作为盐值：</p>
 
-<p>front_slow_hash(password + username)
+<p>front_slow_hash(password + username)<br />
 这样，即使相同的密码，对于不同的用户，「慢加密结果」也不一样了。</p>
 
 <p>也许你会说，这个盐值不合理，因为用户名是公开的。攻击者可以对某个重要人物的账号，单独为他建立一个字典。</p>
@@ -369,23 +369,23 @@ end
 
 <p>盐值可以由前端生成。例如注册时：</p>
 
-<pre><code># 前端生成盐值
+<pre><code># 前端生成盐值  
 </code></pre>
 
-<p>salt = rand()
+<p>salt = rand()<br />
 password = front_slow_hash(password + salt)</p>
 
-<pre><code> # 提交时带上盐值
+<pre><code> # 提交时带上盐值  
 </code></pre>
 
-<p>submit(&hellip;, password, salt)
+<p>submit(&hellip;, password, salt)<br />
 后端将用户的盐值也储存起来。</p>
 
 <p>登录时，输完用户名，就可以开始查询用户对应的盐值：</p>
 
 <p><img src="http://static.wooyun.org//drops/20151126/2015112613292745835p32.png" alt="p3" /></p>
 
-<p>当然要注意的是，这个接口可以测试用户是否存在，所以得有一定的控制。
+<p>当然要注意的是，这个接口可以测试用户是否存在，所以得有一定的控制。<br />
 盐值的更换，也非常简单，甚至可以自动完成：</p>
 
 <p><img src="http://static.wooyun.org//drops/20151126/2015112613292860420p41.png" alt="p4" /></p>
@@ -408,43 +408,43 @@ password = front_slow_hash(password + salt)</p>
 
 <p>如果古董机用户登录会卡上几十秒，那肯定是不行的。对于这种情况，只有以下选择：</p>
 
-<p>强度固定
-强度可变
+<p>强度固定<br />
+强度可变<br />
 1.强度固定</p>
 
 <p>根据大众的配置，制定一个适中的强度，绝大多数用户都可接受。</p>
 
 <p>但如果超过规定时间还没完成，就把算到一半的 Hash 和步数提交上来，剩余部分让服务器来完成。</p>
 
-<p>[前端] 完成 70% &mdash;-&gt; [后端] 计算 30%
+<p>[前端] 完成 70% &mdash;-&gt; [后端] 计算 30%<br />
 不过，这需要「可序列化」的算法，才能在服务端还原进度。如果计算中会有大量的临时内存，这种方案就不可行了。</p>
 
 <p>相比过去 100% 后端慢加密，这种少量用户「前后参半」的方式，可以节省不少服务器资源。</p>
 
-<p>对于请求协助的用户，也必须有一定的限制，防止恶意透支服务器资源。
+<p>对于请求协助的用户，也必须有一定的限制，防止恶意透支服务器资源。<br />
 2.强度可变</p>
 
 <p>如果后端不提供任何协助，那只能根据自身条件做取舍了。配置差的用户，就少加密一点。</p>
 
 <p>用户注册时，加密算法不限步数放开跑，看看特定时间里能算到多少步：</p>
 
-<pre><code># [注册阶段] 算力评估（线程 1 秒后终止）
+<pre><code># [注册阶段] 算力评估（线程 1 秒后终止）  
 </code></pre>
 
-<p>while
-    x = hash(x)
-    step = step + 1
-end
+<p>while<br />
+    x = hash(x)<br />
+    step = step + 1<br />
+end<br />
 这个步数，就是加密强度，会保存到他的账号信息里。</p>
 
 <p>和盐值一样，强度也是公开的。因为在登录时，前端加密需要知道这个强度值。</p>
 
-<pre><code># [登录阶段] 先获得 step
+<pre><code># [登录阶段] 先获得 step  
 </code></pre>
 
-<p>for i = 0 ~ step
-    x = hash(x)
-end
+<p>for i = 0 ~ step<br />
+    x = hash(x)<br />
+end<br />
 这个方案，可以让高配置的用户享受更高的安全性；低配置的用户，也不会影响基本使用。（用上好电脑还能提升安全性，很有优越感吧~）</p>
 
 <p>但这有个重要的前提：注册和登录，必须在性能相近的设备上。</p>
@@ -503,9 +503,9 @@ end
 
 <p>脚本为什么慢？主要还是这几点：</p>
 
-<p>弱类型
-解释型
-沙箱
+<p>弱类型<br />
+解释型<br />
+沙箱<br />
 3.弱类型</p>
 
 <p>脚本，是用来处理简单逻辑的，并不是用来密集计算的，所以没必要强类型。</p>
@@ -532,12 +532,12 @@ end
 
 <p>曾经有个叫 Alchemy 的工具，能把 C/C++ 交叉编译成 Flash 虚拟机指令，速度比 ActionScript 快不少。</p>
 
-<p>Alchemy 现在改名 FlasCC，还有开源版的 crossbridge
+<p>Alchemy 现在改名 FlasCC，还有开源版的 crossbridge<br />
 5.沙箱</p>
 
 <p>一些本地语言看似很简单的操作，在沙箱里就未必如此。例如数组操作：</p>
 
-<p>vector[k] = v
+<p>vector[k] = v<br />
 虚拟机首先得检查索引是否越界，否则会有严重的问题。</p>
 
 <p>如果「前端慢加密」算法涉及到大量内存随机访问，那就会有很多无意义的内耗，因此得慎重考虑。</p>
@@ -546,9 +546,9 @@ end
 
 <p>这其实不难解释：</p>
 
-<p>首先，MD5 算法很简单。没有查表这样的内存操作，使用的都是局部变量。局部变量的位置都是固定的，避免了越界检查开销。
-其次，emscripten 的优化能力，并不比本地编译器差。
-最后，本地程序编译之后，机器指令就不会再变了；而如今脚本引擎，都有 JIT 这个利器。它会根据运行时的情况，实时生成更优化的机器指令。
+<p>首先，MD5 算法很简单。没有查表这样的内存操作，使用的都是局部变量。局部变量的位置都是固定的，避免了越界检查开销。<br />
+其次，emscripten 的优化能力，并不比本地编译器差。<br />
+最后，本地程序编译之后，机器指令就不会再变了；而如今脚本引擎，都有 JIT 这个利器。它会根据运行时的情况，实时生成更优化的机器指令。<br />
 所以选择加密算法时，还得兼顾实际运行环境，扬长避短，发挥出最大功效。</p>
 
 <h2 id="0x09-对抗-gpu">0x09 对抗 GPU</h2>
@@ -633,30 +633,30 @@ end
 
 <p>如果每一步计算都依赖之前的结果，是无法进行拆解的。例如：</p>
 
-<p>for i = 0 ~ 10000
-    x = hash(x)
-end
+<p>for i = 0 ~ 10000<br />
+    x = hash(x)<br />
+end<br />
 这是一个串行的计算。然而只有并行的问题，才能分解成多个小任务。</p>
 
 <p>不过，换一种方式的多线程也是可以的。例如我们使用 4 个线程：</p>
 
-<pre><code># 线程 1
+<pre><code># 线程 1  
 </code></pre>
 
-<p>x1 = password
-for i = 0 ~ 2500
-    x1 = hash(x1 + &ldquo;salt1&rdquo;)
+<p>x1 = password<br />
+for i = 0 ~ 2500<br />
+    x1 = hash(x1 + &ldquo;salt1&rdquo;)<br />
 end</p>
 
-<pre><code># 线程 2
+<pre><code># 线程 2  
 </code></pre>
 
-<p>x2 = password
-for i = 0 ~ 2500
-    x2 = hash(x2 + &ldquo;salt2&rdquo;)
+<p>x2 = password<br />
+for i = 0 ~ 2500<br />
+    x2 = hash(x2 + &ldquo;salt2&rdquo;)<br />
 end</p>
 
-<pre><code># ...
+<pre><code># ...  
 </code></pre>
 
 <p>最终将 4 个结果合并起来，再做一次加密，作为慢加密结果。</p>
@@ -848,7 +848,7 @@ end</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -1071,6 +1071,8 @@ end</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -1093,7 +1095,9 @@ end</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1125,7 +1129,7 @@ end</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

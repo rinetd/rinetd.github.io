@@ -241,25 +241,25 @@
 
 <h1 id="web技术第七弹-css盒子模型及布局应用">web技术第七弹 CSS盒子模型及布局应用</h1>
 
-<p>       近日工作繁忙，更新速度稍慢，敬请谅解。闲话不说，就上一弹的CSS选择器话题，先供上一张总结图片供参考。
-<img src="http://img.mukewang.com/56fa274300014c6b10280762.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />
-       下面主要谈谈在CSS中的基本盒子模型。盒子，是页面中元素呈现的基本样式模型。是每一个元素标签在页面上的呈现。对应HTML中的块级元素和行内元素，那么有两类盒子，一类是块级元素的块级盒子：默认占据一行，可以指定显式的宽度和高度，每个盒子单独占一行后自动换行；另一类是行内元素的行内盒子，它不可指定宽度，自动包裹住内容宽度，并且在一行内并排显示，只有排列不下的情况下才会被“挤”到下一行，并不自动换行。大部分的标签元素的显示，都是块级盒子，少量如span、img是行内盒子。
-<img src="http://img.mukewang.com/56fa27600001bcc207360213.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />
-       那么，每个盒子具体是什么样子的，又有哪些基本CSS属性呢？下面是一个基本盒子的图样，以及对应的属性总结：
-<img src="http://img.mukewang.com/56fa27850001f33a10240765.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />
-<img src="http://img.mukewang.com/56fa27900001d9a210160643.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />
-       当涉及到外边距、边框、outline、内边距的属性书写的时候，会有简写的情况，这时候记住：
-<strong><em>1、数值一次性书写，其顺序是从top开始，顺时针表示 top、right、bottom、left。
-2、因为这些都是矩形，所以，如果对应的数值如果缺失，缺失的那一边就采用对面边的数值。如果只有一个数值，那就表示四个边都是同一个数值。</em></strong>
-        了解了页面元素的呈现都是一些盒子的排列，和具体盒子的属性设置，我们可以简单的看看一个页面是怎么布局的了。我们来看个实际的页面：
-<img src="http://img.mukewang.com/56fa27bd000102b416170784.jpg" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />
-       我们把这个页面来分析一下，可以看出这个页面是下面这几个大的盒子形成的。 简单而言，这有一个顶部固定的标题栏，然后下面是自动居中的WarpBOX包裹层，在这个里面有三个固定宽度的栏目。具体再到里面的盒子，还有各种不同的小盒子在里面。如何应用基本盒子的属性，完成这样的页面样式，这就是基本的页面布局。我们可以来分析下最基础的几种布局模型：​
-<strong>一、单列布局​</strong>
-<img src="http://img.mukewang.com/56fa27dd0001c31c07640518.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />        首先，我们对body元素予以内外边距都设定成0px，这样可以使页面紧贴浏览器窗口。然后我们设置一个mainWarp的大盒子作为内容包裹层，我们要使这个盒子实现左右居中的效果，可以对其的margin属性定义为0,auto； 。 这样，这个盒子就会上下贴住body，左右外边距由浏览器自动计算，实现居中的效果。
-<strong>二、双列布局</strong>
-<img src="http://img.mukewang.com/56fa27f90001768007620537.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />       两个盒子，divLeft和divRight，都是块级盒子，默认情况下是按照标准文档流会上下排列的。我们需要对这两个盒子设定显式的宽度，然后让他们并排排列在一行，怎么实现呢？可以用元素的float和clear属性。首先，对需要并排排列的块级盒子应用float：left; 。设置后，盒子会从原先的文档流里脱离出来，沿着左边贴住父元素的可用最左边，同时他的后续元素不再换行，而是沿着同一行在可用处继续显示。为了使divDown这个盒子不被前一个浮动元素影响并排，对它实行clear:both; 属性清除浮动。由于之前的元素浮动脱离文档流，会导致背后的warp包裹层高度塌陷，因此再对它实行 Overflow：hidden; 的属性，解决这个问题。这样，就可以实现布局了。
-<strong>三、三列布局，左右宽度固定，中间宽度自适应布局</strong>
-<img src="http://img.mukewang.com/56fa2812000133bd07720549.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />       由于中间的盒子宽度不确定，因此无法用float的方式把他们并排显示。这种情况下，换个思路，可以用postion位移的方式来实现。首先，我们设定一个divWarp，并让这个作为绝对位移的基准位置，设定其Position：relative；，含义是这个盒子相对于自己的文档流位置不做偏移​。第二，对左边盒子divLeft做绝对位移，相对于divWarp，设定其Position：absolut;left 0;top 0; 使他左上角和基准盒子的左上角贴住。同样的道理，设定右边的盒子divRight的属性为 Position：absolute;right 0;top 0； 使他的右上角贴住基准点。这样，为中间的盒子留出左右空间分别为这两个盒子的固定宽度a和b。 最后，对中间的盒子外边距属性设定margin：0，b，0，a； 这样，就让中间的盒子自适应宽度而又单独成一列，完成我们需要的样式了。 注意，对于显式设定width的盒子，CSS的默认是内容的宽度，而页面上实际的宽度还需要加上边框和内外边距。为了在设定这些属性时，盒子的实际宽度不要发生变化导致布局混乱，我们最好对盒子实行box-sizing：border-box；，把width值统一到内容+边框+内边距上，避免因为这些样式的设定造成宽度不固定。
+<p>       近日工作繁忙，更新速度稍慢，敬请谅解。闲话不说，就上一弹的CSS选择器话题，先供上一张总结图片供参考。<br />
+<img src="http://img.mukewang.com/56fa274300014c6b10280762.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" /><br />
+       下面主要谈谈在CSS中的基本盒子模型。盒子，是页面中元素呈现的基本样式模型。是每一个元素标签在页面上的呈现。对应HTML中的块级元素和行内元素，那么有两类盒子，一类是块级元素的块级盒子：默认占据一行，可以指定显式的宽度和高度，每个盒子单独占一行后自动换行；另一类是行内元素的行内盒子，它不可指定宽度，自动包裹住内容宽度，并且在一行内并排显示，只有排列不下的情况下才会被“挤”到下一行，并不自动换行。大部分的标签元素的显示，都是块级盒子，少量如span、img是行内盒子。<br />
+<img src="http://img.mukewang.com/56fa27600001bcc207360213.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" /><br />
+       那么，每个盒子具体是什么样子的，又有哪些基本CSS属性呢？下面是一个基本盒子的图样，以及对应的属性总结：<br />
+<img src="http://img.mukewang.com/56fa27850001f33a10240765.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" /><br />
+<img src="http://img.mukewang.com/56fa27900001d9a210160643.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" /><br />
+       当涉及到外边距、边框、outline、内边距的属性书写的时候，会有简写的情况，这时候记住：<br />
+<strong><em>1、数值一次性书写，其顺序是从top开始，顺时针表示 top、right、bottom、left。<br />
+2、因为这些都是矩形，所以，如果对应的数值如果缺失，缺失的那一边就采用对面边的数值。如果只有一个数值，那就表示四个边都是同一个数值。</em></strong><br />
+        了解了页面元素的呈现都是一些盒子的排列，和具体盒子的属性设置，我们可以简单的看看一个页面是怎么布局的了。我们来看个实际的页面：<br />
+<img src="http://img.mukewang.com/56fa27bd000102b416170784.jpg" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" /><br />
+       我们把这个页面来分析一下，可以看出这个页面是下面这几个大的盒子形成的。 简单而言，这有一个顶部固定的标题栏，然后下面是自动居中的WarpBOX包裹层，在这个里面有三个固定宽度的栏目。具体再到里面的盒子，还有各种不同的小盒子在里面。如何应用基本盒子的属性，完成这样的页面样式，这就是基本的页面布局。我们可以来分析下最基础的几种布局模型：​<br />
+<strong>一、单列布局​</strong><br />
+<img src="http://img.mukewang.com/56fa27dd0001c31c07640518.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />        首先，我们对body元素予以内外边距都设定成0px，这样可以使页面紧贴浏览器窗口。然后我们设置一个mainWarp的大盒子作为内容包裹层，我们要使这个盒子实现左右居中的效果，可以对其的margin属性定义为0,auto； 。 这样，这个盒子就会上下贴住body，左右外边距由浏览器自动计算，实现居中的效果。<br />
+<strong>二、双列布局</strong><br />
+<img src="http://img.mukewang.com/56fa27f90001768007620537.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />       两个盒子，divLeft和divRight，都是块级盒子，默认情况下是按照标准文档流会上下排列的。我们需要对这两个盒子设定显式的宽度，然后让他们并排排列在一行，怎么实现呢？可以用元素的float和clear属性。首先，对需要并排排列的块级盒子应用float：left; 。设置后，盒子会从原先的文档流里脱离出来，沿着左边贴住父元素的可用最左边，同时他的后续元素不再换行，而是沿着同一行在可用处继续显示。为了使divDown这个盒子不被前一个浮动元素影响并排，对它实行clear:both; 属性清除浮动。由于之前的元素浮动脱离文档流，会导致背后的warp包裹层高度塌陷，因此再对它实行 Overflow：hidden; 的属性，解决这个问题。这样，就可以实现布局了。<br />
+<strong>三、三列布局，左右宽度固定，中间宽度自适应布局</strong><br />
+<img src="http://img.mukewang.com/56fa2812000133bd07720549.png" alt="图片描述" title="web技术第七弹CSS盒子模型及布局应用_" />       由于中间的盒子宽度不确定，因此无法用float的方式把他们并排显示。这种情况下，换个思路，可以用postion位移的方式来实现。首先，我们设定一个divWarp，并让这个作为绝对位移的基准位置，设定其Position：relative；，含义是这个盒子相对于自己的文档流位置不做偏移​。第二，对左边盒子divLeft做绝对位移，相对于divWarp，设定其Position：absolut;left 0;top 0; 使他左上角和基准盒子的左上角贴住。同样的道理，设定右边的盒子divRight的属性为 Position：absolute;right 0;top 0； 使他的右上角贴住基准点。这样，为中间的盒子留出左右空间分别为这两个盒子的固定宽度a和b。 最后，对中间的盒子外边距属性设定margin：0，b，0，a； 这样，就让中间的盒子自适应宽度而又单独成一列，完成我们需要的样式了。 注意，对于显式设定width的盒子，CSS的默认是内容的宽度，而页面上实际的宽度还需要加上边框和内外边距。为了在设定这些属性时，盒子的实际宽度不要发生变化导致布局混乱，我们最好对盒子实行box-sizing：border-box；，把width值统一到内容+边框+内边距上，避免因为这些样式的设定造成宽度不固定。<br />
        <strong>最后，我对CSS下盒子模型的学习和布局，做点总结如下：</strong></p>
 
 <ul>
@@ -447,7 +447,7 @@
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -670,6 +670,8 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -692,7 +694,9 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -724,7 +728,7 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

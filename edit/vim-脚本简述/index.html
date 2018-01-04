@@ -247,9 +247,9 @@
 
 <p>有两种调用VimScript函数的方式。</p>
 
-<p>（1）不关心返回值
+<p>（1）不关心返回值<br />
     call search(&ldquo;Date: &ldquo;, &ldquo;W&rdquo;)<br />
-使用关键字call 来显式调用函数。
+使用关键字call 来显式调用函数。<br />
 （2）关心返回值</p>
 
 <pre><code>    let line = getline(&quot;.&quot;)  
@@ -261,38 +261,38 @@
 
 <p>其实函数调用的call与变量赋值的let类似，看起来好像真的是多余的，C和PHP都没有这种用法，也能工作的很好啊，搞不懂VimScript的开发者是如何想的。</p>
 
-<p>2.1 基本变量命名空间
+<p>2.1 基本变量命名空间<br />
 在VimScript中默认的作用域是全局作用域，也就是说你在一个脚本文件中定义了一个变量，在其他脚本中也可以读取和修改这个变量。在任何编程语言中，全局变量的滥用都会造成混乱，所以VimScript提供了更多的非全局作用域。</p>
 
-<pre><code>s:name 脚本文件作用域，此时s:name这个变量只在当前脚本文件中有效，其他的脚本文件中如果也定义了同名的s:name也没关系，因为这两者彼此独立。这一点与C中的static关键字类似。
-b:name 缓冲区作用域，b:name只在指定的缓冲区中有效
-w:name 窗口作用域，w:name只在指定的窗口中有效
-g:name 全局作用域，函数外定义的变量的默认值
-v:name vim预定义的变量，注意预定义变量不同于vim的选项(option)变量。
-l:name 函数内部的局部变量，函数内部定义的变量的默认值
+<pre><code>s:name 脚本文件作用域，此时s:name这个变量只在当前脚本文件中有效，其他的脚本文件中如果也定义了同名的s:name也没关系，因为这两者彼此独立。这一点与C中的static关键字类似。  
+b:name 缓冲区作用域，b:name只在指定的缓冲区中有效  
+w:name 窗口作用域，w:name只在指定的窗口中有效  
+g:name 全局作用域，函数外定义的变量的默认值  
+v:name vim预定义的变量，注意预定义变量不同于vim的选项(option)变量。  
+l:name 函数内部的局部变量，函数内部定义的变量的默认值  
 </code></pre>
 
 <p>注意这些作用域只针对变量名，而不能作用于函数名。</p>
 
-<p>表 1. Vimscript 变量范围
-前缀  含义
-g: varname  变量为全局变量
-s: varname  变量的范围为当前的脚本文件
-w: varname  变量的范围为当前的编辑器窗口
-t: varname  变量的范围为当前的编辑器选项卡
-b: varname  变量的范围为当前的编辑器缓冲区
-l: varname  变量的范围为当前的函数
-a: varname  变量是当前函数的一个参数
+<p>表 1. Vimscript 变量范围<br />
+前缀  含义<br />
+g: varname  变量为全局变量<br />
+s: varname  变量的范围为当前的脚本文件<br />
+w: varname  变量的范围为当前的编辑器窗口<br />
+t: varname  变量的范围为当前的编辑器选项卡<br />
+b: varname  变量的范围为当前的编辑器缓冲区<br />
+l: varname  变量的范围为当前的函数<br />
+a: varname  变量是当前函数的一个参数<br />
 v: varname  变量是 Vim 的预定义变量</p>
 
 <p>还有一些伪变量（pseudovariables），脚本可以使用它们访问 Vim 提供的其他类型的值容器。表 2 对此进行了总结。</p>
 
-<p>表 2. Vimscript 伪变量
-前缀  含义
-&amp; varname   一个 Vim 选项（如果指定的话，则为本地选项，否则为全局选项）
-&amp;l: varname     本地 Vim 选项
-&amp;g: varname     全局 Vim 选项
-@ varname   一个 Vim 注册器
+<p>表 2. Vimscript 伪变量<br />
+前缀  含义<br />
+&amp; varname   一个 Vim 选项（如果指定的话，则为本地选项，否则为全局选项）<br />
+&amp;l: varname     本地 Vim 选项<br />
+&amp;g: varname     全局 Vim 选项<br />
+@ varname   一个 Vim 注册器<br />
 $ varname   一个环境变量</p>
 
 <p>“option” 伪变量非常有用。例如，可以设置两个键映射（key-map）来增加或减小当前的表空间，如下所示：</p>
@@ -301,33 +301,33 @@ $ varname   一个环境变量</p>
 
 <p>nmap <silent> [[ :let &amp;tabstop -= &amp;tabstop &gt; 1 ? 1 : 0<CR></p>
 
-<p>option  如果变量名以&amp;开头，那么这个变量是一个vim内部变量。vim提供了很多可以配置的选项，也被称为vim内部变量。
-        同一个名称的内部变量往往有很多副本，一个是全局的，还有buffer和window局部的，而且提供了不同的读写命令set和setlocal。
+<p>option  如果变量名以&amp;开头，那么这个变量是一个vim内部变量。vim提供了很多可以配置的选项，也被称为vim内部变量。<br />
+        同一个名称的内部变量往往有很多副本，一个是全局的，还有buffer和window局部的，而且提供了不同的读写命令set和setlocal。<br />
         内部变量共使用了三种数据类型：boolean，Number, String。其实VimScript并不支持boolean，而是用Number模仿而已。</p>
 
 <p>改变一个option有两种方法：一是使用set命令，如 set number， set tabstop=4； 二是给变量直接赋值，如 let &amp;number=1, let &amp;tabstop=4。两种方法达到的效果是一样的。不过需要注意的是：</p>
 
-<pre><code>    set命令可以使用简写形式的option名字，如set nu，而直接赋值必须使用完整的内部变量名称；
-    直接赋值时要在变量名之前添加&amp;，否则会新建一个同名变量，而不是使用vim的内部变量。如 let number=1不会修改vim的number内部变量。
+<pre><code>    set命令可以使用简写形式的option名字，如set nu，而直接赋值必须使用完整的内部变量名称；  
+    直接赋值时要在变量名之前添加&amp;，否则会新建一个同名变量，而不是使用vim的内部变量。如 let number=1不会修改vim的number内部变量。  
 </code></pre>
 
 <p>register 如果变量名以@开头，那么这本变量是暂存区变量，注意register在这里的含义与CPU中的寄存器没有直接关系。</p>
 
 <p>register其实就是一块内存，用来存放各种临时性的东西，比如拷贝的文本，文件的名称，最近删除的文本等等。共有9种类型的register。分别是：</p>
 
-<pre><code>（1）无名register &quot;&quot; ， 在vim中register使用引号开头
-（2）以数字为名的register，&quot;0到&quot;9，共10个
-（3）小删除register, “-（连接符）
-（4）以字母为名的register, ”a到&quot;z，共26个
-（5）只读register，共有4个，分别是 &quot;, ，“。，”%，&quot;#
-（6）表达式register，&quot;=
-（7）选择与删除register，共3个，分别是 &quot;*，&quot;+以及&quot;~
-（8）黑洞register, “_（下划线），注意与&quot;-区别
-（9）上次查找模式register, ”/
+<pre><code>（1）无名register &quot;&quot; ， 在vim中register使用引号开头  
+（2）以数字为名的register，&quot;0到&quot;9，共10个  
+（3）小删除register, “-（连接符）  
+（4）以字母为名的register, ”a到&quot;z，共26个  
+（5）只读register，共有4个，分别是 &quot;, ，“。，”%，&quot;#  
+（6）表达式register，&quot;=  
+（7）选择与删除register，共3个，分别是 &quot;*，&quot;+以及&quot;~  
+（8）黑洞register, “_（下划线），注意与&quot;-区别  
+（9）上次查找模式register, ”/  
 </code></pre>
 
-<p>这些register中，有一些是vim自身使用的，有些则是共用户使用的。
-在VimScript中，使用@+暂存区名的语法来读取和设置暂存区。如下：
+<p>这些register中，有一些是vim自身使用的，有些则是共用户使用的。<br />
+在VimScript中，使用@+暂存区名的语法来读取和设置暂存区。如下：<br />
 [plain] view plain copy</p>
 
 <p>echo @&rdquo;<br />
@@ -502,7 +502,7 @@ echo type(@_)</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -725,6 +725,8 @@ echo type(@_)</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -747,7 +749,9 @@ echo type(@_)</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -779,7 +783,7 @@ echo type(@_)</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

@@ -251,14 +251,14 @@
 
 <p>为了展示文章中编写的 LaTeX 数学公式，需要集成 <a href="https://www.mathjax.org/">MathJax</a>。MathJax 是一个 Javascript 库，通过官方提供的 CDN 集成到自己站点十分简单，只需要将以下代码添加到站点的每一个 HTML 页面中</p>
 
-<pre><code class="language-html">&lt;script type=&quot;text/javascript&quot; async
-  src=&quot;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML&quot;&gt;
-&lt;/script&gt;
+<pre><code class="language-html">&lt;script type=&quot;text/javascript&quot; async  
+  src=&quot;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML&quot;&gt;  
+&lt;/script&gt;  
 </code></pre>
 
 <p>为 HTML 页面添加以上代码后，页面中所有 <a href="https://en.wikibooks.org/wiki/LaTeX/Mathematics">LaTex</a> , <a href="https://www.w3.org/Math/">MathML</a> 以及 <a href="http://asciimath.org/">AsciiMath</a> 风格的数学公式都会得以显示，当然在页面中查找并显示这三种公式会对性能有所损耗，如果文章中仅仅含有LaTex编写的数学公式，可以将下面代码插入到站点每一个页面中</p>
 
-<pre><code class="language-html">&lt;script type=&quot;text/javascript&quot; async src=&quot;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;
+<pre><code class="language-html">&lt;script type=&quot;text/javascript&quot; async src=&quot;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;  
 </code></pre>
 
 <p>可以看出唯一的不同之处在于脚本源 <code>src</code> 中的 <code>config</code> 参数，不同的<code>config</code>定义了不同数学公式的输入以及输出，更多 MathJax 配置内容<a href="http://docs.mathjax.org/en/latest/config-files.html#common-configurations">参见官网</a>。</p>
@@ -269,15 +269,15 @@
 
 <p>比如 <code>config.toml</code> 配置内容为</p>
 
-<pre><code>[Params]
-  mathjax = true
+<pre><code>[Params]  
+  mathjax = true  
 </code></pre>
 
 <p>然后在模板 <code>partials/default_footer.html</code> 中添加如下代码：</p>
 
-<pre><code>{{ if or (eq .Params.mathjax true) (eq .Site.Params.mathjax true) }}
-&lt;script type=&quot;text/javascript&quot; async src=&quot;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;
-{{ end }}
+<pre><code>{{ if or (eq .Params.mathjax true) (eq .Site.Params.mathjax true) }}  
+&lt;script type=&quot;text/javascript&quot; async src=&quot;https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML&quot;&gt;&lt;/script&gt;  
+{{ end }}  
 </code></pre>
 
 <h2 id="mathjax-跟-markdown-冲突">MathJax 跟 Markdown 冲突</h2>
@@ -292,62 +292,62 @@
 
 <p>鉴于嵌套在 HTML 区块标签内的 Markdown 语法不被 Markdown 引擎处理，会原样输出，因此可以考虑将 LaTeX 块级数学公式放在标签 <code>&lt;div&gt;&lt;/div&gt;</code> 内，数学公式就不会被 Markdown 引擎处理。至于 LaTeX 行内数学公式，如果放在 <code>&lt;div&gt;&lt;/div&gt;</code> 内则会独立成段打乱内容排版，为此需要考虑使用其它方法避免行内数学公式被 Markdown 引擎处理。Markdown 语法支持行内代码，可以考虑将行内数学公式放在 Markdown 的行内代码语法中，这样就可以避免 Markdown 引擎处理其中的 <code>_</code>。</p>
 
-<pre><code class="language-markdown">`$x_\alpha$`
-以上内容会被Markdown引擎解析为 &lt;code&gt;$x_\alpha$&lt;/code&gt;
+<pre><code class="language-markdown">`$x_\alpha$`  
+以上内容会被Markdown引擎解析为 &lt;code&gt;$x_\alpha$&lt;/code&gt;  
 </code></pre>
 
 <p>不过 MathJax 默认不会对 <code>&lt;script&gt;</code>, <code>&lt;pre&gt;</code>, <code>&lt;code&gt;</code>等 HTML 标签内的数学公式进行解析。因此需要配置 MathJax 使其可以解析 <code>&lt;code&gt;</code> 中的数学公式。添加以下代码到站点所有页面中</p>
 
-<pre><code class="language-html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;
-MathJax.Hub.Config({
-  tex2jax: {
-    inlineMath: [['$','$'], ['\\(','\\)']],
-    displayMath: [['$$','$$'], ['\[','\]']],
-    processEscapes: true,
-    processEnvironments: true,
-    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-    TeX: { equationNumbers: { autoNumber: &quot;AMS&quot; },
-         extensions: [&quot;AMSmath.js&quot;, &quot;AMSsymbols.js&quot;] }
-  }
-});
-&lt;/script&gt;
+<pre><code class="language-html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;  
+MathJax.Hub.Config({  
+  tex2jax: {  
+    inlineMath: [['$','$'], ['\\(','\\)']],  
+    displayMath: [['$$','$$'], ['\[','\]']],  
+    processEscapes: true,  
+    processEnvironments: true,  
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],  
+    TeX: { equationNumbers: { autoNumber: &quot;AMS&quot; },  
+         extensions: [&quot;AMSmath.js&quot;, &quot;AMSsymbols.js&quot;] }  
+  }  
+});  
+&lt;/script&gt;  
 </code></pre>
 
 <p>这样所有位于 <code>&lt;code&gt;&lt;/code&gt;</code> 标签内的数学公式都会被 MathJax 渲染（当然如果正好想要让 <code>&lt;code&gt;&lt;/code&gt;</code> 标签内数学公式不渲染而原样输出，就办不到了，因为所有公式都将会被渲染），除了配置 MathJax 使得 <code>&lt;code&gt;&lt;/code&gt;</code> 内的数学公式可以被渲染外，<code>&lt;code&gt;&lt;/code&gt;</code> 的显示样式同普通文本也是不一样的，因此还需要配置含有数学公式 <code>&lt;code&gt;</code> 标签的样式，需要将如下代码添加到站点的所有页面中</p>
 
-<pre><code class="language-html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;
-  MathJax.Hub.Queue(function() {
-    // Fix &lt;code&gt; tags after MathJax finishes running. This is a
-    // hack to overcome a shortcoming of Markdown. Discussion at
-    // https://github.com/mojombo/jekyll/issues/199
-    var all = MathJax.Hub.getAllJax(), i;
-    for(i = 0; i &lt; all.length; i += 1) {
-        all[i].SourceElement().parentNode.className += ' has-jax';
-    }
-});
-&lt;/script&gt;
+<pre><code class="language-html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;  
+  MathJax.Hub.Queue(function() {  
+    // Fix &lt;code&gt; tags after MathJax finishes running. This is a  
+    // hack to overcome a shortcoming of Markdown. Discussion at  
+    // https://github.com/mojombo/jekyll/issues/199  
+    var all = MathJax.Hub.getAllJax(), i;  
+    for(i = 0; i &lt; all.length; i += 1) {  
+        all[i].SourceElement().parentNode.className += ' has-jax';  
+    }  
+});  
+&lt;/script&gt;  
 </code></pre>
 
 <p>并将如下代码添加到站点的 CSS 文件中</p>
 
-<pre><code class="language-css">code.has-jax {font: inherit;
-              font-size: 100%;
-              background: inherit;
-              border: inherit;
-              color: #515151;}
+<pre><code class="language-css">code.has-jax {font: inherit;  
+              font-size: 100%;  
+              background: inherit;  
+              border: inherit;  
+              color: #515151;}  
 </code></pre>
 
 <p>此外如果使用了高亮工具 <a href="http://pygments.org/">Pgyments</a> ，数学公式可能不能够正确显示为黑色，为了修正这个问题需要将以下代码添加到站点每个页面中</p>
 
-<pre><code class="language-html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;
-  MathJax.Hub.Config({
-    &quot;HTML-CSS&quot;: {
-      styles: {
-        &quot;.MathJax .mo, .MathJax .mi&quot;: {color: &quot;black ! important&quot;}
-      }
-    }
-  });
-&lt;/script&gt;
+<pre><code class="language-html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;  
+  MathJax.Hub.Config({  
+    &quot;HTML-CSS&quot;: {  
+      styles: {  
+        &quot;.MathJax .mo, .MathJax .mi&quot;: {color: &quot;black ! important&quot;}  
+      }  
+    }  
+  });  
+&lt;/script&gt;  
 </code></pre>
 
 <p>该方案的缺点也很明显，需要把块级数学公式写在 <code>&lt;div&gt;&lt;/div&gt;</code> 中，行级数学公式写在 Markdown 的行内代码中，并且配置 MathJax 对 <code>&lt;code&gt;&lt;/code&gt;</code> 标签内容进行解析可能会使得原本要原样输出的公式被渲染显示。</p>
@@ -364,12 +364,12 @@ MathJax.Hub.Config({
 <li><p>MathJax 默认 LaTeX 行级的定界符为 <code>\(...\)</code>，默认块级定界符为 <code>$$...$$</code> 和 <code>\[...\]</code>。而 Mmark 生成的行级和块级公式语法正好可以被 MathJax识别，想要明确声明 MathJax 数学公式的定界符，使用如下代码：</p></li>
 </ol>
 
-<pre><code class="language-html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;
-MathJax.Hub.Config({
-  tex2jax: {inlineMath: [['\\(','\\)']]},
-  displayMath: [['$$','$$'], ['\\[','\\]']]
-});
-&lt;/script&gt;
+<pre><code class="language-html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;  
+MathJax.Hub.Config({  
+  tex2jax: {inlineMath: [['\\(','\\)']]},  
+  displayMath: [['$$','$$'], ['\\[','\\]']]  
+});  
+&lt;/script&gt;  
 </code></pre>
 
                       
@@ -537,7 +537,7 @@ MathJax.Hub.Config({
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -760,6 +760,8 @@ MathJax.Hub.Config({
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -782,7 +784,9 @@ MathJax.Hub.Config({
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -814,7 +818,7 @@ MathJax.Hub.Config({
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

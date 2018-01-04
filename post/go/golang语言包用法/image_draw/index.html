@@ -251,65 +251,65 @@
 
 <p>func Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point, op Op)</p>
 
-<p>Draw是DrawMask的一种特殊形式，当DrawMask方法中mask为nil时，便是Draw函数
+<p>Draw是DrawMask的一种特殊形式，当DrawMask方法中mask为nil时，便是Draw函数<br />
 func DrawMask(dst Image, r image.Rectangle, src image.Image, sp image.Point, mask image.Image, mp image.Point, op Op)</p>
 
 <p>其中各个参数的含义如下：</p>
 
-<pre><code class="language-go">　dst  绘图的背景图。
-    r 是背景图的绘图区域
-    src 是要绘制的图
-    sp 是 src 对应的绘图开始点（绘制的大小 r变量定义了）
-    mask 是绘图时用的蒙版，控制替换图片的方式。
-    mp 是绘图时蒙版开始点（绘制的大小 r变量定义了）
-　op Op is a Porter-Duff compositing operator.  参考文章：&quot;http://blog.csdn.net/ison81/article/details/5468763&quot;  http://blog.csdn.net/ison81/article/details/5468763
-　Porter-Duff 等式12种规则可以看这篇博客：&quot;http://www.blogjava.net/onedaylover/archive/2008/01/16/175675.html&quot; http://www.blogjava.net/onedaylover/archive/2008/01/16/175675.html
+<pre><code class="language-go">　dst  绘图的背景图。  
+    r 是背景图的绘图区域  
+    src 是要绘制的图  
+    sp 是 src 对应的绘图开始点（绘制的大小 r变量定义了）  
+    mask 是绘图时用的蒙版，控制替换图片的方式。  
+    mp 是绘图时蒙版开始点（绘制的大小 r变量定义了）  
+　op Op is a Porter-Duff compositing operator.  参考文章：&quot;http://blog.csdn.net/ison81/article/details/5468763&quot;  http://blog.csdn.net/ison81/article/details/5468763  
+　Porter-Duff 等式12种规则可以看这篇博客：&quot;http://www.blogjava.net/onedaylover/archive/2008/01/16/175675.html&quot; http://www.blogjava.net/onedaylover/archive/2008/01/16/175675.html  
 </code></pre>
 
 <p>DrawMask将dst上的r.Min，src上的sp，mask上的mp对齐，然后对dst上的r型矩阵区域执行Porter-Duff合并操作。mask设置为nil就代表完全不透明。</p>
 
 <p>type Drawer　//Drawer中只含有一个Draw函数</p>
 
-<pre><code class="language-go">type Drawer interface {
-
-    // Draw 根据 src 中的 sp 来对齐 dst 中的 r.Min，然后用在 dst 上画出 src
-    // 的结果来替换掉矩形 r
-    Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point)
-}
+<pre><code class="language-go">type Drawer interface {  
+  
+    // Draw 根据 src 中的 sp 来对齐 dst 中的 r.Min，然后用在 dst 上画出 src  
+    // 的结果来替换掉矩形 r  
+    Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point)  
+}  
 </code></pre>
 
 <p>type Image</p>
 
-<pre><code class="language-go">type Image interface {
-    image.Image
-    Set(x, y int, c color.Color)
-}
+<pre><code class="language-go">type Image interface {  
+    image.Image  
+    Set(x, y int, c color.Color)  
+}  
 </code></pre>
 
-<p>draw.Image实在image.Image基础上带有一个Set方法来改变一个单一的像素
+<p>draw.Image实在image.Image基础上带有一个Set方法来改变一个单一的像素<br />
 type Op</p>
 
-<pre><code class="language-go">type Op int，启用在Draw和DrawMask方法中
-
-const (
-
-    // Over说明``(在mask上的src)覆盖在dst上''。
-    Over Op = iota
-
-    // Src说明``src作用在mask上''。
-    Src
-)
+<pre><code class="language-go">type Op int，启用在Draw和DrawMask方法中  
+  
+const (  
+  
+    // Over说明``(在mask上的src)覆盖在dst上''。  
+    Over Op = iota  
+  
+    // Src说明``src作用在mask上''。  
+    Src  
+)  
 </code></pre>
 
 <p>func (op Op) Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point)　//Draw 通过用此 Op 调用 Draw 函数实现了 Drawer 接口。</p>
 
 <p>type Quantizer</p>
 
-<pre><code class="language-go">type Quantizer interface {
-    // Quantize appends up to cap(p) - len(p) colors to p and returns the
-    // updated palette suitable for converting m to a paletted image.
-    Quantize(p color.Palette, m image.Image) color.Palette
-}
+<pre><code class="language-go">type Quantizer interface {  
+    // Quantize appends up to cap(p) - len(p) colors to p and returns the  
+    // updated palette suitable for converting m to a paletted image.  
+    Quantize(p color.Palette, m image.Image) color.Palette  
+}  
 </code></pre>
 
 <p>举例说明draw包的用法：</p>
@@ -320,36 +320,36 @@ const (
 
 <p>截取图片的一部分：</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;fmt&quot;
-    &quot;image&quot;
-    &quot;image/color&quot;
-    &quot;image/draw&quot;
-    &quot;image/jpeg&quot;
-    &quot;os&quot;
-)
-
-func main() {
-    file, err := os.Create(&quot;dst.jpg&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer file.Close()
-
-    file1, err := os.Open(&quot;20.jpg&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer file1.Close()
-    img, _ := jpeg.Decode(file1)
-
-    jpg := image.NewRGBA(image.Rect(0, 0, 100, 100))
-    draw.Draw(jpg, img.Bounds().Add(image.Pt(10, 10)), img, img.Bounds().Min, draw.Src) //截取图片的一部分
-    jpeg.Encode(file, jpg, nil)
-
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;fmt&quot;  
+    &quot;image&quot;  
+    &quot;image/color&quot;  
+    &quot;image/draw&quot;  
+    &quot;image/jpeg&quot;  
+    &quot;os&quot;  
+)  
+  
+func main() {  
+    file, err := os.Create(&quot;dst.jpg&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    defer file.Close()  
+  
+    file1, err := os.Open(&quot;20.jpg&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    defer file1.Close()  
+    img, _ := jpeg.Decode(file1)  
+  
+    jpg := image.NewRGBA(image.Rect(0, 0, 100, 100))  
+    draw.Draw(jpg, img.Bounds().Add(image.Pt(10, 10)), img, img.Bounds().Min, draw.Src) //截取图片的一部分  
+    jpeg.Encode(file, jpg, nil)  
+  
+}  
 </code></pre>
 
 <p>截取后的图片：</p>
@@ -358,38 +358,38 @@ func main() {
 
 <p>将原始图片转换为灰色图片：</p>
 
-<pre><code class="language-go">package main
-
-import (
-    &quot;fmt&quot;
-    &quot;image&quot;
-    &quot;image/color&quot;
-    &quot;image/draw&quot;
-    &quot;image/jpeg&quot;
-    &quot;os&quot;
-)
-
-func main() {
-    file, err := os.Create(&quot;dst.jpg&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer file.Close()
-
-    file1, err := os.Open(&quot;20.jpg&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer file1.Close()
-    img, _ := jpeg.Decode(file1)
-
-    jpg := image.NewGray(img.Bounds())                                 //NewGray
-
-    draw.Draw(jpg, jpg.Bounds(), img, img.Bounds().Min, draw.Src) //原始图片转换为灰色图片
-
-    jpeg.Encode(file, jpg, nil)
-
-}
+<pre><code class="language-go">package main  
+  
+import (  
+    &quot;fmt&quot;  
+    &quot;image&quot;  
+    &quot;image/color&quot;  
+    &quot;image/draw&quot;  
+    &quot;image/jpeg&quot;  
+    &quot;os&quot;  
+)  
+  
+func main() {  
+    file, err := os.Create(&quot;dst.jpg&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    defer file.Close()  
+  
+    file1, err := os.Open(&quot;20.jpg&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    defer file1.Close()  
+    img, _ := jpeg.Decode(file1)  
+  
+    jpg := image.NewGray(img.Bounds())                                 //NewGray  
+  
+    draw.Draw(jpg, jpg.Bounds(), img, img.Bounds().Min, draw.Src) //原始图片转换为灰色图片  
+  
+    jpeg.Encode(file, jpg, nil)  
+  
+}  
 </code></pre>
 
 <p>转换后效果图：</p>
@@ -398,37 +398,37 @@ func main() {
 
 <p>利用draw实现两张图片合成：</p>
 
-<pre><code class="language-go">func main() {
-    file, err := os.Create(&quot;dst.jpg&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer file.Close()
-
-    file1, err := os.Open(&quot;20.jpg&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer file1.Close()
-    img, _ := jpeg.Decode(file1)
-
-    file2, err := os.Open(&quot;10.jpg&quot;)
-    if err != nil {
-        fmt.Println(err)
-    }
-    defer file2.Close()
-    img2, _ := jpeg.Decode(file2)
-
-    jpg := image.NewRGBA(image.Rect(0, 0, 300, 300))
-
-    draw.Draw(jpg, jpg.Bounds(), img2, img2.Bounds().Min, draw.Over)                   //首先将一个图片信息存入jpg
-    draw.Draw(jpg, jpg.Bounds(), img, img.Bounds().Min.Sub(image.Pt(0, 0)), draw.Over)   //将另外一张图片信息存入jpg
-
-    // draw.DrawMask(jpg, jpg.Bounds(), img, img.Bounds().Min, img2, img2.Bounds().Min, draw.Src) // 利用这种方法不能够将两个图片直接合成？目前尚不知道原因。
-
-    jpeg.Encode(file, jpg, nil)
-
-}
+<pre><code class="language-go">func main() {  
+    file, err := os.Create(&quot;dst.jpg&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    defer file.Close()  
+  
+    file1, err := os.Open(&quot;20.jpg&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    defer file1.Close()  
+    img, _ := jpeg.Decode(file1)  
+  
+    file2, err := os.Open(&quot;10.jpg&quot;)  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    defer file2.Close()  
+    img2, _ := jpeg.Decode(file2)  
+  
+    jpg := image.NewRGBA(image.Rect(0, 0, 300, 300))  
+  
+    draw.Draw(jpg, jpg.Bounds(), img2, img2.Bounds().Min, draw.Over)                   //首先将一个图片信息存入jpg  
+    draw.Draw(jpg, jpg.Bounds(), img, img.Bounds().Min.Sub(image.Pt(0, 0)), draw.Over)   //将另外一张图片信息存入jpg  
+  
+    // draw.DrawMask(jpg, jpg.Bounds(), img, img.Bounds().Min, img2, img2.Bounds().Min, draw.Src) // 利用这种方法不能够将两个图片直接合成？目前尚不知道原因。  
+  
+    jpeg.Encode(file, jpg, nil)  
+  
+}  
 </code></pre>
 
 <p>合成后图片如下：</p>
@@ -606,7 +606,7 @@ func main() {
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -829,6 +829,8 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -851,7 +853,9 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -883,7 +887,7 @@ func main() {
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

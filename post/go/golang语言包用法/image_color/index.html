@@ -251,31 +251,31 @@
 
 <p>color中定义了如下几个变量</p>
 
-<pre><code class="language-html">var (
-    Black       = Gray16{0}
-    White       = Gray16{0xffff}
-    Transparent = Alpha16{0}
-    Opaque      = Alpha16{0xffff}
-)
+<pre><code class="language-html">var (  
+    Black       = Gray16{0}  
+    White       = Gray16{0xffff}  
+    Transparent = Alpha16{0}  
+    Opaque      = Alpha16{0xffff}  
+)  
 </code></pre>
 
-<p>func RGBToYCbCr(r, g, b uint8) (uint8, uint8, uint8)　//RGBToYCbCr将RGB的三重色转换为Y&rsquo;CbCr模型的三重色
+<p>func RGBToYCbCr(r, g, b uint8) (uint8, uint8, uint8)　//RGBToYCbCr将RGB的三重色转换为Y&rsquo;CbCr模型的三重色<br />
 func YCbCrToRGB(y, cb, cr uint8) (uint8, uint8, uint8)  //YCbCrToRGB将Y&rsquo;CbCr上的三重色转变成RGB的三重色。</p>
 
 <p>type Alpha       //Alpha代表一个8-bit的透明度。</p>
 
-<pre><code class="language-html">type Alpha struct {
-    A uint8
-}
+<pre><code class="language-html">type Alpha struct {  
+    A uint8  
+}  
 </code></pre>
 
 <p>func (c Alpha) RGBA() (r, g, b, a uint32)</p>
 
 <p>type Alpha16       //Alpha16代表一个16位的透明度。</p>
 
-<pre><code class="language-html">type Alpha16 struct {
-    A uint16
-}
+<pre><code class="language-html">type Alpha16 struct {  
+    A uint16  
+}  
 </code></pre>
 
 <p>func (c Alpha16) RGBA() (r, g, b, a uint32)</p>
@@ -286,109 +286,109 @@ func YCbCrToRGB(y, cb, cr uint8) (uint8, uint8, uint8)  //YCbCrToRGB将Y&rsquo;
 
 <p>type Color      //Color可以将它自己转化成每个RGBA通道都预乘透明度。这种转化可能是有损的。任何实现RGBA()方法的结构体都实现了Color接口</p>
 
-<pre><code class="language-html">type Color interface {
-
-    // RGBA返回预乘透明度的红，绿，蓝和颜色的透明度。每个值都在[0, 0xFFFF]范围内，
-    // 但是每个值都被uint32代表，这样可以乘以一个综合值来保证不会达到0xFFFF而溢出。
-    RGBA() (r, g, b, a uint32)
-}
+<pre><code class="language-html">type Color interface {  
+  
+    // RGBA返回预乘透明度的红，绿，蓝和颜色的透明度。每个值都在[0, 0xFFFF]范围内，  
+    // 但是每个值都被uint32代表，这样可以乘以一个综合值来保证不会达到0xFFFF而溢出。  
+    RGBA() (r, g, b, a uint32)  
+}  
 </code></pre>
 
 <p>type Gray     //Gray代表一个8-bit的灰度。</p>
 
-<pre><code class="language-html">type Gray struct {
-    Y uint8
-}
+<pre><code class="language-html">type Gray struct {  
+    Y uint8  
+}  
 </code></pre>
 
 <p>func (c Gray) RGBA() (r, g, b, a uint32)</p>
 
 <p>type Gray16         //Gray16代表了一个16-bit的灰度。</p>
 
-<pre><code class="language-html">type Gray struct {
-    Y uint16
-}
+<pre><code class="language-html">type Gray struct {  
+    Y uint16  
+}  
 </code></pre>
 
 <p>func (c Gray16) RGBA() (r, g, b, a uint32)</p>
 
 <p>type Model         //Model接口实现了Convert方法，Model可以在它自己的颜色模型中将一种颜色转化到另一种。这种转换可能是有损的。</p>
 
-<pre><code class="language-html">type Model interface {
-    Convert(c Color) Color
-}
+<pre><code class="language-html">type Model interface {  
+    Convert(c Color) Color  
+}  
 </code></pre>
 
 <p>其中基本的颜色模型Model如下所示：</p>
 
-<pre><code class="language-html">var (
-    RGBAModel    Model = ModelFunc(rgbaModel)
-    RGBA64Model  Model = ModelFunc(rgba64Model)
-    NRGBAModel   Model = ModelFunc(nrgbaModel)
-    NRGBA64Model Model = ModelFunc(nrgba64Model)
-    AlphaModel   Model = ModelFunc(alphaModel)
-    Alpha16Model Model = ModelFunc(alpha16Model)
-    GrayModel    Model = ModelFunc(grayModel)
-    Gray16Model  Model = ModelFunc(gray16Model)
-)
+<pre><code class="language-html">var (  
+    RGBAModel    Model = ModelFunc(rgbaModel)  
+    RGBA64Model  Model = ModelFunc(rgba64Model)  
+    NRGBAModel   Model = ModelFunc(nrgbaModel)  
+    NRGBA64Model Model = ModelFunc(nrgba64Model)  
+    AlphaModel   Model = ModelFunc(alphaModel)  
+    Alpha16Model Model = ModelFunc(alpha16Model)  
+    GrayModel    Model = ModelFunc(grayModel)  
+    Gray16Model  Model = ModelFunc(gray16Model)  
+)  
 </code></pre>
 
 <p>而YCbCrModel是Y&rsquo;CbCr颜色的模型</p>
 
-<pre><code class="language-html">var YCbCrModel Model = ModelFunc(yCbCrModel)
+<pre><code class="language-html">var YCbCrModel Model = ModelFunc(yCbCrModel)  
 </code></pre>
 
 <p>func ModelFunc(f func(Color) Color) Model　　//ModelFunc返回一个Model，它可以调用f来实现转换。</p>
 
 <p>type NRGBA            //NRGBA代表一个没有32位透明度加乘的颜色。每个红，绿，蓝和透明度都是８bit的数值</p>
 
-<pre><code class="language-html">type NRGBA struct {
-    R, G, B, A uint8
-}
+<pre><code class="language-html">type NRGBA struct {  
+    R, G, B, A uint8  
+}  
 </code></pre>
 
 <p>func (c NRGBA) RGBA() (r, g, b, a uint32)</p>
 
 <p>type NRGBA64         //NRGBA64代表无透明度加乘的64-bit的颜色，它的每个红，绿，蓝，和透明度都是个16bit的数值。</p>
 
-<pre><code class="language-html">type NRGBA struct {
-    R, G, B, A uint16
-}
+<pre><code class="language-html">type NRGBA struct {  
+    R, G, B, A uint16  
+}  
 </code></pre>
 
 <p>func (c NRGBA64) RGBA() (r, g, b, a uint32)</p>
 
 <p>type Palette         //Palette是颜色的调色板</p>
 
-<pre><code class="language-html">type Palette []Color
+<pre><code class="language-html">type Palette []Color  
 </code></pre>
 
-<p>func (p Palette) Convert(c Color) Color    //返回欧式r g b空间中最接近color　c 的调色板颜色
+<p>func (p Palette) Convert(c Color) Color    //返回欧式r g b空间中最接近color　c 的调色板颜色<br />
 func (p Palette) Index(c Color) int　　　//Index在Euclidean R,G,B空间中找到最接近c的调色板对应的索引。</p>
 
 <p>type RGBA         //RGBA代表一个传统的32位的预乘透明度的颜色，它的每个红，绿，蓝，和透明度都是个8bit的数值。</p>
 
-<pre><code class="language-html">type RGBA struct {
-    R, G, B, A uint8
-}
+<pre><code class="language-html">type RGBA struct {  
+    R, G, B, A uint8  
+}  
 </code></pre>
 
 <p>func (c RGBA) RGBA() (r, g, b, a uint32)</p>
 
 <p>type RGBA64       //RGBA64代表一个64位的预乘透明度的颜色，它的每个红，绿，蓝，和透明度都是个8bit的数值。</p>
 
-<pre><code class="language-html">type RGBA64 struct {
-    R, G, B, A uint16
-}
+<pre><code class="language-html">type RGBA64 struct {  
+    R, G, B, A uint16  
+}  
 </code></pre>
 
 <p>func (c RGBA64) RGBA() (r, g, b, a uint32)</p>
 
 <p>type YCbCr        //YCbCr代表了完全不透明的24-bit的Y&rsquo;CbCr的颜色，它的每个亮度和每两个色度分量是8位的。</p>
 
-<pre><code class="language-html">type YCbCr struct {
-    Y, Cb, Cr uint8
-}
+<pre><code class="language-html">type YCbCr struct {  
+    Y, Cb, Cr uint8  
+}  
 </code></pre>
 
 <p>JPEG，VP8，MPEG家族和其他一些解码器使用这个颜色模式。每个解码器经常将YUV和Y&rsquo;CbCr同等使用，但是严格来说，YUV只是用于分析视频信号，Y&rsquo; (luma)是Y (luminance)伽玛校正之后的结果。</p>
@@ -562,7 +562,7 @@ func (p Palette) Index(c Color) int　　　//Index在Euclidean R,G,B空间中�
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -785,6 +785,8 @@ func (p Palette) Index(c Color) int　　　//Index在Euclidean R,G,B空间中�
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -807,7 +809,9 @@ func (p Palette) Index(c Color) int　　　//Index在Euclidean R,G,B空间中�
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -839,7 +843,7 @@ func (p Palette) Index(c Color) int　　　//Index在Euclidean R,G,B空间中�
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

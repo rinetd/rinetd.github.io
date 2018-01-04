@@ -230,7 +230,7 @@
                   <h1 class="post-title">利用nginx泛域名解析配置二级域名和多域名</h1>
 
                   <p class="post-byline">
-                    by  · 2016年02月26日 15:30:01 · 1457 Words ·
+                    by  · 2016年02月26日 15:30:01 · 1456 Words ·
                     ~3min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Post/nginx/2016-01-01%20Nginx%e6%b3%9b%e5%9f%9f%e5%90%8d%e8%a7%a3%e6%9e%90.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
@@ -241,30 +241,30 @@
                   <div class="entry">
                     <div class="entry-inner">
                       
-                      <pre><code>server {
-    listen 80;
-    server_name *.kbook.org
-
-    location / {
-      add_header  Content-Type 'text/html; charset=utf-8';
-
-        #根目录为$host,$PATH为$host所在的目录。
-        root $PATH/$host;
-        return 200 &quot;$host&quot;;
-    }
+                      <pre><code>server {  
+    listen 80;  
+    server_name *.kbook.org  
+  
+    location / {  
+      add_header  Content-Type 'text/html; charset=utf-8';  
+  
+        #根目录为$host,$PATH为$host所在的目录。  
+        root $PATH/$host;  
+        return 200 &quot;$host&quot;;  
+    }  
 </code></pre>
 
-<p>http {
-    #&hellip;
-    server {
-        listen 80;
-        server_name $host;#在server_name中使用$host而不用自己去一个一个绑定了。
-        #&hellip;
-        location / {
-            #根目录为$host,$PATH为$host所在的目录。
-            root $PATH/$host;
-            #&hellip;.
-        }
+<p>http {<br />
+    #&hellip;<br />
+    server {<br />
+        listen 80;<br />
+        server_name $host;#在server_name中使用$host而不用自己去一个一个绑定了。<br />
+        #&hellip;<br />
+        location / {<br />
+            #根目录为$host,$PATH为$host所在的目录。<br />
+            root $PATH/$host;<br />
+            #&hellip;.<br />
+        }<br />
 }</p>
 
 <p>nginx泛域名解析，实现多个二级域名</p>
@@ -277,53 +277,53 @@
 
 <p>server_name  ~^(?<subdomain>.+).yourdomain.com$;</p>
 
-<p>通过匹配subdomain即可。而在下面的可以通过$subdomain这个变量获取当前子域名称。
+<p>通过匹配subdomain即可。而在下面的可以通过$subdomain这个变量获取当前子域名称。<br />
 情况一：绑定子域名到统一目录，作为用户个性域名</p>
 
 <p>这种情况下，只需要直接匹配就可以了，目录都是指向同一个地方的（一般）。</p>
 
 <p>配置实例：</p>
 
-<pre><code>server {
-
-    listen   80;
-    server_name yourdomain.com www.yourdomain.cpm ~^(?&lt;subdomain&gt;.+)\.m\.yourdomain\.com$;
-
-    index index.php index.html index.htm;
-    set $root_path '/var/www/yanue.net';
-    root $root_path;
-
-    try_files $uri $uri/ @rewrite;
-
-    location @rewrite {
-        rewrite ^/(.*)$ /index.php?_url=/$1;
-    }
-
-    location ~ \.php {
-            fastcgi_pass   127.0.0.1:9000;
-    }
-
-    location ~* ^/(css|img|js|flv|swf|download)/(.+)$ {
-        root $root_path;
-    }
-
-    location ~ /\.ht {
-        deny all;
-    }
-}
+<pre><code>server {  
+  
+    listen   80;  
+    server_name yourdomain.com www.yourdomain.cpm ~^(?&lt;subdomain&gt;.+)\.m\.yourdomain\.com$;  
+  
+    index index.php index.html index.htm;  
+    set $root_path '/var/www/yanue.net';  
+    root $root_path;  
+  
+    try_files $uri $uri/ @rewrite;  
+  
+    location @rewrite {  
+        rewrite ^/(.*)$ /index.php?_url=/$1;  
+    }  
+  
+    location ~ \.php {  
+            fastcgi_pass   127.0.0.1:9000;  
+    }  
+  
+    location ~* ^/(css|img|js|flv|swf|download)/(.+)$ {  
+        root $root_path;  
+    }  
+  
+    location ~ /\.ht {  
+        deny all;  
+    }  
+}  
 </code></pre>
 
 <p>这样可以实现：</p>
 
 <p>user.m.yourdomain.com 跳转到用户自己页面</p>
 
-<p>当然跳转逻辑需要自己在程序里面去实现。
+<p>当然跳转逻辑需要自己在程序里面去实现。<br />
 情况二：绑定子域名到不同目录（子站）</p>
 
 <p>网站的目录结构为</p>
 
-<p>html
-├── bbs
+<p>html<br />
+├── bbs<br />
 └── www</p>
 
 <p>html为nginx的安装目录下默认的存放源代码的路径。</p>
@@ -342,162 +342,160 @@
 
 <p>配置实例：</p>
 
-<p>server {
-        listen       80;
-        server_name  ~^(?<subdomain>.+).yourdomain.com$;
-        root   html/$subdomain;
-        index  index.html index.htm index.php;
-        fastcgi_intercept_errors on;
-        error_page  404      = /404.html;
-        location / {
-                # This is cool because no php is touched for static content.
-                # include the &ldquo;?$args&rdquo; part so non-default permalinks doesn&rsquo;t
-                # break when using query string
-                try_files $uri $uri/ =404;
+<p>server {<br />
+        listen       80;<br />
+        server_name  ~^(?<subdomain>.+).yourdomain.com$;<br />
+        root   html/$subdomain;<br />
+        index  index.html index.htm index.php;<br />
+        fastcgi_intercept_errors on;<br />
+        error_page  404      = /404.html;<br />
+        location / {<br />
+                # This is cool because no php is touched for static content.<br />
+                # include the &ldquo;?$args&rdquo; part so non-default permalinks doesn&rsquo;t<br />
+                # break when using query string<br />
+                try_files $uri $uri/ =404;<br />
        }</p>
 
-<pre><code>    # redirect server error pages to the static page /50x.html
-    #
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   html;
-    }
+<pre><code>    # redirect server error pages to the static page /50x.html  
+    #  
+    error_page   500 502 503 504  /50x.html;  
+    location = /50x.html {  
+        root   html;  
+    }  
 
-    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
-    #
-    location ~ \.php$ {
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_index  index.php;
-        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
-        fastcgi_param  domain $subdomain;
-        include        fastcgi_params;
-    }
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000  
+    #  
+    location ~ \.php$ {  
+        fastcgi_pass   127.0.0.1:9000;  
+        fastcgi_index  index.php;  
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;  
+        fastcgi_param  domain $subdomain;  
+        include        fastcgi_params;  
+    }  
 
-    # deny access to .htaccess files, if Apache's document root
-    # concurs with nginx's one
-    #
-    location ~ /\.ht {
-        deny  all;
-    }
+    # deny access to .htaccess files, if Apache's document root  
+    # concurs with nginx's one  
+    #  
+    location ~ /\.ht {  
+        deny  all;  
+    }  
 </code></pre>
 
 <p>}</p>
 
 <p>nginx 泛域名 泛解析</p>
 
-<p>##</p>
-
 <pre><code>rewrite &quot;^(.*)/service/(.*)\.html$&quot; $1/service.php?sid=$2 permanent;  
 </code></pre>
 
 <p>反过来： 带参数的动态地址重定向到静态地址</p>
 
-<pre><code>if ($query_string ~* id=(.*)) {
-set $id $1;
-rewrite &quot;^(.*)/article.asp$&quot; $1/article/$id.htm last;
-}
+<pre><code>if ($query_string ~* id=(.*)) {  
+set $id $1;  
+rewrite &quot;^(.*)/article.asp$&quot; $1/article/$id.htm last;  
+}  
 </code></pre>
 
 <p>泛域名解析</p>
 
-<p>view plaincopy to clipboardprint?
-server_name www.w3cgroup.com *.w3cgroup.com;
-server_name_in_redirect off;
-#设置默认root
+<p>view plaincopy to clipboardprint?<br />
+server_name www.w3cgroup.com *.w3cgroup.com;<br />
+server_name_in_redirect off;<br />
+#设置默认root<br />
 set $rootdir /usr/local/nginx/html/w3cgroup/;</p>
 
 <p>#匹配三级或三级以上的域名</p>
 
 <p>if ($host ~* ^(.+).([^.]+).([^.]+).([^.]+)$)  {</p>
 
-<p>}
-#匹配三级域名
-if ($host ~* ^([^.]+).([^.]+).([^.]+).([^.]+)$) {
-#三级域名中有访问指定的目录则重定向到相应的二级域名下
-rewrite &ldquo;^.+upload/?(.<em>)$&rdquo; <a href="http://upload.w3cgroup.com/$1">http://upload.w3cgroup.com/$1</a> permanent;
-rewrite &ldquo;^.+ijc/?(.</em>)$&rdquo; <a href="http://ijc.w3cgroup.com/$1">http://ijc.w3cgroup.com/$1</a> permanent;
-break;
-}
-#匹配二级域名
-if ($host ~* ^([^.]+).([^.]+).([^.]+)$) {
-set $rs1 $1;
-}
-#设置www时root
-if ($rs1 ~* ^www$) {
-set $rootdir /usr/local/nginx/html/platform_ig/;
-#二级域名中有访问指定的目录则重定向到相应的二级域名下,注意，这里要使用last
-rewrite &ldquo;^.+upload/?(.<em>)$&rdquo; upload/$1 last;
-rewrite &ldquo;^.+ijc/?(.</em>)$&rdquo; ijc/$1 last;
-break;
-}
-#设置非www二级域名时root
-if ($rs1 !~* ^www$) {
-set $rootdir /usr/local/nginx/html/w3cgroup/$rs1;
-#二级域名中有访问指定的目录则重定向到相应的二级域名下
-rewrite &ldquo;^.+upload/?(.<em>)$&rdquo; <a href="http://upload.w3cgroup.com/$1">http://upload.w3cgroup.com/$1</a> permanent;
-rewrite &ldquo;^.+ijc/?(.</em>)$&rdquo; <a href="http://ijc.w3cgroup.com/$1">http://ijc.w3cgroup.com/$1</a> permanent;
-break;
-}
-#应用root
-root $rootdir;
-index index.php index.html;
+<p>}<br />
+#匹配三级域名<br />
+if ($host ~* ^([^.]+).([^.]+).([^.]+).([^.]+)$) {<br />
+#三级域名中有访问指定的目录则重定向到相应的二级域名下<br />
+rewrite &ldquo;^.+upload/?(.<em>)$&rdquo; <a href="http://upload.w3cgroup.com/$1">http://upload.w3cgroup.com/$1</a> permanent;<br />
+rewrite &ldquo;^.+ijc/?(.</em>)$&rdquo; <a href="http://ijc.w3cgroup.com/$1">http://ijc.w3cgroup.com/$1</a> permanent;<br />
+break;<br />
+}<br />
+#匹配二级域名<br />
+if ($host ~* ^([^.]+).([^.]+).([^.]+)$) {<br />
+set $rs1 $1;<br />
+}<br />
+#设置www时root<br />
+if ($rs1 ~* ^www$) {<br />
+set $rootdir /usr/local/nginx/html/platform_ig/;<br />
+#二级域名中有访问指定的目录则重定向到相应的二级域名下,注意，这里要使用last<br />
+rewrite &ldquo;^.+upload/?(.<em>)$&rdquo; upload/$1 last;<br />
+rewrite &ldquo;^.+ijc/?(.</em>)$&rdquo; ijc/$1 last;<br />
+break;<br />
+}<br />
+#设置非www二级域名时root<br />
+if ($rs1 !~* ^www$) {<br />
+set $rootdir /usr/local/nginx/html/w3cgroup/$rs1;<br />
+#二级域名中有访问指定的目录则重定向到相应的二级域名下<br />
+rewrite &ldquo;^.+upload/?(.<em>)$&rdquo; <a href="http://upload.w3cgroup.com/$1">http://upload.w3cgroup.com/$1</a> permanent;<br />
+rewrite &ldquo;^.+ijc/?(.</em>)$&rdquo; <a href="http://ijc.w3cgroup.com/$1">http://ijc.w3cgroup.com/$1</a> permanent;<br />
+break;<br />
+}<br />
+#应用root<br />
+root $rootdir;<br />
+index index.php index.html;<br />
 error_page 404 http://$host/;</p>
 
 <p>利用nginx泛域名解析配置二级域名和多域名</p>
 
-<p>网站的目录结构为
-html
-├── bbs
+<p>网站的目录结构为<br />
+html<br />
+├── bbs<br />
 └── www</p>
 
 <p>html为nginx的安装目录下默认的存放源代码的路径。</p>
 
-<p>bbs为论坛程序源代码路径
+<p>bbs为论坛程序源代码路径<br />
 www为主页程序源代码路径</p>
 
-<p>把相应程序放入上面的路径通过
-<a href="http://www.youdomain.com">http://www.youdomain.com</a> 访问的就是主页
-<a href="http://bbs.yourdomain.com">http://bbs.yourdomain.com</a> 访问的就是论坛
+<p>把相应程序放入上面的路径通过<br />
+<a href="http://www.youdomain.com">http://www.youdomain.com</a> 访问的就是主页<br />
+<a href="http://bbs.yourdomain.com">http://bbs.yourdomain.com</a> 访问的就是论坛<br />
 其它二级域名类推。</p>
 
-<p>server {
-        listen       80;
-        server_name  ~^(?<subdomain>.+).yourdomain.com$;
-        root   html/$subdomain;
-        index  index.html index.htm index.php;
-        fastcgi_intercept_errors on;
-        error_page  404      = /404.html;
-        location / {
-                # This is cool because no php is touched for static content.
-                # include the &ldquo;?$args&rdquo; part so non-default permalinks doesn&rsquo;t
-                # break when using query string
-                try_files $uri $uri/ =404;
+<p>server {<br />
+        listen       80;<br />
+        server_name  ~^(?<subdomain>.+).yourdomain.com$;<br />
+        root   html/$subdomain;<br />
+        index  index.html index.htm index.php;<br />
+        fastcgi_intercept_errors on;<br />
+        error_page  404      = /404.html;<br />
+        location / {<br />
+                # This is cool because no php is touched for static content.<br />
+                # include the &ldquo;?$args&rdquo; part so non-default permalinks doesn&rsquo;t<br />
+                # break when using query string<br />
+                try_files $uri $uri/ =404;<br />
        }</p>
 
-<pre><code>    # redirect server error pages to the static page /50x.html
-    #
-    error_page   500 502 503 504  /50x.html;
-    location = /50x.html {
-        root   html;
-    }
+<pre><code>    # redirect server error pages to the static page /50x.html  
+    #  
+    error_page   500 502 503 504  /50x.html;  
+    location = /50x.html {  
+        root   html;  
+    }  
 
-    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
-    #
-    location ~ .php$ {
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_index  index.php;
-        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
-        fastcgi_param  domain $subdomain;
-        include        fastcgi_params;
-    }
+    # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000  
+    #  
+    location ~ .php$ {  
+        fastcgi_pass   127.0.0.1:9000;  
+        fastcgi_index  index.php;  
+        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;  
+        fastcgi_param  domain $subdomain;  
+        include        fastcgi_params;  
+    }  
 
-    # deny access to .htaccess files, if Apache's document root
-    # concurs with nginx's one
-    #
-    location ~ /.ht {
-        deny  all;
-    }
-}
+    # deny access to .htaccess files, if Apache's document root  
+    # concurs with nginx's one  
+    #  
+    location ~ /.ht {  
+        deny  all;  
+    }  
+}  
 </code></pre>
 
 <p>总结一下步骤就是</p>
@@ -685,7 +683,7 @@ www为主页程序源代码路径</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -756,7 +754,7 @@ www为主页程序源代码路径</p>
     <ul class="post-nav group">
     <li class="next">
       
-      <a href="http://blog.pytool.com/post/%E6%95%B0%E6%8D%AE%E5%BA%93/2016-02-29-%E5%8F%AF%E4%BB%A5%E8%BF%99%E6%A0%B7%E7%90%86%E8%A7%A3group-by%E5%92%8C%E8%81%9A%E5%90%88%E5%87%BD%E6%95%B0/" rel="next">
+      <a href="http://blog.pytool.com/post/db/2016-02-29-%E5%8F%AF%E4%BB%A5%E8%BF%99%E6%A0%B7%E7%90%86%E8%A7%A3group-by%E5%92%8C%E8%81%9A%E5%90%88%E5%87%BD%E6%95%B0/" rel="next">
         <i class="fa fa-chevron-right"></i>
         <strong>Next post</strong>
         <span>可以这样去理解group by和聚合函数</span>
@@ -908,6 +906,8 @@ www为主页程序源代码路径</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -930,7 +930,9 @@ www为主页程序源代码路径</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -962,7 +964,7 @@ www为主页程序源代码路径</p>
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

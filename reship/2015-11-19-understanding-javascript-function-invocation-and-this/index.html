@@ -252,18 +252,19 @@
 <p>首先，来看函数调用的核心原语，函数的 <code>call</code> 方法[1]。</p>
 
 <ol>
-<li>参数中，下标 1 到最后的元素组成参数列表(<code>argList</code>)</li>
-<li>第一个参数是 <code>thisValue</code></li>
-<li>调用函数，把 <code>this</code> 设置为 <code>thisValue</code>,<code>argList</code> 作为参数列表</li>
+<li>参数中，下标 1 到最后的元素组成参数列表(<code>argList</code>)<br /></li>
+<li>第一个参数是 <code>thisValue</code><br /></li>
+<li>调用函数，把 <code>this</code> 设置为 <code>thisValue</code>,<code>argList</code> 作为参数列表<br />
+<br /></li>
 </ol>
 
 <p>例如：</p>
 
 <pre><code>function hello(thing) {  
-  console.log(this + &quot; says hello &quot; + thing);
-}
-
-hello.call(&quot;Yehuda&quot;, &quot;world&quot;) //=&gt; Yehuda says hello world 
+  console.log(this + &quot; says hello &quot; + thing);  
+}  
+  
+hello.call(&quot;Yehuda&quot;, &quot;world&quot;) //=&gt; Yehuda says hello world  
 </code></pre>
 
 <p>如上所示，调用 <code>hello</code> 方法，<code>this</code> 设置为 <code>&quot;Yehuda&quot;</code> 同时只有一个参数 <code>&quot;world&quot;</code>。这就是 JavaScript 函数调用的核心原语。你可以把其他方式脱糖（desugaring）为核心原语。</p>
@@ -275,22 +276,22 @@ hello.call(&quot;Yehuda&quot;, &quot;world&quot;) //=&gt; Yehuda says hello worl
 <p>很明显，每次都要使用 <code>call</code> 来调用函数是很烦人的。所以 JavaScript 允许我们用括号语法来直接调用函数 <code>hellow(&quot;world&quot;)</code>。这种调用方式可以脱糖为：</p>
 
 <pre><code>function hello(thing) {  
-  console.log(&quot;Hello &quot; + thing);
-}
-
-// this:
-hello(&quot;world&quot;)
-
-// desugars to:
+  console.log(&quot;Hello &quot; + thing);  
+}  
+  
+// this:  
+hello(&quot;world&quot;)  
+  
+// desugars to:  
 hello.call(window, &quot;world&quot;);  
 </code></pre>
 
 <p>在 ECMAScript 5，严格模式下[2]，上面的行为发生了变化：</p>
 
-<pre><code>// this:
-hello(&quot;world&quot;)
-
-// desugars to:
+<pre><code>// this:  
+hello(&quot;world&quot;)  
+  
+// desugars to:  
 hello.call(undefined, &quot;world&quot;);  
 </code></pre>
 
@@ -305,30 +306,30 @@ hello.call(undefined, &quot;world&quot;);
 <p>接下来，另一种常见方式是作为对象的成员函数调用。在这种情况下，脱糖为：</p>
 
 <pre><code>var person = {  
-  name: &quot;Brendan Eich&quot;,
-  hello: function(thing) {
-    console.log(this + &quot; says hello &quot; + thing);
-  }
-}
-
-// this:
-person.hello(&quot;world&quot;)
-
-// desugars to this:
+  name: &quot;Brendan Eich&quot;,  
+  hello: function(thing) {  
+    console.log(this + &quot; says hello &quot; + thing);  
+  }  
+}  
+  
+// this:  
+person.hello(&quot;world&quot;)  
+  
+// desugars to this:  
 person.hello.call(person, &quot;world&quot;);  
 </code></pre>
 
 <p>需要注意的是，至于 <code>hello</code> 方法是如何附加到对象上的并不会影响上面的行为。上面的例子是初始化对象时定义方法。下面来看，动态的将方法附加到对象上：</p>
 
 <pre><code>function hello(thing) {  
-  console.log(this + &quot; says hello &quot; + thing);
-}
-
+  console.log(this + &quot; says hello &quot; + thing);  
+}  
+  
 person = { name: &quot;Brendan Eich&quot; }  
-person.hello = hello;
-
-person.hello(&quot;world&quot;) // still desugars to person.hello.call(person, &quot;world&quot;)
-
+person.hello = hello;  
+  
+person.hello(&quot;world&quot;) // still desugars to person.hello.call(person, &quot;world&quot;)  
+  
 hello(&quot;world&quot;) // &quot;[object DOMWindow]world&quot;  
 </code></pre>
 
@@ -339,14 +340,14 @@ hello(&quot;world&quot;) // &quot;[object DOMWindow]world&quot;
 <p>有时候，函数具有一个持久的 <code>this</code> 值是很方便的。过去，人们经常利用闭包来将一个函数转化为一个 <code>this</code> 值不变的函数：</p>
 
 <pre><code>var person = {  
-  name: &quot;Brendan Eich&quot;,
-  hello: function(thing) {
-    console.log(this.name + &quot; says hello &quot; + thing);
-  }
-}
-
-var boundHello = function(thing) { return person.hello.call(person, thing); }
-
+  name: &quot;Brendan Eich&quot;,  
+  hello: function(thing) {  
+    console.log(this.name + &quot; says hello &quot; + thing);  
+  }  
+}  
+  
+var boundHello = function(thing) { return person.hello.call(person, thing); }  
+  
 boundHello(&quot;world&quot;);  
 </code></pre>
 
@@ -355,11 +356,11 @@ boundHello(&quot;world&quot;);
 <p>为了更加通用，稍作修改：</p>
 
 <pre><code>var bind = function(func, thisValue) {  
-  return function() {
-    return func.apply(thisValue, arguments);
-  }
-}
-
+  return function() {  
+    return func.apply(thisValue, arguments);  
+  }  
+}  
+  
 var boundHello = bind(person.hello, person);  
 boundHello(&quot;world&quot;) // &quot;Brendan Eich says hello world&quot;  
 </code></pre>
@@ -377,13 +378,13 @@ boundHello(&quot;world&quot;) // &quot;Brendan Eich says hello world&quot;
 <p>当你需要将一个函数传递做为回调时，<code>bind</code> 会更有用:</p>
 
 <pre><code>var person = {  
-  name: &quot;Alex Russell&quot;,
-  hello: function() { console.log(this.name + &quot; says hello world&quot;); }
-}
-
-$(&quot;#some-div&quot;).click(person.hello.bind(person));
-
-// when the div is clicked, &quot;Alex Russell says hello world&quot; is printed
+  name: &quot;Alex Russell&quot;,  
+  hello: function() { console.log(this.name + &quot; says hello world&quot;); }  
+}  
+  
+$(&quot;#some-div&quot;).click(person.hello.bind(person));  
+  
+// when the div is clicked, &quot;Alex Russell says hello world&quot; is printed  
 </code></pre>
 
 <p>当然，这样很笨拙，TC39 将会提出更优雅的方案。</p>
@@ -401,10 +402,14 @@ $(&quot;#some-div&quot;).click(person.hello.bind(person));
 <p>我们来看下 <code>func.call</code> 的定义：</p>
 
 <ol>
-<li>If IsCallable(func) is false, then throw a TypeError exception.</li>
-<li>Let argList be an empty List.</li>
-<li>If this method was called with more than one argument then in left to right order starting with arg1 append each argument as the last element of argList</li>
-<li>Return the result of calling the [[Call]] internal method of func, providing thisArg as the this value and argList as the list of arguments.</li>
+<li>If IsCallable(func) is false, then throw a TypeError exception.<br /></li>
+<li>Let argList be an empty List.<br /></li>
+<li>If this method was called with more than one argument then in left to right order starting with arg1 append each argument as the last element of argList<br /></li>
+<li>Return the result of calling the [[Call]] internal method of func, providing thisArg as the this value and argList as the list of arguments.<br />
+<br />
+<br />
+<br />
+<br /></li>
 </ol>
 
 <p>原文地址：<a href="http://yehudakatz.com/2011/08/11/understanding-javascript-function-invocation-and-this/">http://yehudakatz.com/2011/08/11/understanding-javascript-function-invocation-and-this/</a></p>
@@ -574,7 +579,7 @@ $(&quot;#some-div&quot;).click(person.hello.bind(person));
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(13)</small>
+        <small>(14)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -797,6 +802,8 @@ $(&quot;#some-div&quot;).click(person.hello.bind(person));
       
          <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
@@ -819,7 +826,9 @@ $(&quot;#some-div&quot;).click(person.hello.bind(person));
       
          <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(4)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -851,7 +860,7 @@ $(&quot;#some-div&quot;).click(person.hello.bind(person));
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(6)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(7)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       
