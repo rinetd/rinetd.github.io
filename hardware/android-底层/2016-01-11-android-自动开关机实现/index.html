@@ -246,8 +246,7 @@
 <p>关于android自动关机，网上有很多应用程序和例子。 相对于自动开机来说，自动关机可以在应用层通过设置alarm来实现。而自动开机，网上的介绍就比较少了，因为它需要底层rtc时钟的支持。前段时间根据客户需求实现了自动开关机。在这里分享一下。</p>
 
 <ol>
-<li>简介<br />
-<br /></li>
+<li>简介<br /></li>
 </ol>
 
 <p>我的实现是在设置程序里面增加一个接口，让用户设置自动开关机，这个自动开关机的设置可以参照闹钟的设置。关于自动关机，考虑到关机的时候，用户可能正有一些重要的操作，那么应该给用户一个机会去取消当前的关机。</p>
@@ -265,25 +264,24 @@
 <p>3）一个Activity：显示一个dialog提示用户要自动关机，并用一个计时器倒计时。当用户确认关机，或者计时器到时间的时候，就关机。否则取消当前关机，并重设下次自动关机alarm。</p>
 
 <ol>
-<li>自动关机的实现。自动关机的实现比较简单，这里主要说一下怎么设置alarm，和实现关机：<br />
-<br /></li>
+<li>自动关机的实现。自动关机的实现比较简单，这里主要说一下怎么设置alarm，和实现关机：<br /></li>
 </ol>
 
 <p>1） 设置自动关机的alarm：</p>
 
-<pre><code>  
+<pre><code>
    AlarmManager am = (AlarmManager) context  
                .getSystemService(Context.ALARM_SERVICE);  
-  
+
        Intent intent = new Intent(  
                &quot;com.android.settings.action.REQUEST_POWER_OFF&quot;);  
-  
+
        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0,  
                intent, PendingIntent.FLAG_CANCEL_CURRENT);  
        am = (AlarmManager) context  
                .getSystemService(Context.ALARM_SERVICE);  
        am.set(AlarmManager.RTC_WAKEUP, time, pendingIntent);  
-  
+
 </code></pre>
 
 <p>2）自动关机掉的是./frameworks/base/services/java/com/android/server/ShutdownActivity.java：</p>
@@ -296,8 +294,7 @@
 <p>Intent.ACTION_REQUEST_SHUTDOWN是Intent里面一个隐藏的action。</p>
 
 <ol>
-<li>自动开机的实现。一直在做上层应用和framework，对于底层不是很熟悉。正好有同事之前做过关机闹铃，所以把他之前的实现稍加改动就可以了。在系统power off的状态下自动开机，我们需要设置一个rtc时钟，当用户设置自动开机时，由AlarmManagerService将时钟设置下去。这学要底层的支持。这里的实现是定义一个我们自己的rtc alarm type：<br />
-<br /></li>
+<li>自动开机的实现。一直在做上层应用和framework，对于底层不是很熟悉。正好有同事之前做过关机闹铃，所以把他之前的实现稍加改动就可以了。在系统power off的状态下自动开机，我们需要设置一个rtc时钟，当用户设置自动开机时，由AlarmManagerService将时钟设置下去。这学要底层的支持。这里的实现是定义一个我们自己的rtc alarm type：<br /></li>
 </ol>
 
 <p>1） 首先要在头文件里面定义：</p>
@@ -306,12 +303,12 @@
 
 <pre><code>#define ANDROID_ALARM_GET_TIME(type)        ALARM_IOW(4, type, struct timespec)  
 #define ANDROID_ALARM_SET_RTC               _IOW('a', 5, struct timespec)  
-  
+
 /* we define ANDROID_RTC_ALARM_SET for auto power off */  
 #define ANDROID_RTC_ALARM_SET               _IOW('a', 7, int)  
-  
+
 #define ANDROID_ALARM_BASE_CMD(cmd)         (cmd &amp; ~(_IOC(0, 0, 0xf0, 0)))  
-  
+
 </code></pre>
 
 <p>　　b) bionic/libc/kernel/common/linux/android_alarm.h</p>
@@ -320,7 +317,7 @@
 
 <p>2) 定义完成之后，还需要实现：在kernel/drivers/rtc/alarm-dev.c文件的alarm_ioctl方法里面，增加一个case，实现设置alarm</p>
 
-<pre><code>  
+<pre><code>
    case ANDROID_RTC_ALARM_SET:  
        {  
            unsigned int rtc_alarm_time;  
@@ -342,7 +339,7 @@
            pmic_rtc_enable_alarm(PM_RTC_ALARM_1, &amp;rtc_now);  
            break;  
        }  
-  
+
 </code></pre>
 
 <p>当然不要忘记增加一个include：</p>
@@ -351,7 +348,7 @@
 
 <p>3）在frameworks/base/services/jni/com_android_server_AlarmManagerService.cpp里面增加一个方法去设置时钟：</p>
 
-<pre><code>  
+<pre><code>
 static void android_server_AlarmManagerService_updateRtcAlarm(JNIEnv* env, jobject obj, jint fd, jint seconds)  
 {  
 #if HAVE_ANDROID_OS  
@@ -363,7 +360,7 @@ static void android_server_AlarmManagerService_updateRtcAlarm(JNIEnv* env, jobje
    }  
 #endif  
 }  
-  
+
 </code></pre>
 
 <p>还有就是不要忘记定义一下接口：</p>
@@ -376,7 +373,7 @@ static void android_server_AlarmManagerService_updateRtcAlarm(JNIEnv* env, jobje
 
 <p>调用：</p>
 
-<pre><code>  
+<pre><code>
    public void setRepeating(int type, long triggerAtTime, long interval,  
            PendingIntent operation) {  
        if (operation == null) {  
@@ -389,17 +386,17 @@ static void android_server_AlarmManagerService_updateRtcAlarm(JNIEnv* env, jobje
            alarm.when = triggerAtTime;  
            alarm.repeatInterval = interval;  
            alarm.operation = operation;  
-  
+
            // Remove this alarm if already scheduled.  
            removeLocked(operation);  
-  
+
            if (localLOGV) Slog.v(TAG, &quot;set: &quot; + alarm);  
-  
+
            int index = addAlarmLocked(alarm);  
            if (index == 0) {  
                setLocked(alarm);  
            }  
-  
+
            // Start to setup auto power on alarm  
            if ((alarm.type == AlarmManager.ELAPSED_REALTIME_WAKEUP) &amp;&amp;  
                                alarm.operation.getTargetPackage().equals(&quot;com.android.settings&quot;)) {  
@@ -408,12 +405,12 @@ static void android_server_AlarmManagerService_updateRtcAlarm(JNIEnv* env, jobje
            // End to setup auto power on alarm  
        }  
    }  
-  
+
 </code></pre>
 
 <p>5）在应用层设置自动开机</p>
 
-<pre><code>  
+<pre><code>
        AlarmManager am = (AlarmManager) context  
                .getSystemService(Context.ALARM_SERVICE);  
        Intent intent = new Intent(  
@@ -423,12 +420,11 @@ static void android_server_AlarmManagerService_updateRtcAlarm(JNIEnv* env, jobje
        am = (AlarmManager) context  
                .getSystemService(Context.ALARM_SERVICE);  
        am.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, time, pendingIntent);  
-  
+
 </code></pre>
 
 <ol>
-<li>总结<br />
-<br /></li>
+<li>总结<br /></li>
 </ol>
 
 <p>1） 自动开机原理比较简单，但是需要底层的支持，所以对于做应用或者framework层的技术人员来说，实现起来稍微比较麻烦。<br />
@@ -765,6 +761,8 @@ static void android_server_AlarmManagerService_updateRtcAlarm(JNIEnv* env, jobje
          <a rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
       

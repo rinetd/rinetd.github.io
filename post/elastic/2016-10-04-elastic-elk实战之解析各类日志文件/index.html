@@ -251,9 +251,7 @@
 <h2 id="当前环境">当前环境</h2>
 
 <ol>
-<li>logstash：5.2<br />
-<br />
-<br /></li>
+<li>logstash：5.2<br /></li>
 </ol>
 
 <h2 id="介绍">介绍</h2>
@@ -276,9 +274,7 @@
 <ol>
 <li>INPUTS: 收集所有数据源的日志数据（<a href="https://www.elastic.co/guide/en/logstash/current/input-plugins.html">源有file、redis、beats等</a>,*filebeat就是使用了beats源*）；<br /></li>
 <li>FILTERS: 解析、整理日志数据（<strong>本文重点</strong>）；<br /></li>
-<li>OUTPUTS: 将解析的日志数据输出至存储器（<a href="https://www.elastic.co/guide/en/logstash/current/output-plugins.html">elasticseach、file、syslog等</a>）；<br />
-<br />
-<br /></li>
+<li>OUTPUTS: 将解析的日志数据输出至存储器（<a href="https://www.elastic.co/guide/en/logstash/current/output-plugins.html">elasticseach、file、syslog等</a>）；<br /></li>
 </ol>
 
 <p>看来FILTERS是我们探究的重点，先来来看看它常用到的几个插件（*后面日志解析会用到*）：</p>
@@ -286,8 +282,7 @@
 <ol>
 <li>grok：采用正则的方式，解析原始日志格式，使其结构化；<br /></li>
 <li>geoip：根据IP字段，解析出对应的地理位置、经纬度等；<br /></li>
-<li>date：解析选定时间字段，将其时间作为logstash每条记录产生的时间（*若没有指定该字段，默认使用read line的时间作为该条记录时间*）；<br />
-<br /></li>
+<li>date：解析选定时间字段，将其时间作为logstash每条记录产生的时间（*若没有指定该字段，默认使用read line的时间作为该条记录时间*）；<br /></li>
 </ol>
 
 <p><em>注意：codec也是经常会使用到的，它主要作用在INPUTS和OUTPUTS中，<a href="https://www.elastic.co/guide/en/logstash/current/codec-plugins.html">提供有json的格式转换、multiline的多行日志合并等</a></em></p>
@@ -300,24 +295,21 @@
 <p><strong>1. NodeJS 日志</strong></p>
 
 <ul>
-<li>日志格式<br />
-<br /></li>
+<li>日志格式<br /></li>
 </ul>
 
 <pre><code>$time - $remote_addr $log_level $path - $msg  
 </code></pre>
 
 <ul>
-<li>日志内容<br />
-<br /></li>
+<li>日志内容<br /></li>
 </ul>
 
 <pre><code>2017-03-15 18:34:14.535 - 112.65.171.98 INFO /root/ws/socketIo.js - xxxxxx与ws server断开连接  
 </code></pre>
 
 <ul>
-<li>filebeat配置（*建议filebeat使用rpm安装，以systemctl start filebeat方式启动*）<br />
-<br /></li>
+<li>filebeat配置（*建议filebeat使用rpm安装，以systemctl start filebeat方式启动*）<br /></li>
 </ul>
 
 <pre><code>filebeat:  
@@ -330,14 +322,13 @@
 output:  
   logstash:  
       hosts: [&quot;${LOGSTASH_IP}:5044&quot;]  
-  
+
 #General Setting  
 name: &quot;server1&quot; #设置beat的名称，默认为主机hostname  
 </code></pre>
 
 <ul>
-<li>logstash中FILTERS配置<br />
-<br /></li>
+<li>logstash中FILTERS配置<br /></li>
 </ul>
 
 <pre><code>filter {  
@@ -366,8 +357,7 @@ name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
 <li>value：表示解析的匹配规则，提取出对应的字段；<br /></li>
 <li>解析语法：%{正则模板:自定义字段}，其中TIMESTAMP_ISO8601、IPORHOST等都是grok提供的正则模板（<a href="https://github.com/logstash-plugins/logstash-patterns-core/blob/master/patterns/grok-patterns">可在此查阅</a>）；<br /></li>
 </ol></li>
-<li>geoip：通过分析IP值，产生IP对应的地理位置信息；<br />
-<br /></li>
+<li>geoip：通过分析IP值，产生IP对应的地理位置信息；<br /></li>
 </ol>
 
 <p><em>这里是否发现@timestamp与timestamp不一致，@timestamp表示该日志的读取时间，在elasticsearch中作为时间检索索引。下面讲解Nginx日志时，会去修正这一问题。</em></p></li>
@@ -378,8 +368,7 @@ name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
 <p><strong>2. Nginx 访问日志</strong></p>
 
 <ul>
-<li>日志格式<br />
-<br /></li>
+<li>日志格式<br /></li>
 </ul>
 
 <pre><code>$remote_addr - $remote_user [$time_local]  
@@ -388,16 +377,14 @@ name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
 </code></pre>
 
 <ul>
-<li>日志内容<br />
-<br /></li>
+<li>日志内容<br /></li>
 </ul>
 
 <pre><code>112.65.171.98 - - [15/Mar/2017:18:18:06 +0800] &quot;GET /index.html HTTP/1.1&quot; 200 1150 &quot;http://www.yourdomain.com/&quot; &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36&quot; &quot;-&quot;  
 </code></pre>
 
 <ul>
-<li>filebeat中prospectors的配置<br />
-<br /></li>
+<li>filebeat中prospectors的配置<br /></li>
 </ul>
 
 <pre><code>- document_type: nginx  
@@ -408,8 +395,7 @@ name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
 </code></pre>
 
 <ul>
-<li>logstash中FILTERS配置<br />
-<br /></li>
+<li>logstash中FILTERS配置<br /></li>
 </ul>
 
 <pre><code>filter {  
@@ -417,13 +403,13 @@ name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
 		grok{  
 	       match =&gt; { &quot;message&quot; =&gt; &quot;%{COMBINEDAPACHELOG}&quot; }  
 	    }  
-  
+
 	   date {  
 	        match =&gt; [ &quot;timestamp&quot; , &quot;dd/MMM/yyyy:HH:mm:ss Z&quot;, &quot;ISO8601&quot; ]  
 	        target =&gt; &quot;@timestamp&quot; #可省略  
 	    }  
 	}  
-  
+
 }  
 </code></pre>
 
@@ -444,8 +430,7 @@ name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
 
 <ol>
 <li>match：数组中第一个值为要匹配的时间字段，后面的n个是匹配规则，它们的关系是or的关系，满足一个即可；<br /></li>
-<li>target：将match中匹配的时间替换该字段，默认替换@timestamp；<br />
-<br /></li>
+<li>target：将match中匹配的时间替换该字段，默认替换@timestamp；<br /></li>
 </ol></li>
 </ol>
 
@@ -457,8 +442,7 @@ name: &quot;server1&quot; #设置beat的名称，默认为主机hostname
 <p><strong>3. JAVA Log4j 日志</strong></p>
 
 <ul>
-<li>日志内容<br />
-<br /></li>
+<li>日志内容<br /></li>
 </ul>
 
 <pre><code>'2017-03-16 15:52:39,580 ERROR TestController:26 - test:  
@@ -470,12 +454,11 @@ java.lang.NullPointerException
 	at java.lang.reflect.Method.invoke(Method.java:497)  
 	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:221)  
 	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:137)'  
-  
+
 </code></pre>
 
 <ul>
-<li>filebeat中prospectors的配置<br />
-<br /></li>
+<li>filebeat中prospectors的配置<br /></li>
 </ul>
 
 <pre><code>- document_type: tomcat  
@@ -490,8 +473,7 @@ java.lang.NullPointerException
 </code></pre>
 
 <ul>
-<li>logstash中FILTERS配置<br />
-<br /></li>
+<li>logstash中FILTERS配置<br /></li>
 </ul>
 
 <pre><code>filter {  
@@ -499,12 +481,12 @@ java.lang.NullPointerException
 		grok{  
 			match =&gt; { &quot;message&quot; =&gt; &quot;%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{JAVALOGMESSAGE:msg}&quot; }  
 		}  
-  
+
 		date {  
 	   		match =&gt; [ &quot;timestamp&quot; , &quot;yyyy-MM-dd HH:mm:ss,S&quot;, &quot;ISO8601&quot; ]  
 		}  
 	}  
-  
+
 }I  
 </code></pre>
 
@@ -520,8 +502,7 @@ java.lang.NullPointerException
 <ol>
 <li>pattern：匹配规则，这里指匹配每条日志开始的年份；<br /></li>
 <li>match：有before与after，这里指从该行开始向后匹配；<br /></li>
-<li>negate：是否开始一个新记录，这里指当pattern匹配后，结束之前的记录，创建一条新日志记录；<br />
-<br /></li>
+<li>negate：是否开始一个新记录，这里指当pattern匹配后，结束之前的记录，创建一条新日志记录；<br /></li>
 </ol>
 
 <p><em>当然在logstash input中使用codec multiline设置是一样的</em></p></li>
@@ -869,6 +850,8 @@ java.lang.NullPointerException
          <a rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
       

@@ -230,7 +230,7 @@
                   <h1 class="post-title">Linux之MariaDB集群</h1>
 
                   <p class="post-byline">
-                    by  · 2016年02月26日 15:30:01 · 1756 Words ·
+                    by  · 2016年02月26日 15:30:01 · 1790 Words ·
                     ~4min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Post/db/MariaDB-Galera.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
@@ -268,68 +268,76 @@ gpgkey = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck = 1  
 </code></pre>
 
-<p>执行安装命令</p>
+<h1 id="mariadb-10-2-centos-repository-list-created-2017-08-15-08-02-utc">MariaDB 10.2 CentOS repository list - created 2017-08-15 08:02 UTC</h1>
 
-<p>sudo yum install mariadb-server</p>
+<h1 id="http-downloads-mariadb-org-mariadb-repositories"><a href="http://downloads.mariadb.org/mariadb/repositories/">http://downloads.mariadb.org/mariadb/repositories/</a></h1>
 
-<p>如果在用阿里云的服务器，可以将上述配置中的域名替换成<br />
-    <a href="http://mirrors.aliyun.com/">http://mirrors.aliyun.com/</a><br />
-以上yum配置经修改后同样的适用于其他源，详细内容请往下看<br />
-yum -y install MariaDB-server MariaDB-client</p>
+<p>[mariadb]<br />
+name = MariaDB<br />
+baseurl = <a href="https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos7-amd64">https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos7-amd64</a><br />
+gpgkey= <a href="https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB">https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB</a><br />
+gpgcheck=1</p>
 
-<h2 id="ubuntu镜像">Ubuntu镜像</h2>
+<pre><code>
+执行安装命令  
+yum clean all  # 防止报错  
+yum makecache  
+sudo yum install mariadb-server  
 
-<p>sudo apt　install software-properties-common</p>
+如果在用阿里云的服务器，可以将上述配置中的域名替换成  
+    http://mirrors.aliyun.com/  
+以上yum配置经修改后同样的适用于其他源，详细内容请往下看  
+yum -y install MariaDB-server MariaDB-client  
+## Ubuntu镜像  
+sudo apt　install software-properties-common  
 
-<p>sudo apt-key adv &ndash;recv-keys &ndash;keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8<br />
-sudo add-apt-repository &lsquo;deb [arch=amd64,i386,ppc64el] <a href="http://mirrors.tuna.tsinghua.edu.cn/mariadb/repo/10.2/ubuntu">http://mirrors.tuna.tsinghua.edu.cn/mariadb/repo/10.2/ubuntu</a> xenial main&rsquo;</p>
+sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8  
+sudo add-apt-repository 'deb [arch=amd64,i386,ppc64el] http://mirrors.tuna.tsinghua.edu.cn/mariadb/repo/10.2/ubuntu xenial main'  
 
-<p>sudo apt-get install mariadb-client<br />
-sudo apt-get install mariadb-galera-server galera</p>
+sudo apt-get install mariadb-client  
+sudo apt-get install mariadb-galera-server galera  
 
-<h2 id="配置文件mariadb及galera">配置文件MariaDB及Galera</h2>
-
-<p>sudo apt install xtrabackup<br />
- /etc/my.cnf.d/galera.cnf</p>
-
-<pre><code>[galera]  
-wsrep_on=ON  
-wsrep_provider=/usr/lib64/galera/libgalera_smm.so  
-wsrep_cluster_address=&quot;gcomm://192.168.1.112,192.168.1.113 &quot;  
-binlog_format=row  
-default_storage_engine=InnoDB  
-innodb_autoinc_lock_mode=2  
-bind-address=0.0.0.0  
-wsrep_cluster_name=&quot;GaleraCluster&quot;  
-wsrep_node_address=&quot;192.168.1.112&quot;  
-wsrep_node_name=&quot;node1&quot;  
-wsrep_sst_method=xtrabackup  
-wsrep_sst_auth=root:command  
-  
-  
-[galera]  
-wsrep_causal_reads=ON                   #节点应用完事务才返回查询请求  
-wsrep_provider_options=&quot;gcache.size=4G&quot; #同步复制缓冲池  
-wsrep_certify_nonPK=ON                  #为没有显式申明主键的表生成一个用于certificationtest的主键，默认为ON  
-#log-bin=/app/galera/mysql-bin          #如果不接从库，注释掉  
-#log_slave_updates=1                    #如果不接从库，注释掉  
-query_cache_size=0                      #关闭查询缓存  
-wsrep_on=ON                             #开启全同步复制模式  
-wsrep_provider=/usr/lib64/galera/libgalera_smm.so  
-wsrep_cluster_name=MariaDB-Galera-Cluster  
-wsrep_cluster_address=&quot;gcomm://192.168.1.104,192.168.1.105,192.168.1.106&quot;  
-wsrep_node_name=mariadb-a03  
-wsrep_node_address=192.168.1.104  
-binlog_format=row  
-default_storage_engine=InnoDB  
-innodb_autoinc_lock_mode=2              #主键自增模式修改为交叉模式  
-wsrep_slave_threads=8                   #开启并行复制线程，根据CPU核数设置  
-innodb_flush_log_at_trx_commit=0        #事务提交每隔1秒刷盘  
-innodb_buffer_pool_size=2G  
-wsrep_sst_method=rsync  
+## 配置文件MariaDB及Galera  
+sudo apt install xtrabackup  
+ /etc/my.cnf.d/galera.cnf  
 </code></pre>
 
-<p>注意：<br />
+<p>[galera]<br />
+wsrep_on=ON<br />
+wsrep_provider=/usr/lib64/galera/libgalera_smm.so<br />
+wsrep_cluster_address=&ldquo;gcomm://192.168.1.112,192.168.1.113 &ldquo;<br />
+binlog_format=row<br />
+default_storage_engine=InnoDB<br />
+innodb_autoinc_lock_mode=2<br />
+bind-address=0.0.0.0<br />
+wsrep_cluster_name=&ldquo;GaleraCluster&rdquo;<br />
+wsrep_node_address=&ldquo;192.168.1.112&rdquo;<br />
+wsrep_node_name=&ldquo;node1&rdquo;<br />
+wsrep_sst_method=xtrabackup<br />
+wsrep_sst_auth=root:command</p>
+
+<p>[galera]<br />
+wsrep_causal_reads=ON                   #节点应用完事务才返回查询请求<br />
+wsrep_provider_options=&ldquo;gcache.size=4G&rdquo; #同步复制缓冲池<br />
+wsrep_certify_nonPK=ON                  #为没有显式申明主键的表生成一个用于certificationtest的主键，默认为ON<br />
+#log-bin=/app/galera/mysql-bin          #如果不接从库，注释掉<br />
+#log_slave_updates=1                    #如果不接从库，注释掉<br />
+query_cache_size=0                      #关闭查询缓存<br />
+wsrep_on=ON                             #开启全同步复制模式<br />
+wsrep_provider=/usr/lib64/galera/libgalera_smm.so<br />
+wsrep_cluster_name=MariaDB-Galera-Cluster<br />
+wsrep_cluster_address=&ldquo;gcomm://192.168.1.104,192.168.1.105,192.168.1.106&rdquo;<br />
+wsrep_node_name=mariadb-a03<br />
+wsrep_node_address=192.168.1.104<br />
+binlog_format=row<br />
+default_storage_engine=InnoDB<br />
+innodb_autoinc_lock_mode=2              #主键自增模式修改为交叉模式<br />
+wsrep_slave_threads=8                   #开启并行复制线程，根据CPU核数设置<br />
+innodb_flush_log_at_trx_commit=0        #事务提交每隔1秒刷盘<br />
+innodb_buffer_pool_size=2G<br />
+wsrep_sst_method=rsync<br />
+```<br />
+注意：<br />
 此处wsrep_cluster_address为集群中所有节点或非自己的任意集群节点ip即可。<br />
 不同节点的配置内容基本类似。<br />
 要保证wsrep_cluster_name必须一致，wsrep_node_address为本服务器地址。<br />
@@ -759,6 +767,8 @@ ERROR 1205 (HY000): Lock wait timeoutexceeded; try restarting transaction
          <a rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
       

@@ -254,7 +254,7 @@
    # - pipeline: normal_pipeline  
    #   when.equals:  
 #     type: &quot;normal&quot;  
-  
+
 output.elasticsearch:  
   hosts: [&quot;http://localhost:9200&quot;]  
   username: &quot;admin&quot;  
@@ -266,17 +266,17 @@ output.elasticsearch:
   ssl.certificate_authorities: [&quot;/etc/pki/root/ca.pem&quot;]  
   ssl.certificate: &quot;/etc/pki/client/cert.pem&quot;  
   ssl.key: &quot;/etc/pki/client/cert.key&quot;  
-  
+
 </code></pre>
 
 <p>./scripts/import_dashboards -es <a href="http://120.92.36.21:9200">http://120.92.36.21:9200</a> -user elastic -pass changeme</p>
 
 <pre><code>-E &lt;setting&gt;=&lt;value&gt;  
-  
+
    Override a specific configuration setting. For example:  
-  
+
    sudo ./metricbeat -c metricbeat.yml -E name=mybeat  
-  
+
    This setting is applied to the currently running Metricbeat process. The Metricbeat configuration file is not changed.  
 -N  
    Disable the publishing of events to the defined output. This option is useful only for testing the Beat.  
@@ -284,12 +284,12 @@ output.elasticsearch:
    Pass the location of a configuration file for the Beat.  
 -configtest  
    Test the configuration file and then exit. This option is useful for troubleshooting the configuration of a Beat.  
-  
+
 -d &lt;selectors&gt;  
    Enable debugging for the specified selectors. For the selectors, you can specify a comma-separated list of components, or you can use -d &quot;*&quot; to enable debugging for all components. For example, -d &quot;publish&quot; displays all the &quot;publish&quot; related messages.  
 -e  
    Log to stderr and disable syslog/file output.  
-  
+
 -path.config  
    Set the default location for configuration (e.g. the Elasticsearch template). See the Directory Layout section for details.  
 -path.data  
@@ -321,51 +321,51 @@ fields 添加的其他固定字段都存在这个对象里面
 </code></pre>
 
 <pre><code>paths：指定要监控的日志，目前按照Go语言的glob函数处理。没有对配置目录做递归处理，比如配置的如果是：  
-  
+
 /var/log/* /*.log  
 则只会去/var/log目录的所有子目录中寻找以”.log”结尾的文件，而不会寻找/var/log目录下以”.log”结尾的文件。  
-  
+
 encoding：指定被监控的文件的编码类型，使用plain和utf-8都是可以处理中文日志的。  
-  
+
 input_type：指定文件的输入类型log(默认从文件中读取)或者stdin。  
 document_type：设定Elasticsearch输出时的document的_type字段，也可以用来给日志进行分类。 当未指定时使用input_type设定值  
-  
+
 exclude_lines：在输入中排除符合正则表达式列表的那些行。  
 include_lines：包含输入中符合正则表达式列表的那些行（默认包含所有行），include_lines执行完毕之后会执行exclude_lines。  
-  
+
 exclude_files：忽略掉符合正则表达式列表的文件（默认为每一个符合paths定义的文件都创建一个harvester）。  
 fields：向输出的每一条日志添加额外的信息，比如“level:debug”，方便后续对日志进行分组统计。默认情况下，会在输出信息的fields子目录下以指定的新增fields建立子目录，例如fields.level。  
 fields_under_root：如果该选项设置为true，则新增fields成为顶级目录，而不是将其放在fields目录下。自定义的field会覆盖filebeat默认的field。例如添加如下配置：  
 fields:  
 level: debug  
 fields_under_root: true  
-  
+
 ignore_older：可以指定Filebeat忽略指定时间段以外修改的日志内容，比如2h（两个小时）或者5m(5分钟)。  
 close_older：如果一个文件在某个时间段内没有发生过更新，则关闭监控的文件handle。默认1h,change只会在下一次scan才会被发现  
 force_close_files：Filebeat会在没有到达close_older之前一直保持文件的handle，如果在这个时间窗内删除文件会有问题，所以可以把force_close_files设置为true，只要filebeat检测到文件名字发生变化，就会关掉这个handle。  
 scan_frequency：Filebeat以多快的频率去prospector指定的目录下面检测文件更新（比如是否有新增文件），如果设置为0s，则Filebeat会尽可能快地感知更新（占用的CPU会变高）。默认是10s。  
-  
+
 harvester_buffer_size：每个harvester监控文件时，使用的buffer的大小。  
 max_bytes：单行日志最大字节,多余丢弃;日志文件中增加一行算一个日志事件，max_bytes限制在一次日志事件中最多上传的字节数，多出的字节会被丢弃。  
-  
+
 multiline：适用于日志中每一条日志占据多行的情况，比如各种语言的报错信息调用栈。这个配置的下面包含如下配置：  
 multiline 合并多行日志为一行：  当然在logstash input中使用codec multiline设置是一样的  
         pattern：匹配规则，这里指匹配每条日志开始的年份；  
         negate： 是否开始一个新记录，这里指当pattern匹配后，结束之前的记录，创建一条新日志记录；默认false  
         match：  有before与after，这里指从该行开始向后匹配；  
-  
+
 negate：默认是false，正则匹配的行合并到上一行；  
         true，不匹配pattern的行合并到上一行  
 match： after 或 before，匹配合并到上一行的末尾或下一行开头  
-  
+
          negate 	match 	Result  
         [false   before  匹配中 之前的行 新建到下一行 (用来匹配 多行开始的行)]  
         [false   after   匹配中 之后的行 追加到上一行 (用来匹配 多行结束的行)]  
-  
+
         true    after    不匹配 之前的行 追加到上一行  
         true    before   不匹配 之后的行 追加到下一行  
-  
-  
+
+
 tail_files：如果设置为true，Filebeat从文件尾开始监控文件新增内容，把新增的每一行文件作为一个事件依次发送，而不是从文件开始处重新发送所有内容。  
 backoff：Filebeat检测到某个文件到了EOF之后，每次等待多久再去检测文件是否有更新，默认为1s。  
 max_backoff：Filebeat检测到某个文件到了EOF之后，等待检测文件更新的最大时间，默认是10秒。  
@@ -386,12 +386,12 @@ publish_async：是否采用异步发送模式（实验功能）。
   multiline.pattern: '^{'  
   multiline.negate: true  
   multiline.match:  after  
-  
+
 processors:  
 - decode_json_fields:  
     fields: ['message']  
     target: json  
-  
+
 output.console.pretty: true  
 </code></pre>
 
@@ -401,7 +401,7 @@ output.console.pretty: true
     registry_file: &quot;.filebeat&quot;                          # 文件读取位置记录文件，会放在当前工作目录下。所以如果你换一个工作目录执行 filebeat 会导致重复传输！  
     config_dir: &quot;path/to/configs/contains/many/yaml&quot;    # 如果配置过长，可以通过目录加载方式拆分配置  
     prospectors:                                        # 有相同配置参数的可以归类为一个 prospector  
-  
+
         -  
             fields:  
                 ownfield: &quot;mac&quot;                         # 类似 logstash 的 add_fields  
@@ -426,7 +426,7 @@ output.console.pretty: true
                 pattern: '^[[:space:]]'  
                 negate: false  
                 match: after  
-  
+
 filebeat.prospectors:  
 - input_type: log  
   paths: [&quot;/var/log/**/*.log&quot;]  
@@ -444,20 +444,20 @@ filebeat.prospectors:
     pattern: ^\d{4}  
     match: after  
     negate: true  
-  
+
 # logstash中FILTERS配置  
-  
+
 filter {  
 	if [type] == &quot;tomcat&quot; {  
 		grok{  
 			match =&gt; { &quot;message&quot; =&gt; &quot;%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{JAVALOGMESSAGE:msg}&quot; }  
 		}  
-  
+
 		date {  
 	   		match =&gt; [ &quot;timestamp&quot; , &quot;yyyy-MM-dd HH:mm:ss,S&quot;, &quot;ISO8601&quot; ]  
 		}  
 	}  
-  
+
 }  
 </code></pre>
 
@@ -509,7 +509,7 @@ index 表示写入 Elasticsearch 时索引的前缀，比如示例即表示索�
 <h2 id="filebeat-logstash">filebeat &ndash;&gt; logstash</h2>
 
 <pre><code class="language-yaml">下面是一个简单的Filebeat配置，采集2个文件夹下的日志并转发至Logstash。  
-  
+
 filebeat:  
   prospectors:  
     -  
@@ -525,9 +525,9 @@ filebeat:
 output:  
   logstash:  
     hosts: [&quot;10.90.4.9:5044&quot;]  
-  
+
 在Logstash中根据 document_type定义解析日志的正则并输出到ELasticsearch集群。  
-  
+
 input {  
     beats{  
      host =&gt; &quot;192.2.11.145&quot;  
@@ -883,6 +883,8 @@ output {
          <a rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
       

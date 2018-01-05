@@ -255,22 +255,22 @@ iptables -P INPUT DROP #进入本机数据包默认拒绝
 iptables -P OUTPUT ACCEPT #本起外出数据包允许  
 iptables -A INPUT -i lo -j ACCEPT #允许本地环回  
 iptables -A INPUT -m state --state INVALID  -j LOG --log-prefix &quot;INVALID&quot; --log-ip-options  
-  
+
 #记录无效的数据包并丢弃  
 iptables -A INPUT -m state --state INVALID  -j  DROP  
-  
+
 #允许已建立连接与出相关的数据包进入  
 iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT  
-  
+
 #允许目标端口为80的新连接进入  
 iptables -A INPUT -m state --state NEW -p tcp --dport 80 -j ACCEPT  
-  
+
 #允许目标端口为$sshdport的新链接进入  
 iptables -A INPUT -m state --state NEW -p tcp --dport $sshdport -j ACCEPT  
-  
+
 #允许ping回应，每秒5个，最多20个  
 iptables -A INPUT -p icmp --icmp-type echo-request -m limit --limit 5/s --limit-burst 20 -j ACCEPT  
-  
+
 #保存规则，重启iptables服务  
 service iptables save  
 </code></pre>
@@ -287,14 +287,14 @@ service iptables save
 4. 进入 mangle 表的 PREROUTING 链，在此可以修改数据包，比如 TOS 等。  
 5. 进入 nat 表的 PREROUTING 链，可以在此做DNAT，但不要做过滤。  
 6. 决定路由，看是交给本地主机还是转发给其它主机。  
-  
+
 到了这里我们就得分两种不同的情况进行讨论了，一种情况就是数据包要转发给其它主机，这时候它会依次经过：  
 7. 进入 mangle 表的 FORWARD 链，这里也比较特殊，这是在第一次路由决定之后，在进行最后的路由决定之前，我们仍然可以对数据包进行某些修改。  
 8. 进入 filter 表的 FORWARD 链，在这里我们可以对所有转发的数据包进行过滤。需要注意的是：经过这里的数据包是转发的，方向是双向的。  
 9. 进入 mangle 表的 POSTROUTING 链，到这里已经做完了所有的路由决定，但数据包仍然在本地主机，我们还可以进行某些修改。  
 10. 进入 nat 表的 POSTROUTING 链，在这里一般都是用来做 SNAT ，不要在这里进行过滤。  
 11. 进入出去的网络接口。完毕。  
-  
+
 另一种情况是，数据包就是发给本地主机的，那么它会依次穿过：  
 7. 进入 mangle 表的 INPUT 链，这里是在路由之后，交由本地主机之前，我们也可以进行一些相应的修改。  
 8. 进入 filter 表的 INPUT 链，在这里我们可以对流入的所有数据包进行过滤，无论它来自哪个网络接口。  
@@ -385,7 +385,7 @@ iptables -A INPUT -p tcp --dport 80 --syn -m recent --name webpool --set -j ACCE
 
 <pre><code>#记录日志，前缀WEBOPEN:  
 iptables -A INPUT -p tcp --dport 5000 --syn -j LOG --log-prefix &quot;WEBOPEN: &quot;  
-  
+
 #符合规则即删除webpool列表内的本IP记录  
 iptables -A INPUT -p tcp --dport 5000 --syn -m recent --remove --name webpool --rsource -j REJECT --reject-with tcp-reset  
 </code></pre>
@@ -394,13 +394,13 @@ iptables -A INPUT -p tcp --dport 5000 --syn -m recent --remove --name webpool --
 
 <pre><code>#记录日志，前缀SSHOPEN:  
 iptables -A INPUT -p tcp --dport 50001 --syn -j LOG --log-prefix &quot;SSHOPEN: &quot;  
-  
+
 #目标端口tcp50001的新数据设定列表为sshopen返回TCP重置，并记录源地址  
 iptables -A INPUT -p tcp --dport 50001 --syn -m recent --set --name sshopen --rsource -j REJECT --reject-with tcp-reset  
-  
+
 #开启SSH端口，15秒内允许记录的源地址登录SSH  
 iptables -A INPUT -p tcp --dport 22 --syn -m recent --rcheck --seconds 15 --name sshopen --rsource -j ACCEPT  
-  
+
 #开门钥匙  
 nc host 50001  
 telnet host 50001  
@@ -411,11 +411,11 @@ nmap -sS host 50001
 
 <pre><code>#记录日志，前缀SSHOPEN:  
 iptables -A INPUT -p icmp --icmp-type 8 -m length --length 78 -j LOG --log-prefix &quot;SSHOPEN: &quot;  
-  
+
 #指定数据包78字节，包含IP头部20字节，ICMP头部8字节  
 iptables -A INPUT -p icmp --icmp-type 8 -m length --length 78 -m recent --set --name sshopen --rsource -j ACCEPT  
 iptables -A INPUT -p tcp --dport 22 --syn -m recent --rcheck --seconds 15 --name sshopen --rsource -j ACCEPT  
-  
+
 ping -s 50 host     #Linux下解锁  
 ping -l 50 host     #Windows下解锁  
 </code></pre>
@@ -513,8 +513,7 @@ iptables -A INPUT -p tcp --dport 80 -m connlimit --connlimit-above 10 -j DROP
 
 <dl>
 <dt>Iptables的recent用做防CC效果很好，刚刚在调整单个IP跟踪数据包数量时遇到以下错误<br /></dt>
-<dd>
-<br /></dd>
+<dd></dd>
 </dl>
 
 <pre><code>iptables: Unknown error 18446744073709551615  
@@ -665,16 +664,16 @@ make install
 <p>arptables规则设置：</p>
 
 <pre><code>arptables -F  
-  
+
 #默认策略  
 arptables -P INPUT ACCEPT  
-  
+
 #允许本网段特定MAC可进入，且IP与MAC相符  
 arptables -A INPUT --src-ip 192.168.1.1 --src-mac 7A:31:14:42:10:01 -j ACCEPT  
-  
+
 #拒绝非网关MAC  
 arptables -A INPUT --src-mac ! 74:8E:F8:53:DC:C0 -j DROP  
-  
+
 #拒绝非网关IP  
 arptables -A INPUT --src-ip ! 192.168.1.1 -j DROP  
 </code></pre>
@@ -711,7 +710,7 @@ TTL模块可以修改收到、发送数据的TTL值，这模块很有趣，可�
 
 <pre><code>#禁止TTL为1的数据包进入  
 iptables -A INPUT -m ttl --ttl-eq 1 -j DROP  
-  
+
 #禁止转发TTL为1的数据  
 iptables -A FORWARD -m ttl --ttl-eq 1 -j DROP  
 </code></pre>
@@ -755,7 +754,7 @@ modprobe ipt_IPID
 
 <pre><code>#限制2级路由  
 iptables -t mangle -A PREROUTING  -i pppoe-wan -j TTL --ttl-inc 1  
-  
+
 #这样路由本机和下级电脑发的数据都修改TTL和IPID信息，修改TTL会导致tracert跟踪不正常。  
 #如需不影响路由本机tracert可在FORWARD链修改数据包信息  
 iptables -t mangle -A POSTROUTING -o pppoe-wan -j TTL --ttl-set 128  
@@ -829,7 +828,7 @@ patch -p1 &lt; ../netfilter-layer7-v2.18/for_older_kernels/kernel-2.6.18-2.6.19-
 <pre><code>make prepare  
 #创建外部模块所需文件，后续可直接编译指定模块  
 make modules_prepare  
-  
+
 #仅编译防火墙相关模块  
 make M=net/ipv4/netfilter/  
 </code></pre>
@@ -846,10 +845,10 @@ depmod -a
 
 <pre><code>tar jxvf iptables-1.3.5.tar.bz2  
 cd iptables-1.3.5  
-  
+
 #给iptables打上layer7补丁，阅读README根据内核及Iptables版本选择相应的补丁  
 patch -p1 &lt; ../netfilter-layer7-v2.18/iptables-1.3-for-kernel-pre2.6.20-layer7-2.18.patch  
-  
+
 chmod +x extensions/.layer7-test  
 make KERNEL_DIR=/usr/src/kernels/linux-2.6.18  
 make install KERNEL_DIR=/usr/src/kernels/linux-2.6.18  
@@ -897,11 +896,11 @@ make install
 <pre><code>#匹配指定的TCP标记，有两个参数列表，列表内部用逗号为分隔符，两个列表之间用空格分开。  
 #第一个列表用作参数检查，第二个列表用作参数匹配。  
 -p tcp --tcp-flags  
-  
+
 #可用以下标志：  
 #ALL是指选定所有的标记，NONE是指未选定任何标记。  
 SYN、ACK、FIN、RST 、URG、PSH、ALL、NONE  
-  
+
 --syn  
 #SYN标志设置为1，其它标志未设置，相当于：  
 -p tcp --tcp-flags ALL SYN  
@@ -946,25 +945,25 @@ libxt_mark.so
 
 <pre><code>iptables -j MARK --help  
 --set-mark     #标记数据包  
-  
+
 #所有TCP数据标记1  
 iptables -t mangle -A PREROUTING -p tcp -j MARK --set-mark 1  
-  
+
 iptables -m mark --help  
 --mark value     #匹配数据包的MARK标记  
-  
+
 #匹配标记1的数据并保存数据包中的MARK到连接中  
 iptables -t mangle -A PREROUTING -p tcp -m mark --mark 1 -j CONNMARK --save-mark  
-  
+
 iptables -j CONNMARK --help  
 --set-mark      #标记连接  
 --save-mark     #保存数据包中的MARK到连接中  
 --restore-mark  #将连接中的MARK设置到同一连接的其它数据包中  
 iptables -t mangle -A PREROUTING -p tcp -j CONNMARK --set-mark 1  
-  
+
 iptables -m connmark --help  
 --mark value     #匹配连接的MARK的标记  
-  
+
 #匹配连接标记1并将连接中的标记设置到数据包中  
 iptables -t mangle -A PREROUTING -p tcp -m connmark --mark 1 -j CONNMARK --restore-mark  
 </code></pre>
@@ -1300,6 +1299,8 @@ iptables -t mangle -A PREROUTING -p tcp -m connmark --mark 1 -j CONNMARK --resto
          <a rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
       

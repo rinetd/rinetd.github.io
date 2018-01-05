@@ -258,11 +258,11 @@
     defer resp.Body.Close()  
     body, err := ioutil.ReadAll(resp.Body)  
     // ...  
-  
+
 变量:  
-  
+
 以下错误是http server使用的  
-  
+
     var (  
             ErrHeaderTooLong        = &amp;ProtocolError{&quot;header too long&quot;}  
             ErrShortBody            = &amp;ProtocolError{&quot;entity body too short&quot;}  
@@ -272,30 +272,30 @@
             ErrNotMultipart         = &amp;ProtocolError{&quot;request Content-Type isn't multipart/form-data&quot;}  
             ErrMissingBoundary      = &amp;ProtocolError{&quot;no multipart boundary param in Content-Type&quot;}  
     )  
-  
+
     var (  
             ErrWriteAfterFlush = errors.New(&quot;Conn.Write called after Flush&quot;)  
             ErrBodyNotAllowed  = errors.New(&quot;http: request method or response status code does not allow body&quot;)  
             ErrHijacked        = errors.New(&quot;Conn has been hijacked&quot;)  
             ErrContentLength   = errors.New(&quot;Conn.Write wrote more than the declared Content-Length&quot;)  
     )  
-  
+
     var DefaultClient = &amp;Client{} //默认客户端,被Get,Head以及Post使用  
-  
+
     var DefaultServeMux = NewServeMux()//Serve使用的默认ServeMux  
-  
+
     var ErrBodyReadAfterClose = errors.New(&quot;http: invalid Read on closed Body&quot;)//当读取一个request或者response body是在这个body已经关闭之后,便会返回该错误.这种错误主要发生情况是:当http handler调用writeheader或者write关于responsewrite之后进行读操作.  
-  
+
     var ErrHandlerTimeout = errors.New(&quot;http: Handler timeout&quot;)//超时错误  
-  
+
     var ErrLineTooLong = internal.ErrLineTooLong//当读取格式错误的分块编码时便会出现该错误.  
-  
+
     var ErrMissingFile = errors.New(&quot;http: no such file&quot;)//当利用FormFile进行文件请求时,如果文件不存在或者请求中没有该文件就会出现该错误.  
-  
+
     var ErrNoCookie = errors.New(&quot;http: named cookie not present&quot;)  
-  
+
     var ErrNoLocation = errors.New(&quot;http: no Location header in response&quot;)  
-  
+
 函数:  
 func CanonicalHeaderKey(s string) string//返回header key的规范化形式,规范化形式是以&quot;-&quot;为分隔符,每一部分都是首字母大写,其他字母小写.例如&quot;accept-encoding&quot; 的标准化形式是 &quot;Accept-Encoding&quot;.  
 func DetectContentType(data \[\]byte) string//检查给定数据的内容类型Content-Type,最多检测512byte数据,如果有效的话,该函数返回一个MIME类型,否则的话,返回一个&quot;application/octet-stream&quot;  
@@ -309,18 +309,18 @@ func ServeFile(w ResponseWriter, r \*Request, name string)//利用指定的文�
 func SetCookie(w ResponseWriter, cookie \*Cookie)//给w设定cookie  
 func StatusText(code int) string//对于http状态码返回文本表示,如果这个code未知,则返回空的字符串.  
 举例说明上述函数使用方法：  
-  
+
     package main  
-  
+
     import (  
         &quot;fmt&quot;  
         &quot;net/http&quot;  
     )  
-  
+
     func Test(w http.ResponseWriter, r *http.Request) {  
         // http.NotFound(w, r)//用于设置404问题  
         // http.Error(w, &quot;404 page not found&quot;, 404) //状态码需和描述相符  
-  
+
         http.ServeFile(w, r, &quot;1.txt&quot;) //将1.txt中内容在w中显示.  
         cookie := &amp;http.Cookie{  
             Name:  http.CanonicalHeaderKey(&quot;uid-test&quot;), //Name值为Uid-Test  
@@ -330,22 +330,22 @@ func StatusText(code int) string//对于http状态码返回文本表示,如果�
         fmt.Println(r.Cookie(&quot;uid-test&quot;)) //&lt;nil&gt; http: named cookie not present  
         fmt.Println(r.Cookie(&quot;Uid-Test&quot;)) //Uid-Test=1234 &lt;nil&gt;  
         fmt.Println(r.Cookies())          //[Uid-Test=1234]  
-  
+
     }  
     func main() {  
-  
+
         stat := http.StatusText(200)  
         fmt.Println(stat) //状态码200对应的状态OK  
-  
+
         stringtype := http.DetectContentType([]byte(&quot;test&quot;))  
         fmt.Println(stringtype) //text/plain; charset=utf-8  
-  
+
         http.HandleFunc(&quot;/test&quot;, Test)  
         err := http.ListenAndServe(&quot;:9999&quot;, nil)  
         if err != nil {  
             fmt.Println(err)  
         }  
-  
+
     }  
 func MaxBytesReader(w ResponseWriter, r io.ReadCloser, n int64) io.ReadCloser//该函数类似于io.LimitReader但是该函数是用来限制请求体的大小.与io.LimitReader不同的是,该函数返回一个ReaderCloser,当读超过限制时,返回一个non-EOF,并且当Close方法调用时,关闭底层的reader.该函数组织客户端恶意发送大量请求,浪费服务器资源.  
 func ParseHTTPVersion(vers string) (major, minor int, ok bool)//解析http字符串版本进行解析,&quot;HTTP/1.0&quot; 返回 (1, 0, true)//&lt;span style=&quot;color:#ff0000&quot;&gt;注解析的字符串必须以HTTP开始才能够正确解析，HTTP区分大小写，其他诸如http或者Http都不能够正确解析。&lt;/span&gt;  
@@ -373,7 +373,7 @@ type Client//Client是一个http客户端,默认客户端(DefaultClient)将使�
         // Client的Transport字段默认值（DefaultTransport）支持CancelRequest方法。  
         Timeout time.Duration  
     }  
-  
+
     func (c \*Client) Do(req \*Request) (resp \*Response, err error)//Do发送http请求并且返回一个http响应,遵守client的策略,如重定向,cookies以及auth等.错误经常是由于策略引起的,当err是nil时,resp总会包含一个非nil的resp.body.当调用者读完resp.body之后应该关闭它,如果resp.body没有关闭,则Client底层RoundTripper将无法重用存在的TCP连接去服务接下来的请求,如果resp.body非nil,则必须对其进行关闭.通常来说,经常使用Get,Post,或者PostForm来替代Do.  
     func (c \*Client) Get(url string) (resp \*Response, err error)//利用get方法请求指定的url.Get请求指定的页面信息，并返回实体主体。  
     func (c \*Client) Head(url string) (resp \*Response, err error)//利用head方法请求指定的url，Head只返回页面的首部。  
@@ -381,7 +381,7 @@ type Client//Client是一个http客户端,默认客户端(DefaultClient)将使�
     func (c \*Client) PostForm(url string, data url.Values) (resp \*Response, err error)//利用post方法请求指定的url,利用data的key和value作为请求体.  
 http中Client客户端的参数设定解析如上面描述所示，Client具有Do，Get，Head，Post以及PostForm等方法。 其中Do方法可以对Request进行一系列的设定，而其他的对request设定较少。如果Client使用默认的Client，则其中的Get，Head，Post以及PostForm方法相当于默认的http.Get,http.Post,http.Head以及http.PostForm函数。举例说明其用法。其中Get，Head，Post以及PostForm用法如下：  
     package main  
-  
+
     import (  
         &quot;bytes&quot;  
         &quot;fmt&quot;  
@@ -389,9 +389,9 @@ http中Client客户端的参数设定解析如上面描述所示，Client具有D
         &quot;net/http&quot;  
         &quot;net/url&quot;  
     )  
-  
+
     func main() {  
-  
+
         requestUrl := &quot;http://www.baidu.com&quot;  
         // request, err := http.Get(requestUrl)  
         // request, err := http.Head(requestUrl)  
@@ -402,13 +402,13 @@ http中Client客户端的参数设定解析如上面描述所示，Client具有D
             &quot;from&quot;:     {&quot;china&quot;},  
         }  
         // request, err := http.PostForm(requestUrl, postvalue)  
-  
+
         body := bytes.NewBufferString(postvalue.Encode())  
         request, err := http.Post(requestUrl, &quot;text/html&quot;, body)  //Post方法  
         if err != nil {  
             fmt.Println(err)  
         }  
-  
+
         defer request.Body.Close()  
         fmt.Println(request.StatusCode)  
         if request.StatusCode == 200 {  
@@ -418,13 +418,13 @@ http中Client客户端的参数设定解析如上面描述所示，Client具有D
             }  
             fmt.Println(string(rb))  
         }  
-  
+
     }  
-  
+
 Do方法可以灵活的对request进行配置，然后进行请求。利用http.Client以及http.NewRequest来模拟请求。模拟request中带有cookie的请求。  
-  
+
     package main  
-  
+
     import (  
         // &quot;encoding/json&quot;  
         &quot;fmt&quot;  
@@ -432,7 +432,7 @@ Do方法可以灵活的对request进行配置，然后进行请求。利用http.
         &quot;net/http&quot;  
         &quot;strconv&quot;  
     )  
-  
+
     func main() {  
         client := &amp;http.Client{}  
         request, err := http.NewRequest(&quot;GET&quot;, &quot;http://www.baidu.com&quot;, nil)  
@@ -440,9 +440,9 @@ Do方法可以灵活的对request进行配置，然后进行请求。利用http.
             fmt.Println(err)  
         }  
         cookie := &amp;http.Cookie{Name: &quot;userId&quot;, Value: strconv.Itoa(12345)}  
-  
+
         request.AddCookie(cookie) //request中添加cookie  
-  
+
         //设置request的header  
         request.Header.Set(&quot;Accept&quot;, &quot;text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&quot;)  
         request.Header.Set(&quot;Accept-Charset&quot;, &quot;GBK,utf-8;q=0.7,*;q=0.3&quot;)  
@@ -450,13 +450,13 @@ Do方法可以灵活的对request进行配置，然后进行请求。利用http.
         request.Header.Set(&quot;Accept-Language&quot;, &quot;zh-CN,zh;q=0.8&quot;)  
         request.Header.Set(&quot;Cache-Control&quot;, &quot;max-age=0&quot;)  
         request.Header.Set(&quot;Connection&quot;, &quot;keep-alive&quot;)  
-  
+
         response, err := client.Do(request)  
         if err != nil {  
             fmt.Println(err)  
             return  
         }  
-  
+
         defer response.Body.Close()  
         fmt.Println(response.StatusCode)  
         if response.StatusCode == 200 {  
@@ -467,25 +467,25 @@ Do方法可以灵活的对request进行配置，然后进行请求。利用http.
             fmt.Println(string(r))  
         }  
     }  
-  
+
    
-  
+
 type CloseNotifier//该接口被ResponseWriter用来实时检测底层连接是否已经断开.如果客户端已经断开连接,该机制可以在服务端响应之前取消二者之间的长连接.  
     type CloseNotifier interface {  
             // 当客户端断开连接时,CloseNotifier接受一个通知  
             CloseNotify() &lt;-chan bool  
     }  
-  
+
  CloseNotifier经常被ResponseWriter用来检测底层连接是否已经断开，举例如下：  
-  
+
     package main  
-  
+
     import (  
         &quot;fmt&quot;  
         &quot;net/http&quot;  
         &quot;time&quot;  
     )  
-  
+
     func Test(w http.ResponseWriter, r *http.Request) {  
         http.ServeFile(w, r, &quot;test.go&quot;)  
         var closenotify http.CloseNotifier  
@@ -495,26 +495,26 @@ type CloseNotifier//该接口被ResponseWriter用来实时检测底层连接是�
             fmt.Println(&quot;cut&quot;)  
         case &lt;-time.After(time.Duration(100) * time.Second):  
             fmt.Println(&quot;timeout&quot;)  
-  
+
         }  
     }  
     func main() {  
-  
+
         http.HandleFunc(&quot;/test&quot;, Test)  
         err := http.ListenAndServe(&quot;:9999&quot;, nil)  
         if err != nil {  
             fmt.Println(err)  
         }  
-  
+
     }  
-  
+
    
-  
+
 type ConnState //表示客户端连接服务端的状态  
     type ConnState int  
-  
+
 其中ConnState常用状态变量如下:  
-  
+
     const (  
         // StateNew代表一个新的连接，将要立刻发送请求。  
         // 连接从这个状态开始，然后转变为StateAlive或StateClosed。  
@@ -533,23 +533,23 @@ type ConnState //表示客户端连接服务端的状态
         // 这是一个终止状态。被劫持的连接不会转变为StateClosed。  
         StateClosed  
     )  
-  
+
     func (c ConnState) String() string  //状态的字符形式表示  
         fmt.Println(http.StateActive)          //active  
         fmt.Println(http.StateActive.String()) //active  
-  
+
    
-  
+
 type Cookie//常用SetCooker用来给http的请求或者http的response设置cookie  
     type Cookie struct {  
-  
+
             Name       string  //名字  
             Value      string  //值  
             Path       string   //路径  
             Domain     string  
             Expires    time.Time //过期时间  
             RawExpires string  
-  
+
             // MaxAge=0 意味着 没有'Max-Age'属性指定.  
             // MaxAge&lt;0 意味着 立即删除cookie  
             // MaxAge&gt;0 意味着设定了MaxAge属性,并且其单位是秒  
@@ -559,21 +559,21 @@ type Cookie//常用SetCooker用来给http的请求或者http的response设置coo
             Raw      string  
             Unparsed []string // 未解析的属性值对  
     }  
-  
+
 func (c \*Cookie) String() string//该函数返回cookie的序列化结果。如果只设置了Name和Value字段，序列化结果可用于HTTP请求的Cookie头或者HTTP回复的Set-Cookie头；如果设置了其他字段，序列化结果只能用于HTTP回复的Set-Cookie头。  
-  
+
 type CookieJar//在http请求中，CookieJar管理存储和使用cookies.Cookiejar的实现必须被多协程并发使用时是安全的.  
     type CookieJar interface {  
             // SetCookies 处理从url接收到的cookie,是否存储这个cookies取决于jar的策略和实现  
             SetCookies(u *url.URL, cookies []*Cookie)  
-  
+
             // Cookies 返回发送到指定url的cookies  
             Cookies(u *url.URL) []*Cookie  
     }  
-  
+
 type Dir//使用一个局限于指定目录树的本地文件系统实现一个文件系统.一个空目录被当做当前目录&quot;.&quot;  
     type Dir string  
-  
+
     func (d Dir) Open(name string) (File, error)  
 type File //File是通过FileSystem的Open方法返回的,并且能够被FileServer实现.该方法与\*os.File行为表现一样.  
     type File interface {  
@@ -583,28 +583,28 @@ type File //File是通过FileSystem的Open方法返回的,并且能够被FileSer
             Seek(offset int64, whence int) (int64, error)  
             Stat() (os.FileInfo, error)  
     }  
-  
+
 type FileSystem//实现了对一系列指定文件的访问,其中文件路径之间通过分隔符进行分割.  
     type FileSystem interface {  
             Open(name string) (File, error)  
     }  
-  
+
    
-  
+
 type Flusher //responsewriters允许http控制器将缓存数据刷新入client.然而如果client是通过http代理连接服务器,这个缓存数据也可能是在整个response结束后才能到达客户端.  
     type Flusher interface {  
             // Flush将任何缓存数据发送到client  
             Flush()  
     }  
-  
+
    
-  
+
 type Handler //实现Handler接口的对象可以注册到HTTP服务端，为指定的路径或者子树提供服务。ServeHTTP应该将回复的header和数据写入ResponseWriter接口然后返回。返回意味着该请求已经结束，HTTP服务端可以转移向该连接上的下一个请求。  
 //如果ServeHTTP崩溃panic,那么ServeHTTP的调用者假定这个panic的影响与活动请求是隔离的,二者互不影响.调用者恢复panic,将stack trace记录到错误日志中,然后挂起这个连接.  
     type Handler interface {  
             ServeHTTP(ResponseWriter, *Request)  
     }  
-  
+
 　func FileServer(root FileSystem) Handler // FileServer返回一个使用FileSystem接口提供文件访问服务的HTTP处理器。可以使用httpDir来使用操作系统的FileSystem接口实现。&lt;span style=&quot;color:#ff0000&quot;&gt;其主要用来实现静态文件的展示。&lt;/span&gt;  
     func NotFoundHandler() Handler //返回一个简单的请求处理器,该处理器对任何请求都会返回&quot;404 page not found&quot;  
     func RedirectHandler(url string, code int) Handler//使用给定的状态码将它接受到的任何请求都重定向到给定的url  
@@ -612,28 +612,28 @@ type Handler //实现Handler接口的对象可以注册到HTTP服务端，为指
     func TimeoutHandler(h Handler, dt time.Duration, msg string) Handler //具有超时限制的handler,该函数返回的新Handler调用h中的ServerHTTP来处理每次请求,但是如果一次调用超出时间限制,那么就会返回给请求者一个503服务请求不可达的消息,并且在ResponseWriter返回超时错误.  
 其中FileServer经常和StripPrefix一起连用，用来实现静态文件展示，举例如下：  
     package main  
-  
+
     import (  
         &quot;fmt&quot;  
         &quot;net/http&quot;  
     )  
-  
+
     func main() {  
         http.Handle(&quot;/test/&quot;, http.FileServer(http.Dir(&quot;/home/work/&quot;))) ///home/work/test/中必须有内容  
         http.Handle(&quot;/download/&quot;, http.StripPrefix(&quot;/download/&quot;, http.FileServer(http.Dir(&quot;/home/work/&quot;))))  
         http.Handle(&quot;/tmpfiles/&quot;, http.StripPrefix(&quot;/tmpfiles/&quot;, http.FileServer(http.Dir(&quot;/tmp&quot;)))) //127.0.0.1:9999/tmpfiles/访问的本地文件/tmp中的内容  
         http.ListenAndServe(&quot;:9999&quot;, nil)  
     }  
-  
+
    
-  
+
 type HandlerFunc//HandlerFunc type是一个适配器，通过类型转换我们可以将普通的函数作为HTTP处理器使用。如果f是一个具有适当签名的函数，HandlerFunc(f)通过调用f实现了Handler接口。  
     type HandlerFunc func(ResponseWriter, *Request)  
-  
+
     func (f HandlerFunc) ServeHTTP(w ResponseWriter, r \*Request) //ServeHttp调用f(w,r)  
 type Header//代表在http header中的key-value对  
     type Header map[string][]string  
-  
+
     func (h Header) Add(key, value string)//将key,value组成键值对添加到header中  
     func (h Header) Del(key string)  //header中删除对应的key-value对  
     func (h Header) Get(key string) string //获取指定key的第一个value,如果key没有对应的value,则返回&quot;&quot;,为了获取一个key的多个值,用CanonicalHeaderKey来获取标准规范格式.  
@@ -645,16 +645,16 @@ type Hijacker
             // Hijack让调用者接管连接,在调用Hijack()后,http server库将不再对该连接进行处理,对于该连接的管理和关闭责任将由调用者接管.  
             Hijack() (net.Conn, *bufio.ReadWriter, error) //conn表示连接对象，bufrw代表该连接的读写缓存对象。  
     }  
-  
+
  Hijacker用法如下所示：  
-  
+
     package main  
-  
+
     import (  
         &quot;fmt&quot;  
         &quot;net/http&quot;  
     )  
-  
+
     func HiJack(w http.ResponseWriter, r *http.Request) {  
         hj, ok := w.(http.Hijacker)  
         if !ok {  
@@ -669,7 +669,7 @@ type Hijacker
         defer conn.Close()  
         bufrw.WriteString(&quot;Now we're speaking raw TCP. Say hi: \n&quot;)  
         bufrw.Flush()  
-  
+
         fmt.Fprintf(bufrw, &quot;You said: %s Bye.\n&quot;, &quot;Good&quot;)  
         bufrw.Flush()  
     }  
@@ -680,9 +680,9 @@ type Hijacker
             fmt.Println(err)  
         }  
     }  
-  
+
    
-  
+
 type ProtocolError //http请求解析错误  
     func (err \*ProtocolError) Error() string  
 type Request//代表客户端给服务器端发送的一个请求.该字段在服务器端和客户端使用时区别很大.  
@@ -746,9 +746,9 @@ type Request//代表客户端给服务器端发送的一个请求.该字段在�
         // 客户端会忽略请求中的TLS字段。  
         TLS *tls.ConnectionState  
     }  
-  
+
      func NewRequest(method, urlStr string, body io.Reader) (\*Request, error) //利用指定的method,url以及可选的body返回一个新的请求.如果body参数实现了io.Closer接口，Request返回值的Body 字段会被设置为body，并会被Client类型的Do、Post和PostForm方法以及Transport.RoundTrip方法关闭。  
-  
+
     func ReadRequest(b \*bufio.Reader) (req \*Request, err error)//从b中读取和解析一个请求.  
     func (r \*Request) AddCookie(c \*Cookie) //给request添加cookie,AddCookie向请求中添加一个cookie.按照RFC 6265 section 5.4的规则,AddCookie不会添加超过一个Cookie头字段.这表示所有的cookie都写在同一行,用分号分隔（cookie内部用逗号分隔属性）  
     func (r \*Request) Cookie(name string) (\*Cookie, error)//返回request中指定名name的cookie，如果没有发现，返回ErrNoCookie  
@@ -758,20 +758,20 @@ type Request//代表客户端给服务器端发送的一个请求.该字段在�
 　举例说明其用法  
 　  
     package main  
-  
+
     import (  
         &quot;fmt&quot;  
         &quot;io/ioutil&quot;  
         &quot;net/http&quot;  
     )  
-  
+
     func Test() {  
         req, err := http.NewRequest(&quot;GET&quot;, &quot;http://www.baidu.com&quot;, nil)  
         if err != nil {  
             fmt.Println(err)  
             return  
         }  
-  
+
         req.SetBasicAuth(&quot;test&quot;, &quot;123456&quot;)  
         fmt.Println(req.Proto)  
         cookie := &amp;http.Cookie{  
@@ -783,7 +783,7 @@ type Request//代表客户端给服务器端发送的一个请求.该字段在�
         fmt.Println(req.Cookies())                //获取cookies  
         req.Header.Set(&quot;User-Agent&quot;, &quot;useragent&quot;) //设定ua  
         fmt.Println(req.UserAgent())  
-  
+
         client := &amp;http.Client{}  
         resp, err := client.Do(req)  
         if err != nil {  
@@ -795,14 +795,14 @@ type Request//代表客户端给服务器端发送的一个请求.该字段在�
             content, _ := ioutil.ReadAll(resp.Body)  
             fmt.Println(string(content))  
         }  
-  
+
     }  
     func main() {  
         Test()  
     }  
-  
+
    
-  
+
     func (r \*Request) FormFile(key string) (multipart.File, \*multipart.FileHeader, error)//对于指定格式的key，FormFile返回符合条件的第一个文件，如果有必要的话，该函数会调用ParseMultipartForm和ParseForm。  
     func (r \*Request) FormValue(key string) string//返回key获取的队列中第一个值。在查询过程中post和put中的主题参数优先级高于url中的value。为了访问相同key的多个值，调用ParseForm然后直接检查RequestForm。  
     func (r \*Request) MultipartReader() (\*multipart.Reader, error)//如果这是一个有多部分组成的post请求，该函数将会返回一个MIME 多部分reader，否则的话将会返回一个nil和error。使用本函数代替ParseMultipartForm可以将请求body当做流stream来处理。  
@@ -813,7 +813,7 @@ type Request//代表客户端给服务器端发送的一个请求.该字段在�
     func (r \*Request) Referer() string//如果request中有refer，那么refer返回相应的url。Referer在request中是拼错的，这个错误从http初期就已经存在了。该值也可以从Headermap中利用Header\[&quot;Referer&quot;\]获取；在使用过程中利用Referer这个方法而不是map的形式的好处是在编译过程中可以检查方法的错误，而无法检查map中key的错误。  
     func (r \*Request) Write(w io.Writer) error//Write方法以有线格式将HTTP/1.1请求写入w（用于将请求写入下层TCPConn等）。本方法会考虑请求的如下字段：Host URL Method (defaults to &quot;GET&quot;) Header ContentLength TransferEncoding Body  
 　如果存在Body，ContentLength字段&amp;lt;= 0且TransferEncoding字段未显式设置为\[&quot;identity&quot;\]，Write方法会显式添加&quot;Transfer-Encoding: chunked&quot;到请求的头域。Body字段会在发送完请求后关闭。  
-  
+
     func (r \*Request) WriteProxy(w io.Writer) error//该函数与Write方法类似，但是该方法写的request是按照http代理的格式去写。尤其是，按照RFC 2616 Section 5.1.2，WriteProxy会使用绝对URI（包括协议和主机名）来初始化请求的第1行（Request-URI行）。无论何种情况，WriteProxy都会使用r.Host或r.URL.Host设置Host头。  
 type Response//指对于一个http请求的响应response  
     type Response struct {  
@@ -842,17 +842,17 @@ type Response//指对于一个http请求的响应response
         // TLS包含接收到该回复的TLS连接的信息。 对未加密的回复，本字段为nil。返回的指针是被（同一TLS连接接收到的）回复共享的，不应被修改。  
         TLS *tls.ConnectionState  
     }  
-  
+
    
-  
+
     func Get(url string) (resp \*Response, err error)//利用GET方法对一个指定的URL进行请求，如果response是如下重定向中的一个代码，则Get之后将会调用重定向内容，最多10次重定向。  
     301 (永久重定向，告诉客户端以后应该从新地址访问)  
     302 (暂时性重定向，作为HTTP1.0的标准，以前叫做Moved Temporarily，现在叫做Found。现在使用只是为了兼容性处理，包括PHP的默认Location重定向用到也是302)，注：303和307其实是对302的细化。  
     303 (对于Post请求，它表示请求已经被处理，客户端可以接着使用GET方法去请求Location里的URl)  
     307 (临时重定向，对于Post请求，表示请求还没有被处理，客户端应该向Location里的URL重新发起Post请求)  
-  
+
 //如果有太多次重定向或者有一个http协议错误将会导致错误。当err为nil时，resp总是包含一个非nil的resp.body，Get是对DefaultClient.Get的一个包装。  
-  
+
     func Head(url string) (resp \*Response, err error)//该函数功能见net中Head方法功能。该方法与默认的defaultClient中Head方法一致。  
     func Post(url string, bodyType string, body io.Reader) (resp \*Response, err error)//该方法与默认的defaultClient中Post方法一致。  
     func PostForm(url string, data url.Values) (resp \*Response, err error)//该方法与默认的defaultClient中PostForm方法一致。  
@@ -872,9 +872,9 @@ type ResponseWriter//该接口被http handler用来构建一个http response
         // 如果Header中没有&quot;Content-Type&quot;键，本方法会使用包函数DetectContentType检查数据的前512字节，将返回值作为该键的值。  
         Write([]byte) (int, error)  
     }  
-  
+
    
-  
+
 type RoundTripper//该函数是一个执行简单http事务的接口，该接口在被多协程并发使用时必须是安全的。  
     type RoundTripper interface {  
         // RoundTrip执行单次HTTP事务，返回request的response，RoundTrip不应试图解析该回复。  
@@ -884,21 +884,21 @@ type RoundTripper//该函数是一个执行简单http事务的接口，该接口
         // RoundTrip函数接收的请求的URL和Header字段必须保证是初始化了的。  
         RoundTrip(*Request) (*Response, error)  
     }  
-  
+
     func NewFileTransport(fs FileSystem) RoundTripper //该函数返回一个RoundTripper接口，服务指定的文件系统。 返回的RoundTripper接口会忽略接收的请求中的URL主机及其他绝大多数属性。该函数的典型应用是给Transport类型的值注册&quot;file&quot;协议。如下所示：  
     t := &amp;http.Transport{}  
     t.RegisterProtocol(&quot;file&quot;, http.NewFileTransport(http.Dir(&quot;/&quot;)))  
     c := &amp;http.Client{Transport: t}  
     res, err := c.Get(&quot;file:///etc/passwd&quot;)  
     ...  
-  
+
 type ServeMux //该函数是一个http请求多路复用器，它将每一个请求的URL和一个注册模式的列表进行匹配，然后调用和URL最匹配的模式的处理器进行后续操作。模式是固定的、由根开始的路径，如&quot;/favicon.ico&quot;，或由根开始的子树，如&quot;/images/&quot; （注意结尾的斜杠）。较长的模式优先于较短的模式，因此如果模式&quot;/images/&quot;和&quot;/images/thumbnails/&quot;都注册了处理器，后一 个处理器会用于路径以&quot;/images/thumbnails/&quot;开始的请求，前一个处理器会接收到其余的路径在&quot;/images/&quot;子树下的请求。  
 注意，因为以斜杠结尾的模式代表一个由根开始的子树，模式&quot;/&quot;会匹配所有的未被其他注册的模式匹配的路径，而不仅仅是路径&quot;/&quot;。  
-  
+
 模式也能（可选地）以主机名开始，表示只匹配该主机上的路径。指定主机的模式优先于一般的模式，因此一个注册了两个模式&quot;/codesearch&quot;和&quot;codesearch.google.com/&quot;的处理器不会接管目标为&quot;http://www.google.com/&quot;的请求。  
-  
+
 ServeMux还会负责对URL路径的过滤，将任何路径中包含&quot;.&quot;或&quot;..&quot;元素的请求重定向到等价的没有这两种元素的URL。（参见path.Clean函数）  
-  
+
     func NewServeMux() \*ServeMux //初始化一个新的ServeMux  
     func (mux \*ServeMux) Handle(pattern string, handler Handler) //将handler注册为指定的模式，如果该模式已经有了handler，则会出错panic。  
 　 func (mux \*ServeMux) HandleFunc(pattern string, handler func(ResponseWriter, \*Request))//将handler注册为指定的模式  
@@ -906,12 +906,12 @@ ServeMux还会负责对URL路径的过滤，将任何路径中包含&quot;.&quot
     func (mux \*ServeMux) ServeHTTP(w ResponseWriter, r \*Request)  //该函数用于将最接近请求url模式的handler分配给指定的请求。  
 举例说明servemux的用法。  
     package main  
-  
+
     import (  
         &quot;fmt&quot;  
         &quot;net/http&quot;  
     )  
-  
+
     func Test(w http.ResponseWriter, r *http.Request) {  
         fmt.Fprintln(w, &quot;just for test!&quot;)  
     }  
@@ -924,7 +924,7 @@ ServeMux还会负责对URL路径的过滤，将任何路径中包含&quot;.&quot
             fmt.Println(err)  
         }  
     }  
-  
+
 type Server //该结构体定义一些用来运行HTTP Server的参数，如果Server默认为0的话，那么这也是一个有效的配置。  
     type Server struct {  
         Addr           string        // 监听的TCP地址，如果为空字符串会使用&quot;:http&quot;  
@@ -946,20 +946,20 @@ type Server //该结构体定义一些用来运行HTTP Server的参数，如果S
         ErrorLog *log.Logger  
         // 内含隐藏或非导出字段  
     }  
-  
+
      func (srv \*Server) ListenAndServe() error//监听TCP网络地址srv.Addr然后调用Serve来处理接下来连接的请求。如果srv.Addr是空的话，则使用“:http”。  
-  
+
     func (srv \*Server) ListenAndServeTLS(certFile, keyFile string) error//ListenAndServeTLS监听srv.Addr确定的TCP地址，并且会调用Serve方法处理接收到的连接。必须提供证书文件和对应的私钥文 件。如果证书是由权威机构签发的，certFile参数必须是顺序串联的服务端证书和CA证书。如果srv.Addr为空字符串，会使 用&quot;:https&quot;。  
     func (srv \*Server) Serve(l net.Listener) error//接受Listener l的连接，创建一个新的服务协程。该服务协程读取请求然后调用srv.Handler来应答。实际上就是实现了对某个端口进行监听，然后创建相应的连接。  
     func (s \*Server) SetKeepAlivesEnabled(v bool)//该函数控制是否http的keep-alives能够使用，默认情况下，keep-alives总是可用的。只有资源非常紧张的环境或者服务端在关闭进程中时，才应该关闭该功能。  
 举例说明Server的用法。  
     package main  
-  
+
     import (  
         &quot;fmt&quot;  
         &quot;net/http&quot;  
     )  
-  
+
     func Test(w http.ResponseWriter, r *http.Request) {  
         fmt.Fprintln(w, &quot;just for test!&quot;)  
     }  
@@ -969,11 +969,11 @@ type Server //该结构体定义一些用来运行HTTP Server的参数，如果S
             ReadTimeout:  0,  
             WriteTimeout: 0,  
         }  
-  
+
         mux := http.NewServeMux()  
         mux.Handle(&quot;/&quot;, http.FileServer(http.Dir(&quot;/home&quot;)))  
         mux.HandleFunc(&quot;/test&quot;, Test)  
-  
+
         newserver.Handler = mux  
         err := newserver.ListenAndServe()  
         if err != nil {  
@@ -985,9 +985,9 @@ type Server //该结构体定义一些用来运行HTTP Server的参数，如果S
         //     fmt.Println(err)  
         // }  
     }  
-  
+
    
-  
+
 type Transport  //该结构体实现了RoundTripper接口，支持HTTP，HTTPS以及HTTP代理，TranSport也能缓存连接供将来使用。  
     type Transport struct {  
         // Proxy指定一个对给定请求返回代理的函数。如果该函数返回了非nil的错误值，请求的执行就会中断并返回该错误。  
@@ -1017,7 +1017,7 @@ type Transport  //该结构体实现了RoundTripper接口，支持HTTP，HTTPS�
         // 该时间不包括读取回复主体的时间。  
         ResponseHeaderTimeout time.Duration  
     }  
-  
+
     func (t \*Transport) CancelRequest(req \*Request)//通过关闭连接来取消传送中的请求。  
     func (t \*Transport) CloseIdleConnections()//关闭所有之前请求但目前处于空闲状态的连接。该方法并不中断任何正在使用的连接。  
     func (t \*Transport) RegisterProtocol(scheme string, rt RoundTripper)//RegisterProtocol注册一个新的名为scheme的协议。t会将使用scheme协议的请求转交给rt。rt有责任模拟HTTP请求的语义。RegisterProtocol可以被其他包用于提供&quot;ftp&quot;或&quot;file&quot;等协议的实现。  
@@ -1358,6 +1358,8 @@ type Transport  //该结构体实现了RoundTripper接口，支持HTTP，HTTPS�
          <a rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
       

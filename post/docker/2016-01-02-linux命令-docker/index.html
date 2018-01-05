@@ -280,23 +280,23 @@
 `yum install bridge-utils`  
 `ifconfig docker0 down`  
 `brctl delbr docker0`  
-  
+
 ########################################################  
 1. 如何从通过docker container ID 获取Container name  
 2. docker强制批量删除none的image镜像  
   docker images | awk '/^&lt;none&gt;/ { print $3 }'  
-  
+
   docker ps -a | grep &quot;Exited&quot; | awk '{print $1 }'|xargs docker stop  
   docker ps -a | grep &quot;Exited&quot; | awk '{print $1 }'|xargs docker rm  
   docker images|grep none|awk '{print $3 }'|xargs docker rmi  
-  
-  
+
+
   docker ps -a -q --filter=name=zookeeper-node-* | xargs -n 1 -I {} docker rm -f --volumes {}  
-  
+
 # dockerd  
 1. 修改镜像和容器的存放路径：  
    -g, --graph=/var/lib/docker  
-  
+
 2. dockerd配置文件  
 ### default  
 /usr/bin/dockerd -H fd://  
@@ -316,60 +316,60 @@ docker-containerd -l unix:///var/run/docker/libcontainerd/docker-containerd.sock
     因为 /var/run/docker.sock 所属 docker 组具有 setuid 权限  
         $ sudo ls -l /var/run/docker.sock  
         srw-rw---- 1 root docker 0 May  1 21:35 /var/run/docker.sock  
-  
+
 # DOCKER 给运行中的容器添加映射端口  
-  
+
 1、获得容器IP    将container_name 换成实际环境中的容器名  
-  
+
 `docker inspect mariadb | grep IPAddress`  
 `sudo iptables -t nat --list-rules`  
 `sudo iptables -t filter --list-rules`  
 `docker inspect -f '{{.NetworkSettings.IPAddress}}' mariadb`  
 1. DNAT主机30006 =&gt; 指定容器3306端口实现转发  
   `iptables -t nat -A DOCKER ! -i docker0 -p tcp --dport 30006 -j DNAT --to-destination 192.168.0.2:3306`  
-  
+
 2. filter 容器端口 3306  
   `iptables -A DOCKER -d 192.168.0.2/32 ! -i docker0 -o docker0 -p tcp --dport 3306 -j ACCEPT`  
   `iptables -t nat -A POSTROUTING -s 192.168.0.4/32 -d 192.168.0.4/32 -p tcp -m tcp --dport 3306 -j MASQUERADE`  
-  
-  
+
+
 方法2  
 1.提交一个运行中的容器为镜像  
 docker commit containerid foo/live  
 2.运行镜像并添加端口  
 docker run -d -p 8000:80  foo/live /bin/bash  
-  
+
 # 配置代理  
-  
-  
+
+
     Obtain a crt from the https://dseasb33srnrn.cloudfront.net with openssl  
     Copy the crt to /etc/share/ca-certificates (Ubuntu)  
     Restart docker  
-  
+
     I was able to work around this issue by trusting the certificates from cdn-registry-1.docker.io and registry-1.docker.io:  
-  
+
 `cd /usr/local/share/ca-certificates`  
 openssl s_client -connect registry-1.docker.io:443 -showcerts  
 openssl s_client -connect cdn-registry-1.docker.io:443 -showcerts  
-  
+
 openssl s_client -showcerts -verify 32 -CApath . -connect index.docker.io:443  
 Copied and pasted` ---BEGIN--- &amp;&amp; ---END---` sections for the certificates in to a `registry-1.crt `file.  
-  
+
 `sudo update-ca-certificates`  
  `sudo systemctl restart docker`  
-  
+
 -----  
-  
+
 但是我明明已经为ubuntu设置了http_proxy了。  
-  
+
 查了试了半天，才知道还需要给docker单独设代理，一下是步骤。  
-  
+
 First, create a systemd drop-in directory for the docker service:  
-  
+
 `mkdir /etc/systemd/system/docker.service.d`  
 `vi  /lib/systemd/system/docker.socket` /etc/systemd/system/sockets.target.wants/docker.socket -&gt;  
 Now create a file called `/etc/systemd/system/docker.service.d/http-proxy.conf` that adds the HTTP_PROXY environment variable:  
-  
+
 `/etc/systemd/system/docker.service.d/http-proxy.conf`  
 </code></pre>
 
@@ -377,7 +377,7 @@ Now create a file called `/etc/systemd/system/docker.service.d/http-proxy.conf` 
 Environment=&ldquo;HTTP_PROXY=<a href="http://127.0.0.1:8087/&quot;">http://127.0.0.1:8087/&quot;</a> &ldquo;HTTPS_PROXY=<a href="http://127.0.0.1:8087/&quot;">http://127.0.0.1:8087/&quot;</a><br />
 Environment=&ldquo;NO_PROXY=localhost,127.0.0.0/8,daocloud.io&rdquo;</p>
 
-<pre><code>  
+<pre><code>
 $ `sudo systemctl daemon-reload`  
 $ `sudo systemctl show docker --property Environment`  
 $ `sudo systemctl restart docker`  
@@ -399,9 +399,9 @@ $ sudo docker stop $(docker ps -q)
 $ sudo docker inspect $(docker ps -q) | grep &quot;IPAddress&quot;  
 # test rtmp on host  
 $ rtmpdump -r &quot;rtmp://172.17.0.140/vod/sheephead_mountain.mp4  
-  
+
 记录日志到stdout  
-  
+
 # forward request and error logs to docker log collector  
 RUN ln -sf /dev/stdout /var/log/nginx/access.log  
 RUN ln -sf /dev/stderr /var/log/nginx/error.log  
@@ -414,20 +414,20 @@ docker network inspect host<br />
 docker network inspect none<br />
 ip addr</p>
 
-<pre><code>  
+<pre><code>
 # docker Volume  
 Volume只有在下列情况下才能被删除：  
     该容器是用docker rm -v 命令来删除的（-v是必不可少的）。  
     docker run中使用了--rm参数  
-  
+
 # docker aliyun镜像  
 http://mirrors.aliyun.com/docker-toolbox/  
 # docker-engine  
-  
+
 https://download.docker.com/win/beta/InstallDocker.msi  
 ## windows-installer [Install Boot2Docker cli, msys-git and VirtualBox ]  
 curl -Lkx 127.0.0.1:8087 -O https://github.com/boot2docker/windows-installer/releases/download/v1.8.0/docker-install.exe  
-  
+
 ## linux  
 [阿里云 Docker镜像仓库](https://cr.console.aliyun.com)  
 hub.daocloud.io  
@@ -437,20 +437,20 @@ hub.daocloud.io
  #wget -N https://get.docker.com/ | sh  
 1. 官网安装  
 curl -fsSL -kx 127.0.0.1:8087 https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -  
-  
+
 curl -sSL https://get.daocloud.io/docker/ | sh  
 curl -sSL http://acs-public-mirror.oss-cn-hangzhou.aliyuncs.com/docker-engine/internet | sh -  
 [阿里内网](curl -sSL http://acs-public-mirror.oss-cn-hangzhou.aliyuncs.com/docker-engine/intranet | sh -)  
-  
+
 ################### 配置docker mirrors 加速器 ###################################  
 curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s http://1d909c65.m.daocloud.io  
 若使用阿里云服务器，将源的域名从`mirrors.aliyun.com`改为`mirrors.aliyuncs.com`,不占用公网流量。  
-  
-  
+
+
 Docker Hub 加速器 ：` curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s http://1d909c65.m.daocloud.io `  
                     curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s https://9gz5jk6x.mirror.aliyuncs.com  
-  
-  
+
+
 # docker配置  
 `groupmod -g 99 docker &amp;&amp; groupadd -r -g 999 mysql &amp;&amp; useradd -r -u 999 -g mysql -c mysql -d /var/lib/mysql -s /sbin/nologin mysql`  
 # Cannot connect to the Docker daemon. Is the docker daemon running on this host?  
@@ -459,7 +459,7 @@ sudo gpasswd -a ${USER} docker   #-d 将用户从组中删除
  #`sudo usermod -aG docker ${USERNAME}`  
 sudo systemctl restart docker  
 sudo chmod a+rw /var/run/docker.sock  
-  
+
  2. 手动安装 docker-engine  
  sudo apt-get update  
  sudo apt-get install apt-transport-https ca-certificates  
@@ -482,33 +482,33 @@ sudo apt-get upgrade docker-engine
 sudo apt-get purge docker-engine  
 sudo apt-get autoremove --purge docker-engine  
 sudo rm -rf /var/lib/docker  
-  
+
 ## Install boot2docker  
 `curl  -Lkx 127.0.0.1:8087 -O https://github.com/boot2docker/boot2docker/releases/download/v1.12.1/boot2docker.iso`  
-  
-  
+
+
 # 在docker中管理主机进程  
 `docker run --rm -it --privileged --pid=host busybox sh`  
-  
+
 &gt;在docker中，可以透過&quot;--pid&quot;參數來將host的pid namespace帶入到container中，這樣就可以在docker instance中直接看到host的process了。  
 docker run -it --pid=host debian bash  
 執行起來後，在instance內部透過ps可以看到host系統的process，並且可以進行操作...  
-  
-  
-  
-  
-  
+
+
+
+
+
 ## network  
-  
+
 创建容器接入指定网络  
-  
+
 #docker run -itd --name=testcontainer --net=overlayname  nginx  
-  
+
 将容器从指定网络中退出  
 #docker network disconnect overlayname testcontainer  
 重新连入指定网络  
 #docker network connect overlayname testcontainer  
-  
+
 ################################################################################  
 sudo docker login  
 docker login daocloud.io  
@@ -516,7 +516,7 @@ sudo docker login hub.ghostcloud.cn
 #sudo docker pull node  
 #sudo docker pull ubuntu:latest  
 sudo docker pull centos:latest  
-  
+
 sudo docker images  
 #docker run -it -p 80:4000 -v /media/ubuntu/software/rinetd:/blog emitting/hexo /bin/bash  
 sudo docker run --rm -ti -p:2200:22 -v /tmp:/web ubuntu /bin/bash  
@@ -547,7 +547,7 @@ sudo docker run --rm -ti -p:2200:22 -v /tmp:/web ubuntu /bin/bash
                         - since=(&lt;container-name&gt;|&lt;container-id&gt;)  
                         - ancestor=(&lt;image-name&gt;[:tag]|&lt;image-id&gt;|&lt;image@digest&gt;) - containers created from an image or a descendant.  
                         - volume=(&lt;volume-name&gt;|&lt;mount-point&gt;)  
-  
+
      --format           Pretty-print containers using a Go template  
                         .ID 	Container ID  
                         .Image 	Image ID  
@@ -632,13 +632,13 @@ docker run
 ## docker 搭建Android开发环境  
 docker pull ubuntu:10.04  
 docker run -it -p 8080:80 -v /media/ubuntu/sdb2/Android:/mnt -w /mnt ubuntu:10.04 /bin/bash  
-  
+
 docker ps -a  
 docker start 8c055f32bd33  
 docker attach 8c055f32bd33  
 sudo vi /etc/apt/source.list  
 sed -i 's/httpredir.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list  
-  
+
 sudo sed -i 's/archive.ubuntu.com/mirrors.sohu.com/g' /etc/apt/sources.list  
 sudo sed -i 's/archive.ubuntu.com/mirrors.163.com/g' /etc/apt/sources.list  
 sudo sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list  
@@ -1474,6 +1474,8 @@ containerPort<br />
          <a rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
       

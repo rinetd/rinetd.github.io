@@ -268,11 +268,11 @@ func createClient() *redis.Client {
         Password: &quot;&quot;,  
         DB:       0,  
     })  
-  
+
     // 通过 cient.Ping() 来检查是否成功连接到了 redis 服务器  
     pong, err := client.Ping().Result()  
     fmt.Println(pong, err)  
-  
+
     return client  
 }  
 </code></pre>
@@ -307,30 +307,30 @@ func stringOperation(client *redis.Client) {
     if err != nil {  
         panic(err)  
     }  
-  
+
     val, err := client.Get(&quot;name&quot;).Result()  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;name&quot;, val)  
-  
-  
+
+
     // 这里设置过期时间.  
     err = client.Set(&quot;age&quot;, &quot;20&quot;, 1 * time.Second).Err()  
     if err != nil {  
         panic(err)  
     }  
-  
+
     client.Incr(&quot;age&quot;) // 自增  
     client.Incr(&quot;age&quot;) // 自增  
     client.Decr(&quot;age&quot;) // 自减  
-  
+
     val, err = client.Get(&quot;age&quot;).Result()  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;age&quot;, val) // age 的值为21  
-  
+
     // 因为 key &quot;age&quot; 的过期时间是一秒钟, 因此当一秒后, 此 key 会自动被删除了.  
     time.Sleep(1 * time.Second)  
     val, err = client.Get(&quot;age&quot;).Result()  
@@ -371,13 +371,13 @@ func listOperation(client *redis.Client) {
         panic(err)  
     }  
     fmt.Println(&quot;length: &quot;, length) // 长度为2  
-  
+
     value, err := client.LPop(&quot;fruit&quot;).Result() //返回并删除名称为 fruit 的list中的首元素  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;fruit: &quot;, value)  
-  
+
     value, err = client.RPop(&quot;fruit&quot;).Result() // 返回并删除名称为 fruit 的list中的尾元素  
     if err != nil {  
         panic(err)  
@@ -413,17 +413,17 @@ func setOperation(client *redis.Client) {
     client.SAdd(&quot;blacklist&quot;, &quot;Obama&quot;) // 向 blacklist 中添加元素  
     client.SAdd(&quot;blacklist&quot;, &quot;Hillary&quot;) // 再次添加  
     client.SAdd(&quot;blacklist&quot;, &quot;the Elder&quot;) // 添加新元素  
-  
+
     client.SAdd(&quot;whitelist&quot;, &quot;the Elder&quot;) // 向 whitelist 添加元素  
-  
+
     // 判断元素是否在集合中  
     isMember, err := client.SIsMember(&quot;blacklist&quot;, &quot;Bush&quot;).Result()  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;Is Bush in blacklist: &quot;, isMember)  
-  
-  
+
+
     // 求交集, 即既在黑名单中, 又在白名单中的元素  
     names, err := client.SInter(&quot;blacklist&quot;, &quot;whitelist&quot;).Result()  
     if err != nil {  
@@ -431,8 +431,8 @@ func setOperation(client *redis.Client) {
     }  
     // 获取到的元素是 &quot;the Elder&quot;  
     fmt.Println(&quot;Inter result: &quot;, names)  
-  
-  
+
+
     // 获取指定集合的所有元素  
     all, err := client.SMembers(&quot;blacklist&quot;).Result()  
     if err != nil {  
@@ -464,7 +464,7 @@ hgetall(key)：返回名称为key的hash中所有的键（field）及其对应�
 func hashOperation(client *redis.Client) {  
     client.HSet(&quot;user_xys&quot;, &quot;name&quot;, &quot;xys&quot;); // 向名称为 user_xys 的 hash 中添加元素 name  
     client.HSet(&quot;user_xys&quot;, &quot;age&quot;, &quot;18&quot;); // 向名称为 user_xys 的 hash 中添加元素 age  
-  
+
     // 批量地向名称为 user_test 的 hash 中添加元素 name 和 age  
     client.HMSet(&quot;user_test&quot;, map[string]string{&quot;name&quot;: &quot;test&quot;, &quot;age&quot;:&quot;20&quot;})  
     // 批量获取名为 user_test 的 hash 中的指定字段的值.  
@@ -473,15 +473,15 @@ func hashOperation(client *redis.Client) {
         panic(err)  
     }  
     fmt.Println(&quot;fields in user_test: &quot;, fields)  
-  
-  
+
+
     // 获取名为 user_xys 的 hash 中的字段个数  
     length, err := client.HLen(&quot;user_xys&quot;).Result()  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;field count in user_xys: &quot;, length) // 字段个数为2  
-  
+
     // 删除名为 user_test 的 age 字段  
     client.HDel(&quot;user_test&quot;, &quot;age&quot;)  
     age, err := client.HGet(&quot;user_test&quot;, &quot;age&quot;).Result()  
@@ -510,20 +510,20 @@ func hashOperation(client *redis.Client) {
 func connectPool(client *redis.Client) {  
     wg := sync.WaitGroup{}  
     wg.Add(10)  
-  
+
     for i := 0; i &lt; 10; i++ {  
         go func() {  
             defer wg.Done()  
-  
+
             for j := 0; j &lt; 100; j++ {  
                 client.Set(fmt.Sprintf(&quot;name%d&quot;, j), fmt.Sprintf(&quot;xys%d&quot;, j), 0).Err()  
                 client.Get(fmt.Sprintf(&quot;name%d&quot;, j)).Result()  
             }  
-  
+
             fmt.Printf(&quot;PoolStats, TotalConns: %d, FreeConns: %d\n&quot;, client.PoolStats().TotalConns, client.PoolStats().FreeConns);  
         }()  
     }  
-  
+
     wg.Wait()  
 }  
 </code></pre>
@@ -551,27 +551,27 @@ PoolStats, TotalConns: 5, FreeConns: 5</p>
 // created 16/10/6 03:49  
 //  
 package main  
-  
+
 import (  
     &quot;fmt&quot;  
     &quot;gopkg.in/redis.v4&quot;  
     &quot;time&quot;  
     &quot;sync&quot;  
 )  
-  
+
 func main() {  
     client := createClient()  
     defer client.Close()  
-  
+
     stringOperation(client)  
     listOperation(client)  
     setOperation(client)  
     hashOperation(client)  
-  
+
     connectPool(client)  
-  
+
 }  
-  
+
 // 创建 redis 客户端  
 func createClient() *redis.Client {  
     client := redis.NewClient(&amp;redis.Options{  
@@ -580,14 +580,14 @@ func createClient() *redis.Client {
         DB:       0,  
         PoolSize: 5,  
     })  
-  
+
     pong, err := client.Ping().Result()  
     fmt.Println(pong, err)  
-  
+
     return client  
 }  
-  
-  
+
+
 // String 操作  
 func stringOperation(client *redis.Client) {  
     // 第三个参数是过期时间, 如果是0, 则表示没有过期时间.  
@@ -595,30 +595,30 @@ func stringOperation(client *redis.Client) {
     if err != nil {  
         panic(err)  
     }  
-  
+
     val, err := client.Get(&quot;name&quot;).Result()  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;name&quot;, val)  
-  
-  
+
+
     // 这里设置过期时间.  
     err = client.Set(&quot;age&quot;, &quot;20&quot;, 1 * time.Second).Err()  
     if err != nil {  
         panic(err)  
     }  
-  
+
     client.Incr(&quot;age&quot;) // 自增  
     client.Incr(&quot;age&quot;) // 自增  
     client.Decr(&quot;age&quot;) // 自减  
-  
+
     val, err = client.Get(&quot;age&quot;).Result()  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;age&quot;, val) // age 的值为21  
-  
+
     // 因为 key &quot;age&quot; 的过期时间是一秒钟, 因此当一秒后, 此 key 会自动被删除了.  
     time.Sleep(1 * time.Second)  
     val, err = client.Get(&quot;age&quot;).Result()  
@@ -628,7 +628,7 @@ func stringOperation(client *redis.Client) {
     }  
     fmt.Println(&quot;age&quot;, val)  
 }  
-  
+
 // list 操作  
 func listOperation(client *redis.Client) {  
     client.RPush(&quot;fruit&quot;, &quot;apple&quot;) //在名称为 fruit 的list尾添加一个值为value的元素  
@@ -638,36 +638,36 @@ func listOperation(client *redis.Client) {
         panic(err)  
     }  
     fmt.Println(&quot;length: &quot;, length) // 长度为2  
-  
+
     value, err := client.LPop(&quot;fruit&quot;).Result() //返回并删除名称为 fruit 的list中的首元素  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;fruit: &quot;, value)  
-  
+
     value, err = client.RPop(&quot;fruit&quot;).Result() // 返回并删除名称为 fruit 的list中的尾元素  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;fruit: &quot;, value)  
 }  
-  
+
 // set 操作  
 func setOperation(client *redis.Client) {  
     client.SAdd(&quot;blacklist&quot;, &quot;Obama&quot;) // 向 blacklist 中添加元素  
     client.SAdd(&quot;blacklist&quot;, &quot;Hillary&quot;) // 再次添加  
     client.SAdd(&quot;blacklist&quot;, &quot;the Elder&quot;) // 添加新元素  
-  
+
     client.SAdd(&quot;whitelist&quot;, &quot;the Elder&quot;) // 向 whitelist 添加元素  
-  
+
     // 判断元素是否在集合中  
     isMember, err := client.SIsMember(&quot;blacklist&quot;, &quot;Bush&quot;).Result()  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;Is Bush in blacklist: &quot;, isMember)  
-  
-  
+
+
     // 求交集, 即既在黑名单中, 又在白名单中的元素  
     names, err := client.SInter(&quot;blacklist&quot;, &quot;whitelist&quot;).Result()  
     if err != nil {  
@@ -675,8 +675,8 @@ func setOperation(client *redis.Client) {
     }  
     // 获取到的元素是 &quot;the Elder&quot;  
     fmt.Println(&quot;Inter result: &quot;, names)  
-  
-  
+
+
     // 获取指定集合的所有元素  
     all, err := client.SMembers(&quot;blacklist&quot;).Result()  
     if err != nil {  
@@ -684,13 +684,13 @@ func setOperation(client *redis.Client) {
     }  
     fmt.Println(&quot;All member: &quot;, all)  
 }  
-  
-  
+
+
 // hash 操作  
 func hashOperation(client *redis.Client) {  
     client.HSet(&quot;user_xys&quot;, &quot;name&quot;, &quot;xys&quot;); // 向名称为 user_xys 的 hash 中添加元素 name  
     client.HSet(&quot;user_xys&quot;, &quot;age&quot;, &quot;18&quot;); // 向名称为 user_xys 的 hash 中添加元素 age  
-  
+
     // 批量地向名称为 user_test 的 hash 中添加元素 name 和 age  
     client.HMSet(&quot;user_test&quot;, map[string]string{&quot;name&quot;: &quot;test&quot;, &quot;age&quot;:&quot;20&quot;})  
     // 批量获取名为 user_test 的 hash 中的指定字段的值.  
@@ -699,15 +699,15 @@ func hashOperation(client *redis.Client) {
         panic(err)  
     }  
     fmt.Println(&quot;fields in user_test: &quot;, fields)  
-  
-  
+
+
     // 获取名为 user_xys 的 hash 中的字段个数  
     length, err := client.HLen(&quot;user_xys&quot;).Result()  
     if err != nil {  
         panic(err)  
     }  
     fmt.Println(&quot;field count in user_xys: &quot;, length) // 字段个数为2  
-  
+
     // 删除名为 user_test 的 age 字段  
     client.HDel(&quot;user_test&quot;, &quot;age&quot;)  
     age, err := client.HGet(&quot;user_test&quot;, &quot;age&quot;).Result()  
@@ -717,25 +717,25 @@ func hashOperation(client *redis.Client) {
         fmt.Println(&quot;user_test age is: &quot;, age) // 字段个数为2  
     }  
 }  
-  
+
 // redis.v4 的连接池管理  
 func connectPool(client *redis.Client) {  
     wg := sync.WaitGroup{}  
     wg.Add(10)  
-  
+
     for i := 0; i &lt; 10; i++ {  
         go func() {  
             defer wg.Done()  
-  
+
             for j := 0; j &lt; 100; j++ {  
                 client.Set(fmt.Sprintf(&quot;name%d&quot;, j), fmt.Sprintf(&quot;xys%d&quot;, j), 0).Err()  
                 client.Get(fmt.Sprintf(&quot;name%d&quot;, j)).Result()  
             }  
-  
+
             fmt.Printf(&quot;PoolStats, TotalConns: %d, FreeConns: %d\n&quot;, client.PoolStats().TotalConns, client.PoolStats().FreeConns);  
         }()  
     }  
-  
+
     wg.Wait()  
 }  
 </code></pre>
@@ -1071,6 +1071,8 @@ func connectPool(client *redis.Client) {
          <a rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
       
