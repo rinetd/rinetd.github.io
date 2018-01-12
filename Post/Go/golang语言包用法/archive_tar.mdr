@@ -1,0 +1,269 @@
+---
+title: golang中archive/tar包用法
+date: 2016-10-04T04:15:26+08:00
+update: 2016-10-04 04:15:26
+categories: [golang]
+tags: [golang]
+---
+
+[chenbaoke的专栏](http://blog.csdn.net/chenbaoke)  
+[golang中archive/tar包用法](/chenbaoke/article/details/42782325)  
+
+tar包实现对tar归档文件的访问，旨在覆盖大部分的类型，包括GNU和BSD产生的tars。  
+
+<span style="font-size:14px">常量</span>  
+
+``` go  
+const (  
+
+    // Types  
+    TypeReg           = '0'    // 普通文件  
+    TypeRegA          = '\x00' // 普通文件  
+    TypeLink          = '1'    // 硬连接  
+    TypeSymlink       = '2'    // 符号连接，软连接  
+    TypeChar          = '3'    // 字符设备节点  
+    TypeBlock         = '4'    // 块设备节点  
+    TypeDir           = '5'    // 目录  
+    TypeFifo          = '6'    // fifo node  
+    TypeCont          = '7'    // 保留项  
+    TypeXHeader       = 'x'    // 可扩展头部  
+    TypeXGlobalHeader = 'g'    // 全局扩展头  
+    TypeGNULongName   = 'L'    // Next file has a long name  
+    TypeGNULongLink   = 'K'    // Next file symlinks to a file w/ a long name  
+    TypeGNUSparse     = 'S'    // 稀疏文件  
+)  
+```  
+
+<span style="font-size:14px">变量</span>  
+
+``` go  
+var (  
+    ErrWriteTooLong    = errors.New("archive/tar: write too long") //写入数据太长  
+    ErrFieldTooLong    = errors.New("archive/tar: header field too long") //头部太长  
+    ErrWriteAfterClose = errors.New("archive/tar: write after close")  //关闭后写入  
+)  
+
+var (  
+    ErrHeader = errors.New("archive/tar: invalid tar header")  //无效tar 头部  
+)  
+```  
+
+<span style="font-size:14px">  
+</span>  
+
+<span style="font-size:14px">type Header //该结构体代表了一个tar归档的头部，一些字段可能不被填充，Header中主要包含文件相关信息。  
+</span>  
+
+``` go  
+type Header struct {  
+   Name       string    // 文件名称  
+   Mode       int64     // 文件的权限和模式位  
+   Uid        int       // 文件所有者的用户 ID  
+   Gid        int       // 文件所有者的组 ID  
+   Size       int64     // 文件的字节长度  
+   ModTime    time.Time // 文件的修改时间  
+   Typeflag   byte      // 文件的类型  
+   Linkname   string    // 链接文件的目标名称  
+   Uname      string    // 文件所有者的用户名  
+   Gname      string    // 文件所有者的组名  
+   Devmajor   int64     // 字符设备或块设备的主设备号  
+   Devminor   int64     // 字符设备或块设备的次设备号  
+   AccessTime time.Time // 文件的访问时间  
+   ChangeTime time.Time // 文件的状态更改时间  
+}  
+```  
+
+func FileInfoHeader(fi os.FileInfo, link string) (\*Header, error)//该函数通过os.fileInfo便可创建一个Header，Header中大部分内容自动填充，一些内容需要自己设定。  
+
+func (h \*Header) FileInfo() os.FileInfo  //该函数获取该Header的os.FileInfo信息  
+
+举例说明Header用法：  
+
+``` go  
+package main  
+
+import (  
+    "archive/tar"  
+    "fmt"  
+    "os"  
+)  
+
+func main() {  
+    fileinfo, err := os.Stat("/home/chenbaoke/test.go")  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    h, err := tar.FileInfoHeader(fileinfo, "")  
+    h.Linkname = "haha"  
+    h.Gname = "test"  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    fmt.Println(h.AccessTime, h.ChangeTime, h.Devmajor, h.Devminor, h.Gid, h.Gname, h.Linkname, h.ModTime, h.Mode, h.Name, h.Size, h.Typeflag, h.Uid, h.Uname, h.Xattrs)  
+
+}  
+输出结果如下：  
+2015-08-28 21:26:03.636592126 +0800 CST 2015-08-28 21:26:03.092592112 +0800 CST 0 0 1000 test haha 2015-08-28 21:26:03.092592112 +0800 CST 33206 test.go 581  
+ 48 1000  map[]  
+
+由此可见，通过fileinfoheader可以创建tar.header，并自动填写了tar.Header 中的大部分信息，当然，还有一些信息无法从 os.FileInfo 中获取，所以需要你自己去补充，  
+如Linkname,Gname等。  
+```  
+
+<span style="font-size:14px">type Reader</span>  
+``` go  
+type Reader struct {  
+    r       io.Reader  
+    err     error  
+    pad     int64           //当前文件实体之后填充的  
+    curr    numBytesReader  //当前文件实体的reader  
+    hdrBuff [blockSize]byte // 读header中使用的buffer缓存  
+}<span style="font-size:12px;">  
+</span>  
+```  
+
+<span style="font-size:14px"><span style="font-size:12px">  
+</span></span>  
+
+<span style="font-size:14px"><span style="font-size:12px">func NewReader(r io.Reader) \*Reader// 从r中创建一个新的reader</span></span>  
+
+<span style="font-size:14px"><span style="font-size:12px">func (tr \*Reader) Next() (\*Header, error)//该函数指向tar文件的下一个实体，在输入的最后返回io.EOF</span><span style="font-size:12px">  
+</span></span>  
+<span style="font-size:14px"><span style="font-size:12px">func (tr \*Reader) Read(b \[\]byte) (n int, err error)//该函数读取在tar中当前实体，当读取到实体的结束位置时，返回io.EOF，当调用Next时，读取下一个实体。</span></span>  
+
+<span style="font-size:14px"><span style="font-size:12px"></span></span>  
+
+``` go  
+解压缩包的方法，从 .tar 文件中读出数据是通过 tar.Reader 完成的，所以首先要创建 tar.Reader，可以通过 tar.NewReader 方法来创建它，该方法要求提供一个 os.Reader 对象，以便从该对象中读出数据。可以先打开一个 .tar 文件，然后将该文件提供给 tar.NewReader 使用。这样就可以将 .tar 文件中的数据读出来了：  
+```  
+
+<span style="font-size:12px">举例说明其用法：</span>  
+
+<span style="font-size:14px"><span style="font-size:12px"></span></span>  
+
+``` go  
+package main  
+
+import (  
+    "archive/tar"  
+    "fmt"  
+    "io"  
+    "os"  
+)  
+
+func main() {  
+    f, err := os.Open("/home/chenbaoke/10.tar")  
+    if err != nil {  
+        fmt.Println(err)  
+        return  
+    }  
+    defer f.Close()  
+    r := tar.NewReader(f)  
+    for hdr, err := r.Next(); err != io.EOF; hdr, err = r.Next() {  
+        if err != nil {  
+            fmt.Println(err)  
+            return  
+        }  
+        fileinfo := hdr.FileInfo()  
+        fmt.Println(fileinfo.Name())  
+        f, err := os.Create("/home/chenbaoke/develop/" + fileinfo.Name())  
+        if err != nil {  
+            fmt.Println(err)  
+        }  
+        defer f.Close()  
+        _, err = io.Copy(f, r)  
+        if err != nil {  
+            fmt.Println(err)  
+        }  
+    }  
+}  
+```  
+
+<span style="font-size:14px"><span style="font-size:12px">  
+</span></span>  
+
+<span style="font-size:14px"></span>  
+
+<span style="font-size:14px">type Writer</span>  
+
+<span style="font-size:14px"><span style="font-size:12px"></span></span>  
+
+``` go  
+type Writer struct {  
+            w          io.Writer  
+            err        error  
+            nb         int64 // 未写入的字节数  
+            pad        int64 // 该实体之后需要写入的数量  
+            closed     bool  
+            usedBinary bool            // whether the binary numeric field extension was used  
+            preferPax  bool            // use pax header instead of binary numeric header  
+            hdrBuff    [blockSize]byte // buffer to use in writeHeader when writing a regular header  
+            paxHdrBuff [blockSize]byte // buffer to use in writeHeader when writing a pax header  
+        }  
+```  
+
+<span style="font-size:12px">func NewWriter(w io.Writer) \*Writer  //创建一个新的writer，向w中写入。  
+</span>  
+
+<span style="font-size:14px"><span style="font-size:12px">func (tw \*Writer) Close() error //关闭tar归档文件，并将未写入的数据写入底层writer。  
+func (tw \*Writer) Flush() error //完成写当前文件  
+func (tw \*Writer) Write(b \[\]byte) (n int, err error)  
+</span></span>  
+<span style="font-size:14px"><span style="font-size:12px">func (tw \*Writer) WriteHeader(hdr \*Header) error</span></span>//该函数将hdr写入tar文件中，如果hdr不是第一个header，该函数调用flush。在调用close之后在调用该函数就会报错ErrWriteAfterClose。  
+
+举例说明如何写入一个tar文件。  
+
+``` go  
+package main  
+
+import (  
+    "archive/tar"  
+    "fmt"  
+    "io"  
+    "os"  
+)  
+
+func main() {  
+    f, err := os.Create("/home/chenbaoke/10.tar")  //创建一个tar文件  
+    if err != nil {  
+        fmt.Println(err)  
+        return  
+    }  
+    defer f.Close()  
+
+    tw := tar.NewWriter(f)  
+    defer tw.Close()  
+
+    fileinfo, err := os.Stat("/home/chenbaoke/1.go")  //获取文件相关信息  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+    hdr, err := tar.FileInfoHeader(fileinfo, "")  
+    if err != nil {  
+        fmt.Println(err)  
+    }  
+
+    err = tw.WriteHeader(hdr)    //写入头文件信息  
+    if err != nil {  
+        fmt.Println(err)  
+        // return  
+    }  
+
+    f1, err := os.Open("/home/chenbaoke/1.go")  
+    if err != nil {  
+        fmt.Println(err)  
+        return  
+    }  
+    m, err := io.Copy(tw, f1)   //将文件1.go中信息写入压缩包中  
+    if err != nil {  
+        fmt.Println(err)  
+        // return  
+    }  
+    fmt.Println(m)  
+}  
+```  
+
+参考：<https://golang.org/pkg/archive/tar/>  
+
+GoLove博客：   <http://www.cnblogs.com/golove/p/3454630.html>  
+[](https://golang.org/pkg/archive/tar/)  

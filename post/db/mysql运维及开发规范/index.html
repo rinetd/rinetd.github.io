@@ -18,17 +18,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<meta name="description" content="MySQL运维及开发规范 一. 基础规范 (1) 使用INNODB存储引擎 (2) 表字符集使用UTF8 (3) 所有表都需要添加注释 (4) 尽量不使用触发器、函数、存储过程">
+<meta name="description" content="MySQL运维及开发规范 一. 基础规范 约定 (1) 使用INNODB存储引擎 (2) 表字符集使用UTF8 (3) 所有表都需要添加注释 (4) 尽量不使用触发器、函数、存储">
 <meta name="author" content=rinetd>
 <meta name="publisher" content=rinetd@163.com>
 
 <meta itemprop="name" content="MySQL运维及开发规范 - 时光小栈">
-<meta itemprop="description" content="MySQL运维及开发规范 一. 基础规范 (1) 使用INNODB存储引擎 (2) 表字符集使用UTF8 (3) 所有表都需要添加注释 (4) 尽量不使用触发器、函数、存储过程">
+<meta itemprop="description" content="MySQL运维及开发规范 一. 基础规范 约定 (1) 使用INNODB存储引擎 (2) 表字符集使用UTF8 (3) 所有表都需要添加注释 (4) 尽量不使用触发器、函数、存储">
 <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
 
 <meta property="og:type" content="article" />
 <meta property="og:title" content="MySQL运维及开发规范 - 时光小栈" />
-<meta property="og:description" content="MySQL运维及开发规范 一. 基础规范 (1) 使用INNODB存储引擎 (2) 表字符集使用UTF8 (3) 所有表都需要添加注释 (4) 尽量不使用触发器、函数、存储过程">
+<meta property="og:description" content="MySQL运维及开发规范 一. 基础规范 约定 (1) 使用INNODB存储引擎 (2) 表字符集使用UTF8 (3) 所有表都需要添加注释 (4) 尽量不使用触发器、函数、存储">
 <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
 <meta property="og:url" content="http://blog.pytool.com/post/db/mysql%E8%BF%90%E7%BB%B4%E5%8F%8A%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83/" />
 
@@ -230,8 +230,8 @@
                   <h1 class="post-title">MySQL运维及开发规范</h1>
 
                   <p class="post-byline">
-                    by  · 2016年02月26日 15:30:01 · 6651 Words ·
-                    ~14min reading time |
+                    by  · 2016年02月26日 15:30:01 · 7163 Words ·
+                    ~15min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Post/db/mysql%e8%bf%90%e7%bb%b4%e5%8f%8a%e5%bc%80%e5%8f%91%e8%a7%84%e8%8c%83.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
                   </p>
@@ -245,7 +245,7 @@
 
 <h1 id="mysql运维及开发规范">MySQL运维及开发规范</h1>
 
-<h2 id="一-基础规范">一. 基础规范</h2>
+<h2 id="一-基础规范-约定">一. 基础规范 约定</h2>
 
 <pre><code>(1) 使用INNODB存储引擎  
 (2) 表字符集使用UTF8  
@@ -254,7 +254,12 @@
 (5) sql语句尽可能简单  
     大的sql想办法拆成小的sql语句(充分利用QUERY CACHE和充分利用多核CPU)  
 (6) 事务要简单，整个事务的时间长度不要太长  
-(7) 一定要使用并且正确的使用索引  
+(7) 一定要使用并且正确的使用索引
+  1、如无特殊需求，所有表使用innodb引擎
+  2、如无特殊需求，所有主键均为自增类型
+  3、如无特殊需求，所有字段均为NOT NULL，并给定默认值
+  4、所有字段均设置备注，枚举字段需要说明每个枚举值的意义
+  5、在能满足取值范围的情况下，选择占用存储空间最小的数据类型。如布尔值使用tinyint，时间类型使用timestamp
 </code></pre>
 
 <h2 id="二-命名规范">二. 命名规范</h2>
@@ -264,6 +269,18 @@
 (3) 库名、表名、字段名禁止使用MySQL保留字  
 (4) 临时库、表名必须以tmp为前缀，并以日期为后缀  
 (5) 备份库、表必须以bak为前缀，并以日期为后缀  
+1、数据库名：与系统名相同
+2、表名：系统名称缩写+_+表名。表名必须描述该表的用途，由单个或多个名词组成，首字母小写，后续单词首字母大写。
+3、字段名：字段名必须描述该字段的用途，由单个或多个名词组成，首字母小写，后续单词首字母大写。这里跟其他地方的规范不太一样。阿里规范中要求必须使用下划线的格式，主要考虑某些环境mysql不区分大小写，有些环境区分大小写。其实只要查询时区分大小写就没有问题了，但如果使用下划线的命名方式，在字段映射的时候会非常麻烦。
+4、主键字段：表名+Id
+5、外键字段：与主表主键字段完全一样
+6、主键：pk_+表名
+7、外键：fk_+从表名+_+主表名
+8、视图：view_+名名称
+9、存储过程：prcd_+名称
+10、函数：fun_+名称
+11、触发器：trg_+名称
+12、索引：idx_+名称
 </code></pre>
 
 <h2 id="三-库-表-字段开发设计规范">三. 库、表、字段开发设计规范</h2>
@@ -584,10 +601,10 @@
     <ul class="post-nav group">
     <li class="previous">
       
-      <a href="http://blog.pytool.com/post/db/mysql-repair/" rel="prev">
+      <a href="http://blog.pytool.com/post/db/mysql%E4%BC%98%E5%8C%96/" rel="prev">
         <i class="fa fa-chevron-left"></i>
         <strong>Previous Post</strong>
-        <span>MySQL 数据库修复</span>
+        <span>MySQL优化</span>
       </a>
       
   </li>
@@ -663,7 +680,7 @@
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(17)</small>
+        <small>(18)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -946,7 +963,7 @@
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(36)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(37)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       

@@ -230,8 +230,8 @@
                   <h1 class="post-title">my.cnf详解</h1>
 
                   <p class="post-byline">
-                    by  · 2016年02月26日 15:30:01 · 11271 Words ·
-                    ~23min reading time |
+                    by  · 2016年02月26日 15:30:01 · 14303 Words ·
+                    ~29min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/Post/db/my.cnf.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
                   </p>
@@ -829,6 +829,193 @@ interactive_timeout=120
 sync_binlog=1  
 </code></pre>
 
+<p>###3.
+默认的配置本人持鄙视态度，所以要自己配置</p>
+
+<p>创建配置： /etc/my.cnf</p>
+
+<pre><code>
+# Example MySQL config file for small systems.
+#
+# This is for a system with little memory (&lt;= 64M) where MySQL is only used
+# from time to time and it's important that the mysqld daemon
+# doesn't use much resources.
+#
+# MySQL programs look for option files in a set of
+# locations which depend on the deployment platform.
+# You can copy this option file to one of those
+# locations. For information about these locations, see:
+# http://dev.mysql.com/doc/mysql/en/option-files.html
+#
+# In this file, you can use all long options that a program supports.
+# If you want to know which options a program supports, run the program
+# with the &quot;--help&quot; option.
+
+# The following options will be passed to all MySQL clients
+[client]
+#password    = your_password
+port        = 3306
+socket        = /var/lib/mysql/mysql.sock
+default-character-set=utf8
+#character-set-client = gbk
+
+# Here follows entries for some specific programs
+
+# The MySQL server
+[mysqld]
+port        = 3306
+socket        = /var/lib/mysql/mysql.sock
+datadir = /usr/mysql/data
+skip-external-locking
+lower_case_table_names=1
+character-set-server = utf8
+
+#skip_name_resolve  
+
+#key_buffer_size = 16M
+#他人经验值，查询排序时所能使用的缓冲区大小。所以，对于内存在4GB左右的服务器推荐设置为6-8M。  
+#sort_buffer_size = 1M
+
+
+max_allowed_packet = 32M
+
+
+#使用查询缓冲，MySQL将SELECT语句和查询结果存放在缓冲区中，今后对于同样的SELECT语句（区分大小写），将直接从缓冲区中读取结果
+query_cache_size = 32M
+#query_cache_type 0 代表不使用缓冲， 1 代表使用缓冲，2 代表根据需要使用。
+#设置 1 代表缓冲永远有效，如果不需要缓冲，就需要使用如下语句：
+#SELECT SQL_NO_CACHE * FROM my_table WHERE ...
+#如果设置为 2 ，需要开启缓冲，可以用如下语句：
+#SELECT SQL_CACHE * FROM my_table WHERE ...
+query_cache_type= 1
+
+#要求MySQL能有的连接数量。当主要MySQL线程在一个很短时间内得到非常多的连接请求，这就起作用，然后主线程花些时间(尽管很短)检查连接并且启动一个新线程。
+#back_log值指出在MySQL暂时停止回答新请求之前的短时间内多少个请求可以被存在堆栈中
+back_log=100
+
+#临时表的大小（4G配置）
+tmp_table_size = 256M  
+
+#并发连接数目最大，
+#指定MySQL允许的最大连接进程数。如果在访问论坛时经常出现Too Many Connections的错误提 示，则需要增大该参数值。
+max_connections=500
+
+#没找到具体说明，不过设置为32后 20天才创建了400多个线程 而以前一天就创建了上千个线程 所以还是有用的
+thread_cache_size = 32
+
+#目的待定，他人经验值，
+#指定一个请求的最大连接时间，对于4GB左右内存的服务器可以设置为5-10。
+interactive_timeout=28800
+wait_timeout =28800
+
+
+#设置为你的cpu数目x2,例如，只有一个cpu,那么thread_concurrency=2
+#有2个cpu,那么thread_concurrency=4
+thread_concurrency = 8
+
+#增加table_open_cache，会增加文件描述符，当把table_open_cache设置为很大时，如果系统处理不了那么多文件描述符，那么就会出现客户端失效
+#如果我们把table_open_cache设置小一点，那么mysql会随着table cache的不足，而关闭不用或者少用的表的cache，这样会释放文件描述符
+#指定表高速缓存的大小。每当MySQL访问一个表时，如果在表缓冲区中还有空间，该表就被打开并放入其中，这样可以更快地访问表内容。
+#通过检查峰值时间的状态值Open_tables和Opened_tables，可以决定是否需要增加table_cache的值。如果你发现open_tables等于table_cache，
+#并且opened_tables在不断增长，那么你就需要增加table_cache的值了（上述状态值可以使用SHOW STATUS LIKE ‘Open%tables’获得）。
+#注意，不能盲目地把table_cache设置成很大的值。如果设置得太高，可能会造成文件描述符不足，从而造成性能不稳定或者连接失败。对于有1G内存的机器，推荐值是128－256。
+table_open_cache = 256
+
+#读查询操作所能使用的缓冲区大小。和sort_buffer_size一样，该参数对应的分配内存也是每连接独享。
+read_buffer_size = 4M   
+
+#联合查询操作所能使用的缓冲区大小，和sort_buffer_size一样，该参数对应的分配内存也是每连接独享。  
+join_buffer_size = 8M   
+
+read_rnd_buffer_size = 256K
+net_buffer_length = 2K
+thread_stack = 128K
+
+# Don't listen on a TCP/IP port at all. This can be a security enhancement,
+# if all processes that need to connect to mysqld run on the same host.
+# All interaction with mysqld must be made via Unix sockets or named pipes.
+# Note that using this option without enabling named pipes on Windows
+# (using the &quot;enable-named-pipe&quot; option) will render mysqld useless!
+#
+#skip-networking
+server-id    = 2
+
+# Uncomment the following if you want to log updates
+#log_bin指定日志文件，如果不提供文件名，MySQL将自己产生缺省文件名。MySQL会在文件名后面自动添加数字引，每次启动服务时，都会重新生成一个新的二进制文件。
+#此外，使用log-bin-index可以指定索引文件；使用binlog-do-db可以指定记录的数据库；使用binlog-ignore-db可以指定不记录的数据库。
+#注意的是：binlog-do-db和binlog-ignore-db一次只指定一个数据库，指定多个数据库需要多个语句。而且，MySQL会将所有的数据库名称改成小写，在指定数据库时必须全部使用小写名字，否则不会起作用。
+#关掉这个功能只需要在他前面加上#号
+#log-bin=mysql-bin
+
+# binary logging format - mixed recommended
+#binlog_format=mixed
+
+# Causes updates to non-transactional engines using statement format to be
+# written directly to binary log. Before using this option make sure that
+# there are no dependencies between transactional and non-transactional
+# tables such as in the statement INSERT INTO t_myisam SELECT * FROM
+# t_innodb; otherwise, slaves may diverge from the master.
+#binlog_direct_non_transactional_updates=TRUE
+
+# Uncomment the following if you are using InnoDB tables
+#innodb_data_home_dir = /opt/database/mysql/data
+#innodb_data_file_path = ibdata1:10M:autoextend
+#innodb_log_group_home_dir = /opt/database/mysql/data
+# You can set .._buffer_pool_size up to 50 - 80 %
+# of RAM but beware of setting memory usage too high
+#这是InnoDB最重要的设置，对InnoDB性能有决定性的影响。默认的设置只有8M，所以默认的数据库设置下面InnoDB性能很差。在只有InnoDB存储引擎的数据库服务器上面，可以设置60-80%的内存。
+#更精确一点，在内存容量允许的情况下面设置比InnoDB tablespaces大10%的内存大小。
+innodb_buffer_pool_size = 1G
+
+#作用：用来存放Innodb的内部目录
+#这个值不用分配太大，系统可以自动调。不用设置太高。通常比较大数据设置16Ｍ够用了，如果表比较多，可以适当的增大。如果这个值自动增加，会在error log有中显示的。
+innodb_additional_mem_pool_size = 16M
+
+#作用：指定日值的大小
+#分配原则：几个日值成员大小加起来差不多和你的innodb_buffer_pool_size相等。上限为每个日值上限大小为4G.一般控制在几个ＬＯＧ文件相加大小在２Ｇ以内为佳。具体情况还需要看你的事务大小，数据大小为依据。
+#说明：这个值分配的大小和数据库的写入速度，事务大小，异常重启后的恢复有很大的关系。
+#该参数决定了recovery speed。太大的话recovery就会比较慢，太小了影响查询性能，一般取256M可以兼顾性能和recovery的速度
+innodb_log_file_size = 256M
+
+#磁盘速度是很慢的，直接将log写道磁盘会影响InnoDB的性能，该参数设定了log buffer的大小，一般4M。如果有大的blob操作，可以适当增大。
+#作用：事务在内存中的缓冲。
+#分配原则：控制在2-8M.这个值不用太多的。他里面的内存一般一秒钟写到磁盘一次。具体写入方式和你的事务提交方式有关。在Ｏｒａｃｌｅ等数据库了解这个，一般最大指定为３Ｍ比较合适。
+innodb_log_buffer_size = 5M
+
+#设置为0就是等到innodb_log_buffer_size列队满后再统一储存,默认为1
+# 该参数设定了事务提交时内存中log信息的处理。
+#1) =1时，在每个事务提交时，日志缓冲被写到日志文件，对日志文件做到磁盘操作的刷新。Truly ACID。速度慢。
+#2) =2时，在每个事务提交时，日志缓冲被写到文件，但不对日志文件做到磁盘操作的刷新。只有操作系统崩溃或掉电才会删除最后一秒的事务，不然不会丢失事务。
+#3) =0时， 日志缓冲每秒一次地被写到日志文件，并且对日志文件做到磁盘操作的刷新。任何mysqld进程的崩溃会删除崩溃前最后一秒的事务
+innodb_flush_log_at_trx_commit = 2
+
+#默认参数:innodb_lock_wait_timeout设置锁等待的时间是50s,
+#因为有的锁等待超过了这个时间,所以抱错.
+#你可以把这个时间加长,或者优化存储过程,事务避免过长时间的等待.
+innodb_lock_wait_timeout = 600
+
+#你的服务器CPU有几个就设置为几,建议用默认一般为8
+innodb_thread_concurrency=8            
+
+
+[mysqldump]
+quick
+max_allowed_packet = 16M
+
+[mysql]
+no-auto-rehash
+# Remove the next comment character if you are not familiar with SQL
+#safe-updates
+
+[myisamchk]
+key_buffer_size = 64M
+sort_buffer_size = 4M
+
+[mysqlhotcopy]
+interactive-timeout
+
+</code></pre>
+
                       
                     </div>
                     <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
@@ -994,7 +1181,7 @@ sync_binlog=1
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(17)</small>
+        <small>(18)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -1277,7 +1464,7 @@ sync_binlog=1
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(36)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(37)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       
