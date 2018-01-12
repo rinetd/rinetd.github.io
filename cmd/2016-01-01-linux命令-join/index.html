@@ -18,17 +18,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<meta name="description" content="我使用过的Linux命令之join - 根据关键字合并数据文件 本文链接：http://codingstandards.iteye.com/blo">
+<meta name="description" content="linux 处理两个文件的并集,交集,差集 在求交集和差集的时候， 一定要注意， 养成先对文件sort和uniq的习惯。 另外， 求差集的方法非常巧妙， 需要仔细">
 <meta name="author" content=rinetd>
 <meta name="publisher" content=rinetd@163.com>
 
 <meta itemprop="name" content="linux命令详解 join - 时光小栈">
-<meta itemprop="description" content="我使用过的Linux命令之join - 根据关键字合并数据文件 本文链接：http://codingstandards.iteye.com/blo">
+<meta itemprop="description" content="linux 处理两个文件的并集,交集,差集 在求交集和差集的时候， 一定要注意， 养成先对文件sort和uniq的习惯。 另外， 求差集的方法非常巧妙， 需要仔细">
 <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
 
 <meta property="og:type" content="article" />
 <meta property="og:title" content="linux命令详解 join - 时光小栈" />
-<meta property="og:description" content="我使用过的Linux命令之join - 根据关键字合并数据文件 本文链接：http://codingstandards.iteye.com/blo">
+<meta property="og:description" content="linux 处理两个文件的并集,交集,差集 在求交集和差集的时候， 一定要注意， 养成先对文件sort和uniq的习惯。 另外， 求差集的方法非常巧妙， 需要仔细">
 <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
 <meta property="og:url" content="http://blog.pytool.com/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-join/" />
 
@@ -230,8 +230,8 @@
                   <h1 class="post-title">linux命令详解 join</h1>
 
                   <p class="post-byline">
-                    by  · 2016年01月06日 16:46:14 · 1697 Words ·
-                    ~4min reading time |
+                    by  · 2016年01月06日 16:46:14 · 2794 Words ·
+                    ~6min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/cmd/2016-01-01%20Linux%e5%91%bd%e4%bb%a4%20join.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
                   </p>
@@ -241,11 +241,90 @@
                   <div class="entry">
                     <div class="entry-inner">
                       
-                      <p>我使用过的Linux命令之join - 根据关键字合并数据文件</p>
+                      
 
-<p>本文链接：<a href="http://codingstandards.iteye.com/blog/796299">http://codingstandards.iteye.com/blog/796299</a>   （转载请注明出处）</p>
+<h1 id="linux-处理两个文件的并集-交集-差集">linux 处理两个文件的并集,交集,差集</h1>
 
-<p>用途说明</p>
+<p>在求交集和差集的时候， 一定要注意， 养成先对文件sort和uniq的习惯。 另外， 求差集的方法非常巧妙， 需要仔细琢磨一下。
+准备工作：先排序+去重
+sort a.txt | uniq &gt; old.txt
+sort b.txt | uniq &gt; new.txt</p>
+
+<ol>
+<li>取出两个文件的并集(重复的行只保留一份)</li>
+</ol>
+
+<p><code>cat old.txt new.txt | sort | uniq</code></p>
+
+<ol>
+<li>取出两个文件的交集(只留下同时存在于两个文件中的文件)</li>
+</ol>
+
+<p><code>cat old.txt new.txt | sort | uniq -d</code></p>
+
+<pre><code>  -d 输出duplicate了的行
+</code></pre>
+
+<ol>
+<li>删除交集，留下其他的行</li>
+</ol>
+
+<p><code>cat old.txt new.txt | sort | uniq -u</code></p>
+
+<pre><code>  -u是unique的缩写， 表示输出唯一的行。
+</code></pre>
+
+<ol>
+<li>求差集 仅在 old.txt 中存在</li>
+</ol>
+
+<p><code>cat old.txt new.txt new.txt | sort | uniq -u</code></p>
+
+<h2 id="sort命令">sort命令</h2>
+
+<p>sort排序是根据从输入行抽取的一个或多个关键字进行比较来完成的。排序关键字定义了用来排序的最小的字符序列。缺省情况下以整行为关键字按ASCII字符顺序进行排序。</p>
+
+<p>改变缺省设置的选项主要有：</p>
+
+<ul>
+<li>m 若给定文件已排好序，合并文件</li>
+<li>c 检查给定文件是否已排好序，如果它们没有都排好序，则打印一个出错信息，并以状态值1退出</li>
+<li>u 对排序后认为相同的行只留其中一行</li>
+<li>o 输出文件 将排序输出写到输出文件中而不是标准输出，如果输出文件是输入文件之一，sort先将该文件的内容写入一个临时文件，然后再排序和写输出结果。</li>
+</ul>
+
+<p>改变缺省排序规则的选项主要有：</p>
+
+<ul>
+<li>d 按字典顺序排序，比较时仅字母、数字、空格和制表符有意义。</li>
+<li>f 将小写字母与大写字母同等对待。</li>
+<li>I 忽略非打印字符。</li>
+<li>M 作为月份比较：“JAN”&lt;“FEB”</li>
+<li>r 按逆序输出排序结果。
+-k, -key=POS1[,POS2] posl - pos2 指定一个或几个字段作为排序关键字，字段位置从posl开始，到pos2为止（包括posl，不包括pos2）。如不指定pos2，则关键字为从posl到行尾。字段和字符的位置从0开始。</li>
+<li>b 在每行中寻找排序关键字时忽略前导的空白（空格和制表符）。</li>
+<li>t separator 指定字符separator作为字段分隔符。</li>
+</ul>
+
+<h2 id="uniq命令">uniq命令</h2>
+
+<p>文件经过处理后在它的输出文件中可能会出现重复的行。例如，使用cat命令将两个文件合并后，再使用sort命令进行排序，就可能出现重复行。这时可以使用uniq命令将这些重复行从输出文件中删除，只留下每条记录的唯一样本。</p>
+
+<p>说明：这个命令读取输入文件，并比较相邻的行。在正常情况下，第二个及以后更多个重复行将被删去，行比较是根据所用字符集的排序序列进行的。该命令加工后的结果写到输出文件中。输入文件和输出文件必须不同。如果输入文件用“- ”表示，则从标准输入读取。</p>
+
+<p>该命令各选项含义如下：</p>
+
+<ul>
+<li>c 显示输出中，在每行行首加上本行在文件中出现的次数。它可取代- u和- d选项。</li>
+<li>d 只显示重复行。</li>
+<li>u 只显示文件中不重复的各行。</li>
+<li>n 前n个字段与每个字段前的空白一起被忽略。一个字段是一个非空格、非制表符的字符串，彼此由制表符和空格隔开（字段从0开始编号）。
++n 前n个字符被忽略，之前的字符被跳过（字符从0开始编号）。</li>
+<li>f n 与- n相同，这里n是字段数。</li>
+<li>s n 与＋n相同，这里n是字符数。</li>
+</ul>
+
+<p>我使用过的Linux命令之join - 根据关键字合并数据文件</p>
 
 <p>Linux下最常用的数据文件格式是文本格式的，多个字段之间通过分隔符来区分，分隔符比如冒号(:)、制表符、空格等。/etc/passwd和/etc/group就是用:来分隔的，用MySQL的into outfile指令导出的数据通常是以制表符分隔的。这种文本格式既方便人去阅读，也适合程序处理，通常某列类似于数据库中的关键字。join命令就是一个根据关键字合并数据文件的命令（join lines of two files on a common field），类似于数据库中两张表关联查询。<br />
 常用参数</p>
