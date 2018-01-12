@@ -242,7 +242,7 @@
 <h1 id="译-elk日志中心分布式架构的逐步演化">[译] ELK日志中心分布式架构的逐步演化</h1>
 
 <blockquote>
-<p>摘要：本文属于原创，欢迎转载，转载请保留出处：<a href="https://github.com/jasonGeng88/blog">https://github.com/jasonGeng88/blog</a></p>
+<p>摘要：本文属于原创，欢迎转载，转载请保留出处：<a href="https://github.com/jasonGeng88/blog" target="_blank">https://github.com/jasonGeng88/blog</a></p>
 </blockquote>
 
 <h2 id="当前环境">当前环境</h2>
@@ -253,7 +253,7 @@
 
 <h2 id="说明">说明</h2>
 
-<p>记得写 <a href="https://github.com/jasonGeng88/blog/blob/master/201703/elk.md">“基于ELK+Filebeat搭建日志中心”</a> 时，有朋友跟我说：“你的日志中心缺少了消息队列。” 是的，没有考虑。因为暂时用不到，架构的演变一定是根据业务的发展逐步完成的。我觉得任何东西，太少或太过都未必是好事。构架能满足公司当前的发展，那就是好的。</p>
+<p>记得写 <a href="https://github.com/jasonGeng88/blog/blob/master/201703/elk.md" target="_blank">“基于ELK+Filebeat搭建日志中心”</a> 时，有朋友跟我说：“你的日志中心缺少了消息队列。” 是的，没有考虑。因为暂时用不到，架构的演变一定是根据业务的发展逐步完成的。我觉得任何东西，太少或太过都未必是好事。构架能满足公司当前的发展，那就是好的。</p>
 
 <p>当然我不是指架构可以随意设计，只要满足需求就好。我们设计的架构，满足现有需求当然是先决条件，但还得看得到可预见的未来，为架构的演进预留一定的扩展性。</p>
 
@@ -263,23 +263,23 @@
 
 <h2 id="原文链接">原文链接</h2>
 
-<p><a href="https://www.elastic.co/guide/en/logstash/current/deploying-and-scaling.html#deploying-and-scaling">https://www.elastic.co/guide/en/logstash/current/deploying-and-scaling.html#deploying-and-scaling</a></p>
+<p><a href="https://www.elastic.co/guide/en/logstash/current/deploying-and-scaling.html#deploying-and-scaling" target="_blank">https://www.elastic.co/guide/en/logstash/current/deploying-and-scaling.html#deploying-and-scaling</a></p>
 
 <h1 id="译文">译文</h1>
 
 <h2 id="概述">概述</h2>
 
-<p>当Logstash的使用场景逐步演进时，我们之前的架构也将随之发生改变。本文讨论了在复杂度逐渐递增下的Logstash架构一系列的演变过程。我们先从一个最简单的架构开始，然后在此架构上来逐渐增加内容。本文的示例是将数据写入到了ES（*Elasticsearch*）集群，其实Logstash可以写的<a href="https://www.elastic.co/guide/en/logstash/5.2/output-plugins.html">输出源</a>非常多。</p>
+<p>当Logstash的使用场景逐步演进时，我们之前的架构也将随之发生改变。本文讨论了在复杂度逐渐递增下的Logstash架构一系列的演变过程。我们先从一个最简单的架构开始，然后在此架构上来逐渐增加内容。本文的示例是将数据写入到了ES（*Elasticsearch*）集群，其实Logstash可以写的<a href="https://www.elastic.co/guide/en/logstash/5.2/output-plugins.html" target="_blank">输出源</a>非常多。</p>
 
 <h2 id="最简架构">最简架构</h2>
 
-<p>Logstash最简单的架构可以由一个Logstash实例和一个ES实例组成，两者直接相连。按照Logstash的<a href="https://www.elastic.co/guide/en/logstash/5.2/pipeline.html">处理流程</a>，我们使用了一个收集数据的<a href="https://www.elastic.co/guide/en/logstash/5.2/input-plugins.html">INPUT插件</a>和一个数据写入ES的<a href="https://www.elastic.co/guide/en/logstash/5.2/output-plugins.html">OUTPUT插件</a>，最后按照实例配置文件上的固定配置，启动Logstash。配置文件中，INPUT插件与OUTPUT插件是必须的，且OUTPUT默认输出方式是stdout，FILTER是可选的，下文会讲到。</p>
+<p>Logstash最简单的架构可以由一个Logstash实例和一个ES实例组成，两者直接相连。按照Logstash的<a href="https://www.elastic.co/guide/en/logstash/5.2/pipeline.html" target="_blank">处理流程</a>，我们使用了一个收集数据的<a href="https://www.elastic.co/guide/en/logstash/5.2/input-plugins.html" target="_blank">INPUT插件</a>和一个数据写入ES的<a href="https://www.elastic.co/guide/en/logstash/5.2/output-plugins.html" target="_blank">OUTPUT插件</a>，最后按照实例配置文件上的固定配置，启动Logstash。配置文件中，INPUT插件与OUTPUT插件是必须的，且OUTPUT默认输出方式是stdout，FILTER是可选的，下文会讲到。</p>
 
 <p><img src="assets/logstash_scale_01.png" alt="" /></p>
 
 <h2 id="引入-filters">引入 Filters</h2>
 
-<p>日志数据默认是无结构化的，经常包含一些无用信息，有时也会丢失一些本可从日志中获取的相关信息。你可以使用<a href="https://www.elastic.co/guide/en/logstash/5.2/filter-plugins.html">FILTER插件</a>来解析你的日志，从中提取有效字段，剔除无用的信息，还可以从有效字段中衍生出额外信息。例如，filters可以从IP地址中衍生出地理信息，将其添加进日志中，也可以使用<a href="https://www.elastic.co/guide/en/logstash/5.2/plugins-filters-grok.html">grok filter</a>解析文本信息，使其结构化。</p>
+<p>日志数据默认是无结构化的，经常包含一些无用信息，有时也会丢失一些本可从日志中获取的相关信息。你可以使用<a href="https://www.elastic.co/guide/en/logstash/5.2/filter-plugins.html" target="_blank">FILTER插件</a>来解析你的日志，从中提取有效字段，剔除无用的信息，还可以从有效字段中衍生出额外信息。例如，filters可以从IP地址中衍生出地理信息，将其添加进日志中，也可以使用<a href="https://www.elastic.co/guide/en/logstash/5.2/plugins-filters-grok.html" target="_blank">grok filter</a>解析文本信息，使其结构化。</p>
 
 <p>当然，添加FILTER插件对性能是有一定影响的。这取决于FILTER插件执行的计算量，以及处理的日志大小。grok filter的正则计算尤其占用资源。解决资源消耗大的一种方式是利用计算机多核的特性进行并行计算。使用 -w 参数来设置 Logstash filter 任务的执行线程数。例如，bin/logstash -w 8 命令使用的是8个不同的线程来处理filter。</p>
 
@@ -287,7 +287,7 @@
 
 <h2 id="引入-filebeat">引入 Filebeat</h2>
 
-<p><a href="https://www.elastic.co/guide/en/beats/filebeat/current/index.html">Filebeat</a> 是一款有Go语言编写的轻量级日志收集工具，主要作用是收集当前服务器上的日志，并将收集的数据输出到目标机器上进行进一步处理。Filebeat 使用 <a href="https://www.elastic.co/guide/en/beats/libbeat/current/index.html">Beats</a> 协议与Logstash实例进行通信。使用 <a href="https://www.elastic.co/guide/en/logstash/5.2/plugins-inputs-beats.html">Beats input 插件</a> 来配置你的Logstash的实例，让其能够接收Beats传来的数据。</p>
+<p><a href="https://www.elastic.co/guide/en/beats/filebeat/current/index.html" target="_blank">Filebeat</a> 是一款有Go语言编写的轻量级日志收集工具，主要作用是收集当前服务器上的日志，并将收集的数据输出到目标机器上进行进一步处理。Filebeat 使用 <a href="https://www.elastic.co/guide/en/beats/libbeat/current/index.html" target="_blank">Beats</a> 协议与Logstash实例进行通信。使用 <a href="https://www.elastic.co/guide/en/logstash/5.2/plugins-inputs-beats.html" target="_blank">Beats input 插件</a> 来配置你的Logstash的实例，让其能够接收Beats传来的数据。</p>
 
 <p>Filebeat使用的是源数据所在机器的计算资源，Beats input 插件最小化了Logstash实例的资源需求，这种架构对于有资源限制要求的场景来说，非常有用。</p>
 
@@ -297,7 +297,7 @@
 
 <p>Logstash 一般不与ES的单节点进行通信，而是和多个节点组成的ES集群进行通信，采用的协议默认是HTTP。</p>
 
-<p>你可以使用ES提供的REST API接口向集群写入数据，传输的数据格式为JSON。使用REST接口在代码中不需要引入JAVA的客户端类或任何额外的JAR包。相比节点协议与传输格式，没有性能上的弊端。若要做到接口安全通信，可以使用 <a href="https://www.elastic.co/guide/en/x-pack/current/xpack-security.html">X-Pack Security</a> ，它支持SSL与HTTP basic的安全校验。</p>
+<p>你可以使用ES提供的REST API接口向集群写入数据，传输的数据格式为JSON。使用REST接口在代码中不需要引入JAVA的客户端类或任何额外的JAR包。相比节点协议与传输格式，没有性能上的弊端。若要做到接口安全通信，可以使用 <a href="https://www.elastic.co/guide/en/x-pack/current/xpack-security.html" target="_blank">X-Pack Security</a> ，它支持SSL与HTTP basic的安全校验。</p>
 
 <p>当你使用HTTP协议时，可以在Logstash的 ES output 插件配置中，提供ES集群的多个请求地址，ES的请求将自动做到负载均衡。多个ES节点通过路由流量到活跃节点的方式也为ES集群提供的高可用性。</p>
 
@@ -307,7 +307,7 @@
 
 <p>你也可以使用第三方的负载均衡硬件或软件，来处理Logstash与外部应用的连接。</p>
 
-<p><em>注意：确保你的Logstash配置不直接连接到ES<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.2/modules-node.html">管理集群的主节点</a>上。将Logstash连接到客户端或数据节点上，来保护ES集群的稳定性。</em></p>
+<p><em>注意：确保你的Logstash配置不直接连接到ES<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.2/modules-node.html" target="_blank">管理集群的主节点</a>上。将Logstash连接到客户端或数据节点上，来保护ES集群的稳定性。</em></p>
 
 <p><img src="assets/logstash_scale_04.png" alt="" /></p>
 
@@ -349,7 +349,7 @@
 <h1 id="译-elk日志中心分布式架构的逐步演化-1">[译] ELK日志中心分布式架构的逐步演化</h1>
 
 <blockquote>
-<p>摘要：本文属于原创，欢迎转载，转载请保留出处：<a href="https://github.com/jasonGeng88/blog">https://github.com/jasonGeng88/blog</a></p>
+<p>摘要：本文属于原创，欢迎转载，转载请保留出处：<a href="https://github.com/jasonGeng88/blog" target="_blank">https://github.com/jasonGeng88/blog</a></p>
 </blockquote>
 
 <h2 id="当前环境-1">当前环境</h2>
@@ -360,7 +360,7 @@
 
 <h2 id="说明-1">说明</h2>
 
-<p>记得写 <a href="https://github.com/jasonGeng88/blog/blob/master/201703/elk.md">“基于ELK+Filebeat搭建日志中心”</a> 时，有朋友跟我说：“你的日志中心缺少了消息队列。” 是的，没有考虑。因为暂时用不到，架构的演变一定是根据业务的发展逐步完成的。我觉得任何东西，太少或太过都未必是好事。构架能满足公司当前的发展，那就是好的。</p>
+<p>记得写 <a href="https://github.com/jasonGeng88/blog/blob/master/201703/elk.md" target="_blank">“基于ELK+Filebeat搭建日志中心”</a> 时，有朋友跟我说：“你的日志中心缺少了消息队列。” 是的，没有考虑。因为暂时用不到，架构的演变一定是根据业务的发展逐步完成的。我觉得任何东西，太少或太过都未必是好事。构架能满足公司当前的发展，那就是好的。</p>
 
 <p>当然我不是指架构可以随意设计，只要满足需求就好。我们设计的架构，满足现有需求当然是先决条件，但还得看得到可预见的未来，为架构的演进预留一定的扩展性。</p>
 
@@ -370,23 +370,23 @@
 
 <h2 id="原文链接-1">原文链接</h2>
 
-<p><a href="https://www.elastic.co/guide/en/logstash/current/deploying-and-scaling.html#deploying-and-scaling">https://www.elastic.co/guide/en/logstash/current/deploying-and-scaling.html#deploying-and-scaling</a></p>
+<p><a href="https://www.elastic.co/guide/en/logstash/current/deploying-and-scaling.html#deploying-and-scaling" target="_blank">https://www.elastic.co/guide/en/logstash/current/deploying-and-scaling.html#deploying-and-scaling</a></p>
 
 <h1 id="译文-1">译文</h1>
 
 <h2 id="概述-1">概述</h2>
 
-<p>当Logstash的使用场景逐步演进时，我们之前的架构也将随之发生改变。本文讨论了在复杂度逐渐递增下的Logstash架构一系列的演变过程。我们先从一个最简单的架构开始，然后在此架构上来逐渐增加内容。本文的示例是将数据写入到了ES（*Elasticsearch*）集群，其实Logstash可以写的<a href="https://www.elastic.co/guide/en/logstash/5.2/output-plugins.html">输出源</a>非常多。</p>
+<p>当Logstash的使用场景逐步演进时，我们之前的架构也将随之发生改变。本文讨论了在复杂度逐渐递增下的Logstash架构一系列的演变过程。我们先从一个最简单的架构开始，然后在此架构上来逐渐增加内容。本文的示例是将数据写入到了ES（*Elasticsearch*）集群，其实Logstash可以写的<a href="https://www.elastic.co/guide/en/logstash/5.2/output-plugins.html" target="_blank">输出源</a>非常多。</p>
 
 <h2 id="最简架构-1">最简架构</h2>
 
-<p>Logstash最简单的架构可以由一个Logstash实例和一个ES实例组成，两者直接相连。按照Logstash的<a href="https://www.elastic.co/guide/en/logstash/5.2/pipeline.html">处理流程</a>，我们使用了一个收集数据的<a href="https://www.elastic.co/guide/en/logstash/5.2/input-plugins.html">INPUT插件</a>和一个数据写入ES的<a href="https://www.elastic.co/guide/en/logstash/5.2/output-plugins.html">OUTPUT插件</a>，最后按照实例配置文件上的固定配置，启动Logstash。配置文件中，INPUT插件与OUTPUT插件是必须的，且OUTPUT默认输出方式是stdout，FILTER是可选的，下文会讲到。</p>
+<p>Logstash最简单的架构可以由一个Logstash实例和一个ES实例组成，两者直接相连。按照Logstash的<a href="https://www.elastic.co/guide/en/logstash/5.2/pipeline.html" target="_blank">处理流程</a>，我们使用了一个收集数据的<a href="https://www.elastic.co/guide/en/logstash/5.2/input-plugins.html" target="_blank">INPUT插件</a>和一个数据写入ES的<a href="https://www.elastic.co/guide/en/logstash/5.2/output-plugins.html" target="_blank">OUTPUT插件</a>，最后按照实例配置文件上的固定配置，启动Logstash。配置文件中，INPUT插件与OUTPUT插件是必须的，且OUTPUT默认输出方式是stdout，FILTER是可选的，下文会讲到。</p>
 
 <p><img src="assets/logstash_scale_01.png" alt="" /></p>
 
 <h2 id="引入-filters-1">引入 Filters</h2>
 
-<p>日志数据默认是无结构化的，经常包含一些无用信息，有时也会丢失一些本可从日志中获取的相关信息。你可以使用<a href="https://www.elastic.co/guide/en/logstash/5.2/filter-plugins.html">FILTER插件</a>来解析你的日志，从中提取有效字段，剔除无用的信息，还可以从有效字段中衍生出额外信息。例如，filters可以从IP地址中衍生出地理信息，将其添加进日志中，也可以使用<a href="https://www.elastic.co/guide/en/logstash/5.2/plugins-filters-grok.html">grok filter</a>解析文本信息，使其结构化。</p>
+<p>日志数据默认是无结构化的，经常包含一些无用信息，有时也会丢失一些本可从日志中获取的相关信息。你可以使用<a href="https://www.elastic.co/guide/en/logstash/5.2/filter-plugins.html" target="_blank">FILTER插件</a>来解析你的日志，从中提取有效字段，剔除无用的信息，还可以从有效字段中衍生出额外信息。例如，filters可以从IP地址中衍生出地理信息，将其添加进日志中，也可以使用<a href="https://www.elastic.co/guide/en/logstash/5.2/plugins-filters-grok.html" target="_blank">grok filter</a>解析文本信息，使其结构化。</p>
 
 <p>当然，添加FILTER插件对性能是有一定影响的。这取决于FILTER插件执行的计算量，以及处理的日志大小。grok filter的正则计算尤其占用资源。解决资源消耗大的一种方式是利用计算机多核的特性进行并行计算。使用 -w 参数来设置 Logstash filter 任务的执行线程数。例如，bin/logstash -w 8 命令使用的是8个不同的线程来处理filter。</p>
 
@@ -394,7 +394,7 @@
 
 <h2 id="引入-filebeat-1">引入 Filebeat</h2>
 
-<p><a href="https://www.elastic.co/guide/en/beats/filebeat/current/index.html">Filebeat</a> 是一款有Go语言编写的轻量级日志收集工具，主要作用是收集当前服务器上的日志，并将收集的数据输出到目标机器上进行进一步处理。Filebeat 使用 <a href="https://www.elastic.co/guide/en/beats/libbeat/current/index.html">Beats</a> 协议与Logstash实例进行通信。使用 <a href="https://www.elastic.co/guide/en/logstash/5.2/plugins-inputs-beats.html">Beats input 插件</a> 来配置你的Logstash的实例，让其能够接收Beats传来的数据。</p>
+<p><a href="https://www.elastic.co/guide/en/beats/filebeat/current/index.html" target="_blank">Filebeat</a> 是一款有Go语言编写的轻量级日志收集工具，主要作用是收集当前服务器上的日志，并将收集的数据输出到目标机器上进行进一步处理。Filebeat 使用 <a href="https://www.elastic.co/guide/en/beats/libbeat/current/index.html" target="_blank">Beats</a> 协议与Logstash实例进行通信。使用 <a href="https://www.elastic.co/guide/en/logstash/5.2/plugins-inputs-beats.html" target="_blank">Beats input 插件</a> 来配置你的Logstash的实例，让其能够接收Beats传来的数据。</p>
 
 <p>Filebeat使用的是源数据所在机器的计算资源，Beats input 插件最小化了Logstash实例的资源需求，这种架构对于有资源限制要求的场景来说，非常有用。</p>
 
@@ -404,7 +404,7 @@
 
 <p>Logstash 一般不与ES的单节点进行通信，而是和多个节点组成的ES集群进行通信，采用的协议默认是HTTP。</p>
 
-<p>你可以使用ES提供的REST API接口向集群写入数据，传输的数据格式为JSON。使用REST接口在代码中不需要引入JAVA的客户端类或任何额外的JAR包。相比节点协议与传输格式，没有性能上的弊端。若要做到接口安全通信，可以使用 <a href="https://www.elastic.co/guide/en/x-pack/current/xpack-security.html">X-Pack Security</a> ，它支持SSL与HTTP basic的安全校验。</p>
+<p>你可以使用ES提供的REST API接口向集群写入数据，传输的数据格式为JSON。使用REST接口在代码中不需要引入JAVA的客户端类或任何额外的JAR包。相比节点协议与传输格式，没有性能上的弊端。若要做到接口安全通信，可以使用 <a href="https://www.elastic.co/guide/en/x-pack/current/xpack-security.html" target="_blank">X-Pack Security</a> ，它支持SSL与HTTP basic的安全校验。</p>
 
 <p>当你使用HTTP协议时，可以在Logstash的 ES output 插件配置中，提供ES集群的多个请求地址，ES的请求将自动做到负载均衡。多个ES节点通过路由流量到活跃节点的方式也为ES集群提供的高可用性。</p>
 
@@ -414,7 +414,7 @@
 
 <p>你也可以使用第三方的负载均衡硬件或软件，来处理Logstash与外部应用的连接。</p>
 
-<p><em>注意：确保你的Logstash配置不直接连接到ES<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.2/modules-node.html">管理集群的主节点</a>上。将Logstash连接到客户端或数据节点上，来保护ES集群的稳定性。</em></p>
+<p><em>注意：确保你的Logstash配置不直接连接到ES<a href="https://www.elastic.co/guide/en/elasticsearch/reference/5.2/modules-node.html" target="_blank">管理集群的主节点</a>上。将Logstash连接到客户端或数据节点上，来保护ES集群的稳定性。</em></p>
 
 <p><img src="assets/logstash_scale_04.png" alt="" /></p>
 
