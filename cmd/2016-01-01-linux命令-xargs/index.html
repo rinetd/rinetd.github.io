@@ -1,0 +1,2300 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="http://blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<title>Linux命令 xarg - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="xargs的原理剖析及用法详解 管道实现的是将前面的stdout作为后面的stdin，但是有些命令不接受管道的传递方式，最常见的就是ls命令。">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Linux命令 xarg - 时光小栈">
+<meta itemprop="description" content="xargs的原理剖析及用法详解 管道实现的是将前面的stdout作为后面的stdin，但是有些命令不接受管道的传递方式，最常见的就是ls命令。">
+<meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux命令 xarg - 时光小栈" />
+<meta property="og:description" content="xargs的原理剖析及用法详解 管道实现的是将前面的stdout作为后面的stdin，但是有些命令不接受管道的传递方式，最常见的就是ls命令。">
+<meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="http://blog.pytool.com/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-xargs/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<link rel="canonical" href="http://blog.pytool.com/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-xargs/">
+<link rel='shortlink' href="http://blog.pytool.com/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-xargs/"/>
+<link rel="shortcut icon" href="http://blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="http://blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="http://blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="http://blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="http://blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="http://blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="http://blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="http://blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="http://blog.pytool.com/public/font/hack/css/hack.min.css">
+
+</head>
+
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="http://blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="http://blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/cmd/">Cmd</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/english/">English</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/hugo/">Hugo</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/life/">Life</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/post/">Post</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/reship/">Reship</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/seo/">SEO</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/software/">Software</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/tool/">Tool</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/windows/">Windows</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.pytool.com/post/">Post</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.pytool.com/about/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    <div class="container">
+      <div class="container-inner">
+        <div class="toggle-search"><i class="fa fa-search"></i></div>
+        <div class="search-expand">
+          <div class="search-expand-inner">
+            <form method="get" class="searchform themeform" action="https://www.google.com/search">
+              <div>
+                <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+        <div class="group pad">
+          <h1 class="site-title">
+            <a rel="nofollow" href="http://blog.pytool.com/" rel="home">
+              
+              
+            </a>
+          </h1>
+          <p class="site-description"> Don&#39;t put any lines in your CODE that you don&#39;t understand </p>
+        </div>
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a href="http://blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/" rel="category tag">Linux命令</a>
+                </li>
+                
+              </ul>
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Linux命令 xargs</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年01月06日 16:46:14 · 11958 Words ·
+                    ~24min reading time |
+                    
+                    <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/cmd/2016-01-01%20Linux%e5%91%bd%e4%bb%a4%20xargs.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<p><a href="http://www.cnblogs.com/f-ck-need-u/p/5925923.html" target="_blank">xargs的原理剖析及用法详解</a></p>
+
+<p>管道实现的是将前面的stdout作为后面的stdin，但是有些命令不接受管道的传递方式，最常见的就是ls命令。有些时候命令希望管道传递的是参数，但是直接用管道有时无法传递到命令的参数位，这时候需要xargs，xargs实现的是将管道传输过来的stdin进行处理然后传递到命令的参数位上。
+也就是说xargs完成了两个行为：处理管道传输过来的stdin；将处理后的传递到正确的位置上。</p>
+
+<p>可以试试运行下面的几条命令，应该能很好理解xargs的作用了:</p>
+
+<p>echo &ldquo;/etc/passwd&rdquo; | cat         # 直接将标准输入的内容传递给cat           输出 /etc/passwd
+echo &ldquo;/etc/passwd&rdquo; | xargs cat   # 将标准输入的内容经过xargs处理后传递给cat 输出 /etc/passwd 的内容
+<code>find /etc -maxdepth 1 -name &quot;*.conf&quot; -print0 | xargs -0 -i grep &quot;hostname&quot; -l {}</code>  # 将搜索的文件传递给grep的参数位进行搜索，若不使用xargs，则grep将报错</p>
+
+<h2 id="特性-xargs处理的优先级或顺序了-先分割-再分批-然后传递到参数位">特性： xargs处理的优先级或顺序了：先分割，再分批，然后传递到参数位。</h2>
+
+<ol>
+<li>将结果中所有空格、制表符和分行符都替换为空格并压缩到一行上输出到参数， <code>ls |xargs echo</code></li>
+<li>如果想要保存制表符、空格等特殊符号，需要将它们用单引号或双引号包围起来，但是单双引号（和反斜线）都会被xargs去掉。另外经过我的测试，单引号和双引号的存在让处理变的很不受控制，经常会影响正常的分割和处理。</li>
+<li>将上一个命令的stdout 变为命令的参数,直接追加到命令的后面</li>
+
+<li><p>分割: <code>xargs -d&quot;o&quot;</code> 可以指定分段符，可以是单个符号、字母或数字。如指定字母o为分隔符：</p></li>
+
+<li><p>分批 <code>xargs -n 10</code>
+分批用于指定每次传递多少个分段。有三种分批选项：-n，-L和-i。在本文的开头已经指明了为什么-i是分批选项，但是这里还是要介绍它逻辑上定义的功能：参数替换。
+-i选项优先级最高，-L选项次之，-n选项优先级最低;多个分批选项同时指定时，高优先级的选项会覆盖低优先级的选项。也就是说这时候指定低优先级的选项是无意义的。</p></li>
+</ol>
+
+<p>xargs的作用不仅仅限于简单的stdin传递到命令的参数位，它还可以将stdin或者文件stdin分割成批，每个批中有很多分割片段，然后将这些片段按批交给xargs后面的命令进行处理。</p>
+
+<p>通俗的讲就是原来只能一个一个传递，分批可以实现10个10个传递，每传递一次，xargs后面的命令处理这10个中的每一个，处理完了处理下一个传递过来的批，如下图。</p>
+
+<p>但是应该注意的是，尽管实现了分批处理，但是并没有提高任何效率，因为分批传递之后还是一次执行一个。而且有时候分批传递后是作为一个参数的整体，并不会将分批中的信息分段执行。实现分批传递的目的仅仅是为了解决一些问题。</p>
+
+<p>剩下的就是处理xargs的细节问题了，比如如何分割（xargs、xargs -d、xargs -0），分割后如何划批（xargs -n、xargs -L），参数如何传递（xargs -i）。另外xargs还提供询问交互式处理（-p选项）和预先打印一遍命令的执行情况（-t选项），传递终止符（-E选项）等。</p>
+
+<p>其实这里已经暗示了xargs处理的优先级或顺序了：先分割，再分批，然后传递到参数位。</p>
+
+<p>分割有三种方法：独立的xargs、xargs -d和xargs -0。后两者可以配合起来使用，之所以不能配合独立的xargs使用，答案是显然的，指定了-d或-0选项意味着它不再是独立的。</p>
+
+<p>分批方法从逻辑上说是两种：-n选项和-L选项。但我觉得还应该包含传递阶段的选项-i。假如-i不是分批选项，则它将接收分批的结果。然而事实并非如此，当指定了-i选项之后会忽略-n和-L选项。从我多次实验的结果推导的优先级结论来说，它们的优先级从-n &ndash;&gt; -L &ndash;&gt; -i逐渐变高，当指定高优先级的分批选项会覆盖低优先级的分批选项，所以我觉得-i也是分批选项。并且后文中我也将其当成分批选项来介绍和说明。</p>
+
+<p>当然上述只是一个概括，更具体的还要看具体的选项介绍，而且很可能一个xargs中用不到这么多选项，但是理解这个很重要，否则在分割分批和传递上很容易出现疑惑。</p>
+
+<p>1.2 文本意义上的符号和标记意义上的符号</p>
+
+<p>在解释xargs和它的各种选项之前，我想先介绍一个贯穿xargs命令的符号分类：文本意义上的空格、制表符、反斜线、引号和非文本意义上的符号。我觉得理解它们是理解xargs分割和分批原理的关键。</p>
+
+<p>文本意义上的空格、制表符、反斜线、引号：未经处理就已经存在的符号，例如文本的内容中出现这些符号以及在文件名上出现了这些符号都是文本意义上的。与之相对的是非文本意义的符号，由于在网上没找到类似的文章和解释，所以我个人称之为标记意义上的符号：处理后出现的符号，例如ls命令的结果中每个文件之间的制表符，它原本是不存在的，只是ls命令处理后的显示方式。还包括每个命令结果的最后的换行符，文件内容的最后一行结尾的换行符。</p>
+
+<p>如下图，属于标记意义上的符号都用红色圆圈标记出来了。</p>
+
+<p>image</p>
+
+<p>其实它们的关系有点类似于字面意义的符号和特殊符号之间的关系，就像有时候特殊符号需要进行转义才能表示为普通符号。</p>
+
+<p>因为翻了百度、谷歌和一些书都没说这些方面的分类。但文本和非文本的符号在xargs分割的时候确实是区别对待的，所以我觉得有必要给个称呼好引用并说明它们，也就是说以上称呼完全是我个人的称呼。</p>
+
+<p>1.3 分割行为之：xargs</p>
+
+<p>[root@xuexi tmp]# cd /tmp
+[root@xuexi tmp]# rm -fr *
+[root@xuexi tmp]# mkdir a b c d test logdir shdir
+[root@xuexi tmp]# touch &ldquo;one space.log&rdquo;
+[root@xuexi tmp]# touch logdir/{1..10}.log
+[root@xuexi tmp]# touch shdir/{1..5}.sh
+[root@xuexi tmp]# echo &ldquo;the second sh the second line&rdquo; &gt; shdir/2.sh
+[root@xuexi tmp]# cat &lt;<eof>shdir/1.sh<br />
+&gt; the first sh
+&gt; the second line
+&gt; eof</p>
+
+<p>对于xargs，它将接收到的stdout处理后传递到xargs后面的命令参数位，不写命令时默认的命令是echo。</p>
+
+<p>[root@xuexi tmp]# cat shdir/1.sh | xargsthe first sh the second line
+[root@xuexi tmp]# cat shdir/1.sh | xargs echo</p>
+
+<p>the first sh the second line</p>
+
+<p>将分行处理掉不是echo实现的，而是管道传递过来的stdin经过xargs处理后的：将所有空格、制表符和分行符都替换为空格并压缩到一行上显示，这一整行将作为一个整体，这个整体的所有空格属性继承xargs处理前的符号属性，即原来是文本意义的或标记意义的在替换为空格后符号属性不变。这个整体可能直接交给命令或者作为stdout通过管道传递给管道右边的命令，这时结果将作为整体传递，也可能被xargs同时指定的分批选项分批处理。</p>
+
+<p>如果想要保存制表符、空格等特殊符号，需要将它们用单引号或双引号包围起来，但是单双引号（和反斜线）都会被xargs去掉。</p>
+
+<p>另外经过我的测试，单引号和双引号的存在让处理变的很不受控制，经常会影响正常的分割和处理。</p>
+
+<p>如果不指定分批选项，xargs的一整行结果将作为一个整体输出，而不是分隔开的。也许看处理的结果感觉是分开处理的，例如下面的第一个命令，但是这是因为ls允许接受多个空格分开的参数，执行第二个命令，可以证明它确实是将整行作为整体传输给命令的。</p>
+
+<p>[root@xuexi tmp]# find /tmp -maxdepth 1 | xargs ls</p>
+
+<p>/tmp/sh.txt</p>
+
+<p>/tmp:</p>
+
+<p>a  b  c  d  logdir  shdir  sh.txt  test</p>
+
+<p>/tmp/a:
+/tmp/b:
+/tmp/c:
+/tmp/d:
+/tmp/.ICE-unix:
+/tmp/logdir:</p>
+
+<p>10.log  1.log  2.log  3.log  4.log  5.log  6.log  7.log  8.log  9.log</p>
+
+<p>/tmp/shdir:</p>
+
+<p>1.sh  2.sh  3.sh  4.sh  5.sh  hell sh.txt</p>
+
+<p>/tmp/test:</p>
+
+<p>[root@xuexi tmp]# find /tmp -maxdepth 1 | xargs -p ls   # -p选项后面有解释</p>
+
+<p>ls /tmp /tmp/x.txt /tmp/logdir /tmp/b /tmp/test /tmp/d /tmp/vmware-root /tmp/sh.txt /tmp/c /tmp/shdir /tmp/a /tmp/one space.log /tmp/.ICE-unix ?&hellip;</p>
+
+<p>如果对独立的xargs指定分批选项，则有两种分批可能：指定-n时按空格分段，然后划批，不管是文本意义的空格还是标记意义的空格，只要是空格都是-n的操作对象；指定-L或者-i时按段划批，文本意义的符号不被处理。</p>
+
+<p>[root@xuexi tmp]# ls   #one space.log是一个文件的文件名，只是包含了空格</p>
+
+<p>a  b  c  d  logdir  one space.log  shdir  sh.txt  test  vmware-root  x.txt</p>
+
+<p>[root@xuexi tmp]# ls | xargs -n 2</p>
+
+<p>a b</p>
+
+<p>c d</p>
+
+<p>logdir one    # one和space.log分割开了，说明-n是按空格分割的</p>
+
+<p>space.log shdir</p>
+
+<p>sh.txt test</p>
+
+<p>vmware-root x.txt</p>
+
+<p>[root@xuexi tmp]# ls | xargs -L 2</p>
+
+<p>a b</p>
+
+<p>c d</p>
+
+<p>logdir one space.log  # one space.log作为一个分段，文件名中的空格没有分割这个段</p>
+
+<p>shdir sh.txt</p>
+
+<p>test vmware-root</p>
+
+<p>x.txt</p>
+
+<p>[root@xuexi tmp]# ls | xargs -i -p echo {}</p>
+
+<p>echo a ?&hellip;</p>
+
+<p>echo b ?&hellip;</p>
+
+<p>echo c ?&hellip;</p>
+
+<p>echo d ?&hellip;</p>
+
+<p>echo logdir ?&hellip;</p>
+
+<p>echo one space.log ?&hellip;  # one space.log也没有被文件名中的空格分割</p>
+
+<p>echo shdir ?&hellip;</p>
+
+<p>echo sh.txt ?&hellip;</p>
+
+<p>echo test ?&hellip;</p>
+
+<p>echo vmware-root ?&hellip;</p>
+
+<p>echo x.txt ?&hellip;</p>
+
+<p>1.4 使用xargs -p或xargs -t观察命令的执行过程</p>
+
+<p>使用-p选项是交互询问式的，只有每次询问的时候输入y（或yes）才会执行，直接按enter键是不会执行的。</p>
+
+<p>使用-t选项是在每次执行xargs后面的命令都会先在stderr上打印一遍命令的执行过程然后才正式执行。</p>
+
+<p>使用-p或-t选项就可以根据xargs后命令的执行顺序进行推测，xargs是如何分段、分批以及如何传递的，这通过它们有助于理解xargs的各种选项。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -n 2 -t</p>
+
+<p>/bin/echo a b  # 先打印一次命令，表示这一次只echo两个参数：a和b</p>
+
+<p>a b</p>
+
+<p>/bin/echo c d  # 表示这次只打印c和d</p>
+
+<p>c d</p>
+
+<p>/bin/echo logdir one</p>
+
+<p>logdir one</p>
+
+<p>/bin/echo space.log shdir</p>
+
+<p>space.log shdir</p>
+
+<p>/bin/echo sh.txt test</p>
+
+<p>sh.txt test</p>
+
+<p>/bin/echo vmware-root</p>
+
+<p>vmware-root</p>
+
+<p>[root@xuexi tmp]# ls | xargs -n 2 -p</p>
+
+<p>/bin/echo a b ?&hellip;y   # 询问是否echo a b</p>
+
+<p>/bin/echo c d ?&hellip;a b</p>
+
+<p>y       # 询问是否echo c d，后面的&hellip;a b指示了echo c d是在前一个结果的基础上接着执行的</p>
+
+<p>/bin/echo logdir one ?&hellip;c d</p>
+
+<p>y</p>
+
+<p>/bin/echo space.log shdir ?&hellip;logdir one</p>
+
+<p>y</p>
+
+<p>/bin/echo sh.txt test ?&hellip;space.log shdir</p>
+
+<p>y</p>
+
+<p>/bin/echo vmware-root ?&hellip;sh.txt test</p>
+
+<p>y</p>
+
+<p>vmware-root</p>
+
+<p>从上面的-t和-p的结果上都可以知道每次传递两个参数。</p>
+
+<p>1.5 分割行为之：xargs -d</p>
+
+<p>xargs -d有如下行为：</p>
+
+<p>?  xargs -d可以指定分段符，可以是单个符号、字母或数字。如指定字母o为分隔符：xargs -d&rdquo;o&rdquo;。</p>
+
+<p>?  xargs -d是分割阶段的选项，所以它优先于分批选项（-n、-L、-i）。</p>
+
+<p>?  xargs -d不是先xargs再-d处理的，它是区别于独立的xargs的另一个分割选项。</p>
+
+<p>xargs -d整体执行有几个阶段：</p>
+
+<p>?  替换：将接收stdin的所有的标记意义的符号替换为\n，替换完成后所有的符号（空格、制表符、分行符）变成字面意义上的普通符号，即文本意义的符号。</p>
+
+<p>?  分段：根据-d指定的分隔符进行分段并用空格分开每段，由于分段前所有符号都是普通字面意义上的符号，所以有的分段中可能包含了空格、制表符、分行符。也就是说除了-d导致的分段空格，其余所有的符号都是分段中的一部分。</p>
+
+<p>?  输出：最后根据指定的分批选项来输出。这里需要注意，分段前后有特殊符号时会完全按照符号输出。</p>
+
+<p>从上面的阶段得出以下两结论：</p>
+
+<p>（1）xargs -d会忽略文本意义上的符号。对于文本意义上的空格、制表符、分行符，除非是-d指定的符号，否则它们从来不会被处理，它们一直都是每个分段里的一部分；</p>
+
+<p>（2）由于第一阶段标记意义的符号会替换为分行符号，所以传入的stdin的每个标记意义符号位都在最终的xargs -d结果上分行了，但是它们已经是分段中的普通符号了，除非它们是-d指定的符号。</p>
+
+<p>例如对ls的结果指定&rdquo;o&rdquo;为分隔符。</p>
+
+<p>[root@xuexi tmp]# ls</p>
+
+<p>a  b  c  d  logdir  one space.log  shdir  sh.txt  test  vmware-root</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo;  #指定字母&rdquo;o&rdquo;为分隔符</p>
+
+<p>分段结果如图所示，图中每个封闭体都是一个分段，这些分段里可能包含了分行，可能包含了空格。</p>
+
+<p>3</p>
+
+<p>如果使用xargs -d时不指定分批选项，则整个结果将作为整体输出。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo; -p</p>
+
+<p>/bin/echo a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l gdir</p>
+
+<p>ne space.l g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r  t</p>
+
+<p>x.txt</p>
+
+<p>?&hellip;</p>
+
+<p>如果指定了分批选项，则按照-d指定的分隔符分段后的段分批，这时使用-n、-L或-i的结果是一样的。例如使用-n选项来观察是如何分批的。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo; -n 2 -t</p>
+
+<p>/bin/echo a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l gdir   # 每两段是一个批。</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l gdir</p>
+
+<p># 注意这里有个空行。是因为段的分隔符处于下一段的行开头，它的前面有个\n符号会按符号输出。</p>
+
+<p>/bin/echo ne space.l g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r  # 打印中间两段</p>
+
+<p>ne space.l g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r</p>
+
+<p>/bin/echo  t  # 打印最后一段，</p>
+
+<p>t   # 注意t前面有空格，因为是两个分隔符o连在一起分割的，所以前面有个空格需要输出。</p>
+
+<p>下面是最终显示结果。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo; -n 2</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l gdir</p>
+
+<p>ne space.l g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r</p>
+
+<p>t</p>
+
+<p>再看看-n 1的输出。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo; -n 1</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l</p>
+
+<p>gdir</p>
+
+<p>ne space.l</p>
+
+<p>g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r</p>
+
+<p>t</p>
+
+<p>[root@xuexi tmp]#</p>
+
+<p>1.6 分割行为之：xargs -0</p>
+
+<p>xargs -0的行为和xargs -d基本是一样的，只是-d是指定分隔符，-0是指定固定的\0作为分隔符。其实xargs -0就是特殊的xargs -d的一种，它等价于xargs -d&rdquo;\0&rdquo;。</p>
+
+<p>xargs -0行为如下：</p>
+
+<p>?  xargs -0是分割阶段的选项，所以它优先于分批选项（-n、-L、-i）。</p>
+
+<p>?  xargs -0不是先xargs再-0处理的，它是区别于独立的xargs的另一个分割选项。</p>
+
+<p>?  xargs -0可以处理接收的stdin中的null字符（\0）。如果不使用-0选项或- -null选项，检测到\0后会给出警告提醒，并只向命令传递非\0段。xargs -0和- -null是一样的效果。</p>
+
+<p>xargs -0整体执行有几个阶段：</p>
+
+<p>?  替换：将接收stdin的所有的标记意义的符号替换为\n，替换完成后所有的符号（空格、制表符、分行符）变成字面意义上的普通符号，即文本意义的符号。</p>
+
+<p>?  分段：将检测到的null字符(\0)使用标记意义上的空格来分段，由于分段前所有符号都是普通字面意义上的符号，所以有的分段中可能包含了空格、制表符、分行符。也就是说除了-0导致的分段空格，其余所有的符号都是分段中的一部分。</p>
+
+<p>如果没有检测到\0，则接收的整个stdin将成为一个不可分割的整体，任何分批选项都不会将其分割开，因为它只有一个段。</p>
+
+<p>?  输出：最后根据指定的分批选项来输出。这里需要注意，分段前后有特殊符号时会完全按照符号输出。</p>
+
+<p>根据上面的结论可知，xargs -0会忽略所有文本意义上的符号，它的主要目的是处理\0符号。</p>
+
+<p>[root@xuexi tmp]# touch &ldquo;one space.log&rdquo;
+[root@xuexi tmp]# ls | tr &ldquo; &rdquo; &ldquo;\t&rdquo; | xargs -0  #忽略文本意义上的制表符</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>one     space.log</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-root</p>
+
+<pre><code>          # 注意有空行，因为命令结尾是一个标记意义上换行符号
+</code></pre>
+
+<p>[root@xuexi tmp]# ls | tr &ldquo; &rdquo; &ldquo; &rdquo; | xargs -0   #忽略文本意义上的空格</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>one space.log</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-root</p>
+
+<pre><code>       # 注意有空行
+</code></pre>
+
+<p>如果检测到\0而没有使用-0或&ndash;null处理则给出警告。注意警告后执行哪些文件。</p>
+
+<p>[root@xuexi tmp]# ls | tr &ldquo; &rdquo; &ldquo;\0&rdquo;</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>onespace.log   # 这里实际上是one\0space.log</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-root</p>
+
+<p>[root@xuexi tmp]# ls | tr &ldquo; &rdquo; &ldquo;\0&rdquo; | xargs</p>
+
+<p>xargs: Warning: a NUL character occurred in the input.  It cannot be passed through in the argument list.  Did you mean to use the &ndash;null option?</p>
+
+<p>a b c d logdir one shdir sh.txt test vmware-root   # 执行时将space.log忽略了，其余都执行</p>
+
+<p>再例如，将所有的换行符换成null字符，结果中除了最前面的字母a和由于空格而不被\0影响的space.log，其余的由于全部有\0全部被忽略。</p>
+
+<p>[root@xuexi tmp]#  ls | tr &ldquo;\n&rdquo; &ldquo;\0&rdquo;</p>
+
+<p>abcdlogdirone space.logshdirsh.txttestvmware-root   # 只有a的前面和space.log的前面是没有\0的</p>
+
+<p>[root@xuexi tmp]#  ls | tr &ldquo;\n&rdquo; &ldquo;\0&rdquo; | xargs</p>
+
+<p>xargs: Warning: a NUL character occurred in the input.  It cannot be passed through in the argument list.  Did you mean to use the &ndash;null option?</p>
+
+<p>a space.log   # 所以只执行这两个</p>
+
+<p>使用-0或&ndash;null来解决问题，也可以使用等价的xargs -d&rdquo;\0&rdquo;来解决。</p>
+
+<p>[root@xuexi tmp]# ls | tr &ldquo;\n&rdquo; &ldquo;\0&rdquo; | xargs -0
+或者
+[root@xuexi tmp]# ls | tr &ldquo;\n&rdquo; &ldquo;\0&rdquo; | xargs -d&rdquo;\0&rdquo;</p>
+
+<p>a b c d logdir one space.log shdir sh.txt test vmware-root</p>
+
+<p>如果使用xargs -0时不指定分批选项（-n、-L、-i），则处理后的结果将作为一个整体输出。</p>
+
+<p>如果指定了分批选项，并且检测到了null字符，则以\0位的空格分段划批，这时使用-n、-L或-i的结果是一样的。例如使用-n选项来观察是如何分批的。</p>
+
+<p>[root@xuexi tmp]# ls | tr &ldquo;\n&rdquo; &ldquo;\0&rdquo; | xargs -0 -n 3</p>
+
+<p>a b c</p>
+
+<p>d logdir one space.log</p>
+
+<p>shdir sh.txt test</p>
+
+<p>vmware-root x.txt</p>
+
+<p>如果指定了分批选项，但没有检测到null字符，则整个结果将称为一个不可分割整体，这时使用分批选项是完全无意义的。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -0 -n 3 -p</p>
+
+<p>/bin/echo a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>one space.log</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-root</p>
+
+<p>x.txt</p>
+
+<p>?&hellip;</p>
+
+<p>1.7 分批行为</p>
+
+<p>分批用于指定每次传递多少个分段。有三种分批选项：-n，-L和-i。在本文的开头已经指明了为什么-i是分批选项，但是这里还是要介绍它逻辑上定义的功能：参数替换。</p>
+
+<p>既然三种选项都是分批选项，如果在一个xargs中使用了多个分批选项，则它们之间必然会冲突，这时就需要依赖它们的优先级来决定选用哪个选项。在介绍完三种分批选项后我会证明它们的优先级。</p>
+
+<p>1.7.1 xargs -n</p>
+
+<p>xargs -n分两种情况：和独立的xargs一起使用，这时按照每个空格分段划批；和xargs -d或xargs -0一起使用，这时按段分批，即不以空格、制表符和分行符分段划批。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -n 3 -p   #和独立的xargs一起使用，以空格分段划批</p>
+
+<p>/bin/echo a b c ?&hellip;</p>
+
+<p>/bin/echo d logdir one ?&hellip;   # one和space.log被割开了</p>
+
+<p>/bin/echo space.log shdir sh.txt ?&hellip;</p>
+
+<p>/bin/echo test vmware-root x.txt ?&hellip;</p>
+
+<p>/bin/echo ?&hellip;</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo; -n 3 -p  # 和xargs -d一起使用，按段分批</p>
+
+<p>/bin/echo a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l gdir</p>
+
+<p>ne space.l ?&hellip;</p>
+
+<p>/bin/echo g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r  t</p>
+
+<p>x.txt</p>
+
+<p>?&hellip;</p>
+
+<p>/bin/echo ?&hellip;</p>
+
+<p>1.7.2 xargs -L</p>
+
+<p>和-n选项类似，唯一的区别是-L永远是按段划批，而-n在和独立的xargs一起使用时是按空格分段划批的。</p>
+
+<p>该选项的一个同义词是-l，但是man推荐使用-L替代-l，因为-L符合POSIX标准，而-l不符合。使用&ndash;max-lines也可以。</p>
+
+<p>也许你man xargs时发现-L选项是指定传递时最大传递行数量的，man的结果如下图。但是通过下面的实验可以验证其实-L是指定传递的最大段数，也就是分批。</p>
+
+<p>4</p>
+
+<p>[root@xuexi tmp]# ls | xargs -L 3 -p   #如果是指定传递的最大行数量，则一行就输出完了，这里却分了多行输出</p>
+
+<p>/bin/echo a b c ?&hellip;</p>
+
+<p>/bin/echo d logdir one space.log ?&hellip;  # 这里可以证明-L和-n的区别</p>
+
+<p>/bin/echo shdir sh.txt test ?&hellip;</p>
+
+<p>/bin/echo vmware-root x.txt ?&hellip;</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo; -L 3 -p  # 这就更能证明是指定最大传递的段数量了</p>
+
+<p>/bin/echo a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l gdir</p>
+
+<p>ne space.l ?&hellip;</p>
+
+<p>/bin/echo g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r  t</p>
+
+<p>x.txt</p>
+
+<p>?&hellip;</p>
+
+<p>1.7.3 xargs -i和xargs -I</p>
+
+<p>xargs -i选项在逻辑上用于接收传递的分批结果。</p>
+
+<p>如果不使用-i，则默认是将分割后处理后的结果整体传递到命令的最尾部。但是有时候需要传递到多个位置，不使用-i就不知道传递到哪个位置了，例如重命名备份的时候在每个传递过来的文件名加上后缀.bak，这需要两个参数位。</p>
+
+<p>使用xargs -i时以大括号{}作为替换符号，传递的时候看到{}就将被结果替换。可以将{}放在任意需要传递的参数位上，如果多个地方使用{}就实现了多个传递。</p>
+
+<p>xargs -I(大写字母i)和xargs -i是一样的，只是-i默认使用大括号作为替换符号，-I则可以指定其他的符号、字母、数字作为替换符号，但是必须用引号包起来。man推荐使用-I代替-i，但是一般都图个简单使用-i，除非在命令中不能使用大括号，如touch {1..1000}.log时大括号就不能用来做替换符号。</p>
+
+<p>例如下面的重命名备份过程。</p>
+
+<p>[root@xuexi tmp]# ls logdir/</p>
+
+<p>10.log  1.log  2.log  3.log  4.log  5.log  6.log  7.log  8.log  9.log</p>
+
+<p>[root@xuexi tmp]# ls logdir/ | xargs -i mv ./logdir/{} ./logdir/{}.bak   # 将分段传递到多个参数位
+[root@xuexi tmp]# ls logdir/</p>
+
+<p>10.log.bak  1.log.bak  2.log.bak  3.log.bak  4.log.bak  5.log.bak  6.log.bak  7.log.bak  8.log.bak  9.log.bak</p>
+
+<p>但是我将“-i”选项划分在分批选项里，它默认一个段为一个批，每次传递一个批也就是传递一个段到指定的大括号{}位上。在稍后的分批选项优先级部分我会给出我的理由。</p>
+
+<p>由于-i选项是按分段来传递的。所以尽管看上去等价的xargs echo和xargs -i echo {}并不等价。</p>
+
+<p>[root@xuexi tmp]# ls | xargs echo</p>
+
+<p>a b c d logdir one space.log shdir sh.txt test vmware-root</p>
+
+<p>[root@xuexi tmp]# ls | xargs -i echo {}</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>one space.log</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-root</p>
+
+<p>既然使用-i后是分段传递的，这就意味着指定了它就无法实现按批传递多个参数了；并且如果使用多个大括号，意味着必须使用-i，那么也无法分批传递。</p>
+
+<p>例如，想将数字1-10每3个数显示在start和end之间。效果如下：</p>
+
+<p>start 1 2 3 end</p>
+
+<p>start 4 5 6 end</p>
+
+<p>start 7 8 9 end</p>
+
+<p>start 10 end</p>
+
+<p>由于指定了参数传递位置，所以必须使用-i，那么就无法一次传递3个数。要解决这个问题，就要想办法让每三个数分一次段然后使用-i传递，方法也就随之而来了。可以将每三个数分一次行写入一个文件。如：</p>
+
+<p>[root@xuexi tmp]# cat &lt;<eof>logdir/1.log
+&gt; 1 2 3
+&gt; 4 5 6
+&gt; 7 8 9
+&gt; 10
+&gt; eof</p>
+
+<p>再使用xargs -i分批传递。</p>
+
+<p>[root@xuexi tmp]# cat logdir/1.log | xargs -i echo &ldquo;start {} end&rdquo;</p>
+
+<p>start 1 2 3 end</p>
+
+<p>start 4 5 6 end</p>
+
+<p>start 7 8 9 end</p>
+
+<p>start 10 end</p>
+
+<p>也可以使用多次xargs。很多时候无法解决分段的问题都可以通过多次使用xargs来解决。</p>
+
+<p>[root@xuexi tmp]# echo {1..10} | xargs -n 3 | xargs -i echo &ldquo;start {} end&rdquo;</p>
+
+<p>由于xargs -i传递数据时是在shell执行xargs命令的时候，根据shell解析命令行的流程，xargs后的命令如果有依赖于待传递数据的表达式，则很可能无法正确执行。例如，无法通过xargs传递数值做正确的算术扩展：</p>
+
+<p>[root@xuexi logdir]# echo 1  | xargs  -I &ldquo;x&rdquo; echo $((2*x))</p>
+
+<p>0</p>
+
+<p>无法将数据传递到命令替换中。</p>
+
+<p>[root@xuexi ~]# echo /etc/fstab | xargs -i <code>cat {}</code><br />
+cat: {}: No such file or directory</p>
+
+<p>这时要通过xargs正确实现目标，只能改变方法或找小技巧，例如：</p>
+
+<p>[root@xuexi ~]# echo 1  | xargs -i expr 2 * {}      # 感谢楼下评论者提供的expr思路
+2
+[root@xuexi ~]# echo /etc/fstab | xargs -i cat $(echo {})</p>
+
+<p>另外，xargs无法处理bash内置命令。例如：</p>
+
+<p>[root@xuexi ~]# echo /etc  | xargs -i cd {}
+xargs: cd: No such file or directory</p>
+
+<p>这是xargs的限制和缺点，而不是&rdquo;-i&rdquo;选项的限制。</p>
+
+<p>1.7.4 分批选项的优先级</p>
+
+<p>-i选项优先级最高，-L选项次之，-n选项优先级最低。当然，如果什么分批选项也不指定，肯定是不指定优先级最低（这是废话？）。</p>
+
+<p>多个分批选项同时指定时，高优先级的选项会覆盖低优先级的选项。也就是说这时候指定低优先级的选项是无意义的。</p>
+
+<p>下面给出证明。</p>
+
+<p>先证明-i选项优先级最高。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo; -n 2 -p -i echo {}</p>
+
+<p>echo a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l ?&hellip;  # 说明是一段一段输出，而不是两段一批输出，即-n选项被忽略</p>
+
+<p>echo gdir</p>
+
+<p>?&hellip;</p>
+
+<p>echo ne space.l ?&hellip;</p>
+
+<p>echo g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r ?&hellip;</p>
+
+<p>echo  ?&hellip;</p>
+
+<p>echo t</p>
+
+<p>x.txt</p>
+
+<p>?&hellip;</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo; -L 3 -i -p echo {}   # 和上面的结果是一模一样的，说明-L选项被忽略</p>
+
+<p>echo a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l ?&hellip;</p>
+
+<p>echo gdir</p>
+
+<p>?&hellip;</p>
+
+<p>echo ne space.l ?&hellip;</p>
+
+<p>echo g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r ?&hellip;</p>
+
+<p>echo  ?&hellip;</p>
+
+<p>echo t</p>
+
+<p>x.txt</p>
+
+<p>?&hellip;</p>
+
+<p>再证明-L选项优先级高于-n。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -d&rdquo;o&rdquo; -n 2 -p -L 1 echo  # 结果也是一段一段输出的，说明-n选项被忽略</p>
+
+<p>echo a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>l ?&hellip;</p>
+
+<p>echo gdir</p>
+
+<p>?&hellip;</p>
+
+<p>echo ne space.l ?&hellip;</p>
+
+<p>echo g</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-r ?&hellip;</p>
+
+<p>echo  ?&hellip;</p>
+
+<p>echo t</p>
+
+<p>x.txt</p>
+
+<p>?&hellip;</p>
+
+<p>或者用下面的方法来证明。如果-n选项优先级高，则one space.log将被分开，但是和-L使用的时候并没有被分开。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -n 3</p>
+
+<p>a b c</p>
+
+<p>d logdir one</p>
+
+<p>space.log shdir sh.txt</p>
+
+<p>test vmware-root x.txt</p>
+
+<p>[root@xuexi tmp]# ls | xargs -n 3 -L  3    # -L分批覆盖了-n分批</p>
+
+<p>a b c</p>
+
+<p>d logdir one space.log</p>
+
+<p>shdir sh.txt test</p>
+
+<p>vmware-root x.txt</p>
+
+<p>根据上面的证明，其实也就给出了我认为-i选项是分批选项的理由。因为它覆盖了-n和-L。其实如果说-i包含分批并传递这两个作用更严格一点。</p>
+
+<p>1.7.5 分批选项的一个典型应用</p>
+
+<p>分批选项有时特别有用，例如脚本规定每次只能传输三个参数。有时候rm -rf的文件数量特别多的时候会提示参数列表太长而导致失败，这时就可以分批来按批删除，不仅rm -rf，其他很多本身就可以实现批量操作的命令都有可能出现这种参数列表过长的错误，如touch {1..10000000}也会提示错误。</p>
+
+<p>假设目前在/tmp/longshuai/下有29W个.log文件，如果直接删除将会提示参数列表过长。</p>
+
+<p>[root@xuexi tmp]# rm -fr /tmp/longshuai/*.log</p>
+
+<p>-bash: /bin/rm: Argument list too long</p>
+
+<p>这时如果使用xargs就可以分批丢给rm -fr处理了。下面一批10000个，删除29批。</p>
+
+<p>[root@xuexi tmp]# cd /tmp/longshuai/ &amp;&amp; ls | xargs -n 10000  rm -rf</p>
+
+<p>如果不使用分批直接交给rm -rf也是一样可以执行成功的。如果想知道为什么可以请看后文xargs -s。</p>
+
+<p>[root@xuexi tmp]# cd /tmp/longshuai/ &amp;&amp; ls | xargs rm -rf</p>
+
+<p>这里说下如何统计某个目录下的文件数量？ll后使用&rdquo;-&ldquo;开头来过滤出文件，然后使用wc统计行数。</p>
+
+<p>[root@xuexi tmp]# ll /tmp/longshuai/ | grep &ldquo;^-&rdquo; | wc -l</p>
+
+<p>1.8 终止行为之：xargs -E</p>
+
+<p>指定终止符号，搜索到了指定的终止符就完全退出传递，命令也就到此结束。</p>
+
+<p>-e选项也是，但是官方建议使用-E替代-e，因为-E是POSIX标准兼容的，而-e不是。</p>
+
+<p>-E会将结果空格、制表符、分行符替换为空格并压缩到一行上显示。</p>
+
+<p>据我测试，-E似乎只能和独立的xargs使用，和-0、-d配合使用时都会失效。那么稍后我就只测试和独立的xargs配合使用的情况了。</p>
+
+<p>-E优先于-n、-L和-i执行。如果是分批选项先执行，则下面的第二个结果将压缩在一行上。</p>
+
+<p>指定的终止符必须是完整的，例如想在遇到“xyz.txt”的符号终止时，只能指定完整的xyz.txt符号，不能指定.txt或者txt这样的符号。如何判断指定的终止符号是否完整，就-E与独立的xargs配合的情况而言分两种情况：如果没指定分批选项或者指定的分批选项是-n或者-L时，以空格为分割符，两个空格之间的段都是完整的；如果指定的分批选项是-i，则以段为分割符。</p>
+
+<p>例如，下面的示例。观察实验结果中的one space.log分割的情况。</p>
+
+<p>[root@xuexi tmp]# ls</p>
+
+<p>a  b  c  d  logdir  one space.log  shdir  sh.txt  test  vmware-root  x.txt</p>
+
+<p>[root@xuexi tmp]# ls | xargs -E one     #不指定分批选项</p>
+
+<p>a b c d logdir</p>
+
+<p>[root@xuexi tmp]# ls | xargs -n 2 -E one      #指定-n，one后面的所有的都终止传递</p>
+
+<p>a b</p>
+
+<p>c d</p>
+
+<p>logdir</p>
+
+<p>[root@xuexi tmp]# ls | xargs -L 2 -E&rdquo;one&rdquo;      #同-n 选项</p>
+
+<p>a b</p>
+
+<p>c d</p>
+
+<p>logdir</p>
+
+<p>[root@xuexi tmp]# ls | xargs -i -E&rdquo;one space.log&rdquo; echo {}         #和-i配合使用时指定完整的段才可以</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>[root@xuexi tmp]# ls | xargs -i -E&rdquo;one&rdquo;  -p echo {}          #非完整段终止失效</p>
+
+<p>echo a ?&hellip;</p>
+
+<p>echo b ?&hellip;</p>
+
+<p>echo c ?&hellip;</p>
+
+<p>echo d ?&hellip;</p>
+
+<p>echo logdir ?&hellip;</p>
+
+<p>echo one space.log ?&hellip;</p>
+
+<p>echo shdir ?&hellip;</p>
+
+<p>echo sh.txt ?&hellip;</p>
+
+<p>echo test ?&hellip;</p>
+
+<p>echo vmware-root ?&hellip;</p>
+
+<p>echo x.txt ?&hellip;</p>
+
+<p>1.9 xargs的处理总结</p>
+
+<p>总结只有一张表。算是用来复习前面所述。</p>
+
+<p>分割行为</p>
+
+<p>特殊符号处理方式</p>
+
+<p>分段方法</p>
+
+<p>配合分批选项</p>
+
+<p>分批方法</p>
+
+<p>xargs</p>
+
+<p>空格、制表符、分行符替换为空格，引号和反斜线删除。处理完后只有空格。如果空格、制表符和分行符使用引号包围则可以保留</p>
+
+<p>结果继承处理前的符号性质（文本符号还是标记意义符号）。</p>
+
+<p>-n</p>
+
+<p>以分段结果中的每个空格分段，进而分批。不管是文本还是标记意义的空格，只要是空格</p>
+
+<p>-L、-i</p>
+
+<p>以标记意义上的空格分段，进而分批</p>
+
+<p>不指定</p>
+
+<p>结果作为整体输出</p>
+
+<p>xargs -d</p>
+
+<p>xargs -d   不处理文本意义上的符号，所有标记意义上的符号替换为换行符\n，将-d指定的分割符替换为标记意义上的空格。</p>
+
+<p>结果中除了最后的空行和-d指定的分割符位的分段空格，其余全是文本意义上的符号</p>
+
+<p>按照-d指定的符号进行分段，每个段中可能包含文本意义上的空格、制表符、甚至是分行符。</p>
+
+<p>-n、-L、-i</p>
+
+<p>以标记意义上的符号（即最后的空行和-d指定分隔符位的空格）分段，进而分批。分段结果中保留所有段中的符号，包括制表符和分行符。</p>
+
+<p>不指定</p>
+
+<p>结果作为整体输出</p>
+
+<p>xargs -0</p>
+
+<p>不处理文本意义上的符号，将非\0的标记意义上的符号替换为\n，将\0替换为空格。</p>
+
+<p>结果中除了最后空行和\0位的空格，其余都是文本意义上的符号</p>
+
+<p>以替换\0位的空格分段，每个段中可能包含文本意义上的空格、制表符、甚至是分行符。</p>
+
+<p>如果没检测到\0，则只有一个不可分割的段。</p>
+
+<p>-n、-L、-i</p>
+
+<p>检测到\0时，以标记意义上的符号（即最后的空行和\0位的空格）分段，进而分批。分段结果中保留所有段中的符号，包括制表符和分行符。</p>
+
+<p>未检测到\0时，整个结果作为不可分割整体，使用分批选项是无意义的</p>
+
+<p>不指定</p>
+
+<p>结果作为整体输出</p>
+
+<p>1.10 xargs与find的结合</p>
+
+<p>xargs和find同属于一个rpm包findutils，xargs原本就是为find而开发的，它们之间的配合应当是天衣无缝的。</p>
+
+<p>一般情况下它们随意结合都无所谓，按正常方式进行即可。但是当删除文件时，特别需要将文件名含有空白字符的文件纳入考虑。</p>
+
+<p>[root@xuexi tmp]# touch one;touch space.log
+[root@xuexi tmp]# ls</p>
+
+<p>a  b  c  d  logdir  one  one space.log  shdir  sh.txt  space.log  test  vmware-root</p>
+
+<p>现在假设通过find搜索到了one space.log。</p>
+
+<p>[root@xuexi tmp]# find -name &ldquo;* *.log&rdquo;</p>
+
+<p>./one space.log</p>
+
+<p>如果直接交给xargs rm -rf，由于xargs处理后不指定分批选项时以空格分段，所以改名了的行为将是rm -rf ./one space.log，这表示要删除的是当前目录下的one和当前目录下的space.log，而不是one space.log。</p>
+
+<p>有多种方法可以解决这个问题。思路是让找到的“one space.log”成为一个段，而不是两个段。我给出了常见的两种。</p>
+
+<p>方法一：通过常用的find的-print0选项使用\0来分隔而不是\n分隔，再通过xargs -0来配对保证one space.log的整体性。因为-print0后one space.log的前后各有一个\0，但是文件名中间没有。</p>
+
+<p>[root@xuexi tmp]# find -name &ldquo;* *.log&rdquo; -print0 | xargs -0 rm -rf</p>
+
+<p>当然，能使用-0肯定也能使用-d了。</p>
+
+<p>[root@xuexi tmp]# find -name &ldquo;* *.log&rdquo; -print0 | xargs -d &ldquo;x&rdquo; rm -rf     #随意指定非文件名中的字符都行，不一定非要\0</p>
+
+<p>方法二：不在find上处理，在xargs上处理，只要通过配合-i选项，就能宣告它的整体性。</p>
+
+<p>[root@xuexi tmp]# find -name &ldquo;* *.log&rdquo; | xargs -i rm -rf &ldquo;{}&rdquo;</p>
+
+<p>相较而言，方法一使用的更广泛更为人所知，但是方法二更具有通用性，对于非find如ls命令也可以进行处理。</p>
+
+<p>还可以使用tr将find的换行符换成其他符号再xargs分割配对也行。</p>
+
+<p>除了find -print0可以输出\0字符，Linux中还有其他几个命令配合参数也可以实现：locate -0,grep -z或grep -Z,sort -z等。</p>
+
+<p>1.11 xargs -s之为什么ls | xargs rm -rf能执行成功？</p>
+
+<p>使用下面的示例配合图来解释。</p>
+
+<p>[root@xuexi tmp]# cd logdir
+[root@xuexi logdir]# touch {1..1000000}</p>
+
+<p>-bash: /bin/touch: Argument list too long</p>
+
+<p>[root@xuexi logdir]# echo {1..1000000} | xargs  touch      #执行的时候记得使用-p选项，否则慢慢等吧。</p>
+
+<p>问题一：正常创建批量文件touch {1..1000000}是无法执行成功的，会提示参数列表过长。但是上面的最后一个命令为什么能执行成功？</p>
+
+<p>问题二：xargs处理后如果不指定-n选项，那么它是整体传递的，如果这个整体非常非常大，如上面的100W个参数，按理说touch也是无法成功的。为什么成功了？</p>
+
+<p>xargs有一个默认的选项-s，它指定每次传递的最大字节数，如果不显式指定-s，系统默认是128KB。也就是说如果一次传递的参数很多很大，那么将由系统自动分割为每128KB传递一次。这就是上面的命令能执行成功的原因。</p>
+
+<p>上面的100W个参数，以差不多每个参数5个数字位加一个分段位空格共6个字节计算，128K有128*<sup>1024</sup>&frasl;<sub>6</sub>=21845个数字，这和我使用-p测试的询问位置是接近的，如下图，由于前10000个数字少于5个字节，所以比21845多一点。第二次停止的位置是45539，45539-23695=21844，这次传递的全是5个字节的，这和计算的结果几乎完全相同。</p>
+
+<p>6</p>
+
+<p>7</p>
+
+<p>同理“ls | xargs rm -rf”也是一样的，如果参数列表非常大，则每次传递128K的参数给rm。</p>
+
+<p>1.12 创建文件名包含分行符的文件</p>
+
+<p>创建文件名包含空格的文件是一件很轻松的事情，但是想创建包含制表符、分行符甚至是其他特殊符号的文件呢？</p>
+
+<p>因为xargs允许传递参数到命令的任意参数位，并且传递的参数还可以变换为包含各种形式的特殊符号，所以使用它可以轻松实现。例如创建包含分行符的文件。</p>
+
+<p>[root@xuexi tmp]# ls</p>
+
+<p>a  b  c  d  logdir  one space.log  shdir  sh.txt  test  vmware-root</p>
+
+<p>[root@xuexi tmp]# ls | xargs -0</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>one space.log</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-root</p>
+
+<p>在此基础上创建一个.sh文件，这个文件将奇形怪状，因为文件名竟然包含了分行符(Linux中文件名除了&rdquo;/&ldquo;和&rdquo;\0&rdquo;外所有字符都允许包含在内)。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -0 -i touch {}.sh
+[root@xuexi tmp]# ls</p>
+
+<p>a                                                               b  d       one space.log  sh.txt  vmware-root</p>
+
+<p>a?b?c?d?logdir?one space.log?shdir?sh.txt?test?vmware-root?.sh  c  logdir  shdir          test</p>
+
+<p>看上去只是有几个问号，但是使用?是无法定位它的。</p>
+
+<p>[root@xuexi tmp]# find -name &ldquo;<em>[\?]</em>&rdquo;        #搜索没结果</p>
+
+<p>或者</p>
+
+<p>[root@xuexi tmp]# rm -rf a     #按两次tab键</p>
+
+<p>a/</p>
+
+<p>a^Jb^Jc^Jd^Jlogdir^Jone space.log^Jshdir^Jsh.txt^Jtest^Jvmware-root^J.sh</p>
+
+<p>现在使用xargs就可以轻松显示它的文件名。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -0</p>
+
+<p>a</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>one space.log</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-root</p>
+
+<p>.sh</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>one space.log</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-root</p>
+
+<p>不能直接使用xargs显示，因为它会压缩空白符号成空格。</p>
+
+<p>[root@xuexi tmp]# ls | xargs</p>
+
+<p>a a b c d logdir one space.log shdir sh.txt test vmware-root .sh b c d logdir one space.log shdir sh.txt test vmware-root</p>
+
+<p>删除它。</p>
+
+<p>[root@xuexi tmp]# rm -f a*.sh</p>
+
+<p>如果想创建文件名只包含下面结果的abcd前四行的.sh文件呢？</p>
+
+<p>[root@xuexi tmp]# ls | xargs -0</p>
+
+<p>a</p>
+
+<p>b</p>
+
+<p>c</p>
+
+<p>d</p>
+
+<p>logdir</p>
+
+<p>one space.log</p>
+
+<p>shdir</p>
+
+<p>sh.txt</p>
+
+<p>test</p>
+
+<p>vmware-root</p>
+
+<p>参考下面的。</p>
+
+<p>[root@xuexi tmp]# ls | xargs -n 1 -e&rdquo;logdir&rdquo; | xargs -0 -i touch {}.sh</p>
+
+<p>这就需要理解前面介绍的xargs的分割和传递方法了。</p>
+
+<p>也可以使用下面更简单容易理解的：</p>
+
+<p>[root@xuexi tmp]# ls | head -n 4 | xargs -0 -i touch {}.sh
+[root@xuexi tmp]# echo -e &ldquo;a\nb\nc\nd&rdquo; | xargs -0 -i touch {}.log</p>
+
+<p>那么以相同的方法创建文件名中包含制表符的文件就easy了。</p>
+
+<p>[root@xuexi tmp]# echo  -e &ldquo;a\tb\tc\td&rdquo; | xargs -0 -i touch {}.log</p>
+
+<p>回到大纲：<a href="http://www.cnblogs.com/f-ck-need-u/p/7048359.html" target="_blank">http://www.cnblogs.com/f-ck-need-u/p/7048359.html</a></p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="http://blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="http://blog.pytool.com/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-xargs/">http://blog.pytool.com/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-xargs/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="http://blog.pytool.com/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-wireshark/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Linux命令 wireshark</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/golang/">Golang</a>
+        <small>(57)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(93)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(96)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/stm32/">Stm32</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E4%B8%AD%E5%8C%BB/">中医</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(19)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(25)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%9C%AA%E5%88%86%E7%B1%BB/">未分类</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(11)</small>
+      </li>
+    
+  </ul>
+</div>
+
+    
+    
+     
+  <div id="search-2" class="widget widget_search"><h3>Search</h3>
+      <form method="get" class="searchform themeform" action="https://www.google.com/search">
+        <div>
+          <input type="text" class="search" name="q" placeholder="Press enter to start searching">
+        </div>
+      </form>
+    </div>
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="http://blog.pytool.com/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-xml/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux命令 xml</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ack/" class="tag-link-8" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/activity/" class="tag-link-3" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/adb/" class="tag-link-8" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/android/" class="tag-link-4" title="1 Posts">android<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(3)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/aria2/" class="tag-link-6" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/arp/" class="tag-link-8" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/atom/" class="tag-link-7" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/awesome/" class="tag-link-4" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/awk/" class="tag-link-8" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/bash/" class="tag-link-7" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/bat/" class="tag-link-8" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/bc/" class="tag-link-9" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/bower/" class="tag-link-6" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/burpsuite/" class="tag-link-2" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/composer/" class="tag-link-3" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/coreos/" class="tag-link-5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/crontab/" class="tag-link-4" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/css/" class="tag-link-8" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/css3/" class="tag-link-7" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ctags/" class="tag-link-6" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/curl/" class="tag-link-7" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/date/" class="tag-link-7" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/dd/" class="tag-link-9" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/debug/" class="tag-link-6" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/devops/" class="tag-link-5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/discourse/" class="tag-link-2" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/dnsmasq/" class="tag-link-4" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/docker/" class="tag-link-5" title="1 Posts">docker<small>(8)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/dpkg/" class="tag-link-7" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/editorconfig/" class="tag-link--1" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/emacs/" class="tag-link-6" title="1 Posts">emacs<small>(12)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-7" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/expr/" class="tag-link-7" title="1 Posts">expr<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/extundelete/" class="tag-link-0" title="1 Posts">extundelete<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ffmpeg/" class="tag-link-5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/find/" class="tag-link-7" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/firewall/" class="tag-link-3" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/fonts/" class="tag-link-6" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/fstab/" class="tag-link-6" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/gdb/" class="tag-link-8" title="1 Posts">gdb<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/git/" class="tag-link-8" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/glang/" class="tag-link-6" title="1 Posts">glang<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/go/" class="tag-link-9" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/go-shadowsocks2/" class="tag-link--4" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/golang/" class="tag-link-5" title="1 Posts">golang<small>(57)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/gpg/" class="tag-link-8" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/gpio/" class="tag-link-7" title="1 Posts">gpio<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/grep/" class="tag-link-7" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/hexdump/" class="tag-link-4" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/hexo/" class="tag-link-7" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/hmac/" class="tag-link-7" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/html/" class="tag-link-7" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/html5/" class="tag-link-6" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/http/" class="tag-link-7" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/httperf/" class="tag-link-4" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/hugo/" class="tag-link-7" title="1 Posts">hugo<small>(8)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/hydra/" class="tag-link-6" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/i18n/" class="tag-link-7" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ifttt/" class="tag-link-6" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-0" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-6" title="1 Posts">index<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-3" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ios/" class="tag-link-8" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/iotop/" class="tag-link-6" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ip/" class="tag-link-9" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/iproute2/" class="tag-link-3" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/iptables/" class="tag-link-3" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/irc/" class="tag-link-8" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/javascript/" class="tag-link-1" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/join/" class="tag-link-7" title="1 Posts">join<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-9" title="1 Posts">js<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(6)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/locale/" class="tag-link-5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/losetup/" class="tag-link-4" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/lsof/" class="tag-link-7" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/lunr/" class="tag-link-7" title="1 Posts">lunr<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/lvm2/" class="tag-link-7" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/makefile/" class="tag-link-3" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/mariadb/" class="tag-link-4" title="1 Posts">mariadb<small>(5)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/mathjax/" class="tag-link-4" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/mbr/" class="tag-link-8" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/md5/" class="tag-link-8" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/md5sum/" class="tag-link-5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/meteor/" class="tag-link-5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/mongodb/" class="tag-link-4" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(38)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/navicat64/" class="tag-link-2" title="1 Posts">navicat64<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/netcat/" class="tag-link-5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/netsh/" class="tag-link-6" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/nexpose/" class="tag-link-4" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/nginx/" class="tag-link-6" title="1 Posts">nginx<small>(26)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/nmap/" class="tag-link-7" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ntp/" class="tag-link-8" title="1 Posts">ntp<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/oauth2/" class="tag-link-5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/objdump/" class="tag-link-4" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/openssl/" class="tag-link-4" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/pandoc/" class="tag-link-5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/php/" class="tag-link-8" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/powershell/" class="tag-link-1" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/prometheus/" class="tag-link-1" title="1 Posts">prometheus<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/proxy/" class="tag-link-6" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/redis/" class="tag-link-6" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/rename/" class="tag-link-5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/repo/" class="tag-link-7" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/resin/" class="tag-link-6" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/rethinkdb/" class="tag-link-2" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/retina/" class="tag-link-5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/root/" class="tag-link-7" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/route/" class="tag-link-6" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/rsync/" class="tag-link-6" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/rtsp/" class="tag-link-7" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ruby/" class="tag-link-7" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/samba/" class="tag-link-6" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/sar/" class="tag-link-8" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/scp/" class="tag-link-8" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/scrapy/" class="tag-link-5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/sed/" class="tag-link-8" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/selenium/" class="tag-link-3" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(6)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/sort/" class="tag-link-7" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ssh/" class="tag-link-8" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ssl/" class="tag-link-8" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/sso/" class="tag-link-8" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ssrf/" class="tag-link-7" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/stm32/" class="tag-link-6" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/sublime/" class="tag-link-4" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/sudo/" class="tag-link-7" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/svg/" class="tag-link-8" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/swagger/" class="tag-link-4" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/swarm/" class="tag-link-6" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/sysbench/" class="tag-link-3" title="1 Posts">sysbench<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/tc/" class="tag-link-9" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/tcpdump/" class="tag-link-4" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/tim/" class="tag-link-8" title="1 Posts">tim<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/time/" class="tag-link-7" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/timezone/" class="tag-link-3" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/tmux/" class="tag-link-7" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/top/" class="tag-link-8" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/tr/" class="tag-link-9" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/tshark/" class="tag-link-5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ubuntu/" class="tag-link-5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ulimit/" class="tag-link-5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/unpack/" class="tag-link-5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/update-alternatives/" class="tag-link--8" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/useradd/" class="tag-link-4" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/vim/" class="tag-link-8" title="1 Posts">vim<small>(9)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/visualstudiocode/" class="tag-link--5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/vlc/" class="tag-link-8" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/webpack3/" class="tag-link-3" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/wget/" class="tag-link-7" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/windows10/" class="tag-link-2" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/windump/" class="tag-link-4" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/xargs/" class="tag-link-6" title="1 Posts">xargs<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/xmllint/" class="tag-link-4" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/xpath/" class="tag-link-6" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/yaml/" class="tag-link-7" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/zabbix/" class="tag-link-5" title="1 Posts">zabbix<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link--4" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link--1" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script id="baidu_push">
+  (function(){
+    if (window.location.hostname === 'localhost') return;
+    var bp = document.createElement('script'); bp.async = true;
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="http://blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="http://blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="http://blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="http://blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="http://blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="http://blog.pytool.com/assets/js/myblog.js"></script>
+
+</body>
+</html>
+

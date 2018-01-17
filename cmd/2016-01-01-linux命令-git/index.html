@@ -90,6 +90,12 @@
         
           
           <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/english/">English</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
             <a rel="nofollow" href="http://blog.pytool.com/hacker/">Hacker</a>
           
         </li>
@@ -120,12 +126,6 @@
         
           
           <li class="menu-item menu-item-type-post_type menu-item-object-page">
-            <a rel="nofollow" href="http://blog.pytool.com/other/">Other</a>
-          
-        </li>
-        
-          
-          <li class="menu-item menu-item-type-post_type menu-item-object-page">
             <a rel="nofollow" href="http://blog.pytool.com/post/">Post</a>
           
         </li>
@@ -144,7 +144,19 @@
         
           
           <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/software/">Software</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
             <a rel="nofollow" href="http://blog.pytool.com/tool/">Tool</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="http://blog.pytool.com/windows/">Windows</a>
           
         </li>
         
@@ -230,7 +242,7 @@
                   <h1 class="post-title">Linux命令 git</h1>
 
                   <p class="post-byline">
-                    by  · 2016年01月06日 16:46:14 · 7078 Words ·
+                    by  · 2016年01月06日 16:46:14 · 7402 Words ·
                     ~15min reading time |
                     
                     <a href="https://coding.net/u/rinetd/p/blog/git/edit/master/content/cmd/2016-01-01%20Linux%e5%91%bd%e4%bb%a4%20git.md" target="_blank">Improve on <i class="fa fa-git-square"></i></a>
@@ -344,14 +356,50 @@ git gc &ndash;prune=now</p>
 <code>git filter-branch --prune-empty --subdirectory-filter SUB_FOLDER BRANCH-NAME</code><br />
 <code>git subtree split --prefix=SUB_FOLDER -b BRANCH-NAME</code></p>
 
-<p>3.5 git给远程库添加多个url地址
-场合：你可能想要把你的本地的git库，既push到github上，又push到开源中国的Git@OSC上或者coding net上，怎么解决呢？有人可能会用两个甚至多个远程库，即再添加一个远程库git remote add origin2;这个方法很低效，因为你要git push 两次才能完成push到两个库。
+<h2 id="git清理大文件">git清理大文件</h2>
+
+<p>使用git branch-filter来遍历git history tree, 可以永久删除history中的大文件，达到让.git文件瘦身的目的。</p>
+
+<p>下面给出步骤（以下步骤非常危险，操作需谨慎！别把公司删没了哈哈）</p>
+
+<ol>
+<li>首先找出git中前五大的文件：</li>
+</ol>
+
+<p><code>git verify-pack -v .git/objects/pack/pack-*.idx | sort -k 3 -g | tail -5</code></p>
+
+<ol>
+<li>根据文件id找出对应的文件名：</li>
+</ol>
+
+<p><code>git rev-list --objects --all | grep 8f10eff91bb6aa2de1f5d096ee2e1687b0eab007
+</code>
+3. 彻底删除大文件</p>
+
+<pre><code class="language-sh">git filter-branch --index-filter 'git rm --cached --ignore-unmatch &lt;your-file-name&gt;'
+rm -rf .git/refs/original/
+git reflog expire --expire=now --all
+git fsck --full --unreachable
+git repack -A -d
+git gc --aggressive --prune=now
+git push --force [remote] master
+</code></pre>
+
+<p>首先，里面最重要的两条命令是 git filter-branch 和 gc, filter-branch 真正在清理，但是只运行它也是没用的，需要再删除备份的文件，重新打包之类的，最后的gc命令，</p>
+
+<p>用来收集产生的垃圾，最终清除大文件。</p>
+
+<p>一步到位，再看看你的.git文件，有没有大吃一惊呢！</p>
+
+<h2 id="3-5-git给远程库添加多个url地址">3.5 git给远程库添加多个url地址</h2>
+
+<p>场合：你可能想要把你的本地的git库，既push到github上，又push到开源中国的Git@OSC上或者coding net上，怎么解决呢？有人可能会用两个甚至多个远程库，即再添加一个远程库git remote add origin2;这个方法很低效，因为你要git push 两次才能完成push到两个库。
 解答原理：git的一个远程库可以对应多个地址。
 基本命令：</p>
 
 <p>在本地仓库创建一个指向远程仓库url的链接别名name，可以任意命名：git remote add name url1 (name可以为origin、both等等自定义的名字)
-1. 增加第二个远程库地址：git remote set-url &ndash;add &ndash;push origin url2
-2. 再增加第三个远程库地址：git remote set-url &ndash;add &ndash;push origin url3
+1. 增加第1个远程库地址：git remote set-url &ndash;add &ndash;push origin url1  #remote url1 必须添加 否则无法推送到真正的库
+2. 再增加第2个远程库地址：git remote set-url &ndash;add &ndash;push origin url2
 3. 删除url链接别名name：git remote rm name （常见的为origin）
 显示当前所有远程库的详细信息，显示格式为:远程库名字 url连接(类型)，命令：git remote -v
 查看config文件，里面可以看到添加的地址，位于当前工程.git/config中，可使用命令：git config -e
@@ -447,7 +495,7 @@ git submodule update &ndash;init &ndash;recursive  #ycmd</p>
 clone的时候，可以指定深度，如下，为1即表示只克隆最近一次commit.<br />
 git clone &ndash;depth 1 git@github.com:/</p>
 
-<h1 id="subtree">subtree</h1>
+<h1 id="subtree-在主分支管理子项目">subtree 在主分支管理子项目</h1>
 
 <p>1、初始化子项目Subtree<br />
 通过<br />
@@ -809,12 +857,12 @@ etc...
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
-        <small>(90)</small>
+        <small>(93)</small>
       </li>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
-        <small>(90)</small>
+        <small>(96)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -844,7 +892,7 @@ etc...
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(18)</small>
+        <small>(19)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -935,7 +983,7 @@ etc...
       
          <a rel="tag" href="http://blog.pytool.com/tags/android/" class="tag-link-4" title="1 Posts">android<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(2)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/ansible/" class="tag-link-4" title="1 Posts">ansible<small>(3)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/apt/" class="tag-link-8" title="1 Posts">apt<small>(1)</small></a>
       
@@ -967,7 +1015,7 @@ etc...
       
          <a rel="tag" href="http://blog.pytool.com/tags/cash/" class="tag-link-7" title="1 Posts">cash<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(1)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/centos7/" class="tag-link-4" title="1 Posts">centos7<small>(2)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/coffeescript/" class="tag-link--1" title="1 Posts">coffeescript<small>(1)</small></a>
       
@@ -1014,6 +1062,8 @@ etc...
          <a rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-7" title="1 Posts">etcd<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/expr/" class="tag-link-7" title="1 Posts">expr<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/extundelete/" class="tag-link-0" title="1 Posts">extundelete<small>(1)</small></a>
       
@@ -1095,7 +1145,7 @@ etc...
       
          <a rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-8" title="1 Posts">key<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(5)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(6)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-0" title="1 Posts">linux命令<small>(1)</small></a>
       
@@ -1127,7 +1177,9 @@ etc...
       
          <a rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-8" title="1 Posts">mtr<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(37)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-6" title="1 Posts">mysql<small>(38)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/navicat64/" class="tag-link-2" title="1 Posts">navicat64<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-5" title="1 Posts">nessus<small>(1)</small></a>
       
@@ -1144,6 +1196,8 @@ etc...
          <a rel="tag" href="http://blog.pytool.com/tags/nodejs/" class="tag-link-5" title="1 Posts">nodejs<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/npm/" class="tag-link-8" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="tag" href="http://blog.pytool.com/tags/ntp/" class="tag-link-8" title="1 Posts">ntp<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/nvic/" class="tag-link-7" title="1 Posts">nvic<small>(1)</small></a>
       
@@ -1207,7 +1261,7 @@ etc...
       
          <a rel="tag" href="http://blog.pytool.com/tags/sftp/" class="tag-link-7" title="1 Posts">sftp<small>(1)</small></a>
       
-         <a rel="tag" href="http://blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(2)</small></a>
+         <a rel="tag" href="http://blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(6)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/snap/" class="tag-link-7" title="1 Posts">snap<small>(1)</small></a>
       
@@ -1283,6 +1337,8 @@ etc...
       
          <a rel="tag" href="http://blog.pytool.com/tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
       
+         <a rel="tag" href="http://blog.pytool.com/tags/xargs/" class="tag-link-6" title="1 Posts">xargs<small>(1)</small></a>
+      
          <a rel="tag" href="http://blog.pytool.com/tags/xidel/" class="tag-link-6" title="1 Posts">xidel<small>(1)</small></a>
       
          <a rel="tag" href="http://blog.pytool.com/tags/xml/" class="tag-link-8" title="1 Posts">xml<small>(1)</small></a>
@@ -1315,6 +1371,41 @@ etc...
     </div>
   </div>
 </div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script id="baidu_push">
+  (function(){
+    if (window.location.hostname === 'localhost') return;
+    var bp = document.createElement('script'); bp.async = true;
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+    }
+    else {
+      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
 <footer id="footer">
   <section class="container" id="footer-bottom">
     <div class="container-inner">
@@ -1369,41 +1460,6 @@ etc...
 <script type="text/javascript" src="http://blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
 <script type="text/javascript" src="http://blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
 <script type="text/javascript" async defer src="http://blog.pytool.com/assets/js/myblog.js"></script>
-
-
-
-<script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-ga('create', 'UA-106129999-2', 'auto');
-ga('send', 'pageview');
-</script>
-<script async src='//www.google-analytics.com/analytics.js'></script>
-<script id="baidu_analytics">
-  var _hmt = _hmt || [];
-  (function() {
-    if (window.location.hostname === 'localhost') return;
-    var hm = document.createElement("script"); hm.async = true;
-    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(hm, s);
-  })();
-</script>
-
-<script id="baidu_push">
-  (function(){
-    if (window.location.hostname === 'localhost') return;
-    var bp = document.createElement('script'); bp.async = true;
-    var curProtocol = window.location.protocol.split(':')[0];
-    if (curProtocol === 'https') {
-      bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
-    }
-    else {
-      bp.src = 'http://push.zhanzhang.baidu.com/push.js';
-    }
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(bp, s);
-  })();
-</script>
 
 </body>
 </html>

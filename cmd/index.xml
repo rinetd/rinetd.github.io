@@ -1817,6 +1817,48 @@ DB_HOST=127.0.0.1   # 服务器地址&lt;br /&gt;
 
 &lt;p&gt;&lt;code&gt;sed -e :a -e &#39;s/&amp;lt;[^&amp;gt;]*&amp;gt;//g;/&lt;/code&gt;&lt;/p&gt;
 
+&lt;h2 id=&#34;在某行的前一行或后一行添加内容&#34;&gt;在某行的前一行或后一行添加内容&lt;/h2&gt;
+
+&lt;p&gt;具休操作如下：&lt;/p&gt;
+
+&lt;p&gt;#匹配行前加
+sed -i &amp;lsquo;/allow 361way.com/iallow www.361way.com&amp;rsquo; the.conf.file
+#匹配行前后
+sed -i &amp;lsquo;/allow 361way.com/aallow www.361way.com&amp;rsquo; the.conf.file&lt;/p&gt;
+
+&lt;p&gt;而在书写的时候为便与区分，往往会在i和a前面加一个反加一个反斜扛 。代码就变成了：&lt;/p&gt;
+
+&lt;p&gt;sed -i &amp;lsquo;/2222222222/a\3333333333&amp;rsquo; test.txt
+sed -i &amp;lsquo;/2222222222/i\3333333333&amp;rsquo; test.txt&lt;/p&gt;
+
+&lt;p&gt;这就就可以很方便的看出要在某一行前或某一行后加入什么内容 。不过经常我记不住a 、i 那个是前那个是后。我的记法是a = after ，i = in front 。这样就知道 i 是前，a 是后了。不过官方的man文件里不是这样解释的，man文件里是这样解释的：&lt;/p&gt;
+
+&lt;p&gt;a
+text   Append text, which has each embedded newline preceded by a backslash.
+i
+text   Insert text, which has each embedded newline preceded by a backslash.&lt;/p&gt;
+
+&lt;p&gt;而且其可以配合find查找的内容处理，如下：&lt;/p&gt;
+
+&lt;p&gt;find . -name server.xml|xargs sed -i &amp;lsquo;/directory/i       &lt;!--&#39;
+find . -name server.xml|xargs sed -i &#39;/pattern=&#34;%h/a       --&gt;&amp;lsquo;&lt;/p&gt;
+
+&lt;p&gt;二、在某行（指具体行号）前或后加一行内容&lt;/p&gt;
+
+&lt;p&gt;sed -i &amp;lsquo;N;4addpdf&amp;rsquo; a.txt
+sed -i &amp;lsquo;N;4ieepdf&amp;rsquo; a.txt&lt;/p&gt;
+
+&lt;p&gt;这里指定的行号是第四行 。&lt;/p&gt;
+
+&lt;p&gt;三、删除指定行的上一行或下一行&lt;/p&gt;
+
+&lt;p&gt;删除指定文件的上一行
+&lt;code&gt;sed -i -e :a -e &#39;$!N;s/.*n(.*directory)/1/;ta&#39; -e &#39;P;D&#39; server.xml&lt;/code&gt;
+删除指定文件的下一行
+&lt;code&gt;sed -i &#39;/pattern=&amp;quot;%/{n;d}&#39; server.xml&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;这个写起来有点长，一般如果不是shell里的需要，我更喜欢用vim去处理。另外需要注意的是，在vim里如果替换的内容里tab这样的符号是需要在编辑模式下分别按ctrl+v 和crtl+I ，而不是不停的几个空格。&lt;/p&gt;
+
 &lt;p&gt;1、定位行：&lt;br /&gt;
 sed -n &amp;lsquo;12,~3p&amp;rsquo; pass #从第12行开始，直到下一个3的倍数行（12-15行）&lt;br /&gt;
 sed -n &amp;lsquo;12,+4p&amp;rsquo; pass #从第12行开始，连续4行（12-16行）&lt;br /&gt;
