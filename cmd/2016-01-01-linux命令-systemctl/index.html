@@ -255,7 +255,7 @@
                       
                       
 
-<p><a href="http://www.linuxidc.com/Linux/2015-07/120833.htm" target="_blank">systemctl 命令完全指南</a>
+<p><a href="http://www.linuxidc.com/Linux/2015-07/120833.htm" target="_blank">systemctl 命令完全指南</a><br />
 <a href="http://my.oschina.net/5lei/blog/191370" target="_blank">   服务管理&ndash;systemctl命令 </a><br />
 systemctl &ndash;version<br />
 <a href="http://www.ruanyifeng.com/blog/2016/03/systemd-tutorial-part-two.html" target="_blank">Systemd 入门教程：实战篇</a><br />
@@ -270,20 +270,20 @@ systemctl &ndash;version<br />
 
 <p>首先，按照下面这样先停用 NetworkManager 服务，然后启用 systemd-networkd。</p>
 
-<pre><code>$ sudosystemctl disable NetworkManager
-$ sudosystemctl enable systemd-networkd
+<pre><code>$ sudosystemctl disable NetworkManager  
+$ sudosystemctl enable systemd-networkd  
 </code></pre>
 
 <p>你还要启用 systemd-resolved 服务，systemd-networkd用它来进行域名解析。该服务还实现了一个缓存式 DNS 服务器。</p>
 
-<pre><code>$ sudosystemctl enable systemd-resolved
-$ sudosystemctl start systemd-resolved
+<pre><code>$ sudosystemctl enable systemd-resolved  
+$ sudosystemctl start systemd-resolved  
 </code></pre>
 
 <p>当启动后，systemd-resolved 就会在 /run/systemd 目录下某个地方创建它自己的 resolv.conf。但是，把 DNS 解析信息存放在 /etc/resolv.conf 是更普遍的做法，很多应用程序也会依赖于 /etc/resolv.conf。因此为了兼容性，按照下面的方式创建一个到 /etc/resolv.conf 的符号链接。</p>
 
-<pre><code>$ sudorm/etc/resolv.conf
-$ sudoln-s /run/systemd/resolve/resolv.conf /etc/resolv.conf
+<pre><code>$ sudorm/etc/resolv.conf  
+$ sudoln-s /run/systemd/resolve/resolv.conf /etc/resolv.conf  
 </code></pre>
 
 <p>用 systemd-networkd 配置网络连接</p>
@@ -292,19 +292,19 @@ $ sudoln-s /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 <p>首先创建 /etc/systemd/network 目录。</p>
 
-<pre><code>$ sudomkdir/etc/systemd/network
+<pre><code>$ sudomkdir/etc/systemd/network  
 </code></pre>
 
 <p>DHCP 网络</p>
 
 <p>首先来配置 DHCP 网络。对于此，先要创建下面的配置文件。文件名可以任意，但记住文件是按照字母顺序处理的。</p>
 
-<pre><code>$ sudovi/etc/systemd/network/20-dhcp.network
+<pre><code>$ sudovi/etc/systemd/network/20-dhcp.network  
 
-[Match]
-Name=enp3*
-[Network]
-DHCP=yes
+[Match]  
+Name=enp3*  
+[Network]  
+DHCP=yes  
 </code></pre>
 
 <p>正如你上面看到的，每个网络配置文件包括了一个或多个 “sections”，每个 “section”都用 [XXX] 开头。每个 section 包括了一个或多个键值对。[Match] 部分决定这个配置文件配置哪个（些）网络设备。例如，这个文件匹配所有名称以 ens3 开头的网络设备（例如 enp3s0、 enp3s1、 enp3s2 等等）对于匹配的接口，然后启用 [Network] 部分指定的 DHCP 网络配置。</p>
@@ -313,27 +313,27 @@ DHCP=yes
 
 <p>如果你想给网络设备分配一个静态 IP 地址，那就新建下面的配置文件。</p>
 
-<pre><code>$ sudovi/etc/systemd/network/10-static-enp3s0.network
+<pre><code>$ sudovi/etc/systemd/network/10-static-enp3s0.network  
 
-[Match]
-Name=enp3s0
-[Network]
-Address=192.168.10.50/24
-Gateway=192.168.10.1
-DNS=8.8.8.8
+[Match]  
+Name=enp3s0  
+[Network]  
+Address=192.168.10.50/24  
+Gateway=192.168.10.1  
+DNS=8.8.8.8  
 </code></pre>
 
 <p>正如你猜测的， enp3s0 接口地址会被指定为 192.168.10.50/24，默认网关是 192.168.10.1， DNS 服务器是 8.8.8.8。这里微妙的一点是，接口名 enp3s0 事实上也匹配了之前 DHCP 配置中定义的模式规则。但是，根据词汇顺序，文件 &ldquo;10-static-enp3s0.network&rdquo; 在 &ldquo;20-dhcp.network&rdquo; 之前被处理，对于 enp3s0 接口静态配置比 DHCP 配置有更高的优先级。</p>
 
 <p>一旦你完成了创建配置文件，重启 systemd-networkd 服务或者重启机器。</p>
 
-<pre><code>$ sudosystemctl restart systemd-networkd
+<pre><code>$ sudosystemctl restart systemd-networkd  
 </code></pre>
 
 <p>运行以下命令检查服务状态：</p>
 
-<pre><code>$ systemctl status systemd-networkd
-$ systemctl status systemd-resolved
+<pre><code>$ systemctl status systemd-networkd  
+$ systemctl status systemd-resolved  
 </code></pre>
 
 <p>用 systemd-networkd 配置虚拟网络设备</p>
@@ -346,35 +346,35 @@ $ systemctl status systemd-resolved
 
 <p>如果你想创建一个 Linux 网桥(br0) 并把物理接口(eth1) 添加到网桥，你可以新建下面的配置。</p>
 
-<pre><code>$ sudovi/etc/systemd/network/bridge-br0.netdev
+<pre><code>$ sudovi/etc/systemd/network/bridge-br0.netdev  
 
-[NetDev]
-Name=br0
-Kind=bridge
+[NetDev]  
+Name=br0  
+Kind=bridge  
 </code></pre>
 
 <p>然后按照下面这样用 .network 文件配置网桥接口 br0 和从接口 eth1。</p>
 
-<pre><code>$ sudovi/etc/systemd/network/bridge-br0-slave.network
+<pre><code>$ sudovi/etc/systemd/network/bridge-br0-slave.network  
 
-[Match]
-Name=eth1
-[Network]
-Bridge=br0
+[Match]  
+Name=eth1  
+[Network]  
+Bridge=br0  
 
-$ sudovi/etc/systemd/network/bridge-br0.network
+$ sudovi/etc/systemd/network/bridge-br0.network  
 
-[Match]
-Name=br0
-[Network]
-Address=192.168.10.100/24
-Gateway=192.168.10.1
-DNS=8.8.8.8
+[Match]  
+Name=br0  
+[Network]  
+Address=192.168.10.100/24  
+Gateway=192.168.10.1  
+DNS=8.8.8.8  
 </code></pre>
 
 <p>最后，重启 systemd-networkd。</p>
 
-<pre><code>$ sudosystemctl restart systemd-networkd
+<pre><code>$ sudosystemctl restart systemd-networkd  
 </code></pre>
 
 <p>你可以用 brctl 工具 来验证是否创建好了网桥 br0。</p>

@@ -255,7 +255,7 @@
                       
                       
 
-<p>[](<a href="https://github.com/brigade/overcommit" target="_blank">https://github.com/brigade/overcommit</a>)
+<p>[](<a href="https://github.com/brigade/overcommit" target="_blank">https://github.com/brigade/overcommit</a>)<br />
 <img src="http://img.blog.csdn.net/20131102012925234?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvZ2NjX3NreQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="" /><br />
 <a href="https://segmentfault.com/a/1190000002448847" target="_blank">高富帅们的Git技巧 - 新闻 - SegmentFault</a></p>
 
@@ -363,26 +363,26 @@ git gc &ndash;prune=now</p>
 <p>下面给出步骤（以下步骤非常危险，操作需谨慎！别把公司删没了哈哈）</p>
 
 <ol>
-<li>首先找出git中前五大的文件：</li>
+<li>首先找出git中前五大的文件：<br /></li>
 </ol>
 
 <p><code>git verify-pack -v .git/objects/pack/pack-*.idx | sort -k 3 -g | tail -5</code></p>
 
 <ol>
-<li>根据文件id找出对应的文件名：</li>
+<li>根据文件id找出对应的文件名：<br /></li>
 </ol>
 
-<p><code>git rev-list --objects --all | grep 8f10eff91bb6aa2de1f5d096ee2e1687b0eab007
-</code>
+<p><code>git rev-list --objects --all | grep 8f10eff91bb6aa2de1f5d096ee2e1687b0eab007  
+</code><br />
 3. 彻底删除大文件</p>
 
-<pre><code class="language-sh">git filter-branch --index-filter 'git rm --cached --ignore-unmatch &lt;your-file-name&gt;'
-rm -rf .git/refs/original/
-git reflog expire --expire=now --all
-git fsck --full --unreachable
-git repack -A -d
-git gc --aggressive --prune=now
-git push --force [remote] master
+<pre><code class="language-sh">git filter-branch --index-filter 'git rm --cached --ignore-unmatch &lt;your-file-name&gt;'  
+rm -rf .git/refs/original/  
+git reflog expire --expire=now --all  
+git fsck --full --unreachable  
+git repack -A -d  
+git gc --aggressive --prune=now  
+git push --force [remote] master  
 </code></pre>
 
 <p>首先，里面最重要的两条命令是 git filter-branch 和 gc, filter-branch 真正在清理，但是只运行它也是没用的，需要再删除备份的文件，重新打包之类的，最后的gc命令，</p>
@@ -393,37 +393,37 @@ git push --force [remote] master
 
 <h2 id="3-5-git给远程库添加多个url地址">3.5 git给远程库添加多个url地址</h2>
 
-<p>场合：你可能想要把你的本地的git库，既push到github上，又push到开源中国的Git@OSC上或者coding net上，怎么解决呢？有人可能会用两个甚至多个远程库，即再添加一个远程库git remote add origin2;这个方法很低效，因为你要git push 两次才能完成push到两个库。
-解答原理：git的一个远程库可以对应多个地址。
+<p>场合：你可能想要把你的本地的git库，既push到github上，又push到开源中国的Git@OSC上或者coding net上，怎么解决呢？有人可能会用两个甚至多个远程库，即再添加一个远程库git remote add origin2;这个方法很低效，因为你要git push 两次才能完成push到两个库。<br />
+解答原理：git的一个远程库可以对应多个地址。<br />
 基本命令：</p>
 
-<p>在本地仓库创建一个指向远程仓库url的链接别名name，可以任意命名：git remote add name url1 (name可以为origin、both等等自定义的名字)
-1. 增加第1个远程库地址：git remote set-url &ndash;add &ndash;push origin url1  #remote url1 必须添加 否则无法推送到真正的库
-2. 再增加第2个远程库地址：git remote set-url &ndash;add &ndash;push origin url2
-3. 删除url链接别名name：git remote rm name （常见的为origin）
-显示当前所有远程库的详细信息，显示格式为:远程库名字 url连接(类型)，命令：git remote -v
-查看config文件，里面可以看到添加的地址，位于当前工程.git/config中，可使用命令：git config -e
+<p>在本地仓库创建一个指向远程仓库url的链接别名name，可以任意命名：git remote add name url1 (name可以为origin、both等等自定义的名字)<br />
+1. 增加第1个远程库地址：git remote set-url &ndash;add &ndash;push origin url1  #remote url1 必须添加 否则无法推送到真正的库<br />
+2. 再增加第2个远程库地址：git remote set-url &ndash;add &ndash;push origin url2<br />
+3. 删除url链接别名name：git remote rm name （常见的为origin）<br />
+显示当前所有远程库的详细信息，显示格式为:远程库名字 url连接(类型)，命令：git remote -v<br />
+查看config文件，里面可以看到添加的地址，位于当前工程.git/config中，可使用命令：git config -e<br />
 推送时只需要执行命令：git push name master，其中name就是url的链接别名，master是推送的分支，要保证几个推送仓库的分支命名是一样的。</p>
 
-<p>3.6 查看改动的内容
-改动的内容如果commit的话，可使用：
-git log -n 2 &ndash;stat ：查看最后两次改动过的文件
-git log -n 1 -p ：查看最后一次提交更改的细节
-使用git diff来查看改动内容，其中HEAD代表commit版本，Index代表staged版本
-git diff：比较工作目录(Working tree)和暂存区域快照(index)之间的差异，也就是修改之后还没有暂存起来的变化内容。
-git diff &ndash;cached：查看已经暂存起来的文件(staged)和上次提交时的快照之间(HEAD)的差异
-git diff &ndash;staged：显示的是下一次commit时会提交到HEAD的内容
-git diff HEAD：查看workspace和local repository的差别
-git diff b1 b2 或 git diff b1..b2：将b1和b2分支上的最新提交做diff
-git diff test：查看当前目录和test分支的差别
-git diff HEAD^ HEAD：比较上次提交commit和上上次提交
+<p>3.6 查看改动的内容<br />
+改动的内容如果commit的话，可使用：<br />
+git log -n 2 &ndash;stat ：查看最后两次改动过的文件<br />
+git log -n 1 -p ：查看最后一次提交更改的细节<br />
+使用git diff来查看改动内容，其中HEAD代表commit版本，Index代表staged版本<br />
+git diff：比较工作目录(Working tree)和暂存区域快照(index)之间的差异，也就是修改之后还没有暂存起来的变化内容。<br />
+git diff &ndash;cached：查看已经暂存起来的文件(staged)和上次提交时的快照之间(HEAD)的差异<br />
+git diff &ndash;staged：显示的是下一次commit时会提交到HEAD的内容<br />
+git diff HEAD：查看workspace和local repository的差别<br />
+git diff b1 b2 或 git diff b1..b2：将b1和b2分支上的最新提交做diff<br />
+git diff test：查看当前目录和test分支的差别<br />
+git diff HEAD^ HEAD：比较上次提交commit和上上次提交<br />
 git_diff_pic</p>
 
-<p>3.7 分支重命名
+<p>3.7 分支重命名<br />
 步骤如下：</p>
 
-<p>把test1分支重命名为test2：git branch -m test1 test2
-删除远程分支test1：git push &ndash;delete origin test1
+<p>把test1分支重命名为test2：git branch -m test1 test2<br />
+删除远程分支test1：git push &ndash;delete origin test1<br />
 将本地分支test2推到远程：git push origin test2</p>
 
 <h2 id="清理-git-目录大小">清理 .git 目录大小</h2>
