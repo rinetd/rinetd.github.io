@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<title>wepack3 详解 - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="webpack3中文文档 Fis3构建迁移Webpack之路 大公司里怎样开发和部署前端代码 awesome-webpack-cn webpack进阶之插件篇 webpack飞行手册 推">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="wepack3 详解 - 时光小栈">
+<meta itemprop="description" content="webpack3中文文档 Fis3构建迁移Webpack之路 大公司里怎样开发和部署前端代码 awesome-webpack-cn webpack进阶之插件篇 webpack飞行手册 推">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="wepack3 详解 - 时光小栈" />
+<meta property="og:description" content="webpack3中文文档 Fis3构建迁移Webpack之路 大公司里怎样开发和部署前端代码 awesome-webpack-cn webpack进阶之插件篇 webpack飞行手册 推">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/frontend/2016-11-09-webpack/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+<link rel="canonical" href="//blog.pytool.com/frontend/2016-11-09-webpack/">
+<link rel='shortlink' href="//blog.pytool.com/frontend/2016-11-09-webpack/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/awesome/">Awesome</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/database/">Database</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/devops/">Devops</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/frontend/">Frontend</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/language/">Language</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/software/">Software</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/windows/">Windows</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/post/">Post</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/about/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    
+    
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+          
+        
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/" rel="category tag">前端技术</a>
+                </li>
+                
+                
+                  <li><a href="//blog.pytool.com/tags/webpack3">webpack3</a> </li>
+                
+              </ul>
+
+
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">wepack3 详解</h1>
+
+                  <p class="post-byline">
+                    by  · 2017年12月12日 15:47:11 · 4921 Words ·
+                    ~10min reading time |
+                    
+                    
+                    <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/frontend/2016-11-09%20webpack.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<p><a href="https://doc.webpack-china.org/" target="_blank">webpack3中文文档</a><br />
+<a href="https://segmentfault.com/a/1190000012068849" target="_blank">Fis3构建迁移Webpack之路</a><br />
+<a href="https://github.com/fouber/blog/issues/6" target="_blank">大公司里怎样开发和部署前端代码</a><br />
+<a href="https://github.com/webpack-china/awesome-webpack-cn" target="_blank">awesome-webpack-cn</a><br />
+<a href="https://segmentfault.com/a/1190000005742122" target="_blank">webpack进阶之插件篇</a><br />
+<a href="https://segmentfault.com/a/1190000012356915" target="_blank">webpack飞行手册 <em>推荐</em></a></p>
+
+<p><img src="//blog.pytool.com/images/webpack.svg" alt="webpack" /></p>
+
+<p>entry：入口，定义要打包的文件<br />
+output：出口，定义打包输出的文件；包括路径，文件名，还可能有运行时的访问路径（publicPath）参数<br />
+module: webpack将所有资源都看做是模块,而模块就需要加载器；<br />
+  loaders: Webpack 本身只能处理 JavaScript 模块，如果要处理其他类型的文件，就需要使用 loader 进行转换。<br />
+plugins：定义以下额外的插件<br />
+resolve：定义能够被打包的文件，文件后缀名</p>
+
+<pre><code>extensions: ['', '.js', '.es6']
+</code></pre>
+
+<h3 id="wenbpack-安装失败的原因">wenbpack 安装失败的原因</h3>
+
+<ul>
+<li>1、网络问题    cnpm<br /></li>
+<li>2、权限问题<br /></li>
+<li>3、node 版本问题<br />
+<br /></li>
+</ul>
+
+<p>==============================================</p>
+
+<h3 id="webpack版本问题修改">webpack版本问题修改</h3>
+
+<ul>
+<li>新项目<br />
+&gt;直接删除node_modules 重新安装 npm install &ndash;save-dev webpack<br /></li>
+<li>旧项目<br />
+&gt;修改package.json中的版本号   删除node_modules   重新  npm install<br />
+<br /></li>
+</ul>
+
+<p>===============================================</p>
+
+<h3 id="学习步骤">学习步骤</h3>
+
+<ul>
+<li>1、配置文件webpack.config.js<br /></li>
+<li>2、entery选项（入口配置）<br /></li>
+<li>3、output选项（出口配置）<br /></li>
+<li>4、多入口、多出口配置<br />
+<br /></li>
+</ul>
+
+<p>==================================================</p>
+
+<h3 id="基本结构">基本结构</h3>
+
+<p>const path=require(&lsquo;path&rsquo;);<br />
+module.export={</p>
+
+<pre><code>entry:{
+    entry:'文件路径'
+},       入口配置
+output:{
+    path：path.resolve(__dirname,'dist'),  node语法相对路径
+    filename:'[name].js'    //压缩后的文件名
+},      出口配置
+module:{},      解读css  图片转换压缩
+plugins:[]      插件
+devServer:{}    配置服务
+</code></pre>
+
+<p>}</p>
+
+<p>======================================================</p>
+
+<h3 id="webpack配置服务-热更新技术">webpack配置服务、热更新技术</h3>
+
+<p>devServer:{</p>
+
+<pre><code>contentBase:path.resolve(__dirname,'dist'),
+host:'192.168.199.106',           //服务器地址
+compress:true,                    //服务器是否压缩
+port:1717                        //服务器端口
+</code></pre>
+
+<p>}</p>
+
+<ul>
+<li>npm install webpack-dev-server &ndash;save-dev<br /></li>
+<li>修改package.json<br /></li>
+<li>&ldquo;script&rdquo;:{<br />
+&ldquo;server&rdquo;:&ldquo;webpack-dev-server&rdquo;<br />
+}<br />
+&gt;起服务  npm run server<br />
+<br /></li>
+</ul>
+
+<blockquote>
+<p>webpack3.6以上的热更新</p>
+</blockquote>
+
+<p>=========================================================</p>
+
+<h3 id="css打包">css打包</h3>
+
+<ul>
+<li>style-loader      //处理css中URL<br /></li>
+<li>css-loader        //对标签处理<br />
+<br />
+<br /></li>
+</ul>
+
+<p>module:{</p>
+
+<pre><code>    rules:[
+        {
+            test:/\.css$/,    //通过正则的方式找到处理的扩展
+            //use:['style-loader','css-loader]
+            //loader
+            //use:[{
+                loader:'style-loader'
+                },{
+                    loader:'css-loader'
+            }]
+        }
+    ]
+},
+</code></pre>
+
+<p>================================================================</p>
+
+<h3 id="js打包">js打包</h3>
+
+<blockquote>
+<p>引入插件 uglify</p>
+</blockquote>
+
+<ul>
+<li><p>const uglify = require(&lsquo;uglifyjs-webpack-plugin&rsquo;);</p></li>
+
+<li><p>plugins:[<br />
+new uglify()<br />
+]</p></li>
+</ul>
+
+<p>==================================================================</p>
+
+<h3 id="html打包">html打包</h3>
+
+<ul>
+<li>安装并引入插件  html-webpack-plugin<br /></li>
+<li>const htmlPlugin = require(&lsquo;html-webpack-plugin&rsquo;);<br /></li>
+
+<li><p>plugins:[<br />
+new  htmlPlugin({</p>
+
+<pre><code>minify:{
+    removeAttributeQuotes:true
+},
+hash:true,
+template:'./src/index.html'
+</code></pre>
+
+<p>})<br />
+]</p></li>
+
+<li><p>minify：是对html文件进行压缩，removeAttrubuteQuotes是却掉属性的双引号。</p></li>
+
+<li><p>hash：为了开发中js有缓存效果，所以加入hash，这样可以有效避免缓存JS。</p></li>
+
+<li><p>template：是要打包的html模版路径和文件名称。</p></li>
+</ul>
+
+<p>=====================================================================</p>
+
+<h3 id="css图片路径问题">css图片路径问题</h3>
+
+<ul>
+<li><p>module:[{<br />
+rules{</p>
+
+<pre><code>test:/\.(png|jpg|gif)/,
+use:[{
+    loader:'url-loader',
+    options:{
+        limit:50000
+    }
+}]
+</code></pre>
+
+<p>}<br />
+}]</p></li>
+
+<li><p>test:/.(png|jpg|gif)/是匹配图片文件后缀名称。</p></li>
+
+<li><p>use：是指定使用的loader和loader的配置参数。</p></li>
+
+<li><p>limit：是把小于500000B的文件打成Base64的格式，写入JS。</p></li>
+</ul>
+
+<p>===============================================================</p>
+
+<h3 id="css分离">css分离</h3>
+
+<ul>
+<li>安装插件  extract-text-webpack-plugin<br /></li>
+<li>引入插件<br /></li>
+<li>在插件中声明<br /></li>
+<li>修改处理css<br /></li>
+<li>rules:[<br />
+{<br />
+    test:/.css$/,<br />
+    use:extractTextPlugin.extract({<br />
+        fallback:&lsquo;style-loader&rsquo;,<br />
+        use:&lsquo;css-loader&rsquo;<br />
+    })<br />
+}]<br />
+<br /></li>
+</ul>
+
+<p>===================================================================</p>
+
+<h3 id="处理html中的图片">处理html中的图片</h3>
+
+<ul>
+<li>安装插件  html-withimg-loader<br /></li>
+<li>配置插件<br />
+&gt;{<br />
+test:/.(html|htm)$/i,<br />
+use:[&lsquo;html-withimg-loader&rsquo;]<br />
+}<br />
+<br />
+<br /></li>
+</ul>
+
+<p>====================================================================</p>
+
+<h3 id="自动补全css前缀">自动补全css前缀</h3>
+
+<ul>
+<li><p>安装插件  postcss-loader   autoprefixer</p></li>
+
+<li><p>创建postcss.config.js</p>
+
+<blockquote>
+<p>module.exports={<br />
+plugins:[</p>
+
+<pre><code>require('auotprefixer')
+</code></pre>
+
+<p>]<br />
+}</p>
+</blockquote></li>
+
+<li><p>编写loader</p>
+
+<blockquote>
+<p>{<br />
+test: /.css$/,<br />
+use: extractTextPlugin.extract({</p>
+
+<pre><code>fallback: 'style-loader',
+use: [
+    { loader: 'css-loader', options: { importLoaders: 1 } },
+    'postcss-loader'
+]
+</code></pre>
+
+<p>})</p>
+</blockquote></li>
+</ul>
+
+<p>}</p>
+
+<p>git@github.com:heavenswen/webpack-page.git</p>
+
+<pre><code class="language-js">//编译状态
+const Env = process.env.NODE_ENV === 'production'
+const { join, resolve } = require('path')
+const webpack = require('webpack')
+const glob = require('glob')
+// const ImageminPlugin = require('imagemin-webpack-plugin').default;
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const CommonsChunkPlugin = require('webpack/lib/optimize/CommonsChunkPlugin')
+const LiveReloadPlugin = require('webpack-livereload-plugin')
+const ROOT = process.cwd();  // 根目录
+// 通过允许您并行转换多个文件， HappyPack使Webpack构建更快。
+const HappyPack = require('happypack');
+const HappyThreadPool = HappyPack.ThreadPool({ size: (Env ? 10 : 4) });
+const release = Env ? '/' : '/'//域名文件夹
+//页面对应路口
+const entries = {}
+//入口对象集
+const chunks = []
+//页面list
+const pagesList = []
+//logo
+const favicon = &quot;./src/assets/img/logo.png&quot;
+// 页面模版
+const entryHtml = []
+
+//页面模版
+glob.sync(&quot;./src/pages/**/*.{ejs,html}&quot;).forEach(path =&gt; {
+  //HtmlWebpackPlugin 不支持 .html 编译 ejs 用.ejs
+  let filename = path.split('./src/pages/')[1]
+
+  //入口js文件名
+  let chunk = path.split('./src/pages/')[1].split(/\.(ejs|html)/)[0]
+  //设置产出路径
+  chunk = 'js/' + chunk
+  // 入口js路径
+  let js = path
+
+  //js路径
+  js = js.replace(/\/pages/ig, '/entry');
+  js = js.replace(/\.(ejs|html)/gi, '.js');
+  entries[chunk] = js
+  //入口js名称名称
+  chunks.push(chunk)
+
+  filename = filename.replace(/\.ejs/ig, '.html')
+  //获得所有页面
+  pagesList.push(filename)
+  let htmlConf = {
+    filename: filename,//文件名
+    //模版位置
+    template: path,
+    inject: 'body',
+    favicon: favicon,
+    hash: Env,
+    env: Env,//HtmlWebpackPlugin.options.env 非打包时的处理
+    list: pagesList,//页面地址
+    chunks: ['vendors', chunk] //chunk
+  }
+
+  //保存配置
+  entryHtml.push(htmlConf)
+
+})
+
+const config = {
+  entry: entries,
+  output: {
+    path: resolve(__dirname, './dist'),
+    filename: '[name].js',
+    publicPath: release
+  },
+  resolve: {
+    //路径检索
+    extensions: ['.js', '.vue'],
+    alias: {
+      //资源
+      assets: join(__dirname, '/src/assets'),
+      //组件
+      components: join(__dirname, '/src/components'),
+      //视图
+      views: join(__dirname, '/src/views'),
+      root: join(__dirname, 'node_modules')
+
+    }
+  },
+  module: {
+    //忽略以下js
+    noParse: /node_modules\/(jquey|zepto|moment|chart\.js)/,
+    rules: [
+      {
+        test: /\.vue$/,
+        use: 'vue-loader'
+      },
+      {
+        test: /\.js$/,
+        use: [{
+          loader: 'babel-loader?id=js',
+          options: {
+            //es6
+            presets: ['es2015']
+          }
+        }],
+        exclude: /node_modules/
+      },
+      {
+        //编译sass
+        test: /\.(scss|sass)$/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader?id=style',
+          use: [{
+            loader: 'css-loader?id=style',
+            options: {
+              //压缩css
+              minimize: Env
+            }
+          }, 'postcss-loader?id=style', 'sass-loader?id=style'],
+        })
+
+      },
+      {
+        test: /\.css$/,
+        use: ExtractTextPlugin.extract({
+          fallback: 'style-loader?id=style',
+          use: [{
+            loader: 'css-loader?id=style',
+            options: {
+              //压缩css
+              minimize: Env
+            }
+          }, 'postcss-loader?id=style'],
+        })
+      },
+
+      {
+        //修改html img路径
+        test: /\.html$/,
+        use: [{
+          loader: 'html-loader',
+          options: {
+            root: resolve(__dirname, 'src'),
+            attrs: ['img:src', 'img:data-src', 'img:data-background', 'link:href']
+          }
+        }]
+      },
+      {
+        test: /\.(png|jpg|jpeg|gif|svg|svgz)(\?.+)?$/,
+        exclude: /favicon\.(png|ico)$/,//除外
+        loaders: [
+          'url-loader?limit=1000&amp;outputPath=assets/img/&amp;name=[name].[ext]?[hash]',
+          {
+            //图片压缩
+            loader: 'image-webpack-loader',
+            options: {
+              gifsicle: {
+                interlaced: false,
+              },
+              optipng: {
+                optimizationLevel: 1,
+              },
+              pngquant: {
+                quality: '65-90',
+                speed: 4
+              },
+              mozjpeg: {
+                progressive: true,
+                quality: 65
+              }
+            }
+          }
+        ]
+      },
+      {
+        //文字资源
+        test: /\.(eot|ttf|woff|woff2)(\?.+)?$/,
+        use: [{
+          loader: 'url-loader',
+          options: {
+            limit: 1000,
+            name: &quot;[name].[ext]?[hash]&quot;,
+            outputPath: &quot;assets/fonts/&quot;,//产出目录
+          }
+        }]
+      },
+      {
+        //资源
+        test: /\.(apk|docx|doc|exe)(\?.+)?$/,
+        use: [{
+          loader: 'file-loader',
+          options: {
+            name: &quot;[name].[ext]?[hash]&quot;,
+            outputPath: &quot;assets/file/&quot;,//产出目录
+          }
+        }]
+      }
+    ]
+  },
+  plugins: [
+    //会跟 webpack-dev-server 冲突，导致js修改时找不到修改对象
+    // new LiveReloadPlugin({
+    // }),
+    new HappyPack({
+      id: 'js',
+      // @see https://github.com/amireh/happypack
+      threadPool: HappyThreadPool,
+      loaders: ['babel-loader']
+    }),
+    new HappyPack({
+      id: 'styles',
+      threadPool: HappyThreadPool,
+      loaders: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader']
+    }),
+    //获取公用模块生成js
+    new CommonsChunkPlugin({
+      name: 'vendors',
+      filename: 'assets/js/vendors.js?[hash]',
+      chunks: chunks,
+      minChunks: chunks.length
+    }),
+    //提取公用模块生成css
+    new ExtractTextPlugin({
+      filename: (getPath) =&gt; {
+        //获得地址
+        let name = getPath('[name]')
+
+        if (!name.match(/vendors/ig)) {
+          let arr = name.split('/')
+          name = arr[arr.length - 1]//获得文件名
+        }
+        return 'assets/css/' + name + '.css';
+      },
+      allChunks: true
+    }),
+    //webpack3.0
+    new webpack.optimize.ModuleConcatenationPlugin()
+  ],
+  devServer: {
+    contentBase: [
+      join(ROOT, 'src/')
+    ],
+    port: 8010,
+    //启动路由功能
+    //historyApiFallback: false,
+    // noInfo: true,
+    hot: false,
+    //真实地址 可以用局域访问
+    disableHostCheck: true,
+    //允许其他电脑访问
+    host: '0.0.0.0',
+  },
+  devtool: '#eval-source-map'
+}
+
+
+//页面模版
+entryHtml.forEach(function (v) {
+  config.plugins.push(new HtmlWebpackPlugin(v));
+});
+
+module.exports = config
+
+if (process.env.NODE_ENV === 'production') {
+  module.exports.devtool = '#source-map'
+  // http://vue-loader.vuejs.org/en/workflow/production.html
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: '&quot;production&quot;'
+      }
+    }),
+    //压缩单元
+    new webpack.optimize.UglifyJsPlugin({
+      // 最紧凑的输出
+      beautify: false,
+      // 删除所有的注释
+      comments: false,
+      compress: {
+        // 在UglifyJs删除没有用到的代码时不输出警告
+        warnings: false,
+        // 删除所有的 `console` 语句
+        // 还可以兼容ie浏览器
+        drop_console: true,
+        // 内嵌定义了但是只用到一次的变量
+        collapse_vars: true,
+        // 提取出出现多次但是没有定义成变量去引用的静态值
+        reduce_vars: true,
+      }
+    }),
+
+  ])
+}
+</code></pre>
+
+<pre><code class="language-js">var path = require('path');
+var fs = require('fs');
+var webpack = require('webpack');
+var HtmlWebpackPlugin = require('html-webpack-plugin');
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
+var FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+
+console.log('NODE_ENV',process.env.NODE_ENV);
+
+const extractCSS = new ExtractTextPlugin('css/[name]-one.css');
+const extractLESS = new ExtractTextPlugin('css/[name]-two.css');
+const extractSASS = new ExtractTextPlugin('css/[name]-three.css');
+
+var config = {
+    entry: {
+        main: [
+            // 'babel-polyfill',
+            'webpack-hot-middleware/client?path=/__webpack_hmr&amp;timeout=20000&amp;reload=true',
+            'webpack/hot/dev-server',
+            path.resolve(__dirname, 'src/main.js'),
+            path.resolve(__dirname, 'src/index.js')
+        ],
+        verdor: [
+            path.resolve(__dirname, 'src/verdor/verdor.js'),
+        ]
+    },
+    // entry: path.resolve(__filename, '../src/main.js'),
+    output: {
+        path: path.resolve(__filename, '../dist'),
+        publicPath: '/',
+        filename: '[name].[hash:8].bundle.js',
+        // webpack 允许你根据文件内容生成哈希值，只要用 [chunkhash] 替换 [hash] 就可以了
+        // 不要在开发环境下使用 [chunkhash]，因为这会增加编译时间。将开发和生产模式的配置分开，并在开发模式中使用 [name].js 的文件名， 在生产模式中使用 [name].[chunkhash].js 文件名。
+        //    publicPath: '/',
+        //    chunkFilename: '[id].[chunkhash].js'
+    },
+    // 生成.map文件
+    // devtool: 'source-map',
+    module: {
+        rules: [
+            // 加载JSON文件 使用json-loader webpack1
+            // wenpack2 + ,json-loader 不再需要手动添加
+            // [官方: 是为了消除 webpack、 node.js 和 browserify 之间的环境差异。 https://github.com/webpack/webpack/issues/3363]
+            // {
+            //     test: /\.json$/,
+            //     use: 'json-loader'
+            // },
+
+            // 处理 .json5结尾的文件
+            {
+                test: /\.json5$/,
+                use: 'json5-loader'
+            },
+            // {
+            //     test: /\.css$/,
+            //     // 使用①生成的css文件 插入到html中
+            //     // use: [ 'style-loader', 'css-loader' ]
+            //     // 使用②ExtractTextPlugin 生成style.css文件
+            //     // 在主入口文件中import
+            //     use: ExtractCSS.extract([
+            //         'css-loader',
+            //         // 'px2rem2-loader',
+            //         'postcss-loader',
+            //     ]),
+            // }
+
+            // 使用postcss方式， css 插入到DOM形式 ， 支持热更新
+            // {
+            //     test: /\.css$/,
+            //     use: [ 'style-loader', 'css-loader',  'postcss-loader' ]
+            // },
+            {
+                test: /\.less$/,
+                use: extractLESS.extract({
+                    fallback: ['style-loader'],
+                    use: [
+                        'css-loader',
+                        'postcss-loader',
+                        'less-loader'
+                    ]
+                })
+            },
+            {
+                test: /\.scss$/,
+                use: extractSASS.extract({
+                    fallback: ['style-loader'],
+                    use: [
+                        'css-loader',
+                        'postcss-loader',
+                        'sass-loader'
+                    ]
+                })
+            },
+            // ExtractTextPlugin 提取了样式出来， 官方说No Hot Module Replacement。
+            // https://github.com/webpack-contrib/extract-text-webpack-plugin/blob/webpack-1/README.md
+            {
+                test: /\.css$/,
+                use: extractCSS.extract({
+                    fallback: ['style-loader'],
+                    use: [
+                        'css-loader',
+                        'postcss-loader'
+                    ]
+                })
+            },
+            {
+                test: /\.js(x)*$/,
+                exclude: /node_modules/,
+                loader: 'babel-loader'
+            },
+            {
+                test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+                loader: 'url-loader',
+                options: {
+                    limit: 8000,
+                    name: 'image/[name].[hash:7].[ext]'
+                }
+            },
+            {
+                test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/,
+                loader: 'url-loader',
+                options: {
+                    limit: 8000,
+                    name: 'font/[name].[hash:7].[ext]'
+                }
+            },
+            // 手写一个简单的webpack loader
+            // 处理 .huangyb 后缀的文件
+            {
+                test: /\.huangyb$/,
+                loader: 'huangyb-loader'
+            }
+        ]
+    },
+    plugins: [
+        // 生成html文件，里面的JS文件 src 地址自动添加hash
+        new HtmlWebpackPlugin({
+            title: 'huangyb',
+            favicon: './src/image/logoNew.gif',
+            filename: 'index.html',
+            minify:{
+                removeComments: true, // 删除注释
+                collapseWhitespace: true // 删除空格
+            }
+        }),
+        // CSS生成单独的文件
+        // new ExtractTextPlugin({
+        //     filename: 'css/[name][hash:8].css',
+        //     allChunks: true,
+        //     disable: false
+        // })
+
+        extractCSS,
+        extractLESS,
+        extractSASS,
+
+        // 用来跳过编译时出错的代码并记录，使编译后运行时的包不会发生错误
+        // * webpack3 NoEmitOnErrorsPlugin 已经 取代webpack 2 的 NoErrorsPlugin
+        new webpack.NoEmitOnErrorsPlugin(),
+        new FriendlyErrorsWebpackPlugin(), // 终端显示
+
+        new webpack.optimize.CommonsChunkPlugin({ // 提取公用JS代码插件
+            names: ['vendor'],
+            // ( 公共chunk(commnons chunk) 的名称)
+            filename: 'commons.js',
+            // ( 公共chunk 的文件名)
+            minChunks: 3
+            // (模块必须被3个 入口chunk 共享)
+            // CommonsChunkPlugin 可以通过传参minChunks来控制你希望重复出现几次的module 被提取出来打包。
+            // 也就是说你自己可以控制当一个模块被引入几次可以被打包到共用的chunk中，还可以规定如果这个公共模块小于一个值 minSize，
+            // 就不被提取出来这些都可以帮助你控制你想要的粒度。当你改的不是公共模块的代码，理论上webpack 打包的时候本来就不会影响其他代码。
+            // chunks: ['pageA', 'pageB'],
+            // (只使用这些 入口chunk)
+        }),
+
+        // OccurrenceOrderPlugin 现在默认启用，并已重命名（在 webpack 1 中为 OccurenceOrderPlugin）。 因此，请确保从您的配置中删除该插件：
+        // OccurrenceOrderPlugin is now on by default
+        // new webpack.optimize.OccurrenceOrderPlugin(),
+        new webpack.HotModuleReplacementPlugin()
+    ]
+    // resolve: {
+    //     alias: {
+    //         huangImg: path.resolve(__dirname, 'src/image/')
+    //     }
+    // }
+}
+
+module.exports = config;
+</code></pre>
+
+<pre><code class="language-js">/*
+ * @Author: ignaciozhu
+ * @Date: 2017-05-03 16:32:21
+ * @Last Modified by: ignaciozhu
+ * @Last Modified time: 2017-06-02 11:50:06
+ */
+//配置本地反向代理文件夹所在路径
+const DIST = '../../../ya/client_html/branch/nginx-1.10.1/';
+const path = require('path')
+const webpack = require('webpack')
+const HtmlWebpackPlugin = require(&quot;html-webpack-plugin&quot;) //自动生成一个html 引入打包之后的js
+const ExtractTextPlugin = require(&quot;extract-text-webpack-plugin&quot;) //默认打包css 这些全部在js 里面  用这个可以分离出来 单独生成css文件  //生产环节会用到
+const OpenBrowserPlugin = require('open-browser-webpack-plugin') //打包完成自动打开浏览器
+const CopyWebpackPlugin = require('copy-webpack-plugin') //拷贝文件  当有第三方依赖可以copy到打包文件夹中
+const autoprefixer = require('autoprefixer') //自动加前缀
+const CptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin') //压缩css
+const ImageminPlugin = require('imagemin-webpack-plugin').default //压缩图片
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer') //生成打包图
+const UglifyJSPlugin = require('uglifyjs-webpack-plugin'); //webpack3 单独分离出来了这个压缩的
+
+const { host, dev_port } = require(&quot;./config&quot;)
+const { delhttp } = require('./server/utils/method.js')
+
+module.exports = (env) =&gt; {
+  //env 是npm script 运行webpack时传进来的  判断是否是开发环境
+  const mode = (env &amp;&amp; env.mode) || &quot;DEV&quot;
+
+  const options = {
+      //开发工具
+      devtool: mode === &quot;DEV&quot; ? &quot;source-map&quot; : false,
+
+      //开发服务器
+      devServer: {
+        contentBase: path.resolve(__dirname, &quot;dist&quot;), //静态资源根目录
+        compress: true, //压缩
+        port: dev_port, //端口
+        host: delhttp(host),
+        hot: true, //热更新
+        inline: true, //iframe 模式
+        historyApiFallback: true, //浏览器 history
+        stats: { //统计
+          color: true, //输出有颜色的信息
+          errors: true, //显示错误信息
+          version: true, //显示版本号
+          warnings: true, //显示警告
+          progress: true, //显示进度,
+          timings: true, //显示时间
+        }
+      },
+
+      //入口
+      entry: mode === &quot;DEV&quot; ? [
+        &quot;react-hot-loader/patch&quot;, //热更新
+        `webpack-dev-server/client?${host}:${dev_port}`,
+        &quot;webpack/hot/only-dev-server&quot;,
+        path.resolve(__dirname, &quot;src/index.js&quot;),
+      ] : {
+        app: path.resolve(__dirname, &quot;src/index.js&quot;),
+        // vendor:['react']
+      },
+
+      //打包输出
+      output: {
+        path: path.resolve(__dirname, DIST + &quot;dist&quot;), ///myblog
+        filename: mode === &quot;DEV&quot; ? &quot;js/[name].js&quot; : &quot;./js/[name].[chunkhash:8].js&quot;,
+        chunkFilename: mode === &quot;DEV&quot; ? &quot;js/[name]Chunk.js&quot; : &quot;./js/[name]Chunk.[chunkhash:8].js&quot;,
+        publicPath: mode === &quot;DEV&quot; ? `${host}:${dev_port}/` : &quot;/&quot; //myblog/
+      },
+
+      //模块加载器
+      module: {
+        rules: [{
+          test: /\.js[x]?$/,
+          use: [{
+            loader: &quot;babel-loader&quot;
+          }],
+          exclude: &quot;/node_modules/&quot;,
+          use: [
+            // {loader:'react-hot-loader'},
+            {
+              loader: &quot;babel-loader&quot;,
+              options: {
+                //按需加载模块，antd...
+                plugins: [
+                  [&quot;import&quot;, [{
+                    &quot;libraryName&quot;: &quot;antd&quot;,
+                    &quot;libraryDirectory&quot;: &quot;lib&quot;,
+                    &quot;style&quot;: true
+                  }, {
+                    &quot;libraryName&quot;: &quot;antd-mobile&quot;,
+                    &quot;libraryDirectory&quot;: &quot;component&quot;,
+                  }, ]],
+                  // &quot;transform-decorators-legacy&quot;,
+                  // &quot;transform-class-properties&quot;
+                ]
+              }
+            },
+          ],
+          include: [path.resolve(&quot;src&quot;)] //只遍历src目录下的
+        }, {
+          test: /\.less$/,
+          use: mode === &quot;DEV&quot; //开发环境 css打包到js中
+            ? [
+              { loader: &quot;style-loader&quot; }, //loader 倒序执行  先执行 less-laoder
+              { loader: &quot;css-loader&quot;, options: { minimize: false, sourceMap: true } },
+              { loader: &quot;postcss-loader&quot; }, //自动加前缀
+              { loader: &quot;less-loader&quot;, options: { sourceMap: true } }
+            ] : ExtractTextPlugin.extract({ //生产环境 把css单独分离出来
+              fallback: &quot;style-loader&quot;,
+              use: [
+                &quot;css-loader&quot;,
+                &quot;postcss-loader&quot;, {
+                  loader: &quot;less-loader&quot;,
+                  options: {
+                    sourceMap: false,
+                  },
+                },
+              ],
+            })
+        }, {
+          test: /\.css$/,
+          use: mode === &quot;DEV&quot; ? [
+            { loader: &quot;style-loader&quot; }, //loader 倒序执行  先执行 less-laoder
+            { loader: &quot;css-loader&quot;, options: { minimize: false, sourceMap: true } },
+            { loader: &quot;postcss-loader&quot; }
+          ] : ExtractTextPlugin.extract({
+            fallback: &quot;style-loader&quot;,
+            use: [
+              &quot;css-loader&quot;,
+              &quot;postcss-loader&quot;, {
+                loader: &quot;less-loader&quot;,
+                options: {
+                  sourceMap: false
+                },
+              },
+            ],
+          })
+        }, {
+          test: /\.(jpg|jpeg|png|gif|cur|ico)$/,
+          use: [{
+            loader: 'file-loader',
+            options: {
+              name: &quot;images/[name][hash:8].[ext]&quot; //遇到图片  生成一个images文件夹  名字.后缀的图片
+            }
+          }]
+        }, {
+          test: /\.(eot|ttf|svg|woff|woff2)$/,
+          use: [{
+            loader: &quot;file-loader&quot;,
+            options: {
+              name: &quot;fonts/[name][hash:8].[ext]&quot;,
+            },
+          }, ],
+        }, ]
+      },
+
+      //自动补全后缀
+      resolve: {
+        enforceExtension: false, //2.0 后 不能写 extensions :[&quot;&quot;]
+        extensions: ['.js', '.jsx', '.json'], //比如 test.js   可以写成 require('test')
+        alias: {
+          // Support React Native Web
+          // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
+          'react-native': 'react-native-web',
+          components: path.resolve(__dirname) + '/src/common/components',
+          /* container: path.resolve(__dirname, '..') + '/src/common/container',
+           images: path.resolve(__dirname, '..') + '/src/common/images',
+           pages: path.resolve(__dirname, '..') + '/src/common/pages',
+           utils: path.resolve(__dirname, '..') + '/src/common/utils',
+           data: path.resolve(__dirname, '..') + '/src/server/data',
+           actions: path.resolve(__dirname, '..') + '/src/common/actions',
+           reducers: path.resolve(__dirname, '..') + '/src/common/reducers',*/
+        },
+        modules: [
+          path.resolve(&quot;src&quot;), //比如 src/app/components/xx  可以写成 app/components/xx
+          path.resolve(&quot;.&quot;),
+          path.resolve(&quot;src/shared&quot;),
+          &quot;node_modules&quot;,
+        ],
+      },
+
+      //插件
+      plugins: []
+    }
+    //根据开发环境不同  concat 不同的插件
+  if (mode === &quot;DEV&quot;) {
+    options.plugins = options.plugins.concat([
+      new webpack.NamedModulesPlugin(), //打印更具可读性模块名称在浏览器控制台
+      new webpack.NoEmitOnErrorsPlugin(), //错误不打断
+      new webpack.DefinePlugin({ //调试
+        __DEBUG__: true,
+      }),
+      new webpack.HotModuleReplacementPlugin(), //热加载插件
+      /*      new OpenBrowserPlugin({ //编译完成打开浏览器
+              url: `${host}:${dev_port}`
+            })*/
+    ])
+  } else {
+    options.plugins = options.plugins.concat([
+      // new BundleAnalyzerPlugin(),     //生成打包图
+      // //webpackv3.0新增 作用域提升 默认是闭包式打包 浏览器执行速度变慢
+      // //开启这个去掉模块的包裹函数,体积更小
+      // new webpack.optimize.ModuleConcatenationPlugin(),
+      new webpack.DefinePlugin({
+        &quot;process.env.NODE_ENV&quot;: JSON.stringify(&quot;production&quot;),
+        __DEBUG__: false,
+      }),
+      new UglifyJSPlugin({ //压缩
+        output: {
+          comments: false //移除所有注释
+        },
+        compress: {
+          warnings: false
+        }
+      }),
+      new ExtractTextPlugin({ // 将打包文件中的css分离成一个单独的css文件
+        filename: 'css/app.[contenthash:8].css',
+        allChunks: true
+      }),
+      //[1]
+      //找到所有node_modules的依赖包  分离出来
+      // /axios/ 没有用到的模块
+      new webpack.optimize.CommonsChunkPlugin({
+        name: &quot;app&quot;,
+        async: &quot;common-in-lazy&quot;,
+        children: true,
+        minChunks: ({ resource } = {}) =&gt; (
+          resource &amp;&amp;
+          resource.includes('node_modules') &amp;&amp;
+          /axios/.test(resource)
+        )
+      }),
+      // [2]
+      //找到模块次数使用两次的  分离出来
+      //单独打成used-twice.js 减少包的体积
+      /**
+       * 升级到 v2.6 貌似async不起作用  article admin detail 都使用了但是moment都打包进了对应的chunk文件
+       * 导致文件增大了600kb
+       * 经过github上的提问 各路大神的帮助下  解决了上面这个问题 需要设置name!!!!!!!!!!!
+       */
+      new webpack.optimize.CommonsChunkPlugin({
+        name: &quot;app&quot;,
+        children: true,
+        async: 'used-twice',
+        minChunks: (module, count) =&gt; (
+          count &gt;= 2
+        ),
+      }),
+      //[3]
+      //[1][2][3] 是按需加载 大幅减少打包js体积的关键
+      //遍历node_modules目录 以.js结尾 一道vender chunk
+      //自动化分离第三方依赖
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'app',
+        filename: &quot;js/common.[chunkhash:8].js&quot;,
+        minChunks: ({ resource }) =&gt; (
+          resource &amp;&amp;
+          resource.indexOf('node_modules') &gt;= 0 &amp;&amp;
+          resource.match(/\.js$/)
+        )
+      }),
+      new webpack.LoaderOptionsPlugin({ //laoder最小化
+        minimize: true
+      }),
+      //图片压缩没用。。。什么鬼
+      new ImageminPlugin({
+        // disable:false,
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        optipng: {
+          optimizationLevel: 7
+        }
+      }),
+      new CptimizeCssAssetsPlugin({ //压缩css  与 ExtractTextPlugin 配合使用
+        cssProcessor: require('cssnano'),
+        cssProcessorOptions: { discardComments: { removeAll: true } }, //移除所有注释
+        canPrint: true //是否向控制台打印消息
+      })
+    ])
+  }
+  options.plugins.push(
+    new HtmlWebpackPlugin({
+      title: &quot;西溪泊岸共享&quot;,
+      filename: &quot;index.html&quot;, //自动把打包的js文件引入进去
+      template: path.resolve(__dirname, &quot;src/index.html&quot;), //模板文件
+      hash: true, //添加hash码
+      inject: true //注射所有资源到 body元素的底部     &quot;head&quot; &quot;body&quot; true false  &quot;body&quot; == true
+    })
+  )
+  return options
+}
+</code></pre>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/frontend/2016-11-09-webpack/">blog.pytool.com/frontend/2016-11-09-webpack/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/frontend/2016-11-09-webpack-url-loader/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>wepack3 url-loader</span>
+      </a>
+      
+  </li>
+</ul>
+
+    
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(65)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    
+    
+     
+  
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a rel="nofollow" class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+   
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/database/mysql/mysql-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0/12-mysql-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>MySQL性能优化最佳实践 - 12 MySQL性能优化的最佳20&#43;条经验</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-2.5" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-2.5" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-2.5" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/android/" class="tag-link-2.5" title="1 Posts">android<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-5.5" title="1 Posts">ansible<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/apt/" class="tag-link-2.5" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-2.5" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-2.5" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-2.5" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-2.5" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-3.5" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-2.5" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-2.5" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-2.5" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-2.5" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-2.5" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-2.5" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-2.5" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-2.5" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-2.5" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-3.5" title="1 Posts">centos7<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link-2.5" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-2.5" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coreos/" class="tag-link-2.5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-2.5" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-2.5" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-13.5" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-2.5" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-2.5" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curd/" class="tag-link-4.5" title="1 Posts">curd<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-3.5" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-2.5" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-2.5" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-2.5" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-2.5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-2.5" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-2.5" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-14.5" title="1 Posts">docker<small>(13)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-2.5" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link-2.5" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-13.5" title="1 Posts">emacs<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-2.5" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-3.5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/etcd/" class="tag-link-2.5" title="1 Posts">etcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-2.5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expr/" class="tag-link-2.5" title="1 Posts">expr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/extundelete/" class="tag-link-2.5" title="1 Posts">extundelete<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-2.5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-2.5" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-2.5" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-2.5" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-2.5" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gdb/" class="tag-link-2.5" title="1 Posts">gdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-2.5" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-2.5" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link-2.5" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-59.5" title="1 Posts">golang<small>(58)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-2.5" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-2.5" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-2.5" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-3.5" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-2.5" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-2.5" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-2.5" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-2.5" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-2.5" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-10.5" title="1 Posts">hugo<small>(9)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-2.5" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-2.5" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-2.5" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-3.5" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/index/" class="tag-link-2.5" title="1 Posts">index<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-2.5" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-2.5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-2.5" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-2.5" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-11.5" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-2.5" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-5.5" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-2.5" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-7.5" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/join/" class="tag-link-2.5" title="1 Posts">join<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/js/" class="tag-link-2.5" title="1 Posts">js<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/key/" class="tag-link-2.5" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-7.5" title="1 Posts">linux<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-2.5" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-2.5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-2.5" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-2.5" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lunr/" class="tag-link-2.5" title="1 Posts">lunr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-2.5" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-3.5" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-9.5" title="1 Posts">mariadb<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-2.5" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-2.5" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-2.5" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-2.5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-8.5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-3.5" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-2.5" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-44.5" title="1 Posts">mysql<small>(43)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/navicat64/" class="tag-link-2.5" title="1 Posts">navicat64<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-2.5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-2.5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-2.5" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-2.5" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-28.5" title="1 Posts">nginx<small>(27)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-4.5" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-2.5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-3.5" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ntp/" class="tag-link-2.5" title="1 Posts">ntp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-2.5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-2.5" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-2.5" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-3.5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pdf/" class="tag-link-2.5" title="1 Posts">pdf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/perf/" class="tag-link-2.5" title="1 Posts">perf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-4.5" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-2.5" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-3.5" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prepare/" class="tag-link-2.5" title="1 Posts">prepare<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prometheus/" class="tag-link-6.5" title="1 Posts">prometheus<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-2.5" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-6.5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-2.5" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-2.5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-2.5" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-2.5" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-2.5" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-5.5" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-2.5" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-2.5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-2.5" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-2.5" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-3.5" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-2.5" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-2.5" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-2.5" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-2.5" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-2.5" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-9.5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-4.5" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-2.5" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-2.5" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-7.5" title="1 Posts">shell<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-2.5" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-2.5" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-4.5" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-2.5" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-2.5" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-2.5" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-6.5" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/strace/" class="tag-link-2.5" title="1 Posts">strace<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-2.5" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-2.5" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-2.5" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-2.5" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-2.5" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysbench/" class="tag-link-3.5" title="1 Posts">sysbench<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysctlcd/" class="tag-link-2.5" title="1 Posts">sysctlcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-2.5" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-2.5" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-3.5" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/telegraf/" class="tag-link-2.5" title="1 Posts">telegraf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-2.5" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-3.5" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-2.5" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-2.5" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-2.5" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-3.5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-3.5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-2.5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-2.5" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-2.5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link-2.5" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-2.5" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-12.5" title="1 Posts">vim<small>(11)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link-2.5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-2.5" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-3.5" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-2.5" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-2.5" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-2.5" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-3.5" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xargs/" class="tag-link-2.5" title="1 Posts">xargs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-3.5" title="1 Posts">xidel<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-3.5" title="1 Posts">xml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-2.5" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-2.5" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-3.5" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/zabbix/" class="tag-link-2.5" title="1 Posts">zabbix<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2.5" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link-2.5" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link-2.5" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+</body>
+</html>
+

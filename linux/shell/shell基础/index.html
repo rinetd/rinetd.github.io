@@ -1,0 +1,2309 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<title>shell基础 - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="基本内容 元字符 变量 注释 元字符 具有特定功能的保留字 IFS（交换字段分隔符）：由 三者之一组成（我们常用space），用来拆分command lin">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="shell基础 - 时光小栈">
+<meta itemprop="description" content="基本内容 元字符 变量 注释 元字符 具有特定功能的保留字 IFS（交换字段分隔符）：由 三者之一组成（我们常用space），用来拆分command lin">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="shell基础 - 时光小栈" />
+<meta property="og:description" content="基本内容 元字符 变量 注释 元字符 具有特定功能的保留字 IFS（交换字段分隔符）：由 三者之一组成（我们常用space），用来拆分command lin">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/linux/shell/shell%E5%9F%BA%E7%A1%80/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+<link rel="canonical" href="//blog.pytool.com/linux/shell/shell%E5%9F%BA%E7%A1%80/">
+<link rel='shortlink' href="//blog.pytool.com/linux/shell/shell%E5%9F%BA%E7%A1%80/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/awesome/">Awesome</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/database/">Database</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/devops/">Devops</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/frontend/">Frontend</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/language/">Language</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/software/">Software</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/windows/">Windows</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/post/">Post</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/about/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    
+    
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+          
+        
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/" rel="category tag">Linux基础</a>
+                </li>
+                
+                
+                  <li><a href="//blog.pytool.com/tags/shell">shell</a> </li>
+                
+              </ul>
+
+
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">shell基础</h1>
+
+                  <p class="post-byline">
+                    by  · 2017年11月07日 14:55:34 · 6672 Words ·
+                    ~14min reading time |
+                    
+                    
+                    <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/shell/shell%e5%9f%ba%e7%a1%80.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<p>基本内容</p>
+
+<ul>
+<li>元字符<br /></li>
+<li>变量<br /></li>
+<li>注释<br />
+<br /></li>
+</ul>
+
+<!-- more -->
+
+<h2 id="元字符">元字符</h2>
+
+<p>具有特定功能的保留字<br />
+<code>IFS（交换字段分隔符）</code>：由<space> <tab> <enter>三者之一组成（我们常用space），用来拆分command line的每一个词（word）用的，因为shell command line是按词来处理的。<br />
+<code>CR（回车键）</code> ： 由<enter>产生，用来结束command line。<br />
+<code>=</code> ：  设定变量。<br />
+<code>$</code> ：  做变量或运算替换(请不要与 shell prompt 搞混了)。<br />
+<code>&gt;</code> ：  重定向 stdout（标准输出standard out）。<br />
+<code>&lt;</code> ：  重定向 stdin（标准输入standard in）。<br />
+<code>|</code>：   管道命令。<br />
+<code>&amp;</code> ：  重定向 file descriptor （文件描述符），或将命令置于后台执行。<br />
+<code>( )</code>： 將其內的命令置于 nested subshell （嵌套的子shell）执行，或用于运算或命令替换。<br />
+<code>{ }</code>： 將其內的命令置于 non-named function（未命名函数） 中执行，或用在变量替换的界定范围。<br />
+<code>;</code> ：  在前一个命令结束时，而忽略其返回值，继续执行下一個命令。<br />
+<code>&amp;&amp;</code> ： 在前一個命令结束时，若返回值为 true，继续执行下一個命令。<br />
+<code>||</code> ： 在前一個命令结束时，若返回值为 false，继续执行下一個命令。<br />
+<code>!</code>：   执行 history 列表中的命令<br />
+<code>;</code> : 分隔同一行的2条shell语句。</p>
+
+<p>主要内容：</p>
+
+<ul>
+<li>转义符<br /></li>
+<li>命令替换<br /></li>
+<li>变量替换<br />
+<br /></li>
+</ul>
+
+<!-- more -->
+
+<h2 id="转义符">转义符</h2>
+
+<p>如果表达式中包含特殊字符，Shell 将会进行替换，转义字符也是一种替换。<br />
+下面的转义字符都可以用在 echo 中：</p>
+
+<table>
+<thead>
+<tr>
+<th>转义字符</th>
+<th>含义</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>\</td>
+<td>反斜杠</td>
+</tr>
+
+<tr>
+<td>\a</td>
+<td>警报，响铃</td>
+</tr>
+
+<tr>
+<td>\b</td>
+<td>退格（删除键）</td>
+</tr>
+
+<tr>
+<td>\f</td>
+<td>换页(FF)，将当前位置移到下页开头</td>
+</tr>
+
+<tr>
+<td>\n</td>
+<td>换行</td>
+</tr>
+
+<tr>
+<td>\r</td>
+<td>回车</td>
+</tr>
+
+<tr>
+<td>\t</td>
+<td>水平制表符（tab键）</td>
+</tr>
+
+<tr>
+<td>\v</td>
+<td>垂直制表符</td>
+</tr>
+</tbody>
+</table>
+
+<pre><code class="language-bash">╭─sam@sam  ~
+╰─$ echo -E &quot;Value of a is \n nnnnnnnnnnn &quot;
+Value of a is \n nnnnnnnnnnn
+
+╭─sam@sam  ~
+╰─$ echo  &quot;Value of a is \n nnnnnnnnnnn &quot;
+Value of a is
+nnnnnnnnnnn
+
+╭─sam@sam  ~
+╰─$ echo -e &quot;Value of a is \n nnnnnnnnnnn &quot;
+Value of a is
+nnnnnnnnnnn
+</code></pre>
+
+<p>可以使用 echo 命令的 -E 选项禁止转义， -e 选项是转义；<code>默认是不转义的</code>;<br />
+在没有 -E 的情况下,可承认并可以内置替换以下序列:</p>
+
+<pre><code>    \NNN  字符的ASCII代码为NNN(八进制)
+    \\    反斜线
+    \a    报警符(BEL)
+    \b    退格符
+    \c    禁止尾随的换行符
+    \f    换页符
+    \n    换行符
+    \r    回车符
+    \t    水平制表符
+    \v    纵向制表符
+</code></pre>
+
+<h1 id="三-运算符">（三） 运算符</h1>
+
+<h2 id="主要内容">主要内容</h2>
+
+<p>Bash 支持很多运算符，包括</p>
+
+<ul>
+<li>算数运算符<br /></li>
+<li>关系运算符<br /></li>
+<li>布尔运算符<br /></li>
+<li>字符串运算符<br /></li>
+<li>文件测试运算符<br />
+<br /></li>
+</ul>
+
+<!-- more -->
+
+<h2 id="算数运算符">算数运算符</h2>
+
+<p>原生bash不支持简单的数学运算，但是可以通过其他命令来实现，例如 awk 和 expr，expr 最常用。</p>
+
+<p>先来看一个使用算术运算符的例子：</p>
+
+<pre><code>#!/bin/sh
+a=10
+b=20
+
+val=`expr $a + $b`
+echo &quot;a + b : $val&quot;
+
+val=`expr $a - $b`
+echo &quot;a - b : $val&quot;
+
+val=`expr $a \* $b`
+echo &quot;a * b : $val&quot;
+
+val=`expr $b / $a`
+echo &quot;b / a : $val&quot;
+
+val=`expr $b % $a`
+echo &quot;b % a : $val&quot;
+</code></pre>
+
+<p>运行结果：</p>
+
+<pre><code>  a + b : 30
+  a - b : -10
+  a * b : 200
+  b / a : 2
+  b % a : 0
+</code></pre>
+
+<p><code>注意</code> ：</p>
+
+<ul>
+<li>表达式和运算符之间要有空格，例如 2+2 是不对的，必须写成 2 + 2，这与我们熟悉的大多数编程语言不一样。<br /></li>
+<li>完整的表达式要被 ** ` ** 包含，注意这个字符是反引号<br /></li>
+<li>乘号( * )前边必须加反斜杠()才能实现乘法运算；<br />
+<br />
+<br /></li>
+</ul>
+
+<h3 id="算术运算符列表">算术运算符列表</h3>
+
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>说明</th>
+<th>举例</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>+</td>
+<td>加法</td>
+<td><code>expr $a + $b</code> 结果为 30。</td>
+</tr>
+
+<tr>
+<td>-</td>
+<td>减法</td>
+<td><code>expr $a - $b</code> 结果为 10。</td>
+</tr>
+
+<tr>
+<td>*</td>
+<td>乘法</td>
+<td><code>expr $a \* $b</code> 结果为  200。</td>
+</tr>
+
+<tr>
+<td>/</td>
+<td>除法</td>
+<td><code>expr $b / $a</code> 结果为 2。</td>
+</tr>
+
+<tr>
+<td>%</td>
+<td>取余</td>
+<td><code>expr $b % $a</code> 结果为 0。</td>
+</tr>
+
+<tr>
+<td>=</td>
+<td>赋值</td>
+<td>a=$b 将把变量 b 的值赋给 a。</td>
+</tr>
+
+<tr>
+<td>==</td>
+<td>相等。用于比较两个数字，相同则返回 true。</td>
+<td>[ $a == $b ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>!=</td>
+<td>不相等。用于比较两个数字，不相同则返回 true。</td>
+<td>[ $a != $b ] 返回 true。</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="关系运算符">关系运算符</h2>
+
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>说明</th>
+<th>举例</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>-eq</td>
+<td>检测两个数是否相等，相等返回 true。</td>
+<td>[ $a -eq $b ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-ne</td>
+<td>检测两个数是否相等，不相等返回 true。</td>
+<td>[ $a -ne $b ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-gt</td>
+<td>检测左边的数是否大于右边的，如果是，则返回 true。</td>
+<td>[ $a -gt $b ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-lt</td>
+<td>检测左边的数是否小于右边的，如果是，则返回 true。</td>
+<td>[ $a -lt $b ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-ge</td>
+<td>检测左边的数是否大等于右边的，如果是，则返回 true。</td>
+<td>[ $a -ge $b ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-le</td>
+<td>检测左边的数是否小于等于右边的，如果是，则返回 true。</td>
+<td>[ $a -le $b ] 返回 true。</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="布尔运算符">布尔运算符</h2>
+
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>说明</th>
+<th>举例</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>!</td>
+<td>非运算，表达式为 true 则返回 false，否则返回 true。</td>
+<td>[ ! false ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-o</td>
+<td>或运算，有一个表达式为 true 则返回 true。</td>
+<td>[ $a -lt 20 -o $b -gt 100 ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-a</td>
+<td>与运算，两个表达式都为 true 才返回 true。</td>
+<td>[ $a -lt 20 -a $b -gt 100 ] 返回 false。</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="字符串运算符">字符串运算符</h2>
+
+<table>
+<thead>
+<tr>
+<th>运算符</th>
+<th>说明</th>
+<th>举例</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>=</td>
+<td>检测两个字符串是否相等，相等返回 true。</td>
+<td>[ $a = $b ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>!=</td>
+<td>检测两个字符串是否相等，不相等返回 true。</td>
+<td>[ $a != $b ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-z</td>
+<td>检测字符串长度是否为0，为0返回 true。</td>
+<td>[ -z $a ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-n</td>
+<td>检测字符串长度是否为0，不为0返回 true。</td>
+<td>[ -z $a ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>str</td>
+<td>检测字符串是否为空，不为空返回 true。</td>
+<td>[ $a ] 返回 true。</td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="文件测试运算符">文件测试运算符</h2>
+
+<p>文件测试运算符用于检测 Unix 文件的各种属性。</p>
+
+<table>
+<thead>
+<tr>
+<th>操作符</th>
+<th>说明</th>
+<th>举例</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>-b file</td>
+<td>检测文件是否是块设备文件，如果是，则返回 true。</td>
+<td>[ -b $file ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-c file</td>
+<td>检测文件是否是字符设备文件，如果是，则返回 true。</td>
+<td>[ -c $file ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-d file</td>
+<td>检测文件是否是目录，如果是，则返回 true。</td>
+<td>[ -d $file ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-f file</td>
+<td>检测文件是否是普通文件（既不是目录，也不是设备文件），如果是，则返回 true。</td>
+<td>[ -f $file ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-g file</td>
+<td>检测文件是否设置了 SGID 位，如果是，则返回 true。</td>
+<td>[ -g $file ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-k file</td>
+<td>检测文件是否设置了粘着位(Sticky Bit)，如果是，则返回 true。</td>
+<td>[ -k $file ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-p file</td>
+<td>检测文件是否是具名管道，如果是，则返回 true。</td>
+<td>[ -p $file ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-u file</td>
+<td>检测文件是否设置了 SUID 位，如果是，则返回 true。</td>
+<td>[ -u $file ] 返回 false。</td>
+</tr>
+
+<tr>
+<td>-r file</td>
+<td>检测文件是否可读，如果是，则返回 true。</td>
+<td>[ -r $file ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-w file</td>
+<td>检测文件是否可写，如果是，则返回 true。</td>
+<td>[ -w $file ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-x file</td>
+<td>检测文件是否可执行，如果是，则返回 true。</td>
+<td>[ -x $file ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-s file</td>
+<td>检测文件是否为空（文件大小是否大于0），不为空返回 true。</td>
+<td>[ -s $file ] 返回 true。</td>
+</tr>
+
+<tr>
+<td>-e file</td>
+<td>检测文件（包括目录）是否存在，如果是，则返回 true。</td>
+<td>[ -e $file ] 返回 true。</td>
+</tr>
+</tbody>
+</table>
+
+<p>例子：</p>
+
+<pre><code class="language-bash">if [ -r $file ]
+then
+   echo &quot;File has read access&quot;
+else
+   echo &quot;File does not have read access&quot;
+fi
+
+if [ -w $file ]
+then
+   echo &quot;File has write permission&quot;
+else
+   echo &quot;File does not have write permission&quot;
+fi
+
+if [ -x $file ]
+then
+   echo &quot;File has execute permission&quot;
+else
+   echo &quot;File does not have execute permission&quot;
+fi
+
+if [ -f $file ]
+then
+   echo &quot;File is an ordinary file&quot;
+else
+   echo &quot;This is sepcial file&quot;
+fi
+
+if [ -d $file ]
+then
+   echo &quot;File is a directory&quot;
+else
+   echo &quot;This is not a directory&quot;
+fi
+
+if [ -s $file ]
+then
+   echo &quot;File size is zero&quot;
+else
+   echo &quot;File size is not zero&quot;
+fi
+
+if [ -e $file ]
+then
+   echo &quot;File exists&quot;
+else
+   echo &quot;File does not exist&quot;
+fi
+</code></pre>
+
+<h1 id="四-字符串">（四） 字符串</h1>
+
+<h2 id="主要内容-1">主要内容</h2>
+
+<ul>
+<li>字符串拼接<br /></li>
+<li>字符串长度<br /></li>
+<li>字符串截取<br /></li>
+<li>字符串查找<br />
+<br />
+<br /></li>
+</ul>
+
+<p>字符串是shell编程中最常用最有用的数据类型，字符串可以用单引号，也可以用双引号，也可以不用引号。</p>
+
+<p>单引号和双引号的区别 :</p>
+
+<ul>
+<li>单引号之间的内容成为纯文本，取消所有特殊符号的意义；<br /></li>
+<li>双引号仅特殊符号 <strong>$ \ `</strong> 这三个的含义保留。<br />
+<!-- more --><br />
+<br />
+<br /></li>
+</ul>
+
+<h2 id="字符串拼接">字符串拼接</h2>
+
+<pre><code class="language-bash">name=&quot;sam&quot;
+greeting=&quot;hello, &quot;$name&quot; !&quot;
+greeting_1=&quot;hello, ${name} !&quot;
+</code></pre>
+
+<h2 id="字符串长度">字符串长度</h2>
+
+<pre><code class="language-bash">string=&quot;abcd&quot;
+echo ${#string} # 4
+</code></pre>
+
+<h2 id="字符串截取">字符串截取</h2>
+
+<pre><code class="language-bash">string=&quot;Hello world, shell&quot;
+echo ${string:0:4} #输出Hell
+echo ${string:1:4} #输出ello
+echo ${string:1:1} #输出e
+</code></pre>
+
+<h1 id="字符串长度-1">字符串长度</h1>
+
+<pre><code class="language-sh">$(awk 'BEGIN {print length(&quot;'$str'&quot;)}')
+$(expr length $str)
+$(echo &quot;$str&quot; | wc -c)  # 结果多1
+</code></pre>
+
+<h1 id="判断字符串为空">判断字符串为空</h1>
+
+<p>[ &ldquo;$str&rdquo; = &ldquo;&rdquo; ]<br />
+[ -z &ldquo;$str&rdquo; ]</p>
+
+<h1 id="字符串截取-1">字符串截取</h1>
+
+<pre><code class="language-sh">str=&quot;^ababa$&quot;
+echo ${str#*b}   # aba$
+echo ${str##*b}  # a$
+echo ${str%b*}   # ^aba
+echo ${str%%b*}  # ^a
+
+1、第一种方法:
+${varible##*string} 从左-&gt;右截取最后一个string后的字符串
+${varible#*string}从左-&gt;右截取第一个string后的字符串
+${varible%%string*}从右&lt;-左截取最后一个string后的字符串
+${varible%string*}从右&lt;-左截取第一个string后的字符串
+“*”只是一个通配符可以不要
+
+# %  右向左移除 非贪婪匹配
+# %% 右向左移除 贪婪匹配
+# #  左向右移除 非贪婪匹配
+# ## 左向右移除 贪婪匹配
+
+URL=&quot;www.txazo.com&quot;
+echo ${URL%.*}   # www.txazo
+echo ${URL%%.*}  # www
+echo ${URL#*.}   # txazo.com
+echo ${URL##*.} # com
+</code></pre>
+
+<p><code>${string:index:length}</code> , index 从 0 开始。</p>
+
+<h2 id="字符串查找">字符串查找</h2>
+
+<pre><code>string=&quot;alibaba is a great company&quot;
+echo `expr index &quot;$string&quot; is` #3 ， i或s最早出现的地方
+</code></pre>
+
+<p>待找个更好的</p>
+
+<p>#（五） 数组<br />
+主要内容<br />
+bash支持一维数组（不支持多维数组），并且没有限定数组的大小。数组元素的下标由0开始编号。获取数组中的元素要利用下标，下标可以是整数或算术表达式，其值应大于或等于0。</p>
+
+<ul>
+<li>数组定义<br /></li>
+<li>数组读取<br /></li>
+<li>数组长度<br />
+<!-- more --><br />
+<br /></li>
+</ul>
+
+<h2 id="数组定义">数组定义</h2>
+
+<p>在Shell中，用括号来表示数组，数组元素用“空格”符号分割开。定义数组的一般形式为：</p>
+
+<pre><code>  array_name=(value1 ... valuen)
+</code></pre>
+
+<p>例如：</p>
+
+<pre><code>array_name=(value0 value1 value2 value3)
+
+#或者
+array_name=(
+value0
+value1
+value2
+value3
+)
+
+#或者
+array_name[0]=value0
+array_name[1]=value1
+array_name[2]=value2
+#可以不使用连续的下标，而且下标的范围没有限制。
+</code></pre>
+
+<h2 id="数组读取">数组读取</h2>
+
+<p>读取数组元素值的一般格式是：</p>
+
+<pre><code>  ${array_name[index]}
+</code></pre>
+
+<p>例如：</p>
+
+<pre><code>valuen=${array_name[2]}
+</code></pre>
+
+<p>使用 <code>@ 或 *</code> 可以获取数组中的所有元素，例如：</p>
+
+<pre><code>${array_name[*]}
+${array_name[@]}
+</code></pre>
+
+<h2 id="数组长度">数组长度</h2>
+
+<p>获取数组长度的方法与获取字符串长度的方法相同, <code>#</code></p>
+
+<p>例如：</p>
+
+<pre><code># 取得数组元素的个数
+length=${#array_name[@]}
+# 或者
+length=${#array_name[*]}
+# 取得数组单个元素的长度
+lengthn=${#array_name[n]}
+</code></pre>
+
+<h1 id="六-条件判断">（六） 条件判断</h1>
+
+<p>主要内容</p>
+
+<ul>
+<li>if &hellip; else 语句<br /></li>
+<li>case &hellip; esac 语句<br />
+*<br />
+<br /></li>
+</ul>
+
+<!-- more -->
+
+<h2 id="if-else-语句">if &hellip; else 语句</h2>
+
+<p>Shell 有三种 if &hellip; else 语句：</p>
+
+<pre><code>if ... fi 语句；
+if ... else ... fi 语句；
+if ... elif ... else ... fi 语句。
+</code></pre>
+
+<h3 id="if-fi">if &hellip; fi</h3>
+
+<p><code>if ... fi</code> 语句的语法：</p>
+
+<pre><code>if [ expression ]
+then
+  Statement(s) to be executed if expression is true
+fi
+</code></pre>
+
+<p>注意：expression 和方括号([ ])之间必须有空格，否则会有语法错误。</p>
+
+<p>例如：</p>
+
+<pre><code class="language-bash">#!/bin/sh
+a=10
+b=20
+if [ $a == $b ]
+then
+    echo &quot;a is equal to b&quot;
+fi
+if [ $a != $b ]
+then
+    echo &quot;a is not equal to b&quot;
+fi
+</code></pre>
+
+<h3 id="if-else-fi-语句">if &hellip; else &hellip; fi 语句</h3>
+
+<p><code>if ... else ... fi</code> 语句的语法：</p>
+
+<pre><code>if [ expression ]
+then
+  Statement(s) to be executed if expression is true
+else
+  Statement(s) to be executed if expression is not true
+fi
+</code></pre>
+
+<p>例如：</p>
+
+<pre><code class="language-bash">#!/bin/sh
+a=10
+b=20
+
+if [ $a == $b ]
+then
+    echo &quot;a is equal to b&quot;
+else
+    echo &quot;a is not equal to b&quot;
+fi
+</code></pre>
+
+<h3 id="if-elif-fi-语句">if &hellip; elif &hellip; fi 语句</h3>
+
+<p><code>if ... elif ... fi</code> 语句可以对多个条件进行判断，语法为：</p>
+
+<pre><code>if [ expression 1 ]
+then
+  Statement(s) to be executed if expression 1 is true
+
+elif [ expression 2 ]
+then
+  Statement(s) to be executed if expression 2 is true
+
+elif [ expression 3 ]
+then
+  Statement(s) to be executed if expression 3 is true
+
+else
+  Statement(s) to be executed if no expression is true
+fi
+</code></pre>
+
+<p>哪一个 expression 的值为 true，就执行哪个 expression 后面的语句；如果都为 false，那么不执行任何语句。</p>
+
+<p>例如：</p>
+
+<pre><code class="language-bash">#!/bin/sh
+a=10
+b=20
+
+if [ $a == $b ]
+then
+    echo &quot;a is equal to b&quot;
+
+elif [ $a -gt $b ]
+then
+    echo &quot;a is greater than b&quot;
+
+elif [ $a -lt $b ]
+then
+    echo &quot;a is less than b&quot;
+
+else
+    echo &quot;None of the condition met&quot;
+fi
+</code></pre>
+
+<h3 id="test">test</h3>
+
+<p>if &hellip; else 语句也经常与 test 命令结合使用， test 命令用于检查某个条件是否成立，与方括号([ ])类似。</p>
+
+<pre><code class="language-bash">if test $[a] -eq $[b]
+then
+    echo 'The two numbers are equal!'
+else
+    echo 'The two numbers are not equal!'
+fi
+</code></pre>
+
+<h2 id="case-esac-语句">case &hellip; esac 语句</h2>
+
+<p><code>case ... esac</code> 是一种多分枝选择结构。case 语句匹配一个值或一个模式，如果匹配成功，执行相匹配的命令。<br />
+case语句格式如下：</p>
+
+<pre><code>case 值 in
+模式1)
+command1
+command2
+command3
+;;
+
+模式2)
+command1
+command2
+command3
+;;
+
+* )
+command1
+command2
+command3
+;;
+esac
+</code></pre>
+
+<p>取值后面必须为关键字 in，每一模式必须以右括号结束。取值可以为变量或常数。匹配发现取值符合某一模式后，其间所有命令开始执行直至 ;;。<br />
+取值将检测匹配的每一个模式。一旦模式匹配，则执行完匹配模式相应命令后不再继续其他模式。如果无一匹配模式，使用星号 * 捕获该值，再执行后面的命令。</p>
+
+<p>例如：</p>
+
+<pre><code class="language-bash">echo 'Input a number between 1 to 4'
+echo 'Your number is:\c'
+read num
+case $num in
+    1)  echo 'You select 1'
+    ;;
+    2)  echo 'You select 2'
+    ;;
+    3)  echo 'You select 3'
+    ;;
+    4)  echo 'You select 4'
+    ;;
+    *)  echo 'You do not select a number between 1 to 4'
+    ;;
+esac
+</code></pre>
+
+<pre><code class="language-bash">option=&quot;${1}&quot;
+
+case ${option} in
+
+   -f) FILE=&quot;${2}&quot;
+      echo &quot;File name is $FILE&quot;
+      ;;
+   -d) DIR=&quot;${2}&quot;
+      echo &quot;Dir name is $DIR&quot;
+      ;;
+   *)
+      echo &quot;`basename ${0}`:usage: [-f file] | [-d directory]&quot;
+      exit 1 # Command to come out of the program with status 1
+      ;;
+esac
+</code></pre>
+
+<h2 id="扩展">扩展 (())</h2>
+
+<p>条件测试使用 <code>[]</code> 时候，必须保证运算符与算数之间有空格。四则运算也只能借助：expr命令完成。 双括号 <code>(())</code> 结构语句，可以扩展shell中算数及赋值运算。</p>
+
+<p>使用方法：</p>
+
+<p>语法：</p>
+
+<p>（（表达式1,表达式2…））</p>
+
+<p>特点：</p>
+
+<p>1、在双括号结构中，所有表达式可以像c语言一样，如：a++,b&ndash;等。 a=a+1</p>
+
+<p>2、在双括号结构中，所有变量可以不加入：“$”符号前缀。</p>
+
+<p>3、双括号可以进行逻辑运算，四则运算</p>
+
+<p>4、双括号结构 扩展了for，while,if条件测试运算</p>
+
+<p>5、支持多个表达式运算，各个表达式之间用逗号“，”分开</p>
+
+<h1 id="七-循环">（七） 循环</h1>
+
+<p>主要内容</p>
+
+<ul>
+<li>for循环<br /></li>
+<li>while循环<br /></li>
+<li>until循环<br /></li>
+<li>跳出循环<br />
+<!-- more --><br />
+<br />
+<br /></li>
+</ul>
+
+<h2 id="for循环">for循环</h2>
+
+<p>for循环一般格式为：</p>
+
+<pre><code>for 变量 in 列表
+do
+command1
+command2
+...
+commandN
+done
+</code></pre>
+
+<p>列表是一组值（数字、字符串等）组成的序列，每个值通过空格分隔。每循环一次，就将列表中的下一个值赋给变量。<br />
+<code>in</code> 列表是可选的，如果不用它，for 循环使用命令行的位置参数。</p>
+
+<ul>
+<li>例一<br />
+顺序输出当前列表中的数字：<br />
+<br /></li>
+</ul>
+
+<pre><code>for loop in 1 2 3 4 5
+do
+    echo &quot;The value is: $loop&quot;
+done
+</code></pre>
+
+<ul>
+<li>例二<br />
+顺序输出字符串中的字符：<br />
+<br /></li>
+</ul>
+
+<pre><code>for str in 'This is a string'
+do
+    echo $str
+done
+</code></pre>
+
+<ul>
+<li>例三<br />
+显示主目录下以 .bash 开头的文件：<br />
+<br /></li>
+</ul>
+
+<pre><code>#!/bin/bash
+for FILE in $HOME/.bash*
+do
+    echo $FILE
+done
+</code></pre>
+
+<h2 id="while循环">while循环</h2>
+
+<p>while循环用于不断执行一系列命令，也用于从输入文件中读取数据；命令通常为测试条件，条件为真时继续循环。其格式为：</p>
+
+<pre><code>while command
+do
+  Statement(s) to be executed if command is true
+done
+</code></pre>
+
+<ul>
+<li>例一<br />
+COUNTER计数<br />
+<br /></li>
+</ul>
+
+<pre><code>COUNTER=0
+while [ $COUNTER -lt 5 ]
+do
+    COUNTER='expr $COUNTER+1'
+    echo $COUNTER
+done
+</code></pre>
+
+<ul>
+<li>例二<br />
+读取键盘信息，按<Ctrl-D>结束循环。<br />
+<br /></li>
+</ul>
+
+<pre><code>echo 'type &lt;CTRL-D&gt; to terminate'
+echo -n 'enter your most liked film: '
+while read FILM
+do
+    echo &quot;Yeah! great film the $FILM&quot;
+done
+</code></pre>
+
+<h2 id="until循环">until循环</h2>
+
+<p>until 循环执行一系列命令直至条件为 true 时停止。until 循环与 while 循环在处理方式上刚好相反。<br />
+command 一般为条件表达式，如果返回值为 false，则继续执行循环体内的语句，否则跳出循环。<br />
+until 循环格式为：</p>
+
+<pre><code>until command
+do
+  Statement(s) to be executed until command is true
+done
+</code></pre>
+
+<ul>
+<li>例<br />
+输出 0 ~ 9<br />
+<br /></li>
+</ul>
+
+<pre><code>a=0
+until [ ! $a -lt 10 ]
+do
+   echo $a
+   a=`expr $a + 1`
+done
+</code></pre>
+
+<h2 id="跳出循环">跳出循环</h2>
+
+<p>在循环过程中，有时候需要在未达到循环结束条件时强制跳出循环，Shell也使用 break 和 continue 来跳出循环。</p>
+
+<h3 id="break">break</h3>
+
+<p>break命令允许跳出本层所有循环（终止执行后面的所有循环）</p>
+
+<p><code>break n</code> 表示跳出第 n 层循环。</p>
+
+<p>例如：</p>
+
+<pre><code class="language-bash">    for var1 in 1 2 3
+    do
+       for var2 in 0 5
+       do
+          if [ $var1 -eq 2 -a $var2 -eq 0 ]
+          then
+             break 2
+          else
+             echo &quot;$var1 $var2&quot;
+          fi
+       done
+    done
+</code></pre>
+
+<p>如上，break 2 表示直接跳出外层循环。</p>
+
+<h3 id="continue">continue</h3>
+
+<p>continue命令与break命令类似，只有一点差别，它不会跳出所有循环，仅仅跳出当前循环。<br />
+<code>continue n</code> 表示跳出第 n 层循环。</p>
+
+<h1 id="八-函数-文件包含-转码工具">（八） 函数, 文件包含, 转码工具</h1>
+
+<p>主要内容</p>
+
+<ul>
+<li>函数<br /></li>
+<li>文件包含<br /></li>
+<li>转码工具<br />
+<!-- more  --><br />
+<br /></li>
+</ul>
+
+<h2 id="函数">函数</h2>
+
+<p>函数可以将一个复杂功能划分成若干模块，让程序结构更加清晰，代码重复利用率更高。函数必须先定义后使用。</p>
+
+<h3 id="函数定义">函数定义</h3>
+
+<p>定义格式如下：</p>
+
+<pre><code>function function_name () {
+list of commands
+[ return value ]
+}
+</code></pre>
+
+<p>或</p>
+
+<pre><code>function_name () {
+list of commands
+[ return value ]
+}
+</code></pre>
+
+<p><code>function</code> 可以省略，清晰起见，还是建议加上。</p>
+
+<h3 id="函数返回值">函数返回值</h3>
+
+<ul>
+<li>函数可以显式增加return语句；如果不加，会将最后一条命令运行结果作为返回值。<br /></li>
+<li>Shell 函数返回值只能是整数，一般用来表示函数执行成功与否，0表示成功，其他值表示失败。如果 return 其他数据，比如一个字符串，往往会得到错误提示：“numeric argument required”。<br /></li>
+<li>如果一定要让函数返回字符串，那么可以先定义一个变量，用来接收函数的计算结果，脚本在需要的时候访问这个变量来获得函数返回值。<br />
+<br /></li>
+</ul>
+
+<p>例：</p>
+
+<pre><code>#!/bin/bash
+funWithReturn(){
+    echo &quot;The function is to get the sum of two numbers...&quot;
+    echo -n &quot;Input first number: &quot;
+    read aNum
+    echo -n &quot;Input another number: &quot;
+    read anotherNum
+    echo &quot;The two numbers are $aNum and $anotherNum !&quot;
+    return $(($aNum+$anotherNum))
+}
+funWithReturn
+# Capture value returnd by last command
+ret=$?
+echo &quot;The sum of two numbers is $ret !&quot;
+</code></pre>
+
+<h3 id="函数删除">函数删除</h3>
+
+<p>删除函数也可以使用 unset 命令，不过要加上 .f 选项，如下所示：</p>
+
+<pre><code>$unset .f function_name
+</code></pre>
+
+<h3 id="函数调用">函数调用</h3>
+
+<p>调用只需要给出函数名，不需要加括号。</p>
+
+<pre><code># Define your function here
+Hello () {
+   echo &quot;Url is http://giveme5.top&quot;
+}
+# Invoke your function
+Hello
+</code></pre>
+
+<h3 id="函数参数">函数参数</h3>
+
+<p>调用函数时可以向其传递参数。在函数体内部，通过 $n 的形式来获取参数的值，例如，$1表示第一个参数，$2表示第二个参数&hellip;<br />
+注意，当n&gt;=10时，需要使用 <code>${n}</code> 来获取参数。 获取第十个参数需要 <code>${10}</code> ， $10 不能获取第十个参数。</p>
+
+<p>例如：</p>
+
+<pre><code class="language-bash">#!/bin/bash
+funWithParam(){
+    echo &quot;The value of the first parameter is $1 !&quot;
+    echo &quot;The value of the second parameter is $2 !&quot;
+    echo &quot;The value of the tenth parameter is $10 !&quot;
+    echo &quot;The value of the tenth parameter is ${10} !&quot;
+    echo &quot;The value of the eleventh parameter is ${11} !&quot;
+    echo &quot;The amount of the parameters is $# !&quot;  # 参数个数
+    echo &quot;The string of the parameters is $* !&quot;  # 传递给函数的所有参数
+}
+funWithParam 1 2 3 4 5 6 7 8 9 34 73
+</code></pre>
+
+<p>输出：</p>
+
+<pre><code>he value of the first parameter is 1 !
+The value of the second parameter is 2 !
+The value of the tenth parameter is 10 !
+The value of the tenth parameter is 34 !
+The value of the eleventh parameter is 73 !
+The amount of the parameters is 12 !
+The string of the parameters is 1 2 3 4 5 6 7 8 9 34 73 !&quot;
+</code></pre>
+
+<p>另外：<br />
+几个特殊变量用来处理参数（<a href="//blog.pytool.com/2015/12/25/linux/xuegodLinux/godLinux1-24-28-shell/godLinux1-24/#特殊变量">更多特殊变量</a>）：</p>
+
+<table>
+<thead>
+<tr>
+<th>特殊变量</th>
+<th>说明</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>$#</td>
+<td>传递给函数的参数个数。</td>
+</tr>
+
+<tr>
+<td>$*</td>
+<td>显示所有传递给函数的参数。</td>
+</tr>
+
+<tr>
+<td>$@</td>
+<td>与$*相同，但是略有区别，请查看<a href="//blog.pytool.com/2015/12/25/linux/xuegodLinux/godLinux1-24-28-shell/godLinux1-24/#特殊变量">更多特殊变量</a>。</td>
+</tr>
+
+<tr>
+<td>$?</td>
+<td>函数的返回值。</td>
+</tr>
+</tbody>
+</table>
+
+<p><br><br></p>
+
+<h4 id="shift">shift</h4>
+
+<p>shift: 参数左移指令, 每执行一次，参数序列顺次左移一个位置，$#的值减1，用于分别处理每个参数，移出去的参数，不再可用。<br />
+<img src="http://7xklqw.com1.z0.glb.clouddn.com/sh_shift.png" alt="" /></p>
+
+<p>例：<br />
+加法计算器，通过 <code>shift</code> 指令使参数左移，求出所有参数的和</p>
+
+<pre><code class="language-bash">#!/bin/bash
+if [ $# -le 0 ]
+then
+	echo &quot;err!:Not enough parameters&quot;
+exit  124
+fi
+sum=0
+while [ $# -gt 0 ]
+do
+sum=`expr $sum + $1`
+
+shift #参数左移
+
+done
+echo $sum
+</code></pre>
+
+<h2 id="文件包含">文件包含</h2>
+
+<p>文件包含即将外部脚本的内容合并到当前脚本。</p>
+
+<p>可以使用：</p>
+
+<pre><code>. filename
+</code></pre>
+
+<p>或</p>
+
+<pre><code>source filename
+</code></pre>
+
+<p>两种方式的效果相同，简单起见，一般使用点号(.)，但是注意点号(.)和文件名中间有一空格。</p>
+
+<p>例如：<br />
+创建两个脚本，一个是被调用脚本 subscript.sh，内容如下：</p>
+
+<pre><code>    url=&quot;http://see.xidian.edu.cn/cpp/view/2738.html&quot;
+</code></pre>
+
+<p>一个是主文件 main.sh，内容如下：</p>
+
+<pre><code>    #!/bin/bash
+    . ./subscript.sh
+    echo $url
+</code></pre>
+
+<p>注意：被包含脚本不需要有执行权限。</p>
+
+<h2 id="dos2unix">dos2unix</h2>
+
+<p>由于编码问题，在windows中开发的脚本导入到Linux系统后执行报错，主要是因为在windows开发保存时没注意编码（UTF8）和换行符（LF）。<br />
+在Linux中可以用工具dos2unix解决。</p>
+
+<ul>
+<li><p>安装<br />
+  [root@localhost test]#rpm -ivh /mnt/Packages/dos2unix-6.0.3-4.el7.x86_64.rpm</p></li>
+
+<li><p>使用<br />
+  [root@localhost ]# dos2unix test.sh<br />
+  dos2unix: converting file test.sh to Unix format &hellip;</p></li>
+</ul>
+
+<h1 id="九-色彩">（九） 色彩</h1>
+
+<p>主要内容</p>
+
+<ul>
+<li>色彩<br />
+<br /></li>
+</ul>
+
+<h2 id="色彩">色彩</h2>
+
+<p>shell脚本中echo显示内容带颜色显示,echo显示带颜色，需要使用参数-e开启转义</p>
+
+<ul>
+<li><p>格式</p>
+
+<p>echo -e &ldquo;\033[字背景颜色;文字颜色m字符串\033[0m&rdquo;</p></li>
+</ul>
+
+<p><code>\033[</code> 是固定语法; <code>0m</code> 是清除所有格式</p>
+
+<p>例：<br />
+  <img src="http://7xklqw.com1.z0.glb.clouddn.com/shellColor1.png" alt="" /><br />
+  其中42的位置代表底色，31的位置代表的是字的颜色</p>
+
+<p>注：</p>
+
+<pre><code>1、字背景颜色和文字颜色之间是英文的&quot;;&quot;
+2、文字颜色后面有个m
+3、字符串前后可以没有空格，如果有的话，输出也是同样有空格
+</code></pre>
+
+<ul>
+<li>颜色定义<br />
+<br /></li>
+</ul>
+
+<p>可以自己来尝试找出不同颜色搭配<br />
+  <img src="http://7xklqw.com1.z0.glb.clouddn.com/shellColor2.png" alt="" /><br />
+  <img src="http://7xklqw.com1.z0.glb.clouddn.com/shellColor3.png" alt="" /></p>
+
+<ul>
+<li><p>最后面控制选项说明</p>
+
+<p>\33[0m 关闭所有属性<br />
+  \33[1m 设置高亮度<br />
+  \33[4m 下划线<br />
+  \33[5m 闪烁<br />
+  \33[7m 反显<br />
+  \33[8m 消隐<br />
+  \33[30m — \33[37m 设置前景色<br />
+  \33[40m — \33[47m 设置背景色<br />
+  \33[nA 光标上移n行<br />
+  \33[nB 光标下移n行<br />
+  \33[nC 光标右移n行<br />
+  \33[nD 光标左移n行<br />
+  \33[y;xH设置光标位置<br />
+  \33[2J 清屏<br />
+  \33[K 清除从光标到行尾的内容<br />
+  \33[s 保存光标位置<br />
+  \33[u 恢复光标位置<br />
+  \33[?25l 隐藏光标<br />
+  \33[?25h 显示光标</p></li>
+</ul>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/linux/shell/shell%E5%9F%BA%E7%A1%80/">blog.pytool.com/linux/shell/shell%E5%9F%BA%E7%A1%80/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/linux/shell/shell%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%88%AA%E5%8F%96/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>shell中的字符串截取</span>
+      </a>
+      
+  </li>
+</ul>
+
+    
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(65)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    
+    
+     
+  
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a rel="nofollow" class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+   
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/linux/shell/2017-11-07-shell%E6%9D%A1%E4%BB%B6%E5%88%A4%E6%96%AD/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>shell条件判断</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-2.5" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-2.5" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-2.5" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/android/" class="tag-link-2.5" title="1 Posts">android<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-5.5" title="1 Posts">ansible<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/apt/" class="tag-link-2.5" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-2.5" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-2.5" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-2.5" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-2.5" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-3.5" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-2.5" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-2.5" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-2.5" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-2.5" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-2.5" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-2.5" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-2.5" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-2.5" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-2.5" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-3.5" title="1 Posts">centos7<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link-2.5" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-2.5" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coreos/" class="tag-link-2.5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-2.5" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-2.5" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-13.5" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-2.5" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-2.5" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curd/" class="tag-link-4.5" title="1 Posts">curd<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-3.5" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-2.5" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-2.5" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-2.5" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-2.5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-2.5" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-2.5" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-14.5" title="1 Posts">docker<small>(13)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-2.5" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link-2.5" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-13.5" title="1 Posts">emacs<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-2.5" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-3.5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/etcd/" class="tag-link-2.5" title="1 Posts">etcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-2.5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expr/" class="tag-link-2.5" title="1 Posts">expr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/extundelete/" class="tag-link-2.5" title="1 Posts">extundelete<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-2.5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-2.5" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-2.5" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-2.5" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-2.5" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gdb/" class="tag-link-2.5" title="1 Posts">gdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-2.5" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-2.5" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link-2.5" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-59.5" title="1 Posts">golang<small>(58)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-2.5" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-2.5" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-2.5" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-3.5" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-2.5" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-2.5" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-2.5" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-2.5" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-2.5" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-10.5" title="1 Posts">hugo<small>(9)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-2.5" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-2.5" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-2.5" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-3.5" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/index/" class="tag-link-2.5" title="1 Posts">index<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-2.5" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-2.5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-2.5" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-2.5" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-11.5" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-2.5" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-5.5" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-2.5" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-7.5" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/join/" class="tag-link-2.5" title="1 Posts">join<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/js/" class="tag-link-2.5" title="1 Posts">js<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/key/" class="tag-link-2.5" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-7.5" title="1 Posts">linux<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-2.5" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-2.5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-2.5" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-2.5" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lunr/" class="tag-link-2.5" title="1 Posts">lunr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-2.5" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-3.5" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-9.5" title="1 Posts">mariadb<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-2.5" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-2.5" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-2.5" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-2.5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-8.5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-3.5" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-2.5" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-44.5" title="1 Posts">mysql<small>(43)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/navicat64/" class="tag-link-2.5" title="1 Posts">navicat64<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-2.5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-2.5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-2.5" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-2.5" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-28.5" title="1 Posts">nginx<small>(27)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-4.5" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-2.5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-3.5" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ntp/" class="tag-link-2.5" title="1 Posts">ntp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-2.5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-2.5" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-2.5" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-3.5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pdf/" class="tag-link-2.5" title="1 Posts">pdf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/perf/" class="tag-link-2.5" title="1 Posts">perf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-4.5" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-2.5" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-3.5" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prepare/" class="tag-link-2.5" title="1 Posts">prepare<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prometheus/" class="tag-link-6.5" title="1 Posts">prometheus<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-2.5" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-6.5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-2.5" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-2.5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-2.5" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-2.5" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-2.5" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-5.5" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-2.5" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-2.5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-2.5" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-2.5" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-3.5" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-2.5" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-2.5" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-2.5" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-2.5" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-2.5" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-9.5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-4.5" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-2.5" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-2.5" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-7.5" title="1 Posts">shell<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-2.5" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-2.5" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-4.5" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-2.5" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-2.5" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-2.5" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-6.5" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/strace/" class="tag-link-2.5" title="1 Posts">strace<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-2.5" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-2.5" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-2.5" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-2.5" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-2.5" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysbench/" class="tag-link-3.5" title="1 Posts">sysbench<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysctlcd/" class="tag-link-2.5" title="1 Posts">sysctlcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-2.5" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-2.5" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-3.5" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/telegraf/" class="tag-link-2.5" title="1 Posts">telegraf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-2.5" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-3.5" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-2.5" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-2.5" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-2.5" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-3.5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-3.5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-2.5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-2.5" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-2.5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link-2.5" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-2.5" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-12.5" title="1 Posts">vim<small>(11)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link-2.5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-2.5" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-3.5" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-2.5" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-2.5" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-2.5" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-3.5" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xargs/" class="tag-link-2.5" title="1 Posts">xargs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-3.5" title="1 Posts">xidel<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-3.5" title="1 Posts">xml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-2.5" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-2.5" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-3.5" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/zabbix/" class="tag-link-2.5" title="1 Posts">zabbix<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2.5" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link-2.5" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link-2.5" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+</body>
+</html>
+

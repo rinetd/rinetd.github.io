@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<title>Prometheus 原理和源码分析 - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="Prometheus（下称 Prom）是一个基于 Metrics 的监控系统，与 Kubernetes 同属 CNCF（Cloud Native Computing Foundation），它已经成为炙手可热的 Kubernetes 生">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Prometheus 原理和源码分析 - 时光小栈">
+<meta itemprop="description" content="Prometheus（下称 Prom）是一个基于 Metrics 的监控系统，与 Kubernetes 同属 CNCF（Cloud Native Computing Foundation），它已经成为炙手可热的 Kubernetes 生">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Prometheus 原理和源码分析 - 时光小栈" />
+<meta property="og:description" content="Prometheus（下称 Prom）是一个基于 Metrics 的监控系统，与 Kubernetes 同属 CNCF（Cloud Native Computing Foundation），它已经成为炙手可热的 Kubernetes 生">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/post/prometheus/promql/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+<link rel="canonical" href="//blog.pytool.com/post/prometheus/promql/">
+<link rel='shortlink' href="//blog.pytool.com/post/prometheus/promql/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/awesome/">Awesome</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/database/">Database</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/devops/">Devops</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/frontend/">Frontend</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/language/">Language</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/software/">Software</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/windows/">Windows</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/post/">Post</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/about/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    
+    
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+          
+        
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                
+                  <li><a href="//blog.pytool.com/tags/prometheus">Prometheus</a> </li>
+                
+                  <li><a href="//blog.pytool.com/tags/docker">docker</a> </li>
+                
+              </ul>
+
+
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Prometheus 原理和源码分析</h1>
+
+                  <p class="post-byline">
+                    by  · 2018年01月03日 17:17:45 · 5838 Words ·
+                    ~12min reading time |
+                    
+                    
+                    <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/prometheus/promQL.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      <p>Prometheus（下称 Prom）是一个基于 Metrics 的监控系统，与 Kubernetes 同属 CNCF（Cloud Native Computing Foundation），它已经成为炙手可热的 Kubernetes 生态圈中的核心监控系统，越来越多的项目（如 Kubernetes 和 etcd 等 ）都加入了丰富的 Prom 原生支持，从侧面体现了社区对它的认可。</p>
+
+<p>Prom 提供了通用的数据模型和便捷的数据采集、存储和查询接口，同时基于 Go 实现也大大降低了服务端的运维成本，可以借助一些优秀的图形化工具（如 Grafana）可以实现友好的图形化和报警。</p>
+
+<p>实际使用中笔者发现工程人员中普遍存在对 Prom 中客户端数据模型和 PromQL 计算逻辑的误解，不但很难将数据中的价值发挥出来，还可能出现误判。本文分析了客户端和服务端的部分源码实现，介绍了客户端数据模型和 PromQL 计算逻辑，希望能为基于 Prom 的监控平台提供一些启发。<br />
+Go 客户端</p>
+
+<p>Go 客户端实现了 Prom 数据协议，定义了时序数据模型和采集监控数据的接口（源码分析基于 <a href="https://github.com/prometheus/client_golang/tree/661e31bf844dfca9aeba15f27ea8aa0d485ad212）。" target="_blank">https://github.com/prometheus/client_golang/tree/661e31bf844dfca9aeba15f27ea8aa0d485ad212）。</a><br />
+整体结构分析</p>
+
+<p>无论是 Prom 拉取 (pull) 数据，还是客户端主动推送 (push) 数据，都可以从 Collector 获取 Metric 的定义，图 1.1.1 中 UML 图描述了 Go 客户端中主要结构和接口之间的关系。</p>
+
+<p>图 1.1.1 Go 客户端 UML 图</p>
+
+<p>先看 Collector 接口的定义，如图 1.1.2 所示。</p>
+
+<p>图 1.1.2 Collector</p>
+
+<p>Collector 中 Describe 和 Collect 方法都是无状态的函数，其中 Describe 暴露全部可能的 Metric 描述列表，在注册（Register）或注销（Unregister）Collector 时会调用 Describe 来获取完整的 Metric 列表，用以检测 Metric 定义的冲突，另外在 github.com/prometheus/client_golang/prometheus/promhttp 下的 Instrument Handler 中，也会通过 Describe 获取 Metric 列表，并检查 label 列表（InstrumentHandler 中只支持 code 和 method 两种自定义 label）；而通过 Collect 可以获取采样数据，然后通过 HTTP 接口暴露给 Prom Server。另外，一些临时性的进程，如批处理任务，可以把数据 push 到 Push Gateway，由 Push Gateway 暴露 pull 接口，此处不赘述。</p>
+
+<p>客户端对数据的收集大多是针对标准数据结构来进行的：</p>
+
+<pre><code>Counter：收集事件次数等单调递增的数据
+Gauge：收集当前的状态，比如数据库连接数
+Histogram：收集随机正态分布数据，比如响应延迟
+Summary：收集随机正态分布数据，和 Histogram 是类似的
+</code></pre>
+
+<p>每种标准数据结构还对应了 Vec 结构，通过 Vec 可以简洁的定义一组相同性质的 Metric，在采集数据的时候传入一组自定义的 Label/Value 获取具体的 Metric（Counter/Gauge/Histogram/Summary），最终都会落实到基本的数据结构上，这里不再赘述。<br />
+Counter 和 Gauge</p>
+
+<p>Gauge 和 Counter 基本实现上看是一个进程内共享的浮点数，基于 value 结构实现，而 Counter 和 Gauge 仅仅封装了对这个共享浮点数的各种操作和合法性检查逻辑。</p>
+
+<p>先看 Counter 中 Inc 函数的实现，图 1.2.1 为 value 结构中 Inc 函数的实现。</p>
+
+<p>图 1.2.1 value.Inc</p>
+
+<p>value.Add 中修改共享数据时采用了“无锁”实现，相比“有锁 (Mutex)”实现可以更充分利用多核处理器的并行计算能力，性能相比加 Mutex 的实现会有很大提升。图 1.2.2 中是 Go Benchmark 的测试结果，对比了“有锁”（用 defer 或不用 defer 来释放锁）和“无锁”实现在多核场景下对性能的影响。</p>
+
+<p>图 1.2.2 Go Benchmark 测试结果</p>
+
+<p>注意图 1.2.2 中针对“有锁”的实现，进行了两组实验，其中一组用 defer 来释放锁，可见在多核场景下“无锁”实现的性能最好也最稳定。</p>
+
+<p>Counter 和 Gauge 中的其他操作都很简单，不赘述。<br />
+Histogram</p>
+
+<p>Histogram 实现了 Observer 接口，用来获取客户端状态初始化（重启）到某个时间点的采样点分布，监控数据常需要服从正态分布。</p>
+
+<p>图 1.3.1 Oberver 接口定义</p>
+
+<p>先看通过 Histogram 采集一个 float64 数据的 Observe 方法实现（图 1.3.2）。</p>
+
+<p>图 1.3.2 histogram.Observe</p>
+
+<p>此处每个 bucket 对应的 count 是不互相包含的，bucket 的计数器之和应该等于全局计数器，即 h.count == sum(h.counts) 是成立的。然而为了便于服务端存储和计算，最终服务端收集到的数据是向下包含的，这是在 histogram.Write（图 1.3.3）中实现的。</p>
+
+<p>图 1.3.3 histogram.Write 实现</p>
+
+<p>图 1.3.4 中用表格形式给出了 Histogram 采集和整理数据的过程。</p>
+
+<p>图 1.3.4 Histogram 采集整理数据过程实例</p>
+
+<p>Histogram 在客户端也是无锁的，因为每个采样点只更新一个具体 bucket 内的 Counter（float64），因此客户端性能开销相比 Counter 和 Gauge 而言没有明显改变，适合高并发的数据收集。</p>
+
+<p>图 1.3.5 为 Go 客户端的 Histogram 默认 bucket 设置，可以用来采集 Web 服务响应时间，实际应用中通常需要为监控对象选择合理的 buckets，buckets 应设置为正态分布中常用的分位点。</p>
+
+<p>图 1.3.5 histogram 默认 buckets 设置</p>
+
+<p>Summary</p>
+
+<p>Summary 是标准数据结构中最复杂的一个，用来收集服从正态分布的采样数据。在 Go 客户端 Summary 结构和 Histogram 一样，都实现了 Observer 接口（图 1.3.1）。</p>
+
+<p>Summary 中 quantile 实际上是正态分布中的分位点 ，如图 1.4.1 所示，图中的实心圆点分别代表 [0.025 0.25 0.50 0.75 0.975] 分位点，图 2.1.10 中 0.5 分位点的采样数据为 0，而 0.975 分位点的采样值为 2，这说明采样数据的绝大部分的峰值都在 2 附近。</p>
+
+<p>图 1.4.1 随机正态分布数据的 Quantile 逼近仿真</p>
+
+<p>由于 Summary 结构的客户端实现相比其他几个结构而言复杂一些，先看一下 summary 结构的定义（图 1.4.2）。</p>
+
+<p>图 1.4.2 summary 定义</p>
+
+<p>Summary 会将采集到的数据经过正态分布逼近得出对应分位点的采样数据，数据流如图 1.4.3 所示。</p>
+
+<p>图 1.4.3 Summary 数据流</p>
+
+<p>接下来看 summary.Observe 实现，图 1.4.4 和 1.4.5 中加入了代码逻辑的注解。</p>
+
+<p>图 1.4.4 summary.Observe 实现</p>
+
+<p>图 1.4.5 summary.asyncFlush 的实现</p>
+
+<p>再看 summary.Write 实现，图 1.4.6 中加入了代码逻辑的注解。</p>
+
+<p>图 1.4.6 summary.Write 实现</p>
+
+<p>集成优化建议</p>
+
+<p>客户端集成时，需要关注采集监控数据对程序性能和可靠性的影响，同时也需要关注数据完备性，即采集到的数据应完整、正确地反映监控对象的状态和变化，笔者提出以下两点思路：</p>
+
+<pre><code>为监控对象定义“恰当”的监控数据集，“恰当”要求在详细设计阶段梳理并细化整个监控对象，不引入多余的监控数据，也不应该出现监控盲点
+根据每个监控数据的实际情况选择合理的数据结构
+</code></pre>
+
+<p>Go 客户端为 HTTP 层的集成提供了方便的 API，但使用中需要注意不要使用 github.com/prometheus/client_golang/prometheus 下定义的已经 deprecated 的 Instrument 函数（如图 1.5.1 中注释部分），除了会引入额外（通常不需要）的监控数据，不仅会对程序性能造成不利影响，而且可能存在危险的 race（如计算请求大小时存在 goroutine 并发地访问 Header 逻辑）。</p>
+
+<p>图 1.5.1 InstrumentHandler(Deprecated)</p>
+
+<p>Go 客户端在后续的版本中给出了优化的 API，即 github.com/prometheus/client_golang/prometheus/promhttp 下的实现，为 HTTP Handler 的不同监控数据定义了独立的 InstrumentHandlerXXX（图 1.5.2），让监控数据集保持灵活可控，完全规避了图 1.5.1 中提到的几个问题。</p>
+
+<p>图 1.5.2 promhttp 下的 InstrumentHandlerXXX</p>
+
+<p>另外一个难点是根据实际使用场景，从 Histogram 和 Summary 中作出选择以及给予合理的初始化配置。</p>
+
+<p>Histogram 常使用 histogram_quantile 执行数据分析， histogram_quantile 函数通过分段线性近似模型逼近采样数据分布的 UpperBound（如图 1.5.3），误差是比较大的，其中红色曲线为实际的采样分布（正态分布），而实心圆点是 Histogram 的 bucket(0.01 0.25 0.50 0.75 0.95)，当求解 0.9 quantile 的采样值时会用 (0.75, 0.95) 两个相邻的的 bucket 来线性近似。</p>
+
+<p>图 1.5.3 histogram_quantile 逼近正态分布</p>
+
+<p>而 Summary 的分位点是客户端预先定义好的，已知分位点可以求该分位点的采样值，相比 Histogram 而言能更准确地获取分位点的采样值。</p>
+
+<p>当然，Summary 精度高的代价是在客户端增加了额外的计算开销，而且 Summary 结构有频繁的全局锁操作，对高并发程序性能存在一定影响，图 1.5.4 是对 Histogram 和 Summary 分析 Benchmark 的结果，Observe 和 Write 操作都有着指数级别的差异，需要结合实际应用场景作出选择。</p>
+
+<p>图 1.5.4 Histogram 和 Summary Benchmarking</p>
+
+<p>PromQL</p>
+
+<p>PromQL 是 Prom 中的查询语言，提供了简洁的、贴近自然语言的语法实现时序数据的分析计算。</p>
+
+<p>表达式（Expression）是其中承载数据计算逻辑的部分，对表达式的准确理解有助于充分利用 promql 提供的计算和分析能力，本节先结合一个相对复杂的表达式来介绍 PromQL 的计算过程，然后对部分有代表性的函数实现进行了源码分析。<br />
+计算过程</p>
+
+<p>PromQL 表达式输入是一段文本，Prom 会解析这段文本，将它转化为一个结构化的语法树对象，进而实现相应的数据计算逻辑，这里选用一个相对比较复杂的表达式为例：</p>
+
+<pre><code>sum(avg_over_time(go_goroutines{job=&quot;prometheus&quot;}[5m])) by (instance)
+</code></pre>
+
+<p>上述表达式可以从外往内分解为三层：</p>
+
+<pre><code>sum(…) by (instance)：序列纵向分组合并序列（包含相同的 instance 会分配到一组）
+avg_over_time(…)
+go_goroutines{job=&quot;prometheus&quot;}[5m]
+</code></pre>
+
+<p>调用 Prom Restful API 查询表达式计算工作流如图 2.1.1 所示，请求数据的时候给出的 step 参数就是这里的 interval，它设定结果中相邻两个点的间隔，对 promql 的每次 evaluator 都是针对某个确定的时间点和 statement 来计算的，得到一个 vector（时间戳相同的向量）。Prom 可以将异构（时间戳不一致）的多维时间序列经过计算转化为同构（时间戳一致）的多维时间序列。</p>
+
+<p>图 2.1.1 Restful API 查询表达式计算工作流</p>
+
+<p>先看 go_goroutines{job=&ldquo;prometheus&rdquo;}[5m] 的计算，这是一个某个时间点的 MatrixSelector 对象（图 2.1.2）。</p>
+
+<p>图 2.1.2 MatrixSelector 计算 go_goroutines{job=&ldquo;prometheus&rdquo;}[5m]</p>
+
+<p>此处 iterator 是序列筛选结果的顺序访问接口，图 2.1.2 中获取某个时间点往前的一段历史数据，这是一个二维矩阵 (matrix)，进而由外层函数将这段历史数据汇总成一个 vector（图 2.1.3）。</p>
+
+<p>值得一提的是，很多函数（如 rate）都需要传入 matrix，尽管如此，这些函数的输出依然是针对某个时间点的 vector，它仅仅是在计算某个时间点的 vector 时考察了一部分历史数据而已。</p>
+
+<p>图 2.1.3 avg_over_time 实现</p>
+
+<p>最后来看关键字（keyword）sum 的实现，这里注意 sum 不是函数（Function），图 2.1.4 给出了所有关键字列表。</p>
+
+<p>图 2.1.4 关键字列表</p>
+
+<p>sum 关键字的完整语法比较复杂，本文中只介绍例子中给出的 sum(…) by (instance)。</p>
+
+<p>图 2.1.5 sum(…) by (instance) 实现</p>
+
+<p>至此输出某个时间点的结果向量，整个表达式的计算过程在 Excel 中集中展示如图 2.1.6 所示。</p>
+
+<p>图 2.1.6 sum(avg_over_time(go_goroutines{job=&ldquo;prometheus&rdquo;}[5m])) by (instance) 计算过程</p>
+
+<p>PromQL 有三个很简单的原则：</p>
+
+<pre><code>任意 PromQL 返回的结果都不是原始数据，即使查询一个具体的 Metric（如 go_goroutines），结果也不是原始数据
+任意 Metrics 经过 Function 计算后会丢失 __name__ Label
+子序列间具备完全相同的 Label/Value 键值对（可以有不同的 __name__）才能进行代数运算
+</code></pre>
+
+<p>特别强调一些，如 2.1.1 所述，PromQL 在计算时使用的等距 interval 时间点，每个 interval 时间点的结果都是利用附近的采样点经过某种形式的估算或近似得到的，所以在 Prom 中提诸如“1:28:07 AM 发生了 113 次某种事件”是不准确的，PromQL 所有计算结果都存在误差。</p>
+
+<p>有意思的是，在 Prom 中对多维时间序列进行代数运算时，不需要严格检查两边的矩阵一致性，因为 PromQL 只会处理相同 Label/Value 的序列之间的代数运算，图 2.1.7 中对两个不相关的 Metric 进行了代数运算，来说明代数运算的基本原理，这在一些以“数据库”为核心的系统中，如 influxdb，涉及跨表运算，无论是表达式复杂度还是计算性能都会有影响。</p>
+
+<p>图 2.1.7 序列的代数运算</p>
+
+<p>最后需要特别提的一点是，PromQL 表达式计算的原始数据集是共享内存空间的，但计算的中间结果是不共享内存空间的，所以从优化内存占用的角度来看，应该将常用的表达式持久化成 Metric，减少动态计算过程，让内存使用做到可控，这可以借助 Recording Rules 完成 。<br />
+部分函数（Function）实现</p>
+
+<p>Prom 提供了丰富的函数（Function）库来对数据做复杂分析，本节通过介绍几个有代表性的函数实现来介绍其用途，希望能帮助读者准确理解表达式计算结果背后的工程含义。</p>
+
+<p>delta/rate/increase</p>
+
+<p>delta/rate/increase 背后共享了相同的计算逻辑（图 2.2.1），仅仅是参数不同。</p>
+
+<p>图 2.2.1 delta/rate/increase 函数入口</p>
+
+<p>来看 extrapolatedRate 实现（图 2.2.2），基于线性外插算法估计了 interval 时间点的采样值增量，Prom 实现中大量使用了线性插值。基本原理很简单，计算 range 范围内采样点头尾斜率，然后线性延伸至实际 interval 时间点。</p>
+
+<p>图 2.2.2 extrapolatedRate</p>
+
+<p>特别提一下此处的两个参数 isCounter 和 isRate，其中 isCounter=true 说明数据需要保证单调递增，当 Counter 的客户端重启后，数据会归零，出现非单调递增的数据，那么 isCounter 可以控制是否对该数据进行修正；isRate=true 用来对数据做采样范围内的均值，其结果表征当前时间点一秒内的采样值增量（秒级别增量）。</p>
+
+<p>现在回头看图 2.2.1 中 delta/rate/increase 的参数就很明朗了（表 2.2.1）。</p>
+
+<p>Function</p>
+
+<p>isCounter</p>
+
+<p>isRate</p>
+
+<p>delta</p>
+
+<p>false</p>
+
+<p>false</p>
+
+<p>rate</p>
+
+<p>true</p>
+
+<p>true</p>
+
+<p>increase</p>
+
+<p>true</p>
+
+<p>false</p>
+
+<p>可见 delta 在处理数据时，不假设数据单调递增（isCounter=false），适合用来处理 Gauge 数据；而 increase 适合处理 Counter 数据，并获取 range 范围内增量；rate 适合处理 counter 并获取 range 范围内的秒级增量。</p>
+
+<p>XXX_over_time</p>
+
+<p>XXX_over_time 实现 range 范围内数据的横向汇总，即采用 range 范围内的一定量历史数据估算当前时间点的值，其中 XXX 可以是 avg/sum/max/min 等动词，图 2.2.3 中为 XXX_over_time 中的函数 。</p>
+
+<p>图 2.2.3 XXX_over_time 涉及的函数</p>
+
+<p>由于它们的区别仅仅是对 range 内数据进行横向汇总时的计算方式不同，此处不做一一介绍，只关注其中的 avg_over_time 实现（图 2.2.4）。</p>
+
+<p>图 2.2.4 avg_over_time</p>
+
+<p>avg_over_time 的核心逻辑在 aggrOverTime 中实现，见图 2.2.5。</p>
+
+<p>图 2.2.5 aggrOverTime</p>
+
+<p>XXX_over_time 常用来做数据平滑，过滤数据中的异常点，其中 avg_over_time 就是常见的“滑动窗口平均”，在信号处理中为一种低通滤波器实现。</p>
+
+<p>histogram_quantile</p>
+
+<p>histogram_quantile（图 2.2.6）是 Prom 中比较难以理解的函数之一，可以根据 Histogram 估计估算采样数据在某个正态分布分位点的值（实际上估计的是 Upper Bound，即上限）。</p>
+
+<p>图 2.2.6 histogram_quantile</p>
+
+<p>估算 quantile 采样值逻辑在 bucketQuantile（图 2.2.7）函数中实现。</p>
+
+<p>图 2.2.7 bucketQuantile</p>
+
+<p>总结</p>
+
+<p>Prom 是一种典型的基于 Metric 的监控系统，Metric 是多维时序数据分析在工程中的一种表现形式。社区中常将 Kubernetes 和 Prometheus 放到一起讨论，它的设计理念和 Kubernetes 也如出一辙：二者都为特定问题提出了标准或协议，为终端用户提供了易用的接口，专注于提供领域价值。</p>
+
+<p>Prom 数据采集主要是通过 pull 模型实现的，主动从客户端拉取数据，减少了监控对象对外部系统的依赖，这种模型下监控对象只需维护少量客户端数据，保持可控、简单的实现，降低了维护复杂客户端逻辑的风险。另外，Prom 为一些临时存在的进程，如批处理任务，提供了 Push Gateway，这些客户端可以将数据 push 到 Push Gateway 中，然后由 Push Gateway 提供 pull 接口将数据暴露给 Prom Server。</p>
+
+<p>相比 Prom，常见的 Metric 监控方案（如 InfluxDB 的 metrics 客户端实现 <a href="https://github.com/rcrowley/go-metrics" target="_blank">https://github.com/rcrowley/go-metrics</a> ）都是 push 模型，在客户端需要维护采样数据生命周期（如长时间没有存储成功的数据需要丢弃等），还需要避免客户端在数据采集和存储过程中可能出现的资源泄漏。</p>
+
+<p>此外，PromQL 是 Prom 中一个争议和亮点并存的点，它提供了友好的、贴近时序数据语义的语法，对时序数据分析有着丰富的支持，如 Prom 考虑了 Counter 这种单调递增数据由于客户端反复重启导致数据归零的问题，Prom 中很多函数在计算的时候就对这样的数据进行了容错，对数据分析完全透明，极大地提升了易用性；同时 PromQL 提供了 histogram_quantile 根据 Histogram 来估算 quantile 值的计算支持，让 quantile 在 Prom 端计算可以降低客户端带来的额外性能负担。</p>
+
+<p>总之，Prom 数据模型、分析计算接口的设计上都有着良好的一致性和扩展性。基于 pull 的数据采集模型一方面降低了客户端复杂度和对外部系统的依赖，另一方面也让客户端实现自由扩展。反观很多基于 push 模型的监控系统实现，瞬间扩展可能使监控系统服务端出现性能瓶颈，波及整个系统；还有 PromQL 简洁的接口让复杂的时序数据分析变得直观，很多工程上需要处理的数据预处理 Prom 都已经内置了，减少了数据预处理成本。<br />
+关于作者</p>
+
+<p>杨谕黔，FreeWheel 基础架构部 高级软件工程师。 目前主要从事服务化框架、容器化平台相关的研发与推广。关注和感兴趣的技术主要有 Golang, Docker, Kubernetes 和它们周边生态等。</p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/post/prometheus/promql/">blog.pytool.com/post/prometheus/promql/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/post/prometheus/exporter/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Prometheus exporter</span>
+      </a>
+      
+  </li>
+</ul>
+
+    
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(65)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    
+    
+     
+  
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a rel="nofollow" class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+   
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/post/prometheus/grafana/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Prometheus 可视化 grafana</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-2.5" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-2.5" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-2.5" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/android/" class="tag-link-2.5" title="1 Posts">android<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-5.5" title="1 Posts">ansible<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/apt/" class="tag-link-2.5" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-2.5" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-2.5" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-2.5" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-2.5" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-3.5" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-2.5" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-2.5" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-2.5" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-2.5" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-2.5" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-2.5" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-2.5" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-2.5" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-2.5" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-3.5" title="1 Posts">centos7<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link-2.5" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-2.5" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coreos/" class="tag-link-2.5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-2.5" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-2.5" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-13.5" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-2.5" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-2.5" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curd/" class="tag-link-4.5" title="1 Posts">curd<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-3.5" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-2.5" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-2.5" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-2.5" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-2.5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-2.5" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-2.5" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-14.5" title="1 Posts">docker<small>(13)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-2.5" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link-2.5" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-13.5" title="1 Posts">emacs<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-2.5" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-3.5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/etcd/" class="tag-link-2.5" title="1 Posts">etcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-2.5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expr/" class="tag-link-2.5" title="1 Posts">expr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/extundelete/" class="tag-link-2.5" title="1 Posts">extundelete<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-2.5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-2.5" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-2.5" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-2.5" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-2.5" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gdb/" class="tag-link-2.5" title="1 Posts">gdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-2.5" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-2.5" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link-2.5" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-59.5" title="1 Posts">golang<small>(58)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-2.5" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-2.5" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-2.5" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-3.5" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-2.5" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-2.5" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-2.5" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-2.5" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-2.5" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-10.5" title="1 Posts">hugo<small>(9)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-2.5" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-2.5" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-2.5" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-3.5" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/index/" class="tag-link-2.5" title="1 Posts">index<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-2.5" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-2.5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-2.5" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-2.5" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-11.5" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-2.5" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-5.5" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-2.5" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-7.5" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/join/" class="tag-link-2.5" title="1 Posts">join<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/js/" class="tag-link-2.5" title="1 Posts">js<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/key/" class="tag-link-2.5" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-7.5" title="1 Posts">linux<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-2.5" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-2.5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-2.5" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-2.5" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lunr/" class="tag-link-2.5" title="1 Posts">lunr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-2.5" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-3.5" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-9.5" title="1 Posts">mariadb<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-2.5" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-2.5" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-2.5" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-2.5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-8.5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-3.5" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-2.5" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-44.5" title="1 Posts">mysql<small>(43)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/navicat64/" class="tag-link-2.5" title="1 Posts">navicat64<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-2.5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-2.5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-2.5" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-2.5" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-28.5" title="1 Posts">nginx<small>(27)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-4.5" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-2.5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-3.5" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ntp/" class="tag-link-2.5" title="1 Posts">ntp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-2.5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-2.5" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-2.5" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-3.5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pdf/" class="tag-link-2.5" title="1 Posts">pdf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/perf/" class="tag-link-2.5" title="1 Posts">perf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-4.5" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-2.5" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-3.5" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prepare/" class="tag-link-2.5" title="1 Posts">prepare<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prometheus/" class="tag-link-6.5" title="1 Posts">prometheus<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-2.5" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-6.5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-2.5" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-2.5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-2.5" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-2.5" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-2.5" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-5.5" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-2.5" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-2.5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-2.5" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-2.5" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-3.5" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-2.5" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-2.5" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-2.5" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-2.5" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-2.5" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-9.5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-4.5" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-2.5" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-2.5" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-7.5" title="1 Posts">shell<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-2.5" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-2.5" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-4.5" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-2.5" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-2.5" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-2.5" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-6.5" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/strace/" class="tag-link-2.5" title="1 Posts">strace<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-2.5" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-2.5" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-2.5" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-2.5" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-2.5" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysbench/" class="tag-link-3.5" title="1 Posts">sysbench<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysctlcd/" class="tag-link-2.5" title="1 Posts">sysctlcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-2.5" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-2.5" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-3.5" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/telegraf/" class="tag-link-2.5" title="1 Posts">telegraf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-2.5" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-3.5" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-2.5" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-2.5" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-2.5" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-3.5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-3.5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-2.5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-2.5" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-2.5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link-2.5" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-2.5" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-12.5" title="1 Posts">vim<small>(11)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link-2.5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-2.5" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-3.5" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-2.5" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-2.5" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-2.5" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-3.5" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xargs/" class="tag-link-2.5" title="1 Posts">xargs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-3.5" title="1 Posts">xidel<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-3.5" title="1 Posts">xml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-2.5" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-2.5" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-3.5" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/zabbix/" class="tag-link-2.5" title="1 Posts">zabbix<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2.5" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link-2.5" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link-2.5" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+</body>
+</html>
+

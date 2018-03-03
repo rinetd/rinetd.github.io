@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<title>Linux命令 sysbench - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="docker run &ndash;rm -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio &ndash;file-num=64 prepare docker run &ndash;rm -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio &ndash;file-num=64 &ndash;file-test-mode=seqrewr run docker run &ndash;rm -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio cleanup cpu性能 磁盘io性能 IO测试 ,切忌读写文件最好要大于当前内存">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Linux命令 sysbench - 时光小栈">
+<meta itemprop="description" content="docker run &ndash;rm -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio &ndash;file-num=64 prepare docker run &ndash;rm -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio &ndash;file-num=64 &ndash;file-test-mode=seqrewr run docker run &ndash;rm -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio cleanup cpu性能 磁盘io性能 IO测试 ,切忌读写文件最好要大于当前内存">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux命令 sysbench - 时光小栈" />
+<meta property="og:description" content="docker run &ndash;rm -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio &ndash;file-num=64 prepare docker run &ndash;rm -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio &ndash;file-num=64 &ndash;file-test-mode=seqrewr run docker run &ndash;rm -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio cleanup cpu性能 磁盘io性能 IO测试 ,切忌读写文件最好要大于当前内存">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/linux/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-sysbench/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+<link rel="canonical" href="//blog.pytool.com/linux/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-sysbench/">
+<link rel='shortlink' href="//blog.pytool.com/linux/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-sysbench/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/awesome/">Awesome</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/database/">Database</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/devops/">Devops</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/frontend/">Frontend</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/language/">Language</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/software/">Software</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/windows/">Windows</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/post/">Post</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/about/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    
+    
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+          
+        
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/" rel="category tag">Linux命令</a>
+                </li>
+                
+                
+                  <li><a href="//blog.pytool.com/tags/sysbench">sysbench</a> </li>
+                
+              </ul>
+
+
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Linux命令 sysbench</h1>
+
+                  <p class="post-byline">
+                    by  · 2018年01月19日 16:46:14 · 4993 Words ·
+                    ~10min reading time |
+                    
+                    
+                    <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/cmd/2016-01-01%20Linux%e5%91%bd%e4%bb%a4%20sysbench.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<p>docker run &ndash;rm  -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench &ndash;test=fileio    &ndash;file-num=64    prepare<br />
+docker run &ndash;rm  -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench  &ndash;test=fileio  &ndash;file-num=64 &ndash;file-test-mode=seqrewr run<br />
+docker run &ndash;rm  -it -v sshfs:/data -w /data tjakobsson/sysbench sysbench  &ndash;test=fileio  cleanup</p>
+
+<p>cpu性能</p>
+
+<h1 id="磁盘io性能">磁盘io性能</h1>
+
+<p>IO测试 ,切忌读写文件最好要大于当前内存</p>
+
+<p>IO测试选项及参数介绍<br />
+  &ndash;file-num=10   #创建多少个文件，这里是10个<br />
+  &ndash;file-block-size=4k  #单个IO块大小，这里是4k<br />
+  &ndash;file-total-size=4g  #创建的文件总大小，这里是4GB<br />
+  &ndash;file-test-mode=seqwr  #测试方式，这里是顺序写,可选参数( seqwr 顺序写, |seqrd 顺序读,| seqrewr 顺序读写,| rndwr 随机写,| rndrd 随机读,| rndrw随机读写 )<br />
+  &ndash;file-io-mode=sync #文件操作模式，这里是（默认）同步，可选参数（ sync 同步,| async 异步,| mmap  ）<br />
+  &ndash;file-async-backlog=N  #对应每个线程队列的异步操作数，默认为128<br />
+  &ndash;file-extra-flags=STRING     #additional flags to use on opening files {sync,dsync,direct} []<br />
+  &ndash;file-fsync-freq=N           #当请求数达到多少时执行fsync()刷新,默认100,0代表过程中不执行fsync()<br />
+  &ndash;file-fsync-all=[on|off]     #执行每一个写操作后执行fsync()刷新操作,默认关闭off<br />
+  &ndash;file-fsync-end=[on|off]     #测试结束执行fsync()操作,默认开启on<br />
+  &ndash;file-fsync-mode=STRING      #同步刷新方法,默认fsync {fsync, fdatasync}<br />
+  &ndash;file-merged-requests=N      #合并指定数量的IO请求,0代表不合并,默认0<br />
+  &ndash;file-rw-ratio=N            #读写比例，默认1.5</p>
+
+<p>IO测试实例（分准备prepare，运行run，清理cleanup三个步骤）</p>
+
+<p>创建20个文件，共计2G大小，<br />
+  sysbench &ndash;test=fileio &ndash;num-threads=2 &ndash;file-total-size=2g &ndash;file-test-mode=rndrw &ndash;file-num=20 &ndash;file-block-size=4k &ndash;file-io-mode=sync prepare</p>
+
+<p>开始fileio测试（使用两个线程&ndash;num-threads=2）<br />
+  sysbench &ndash;test=fileio &ndash;num-threads=2 &ndash;file-total-size=2g &ndash;file-test-mode=rndrw &ndash;file-num=20 &ndash;file-block-size=4k &ndash;file-io-mode=sync run</p>
+
+<p>测试完成执行cleanup<br />
+  sysbench &ndash;test=fileio &ndash;num-threads=2 &ndash;file-total-size=2g &ndash;file-test-mode=rndrw &ndash;file-num=20 &ndash;file-block-size=4k &ndash;file-io-mode=sync cleanup</p>
+
+<h1 id="调度程序性能">调度程序性能</h1>
+
+<h1 id="内存分配及传输速度">内存分配及传输速度</h1>
+
+<p>内存测试</p>
+
+<p>内存测试选项及参数介绍<br />
+  &ndash;memory-block-size=SIZE  #测试内存块的大小，默认为1K<br />
+  &ndash;memory-total-size=SIZE  #数据传输的总大小，默认为100G<br />
+  &ndash;memory-scope=STRING   #内存访问的范围，包括全局和本地范围，默认为global<br />
+  &ndash;memory-hugetlb=[on|off] #是否从HugeTLB池分配内存的开关，默认为off<br />
+  &ndash;memory-oper=STRING    #内存操作的类型，包括read, write, none，默认为write<br />
+  &ndash;memory-access-mode=STRING #内存访问模式，包括seq顺序,rnd随机两种模式，默认为seq</p>
+
+<p>内存测试实例<br />
+#测试按4kB的块大小，顺序 写 200g所需时间<br />
+  sysbench &ndash;test=memory &ndash;memory-block-size=4k &ndash;memory-total-size=200g &ndash;memory-oper=write &ndash;memory-access-mode=seq run</p>
+
+<h1 id="posix线程性能">POSIX线程性能</h1>
+
+<p>线程以及mutex互斥锁测试</p>
+
+<p>线程测试选项及参数介绍<br />
+  &ndash;thread-yields=N #每个请求执行“lock/yield/unlock”循环的次数，默认1000<br />
+  &ndash;thread-locks=N  #每个线程的互斥锁，默认8个</p>
+
+<p>线程测试实例<br />
+  sysbench &ndash;test=threads &ndash;thread-yields=1000 &ndash;thread-locks=8 run</p>
+
+<p>mutex互斥锁测试，选项及参数介绍<br />
+  &ndash;mutex-num=N   #数组互斥的总大小。默认是4096<br />
+  &ndash;mutex-locks=N   #每个线程互斥锁的数量。默认是50000<br />
+  &ndash;mutex-loops=N   #内部互斥锁的空循环数量。默认是10000</p>
+
+<p>mutex互斥锁测试实例<br />
+  sysbench  &ndash;test=mutex &ndash;mutex-num=4096 &ndash;mutex-locks=50000 &ndash;mutex-loops=10000 run</p>
+
+<h1 id="数据库性能-oltp基准测试">数据库性能(OLTP基准测试)</h1>
+
+<h1 id="1-cpu性能测试">1、cpu性能测试</h1>
+
+<p>sysbench &ndash;test=cpu &ndash;cpu-max-prime=20000 run</p>
+
+<p>cpu测试主要是进行素数的加法运算，在上面的例子中，指定了最大的素数为 20000，自己可以根据机器cpu的性能来适当调整数值。</p>
+
+<h1 id="2-线程测试">2、线程测试</h1>
+
+<p>sysbench &ndash;num-threads=4 &ndash;test=cpu &ndash;cpu-max-prime=200000 run<br />
+sysbench &ndash;test=threads &ndash;num-threads=64 &ndash;thread-yields=100 &ndash;thread-locks=2 run</p>
+
+<h1 id="3-磁盘io性能测试">3、磁盘IO性能测试</h1>
+
+<p>sysbench &ndash;test=fileio &ndash;num-threads=16 &ndash;file-total-size=3G &ndash;file-test-mode=rndrw prepare<br />
+sysbench &ndash;test=fileio &ndash;num-threads=16 &ndash;file-total-size=3G &ndash;file-test-mode=rndrw run<br />
+sysbench &ndash;test=fileio &ndash;num-threads=16 &ndash;file-total-size=3G &ndash;file-test-mode=rndrw cleanup</p>
+
+<p>上述参数指定了最大创建16个线程，创建的文件总大小为3G，文件读写模式为随机读。<br />
+file IO性能测试</p>
+
+<p>sysbench可以测试sync,async,mmap的素随机读，随机写，随机读写，顺序读，顺序写，顺序读写的IO速率</p>
+
+<p>$ sysbench &ndash;test=fileio &ndash;file-total-size=10G prepare #准备测试文件</p>
+
+<h3 id="sync">sync</h3>
+
+<p>$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=sync &ndash;file-test-mode=rndrw &ndash;file-extra-flags=direct run #sync模式下 随机读写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=sync &ndash;file-test-mode=rndrd &ndash;file-extra-flags=direct run #sync模式下 随机读<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=sync &ndash;file-test-mode=rndwr &ndash;file-extra-flags=direct run #sync模式下 随机写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=sync &ndash;file-test-mode=seqrd &ndash;file-extra-flags=direct run #sync模式下 顺序读<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=sync &ndash;file-test-mode=seqwr &ndash;file-extra-flags=direct run #sync模式下 顺序写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=sync &ndash;file-test-mode=seqrewr &ndash;file-extra-flags=direct run #sync模式下 顺序读写</p>
+
+<h3 id="async">async</h3>
+
+<p>$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=async &ndash;file-test-mode=rndrw &ndash;file-extra-flags=direct run #async模式下 随机读写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=async &ndash;file-test-mode=rndrd &ndash;file-extra-flags=direct run #async模式下 随机读<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=async &ndash;file-test-mode=rndwr &ndash;file-extra-flags=direct run #async模式下 随机写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=async &ndash;file-test-mode=seqrd &ndash;file-extra-flags=direct run #async模式下 顺序读<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=async &ndash;file-test-mode=seqwr &ndash;file-extra-flags=direct run #async模式下 顺序写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=async &ndash;file-test-mode=seqrewr &ndash;file-extra-flags=direct run #async模式下 顺序读写<br />
+###mmap<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=mmap &ndash;file-test-mode=rndrw &ndash;file-extra-flags=direct run #mmap模式下 随机读写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=mmap &ndash;file-test-mode=rndrd &ndash;file-extra-flags=direct run #mmap模式下 随机读<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=mmap &ndash;file-test-mode=rndwr &ndash;file-extra-flags=direct run #mmap模式下 随机写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=mmap &ndash;file-test-mode=seqrd &ndash;file-extra-flags=direct run #mmap模式下 顺序读<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=mmap &ndash;file-test-mode=seqwr &ndash;file-extra-flags=direct run #mmap模式下 顺序写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G &ndash;file-block-size=16384 &ndash;file-io-mode=mmap &ndash;file-test-mode=seqrewr &ndash;file-extra-flags=direct run #mmap模式下 顺序读写<br />
+$ sysbench &ndash;test=fileio &ndash;file-total-size=10G cleanup #清理测试文件</p>
+
+<p>内存性能测试</p>
+
+<p>使用sysbench可以测试读写内存的速率,有顺序和随机两种访问方式。</p>
+
+<p>$ sysbench &ndash;test=memory &ndash;memory-block-size=8K &ndash;memory-total-size=1G &ndash;memory-access-mode=seq &ndash;memory-oper=read run #顺序访问模式下读内存 8k块大小 传输总共1G数据<br />
+$ sysbench &ndash;test=memory &ndash;memory-block-size=8K &ndash;memory-total-size=1G &ndash;memory-access-mode=seq &ndash;memory-oper=write run #顺序访问模式下写内存 8k块大小 传输总共1G数据</p>
+
+<p>$ sysbench &ndash;test=memory &ndash;memory-block-size=16K &ndash;memory-total-size=1G &ndash;memory-access-mode=seq &ndash;memory-oper=read run #顺序访问模式下读内存 16k块大小 传输总共1G数据<br />
+$ sysbench &ndash;test=memory &ndash;memory-block-size=16K &ndash;memory-total-size=1G &ndash;memory-access-mode=seq &ndash;memory-oper=write run #顺序访问模式下读内存 16k块大小 传输总共1G数据</p>
+
+<p>$ sysbench &ndash;test=memory &ndash;memory-block-size=8K &ndash;memory-total-size=10G &ndash;memory-access-mode=seq &ndash;memory-oper=read run #顺序访问模式下读内存 8k块大小 传输总共10G数据<br />
+$ sysbench &ndash;test=memory &ndash;memory-block-size=8K &ndash;memory-total-size=10G &ndash;memory-access-mode=seq &ndash;memory-oper=write run #顺序访问模式下写内存 8k块大小 传输总共10G数据</p>
+
+<p>$ sysbench &ndash;test=memory &ndash;memory-block-size=16K &ndash;memory-total-size=10G &ndash;memory-access-mode=seq &ndash;memory-oper=read run #顺序访问模式下读内存 16k块大小 传输总共10G数据<br />
+$ sysbench &ndash;test=memory &ndash;memory-block-size=16K &ndash;memory-total-size=10G &ndash;memory-access-mode=seq &ndash;memory-oper=write run #顺序访问模式下写内存 16k块大小 传输总共10G数据</p>
+
+<p>$ sysbench &ndash;test=memory &ndash;memory-block-size=8K &ndash;memory-total-size=1G &ndash;memory-access-mode=rnd &ndash;memory-oper=read run #随机访问模式下读内存 8k块大小 传输总共1G数据<br />
+$ sysbench &ndash;test=memory &ndash;memory-block-size=8K &ndash;memory-total-size=1G &ndash;memory-access-mode=rnd &ndash;memory-oper=write run #随机访问模式下写内存 8k块大小 传输总共1G数据</p>
+
+<p>$ sysbench &ndash;test=memory &ndash;memory-block-size=16K &ndash;memory-total-size=1G &ndash;memory-access-mode=rnd &ndash;memory-oper=read run #随机访问模式下读内存 16k块大小 传输总共1G数据<br />
+$ sysbench &ndash;test=memory &ndash;memory-block-size=16K &ndash;memory-total-size=1G &ndash;memory-access-mode=rnd &ndash;memory-oper=write run #随机访问模式下写内存 16k块大小 传输总共1G数据</p>
+
+<p>$ sysbench &ndash;test=memory &ndash;memory-block-size=8K &ndash;memory-total-size=10G &ndash;memory-access-mode=rnd &ndash;memory-oper=read run #随机访问模式下读内存 8k块大小 传输总共10G数据<br />
+$ sysbench &ndash;test=memory &ndash;memory-block-size=8K &ndash;memory-total-size=10G &ndash;memory-access-mode=rnd &ndash;memory-oper=write run #随机访问模式下写内存 8k块大小 传输总共10G数据</p>
+
+<p>$ sysbench &ndash;test=memory &ndash;memory-block-size=16K &ndash;memory-total-size=10G &ndash;memory-access-mode=rnd &ndash;memory-oper=read run #随机访问模式下读内存 8k块大小 传输总共10G数据<br />
+$ sysbench &ndash;test=memory &ndash;memory-block-size=16K &ndash;memory-total-size=10G &ndash;memory-access-mode=rnd &ndash;memory-oper=write run #随机访问模式下写内存 8k块大小 传输总共10G数据</p>
+
+<h1 id="4-内存测试">4、内存测试</h1>
+
+<p>sysbench &ndash;test=memory &ndash;memory-block-size=8k &ndash;memory-total-size=4G run<br />
+上述参数指定了本次测试整个过程是在内存中传输 4G 的数据量，每个 block 大小为 8K。</p>
+
+<h1 id="5-oltp测试">5、OLTP测试</h1>
+
+<p>sysbench &ndash;test=oltp &ndash;mysql-table-engine=myisam &ndash;oltp-table-size=1000000 <br />
+&ndash;mysql-socket=/tmp/mysql.sock &ndash;mysql-user=test &ndash;mysql-host=localhost <br />
+&ndash;mysql-password=test prepare</p>
+
+<p>上述参数指定了本次测试的表存储引擎类型为 myisam，这里需要注意的是，官方网站上的参数有一处有误，即 &ndash;mysql-table-engine，官方网站上写的是 &ndash;mysql-table-type，这个应该是没有及时更新导致的。另外，指定了表最大记录数为 1000000，其他参数就很好理解了，主要是指定登录方式。测试 OLTP 时，可以自己先创建数据库 sbtest，或者自己用参数 &ndash;mysql-db 来指定其他数据库。&ndash;mysql-table-engine 还可以指定为 innodb 等 MySQL 支持的表存储引擎类型。</p>
+
+<p>File-IO</p>
+
+<p>sysbench &ndash;test=fileio &ndash;file-total-size=150G prepare sysbench &ndash;test=fileio &ndash;file-total-size=150G &ndash;file-test-mode=rndrw &ndash;init-rng=on &ndash;max-time=300 &ndash;max-requests=0 run ysbench &ndash;test=fileio &ndash;file-total-size=150G cleanup</p>
+
+<p>对数据库压力测试的文件：</p>
+
+<h2 id="mysql">MySQL</h2>
+
+<p>fileio ：文件I/O测试。<br />
+cpu ：CPU性能测试。<br />
+memory ：内存速率测试。<br />
+threads ：线程子系统性能测试。<br />
+mutex ：互斥锁性能测试。<br />
+mysql ：MySQL驱动。<br />
+&ndash;mysql-host=[LIST,&hellip;] ：MySQL服务器地址[localhost]。<br />
+&ndash;mysql-port=[LIST,&hellip;] ：MySQL服务器端口[3306]。<br />
+&ndash;mysql-socket=[LIST,&hellip;] ：MySQL服务器的socket地址。<br />
+&ndash;mysql-user=STRING ：MySQL服务器的用户名[sbtest]。<br />
+&ndash;mysql-password=STRING ：MySQL用户名密码。<br />
+&ndash;mysql-db=STRING ：MySQL数据库名称[sbtest]。<br />
+&ndash;mysql-ssl[=on|off]             use SSL connections, if available in the client library [off]<br />
+&ndash;mysql-ssl-cipher=STRING        use specific cipher for SSL connections []<br />
+&ndash;mysql-compression[=on|off]     是否使用压缩[off]。<br />
+&ndash;mysql-debug[=on|off]           trace all client library calls [off]<br />
+&ndash;mysql-ignore-errors=[LIST,&hellip;] list of errors to ignore, or &ldquo;all&rdquo; [1213,1020,1205]<br />
+&ndash;mysql-dry-run[=on|off]         Dry run, pretend that all MySQL client API calls are successful without executing them [off]</p>
+
+<p>pgsql ：PostgreSQ驱动。<br />
+&ndash;pgsql-host=[LIST,&hellip;] ：PostgreSQL服务器地址[localhost]。<br />
+&ndash;pgsql-port=[LIST,&hellip;] ：PostgreSQL服务器端口[5432]。<br />
+&ndash;pgsql-user=STRING ：PostgreSQL服务器的用户名[sbtest]。<br />
+&ndash;pgsql-password=STRING ：PostgreSQL用户名密码。<br />
+&ndash;pgsql-db=STRING ：PostgreSQL数据库名称[sbtest]。</p>
+
+<p>General options<br />
+&ndash;threads=N ：创建测试线程的数量, 默认为[1]。<br />
+&ndash;events=N ：事件最大数量，默认为[0] ,不限制。<br />
+&ndash;time=N ：最大执行时间，单位是s，默认是[0] ,不限制。<br />
+&ndash;forced-shutdown=STRING ：超过max-time强制中断, 默认是[of]f。<br />
+&ndash;thread-stack-size=SIZE ：每个线程的堆栈大小, 默认是[64k]。<br />
+&ndash;rate=N ：average transactions rate. 0 for unlimited rate [0]。<br />
+&ndash;report-interval=N ：报告中间统计信息间隔，0代表禁止，默认为[0]。<br />
+&ndash;report-checkpoints=[LIST,&hellip;] ：转储完全统计信息并在指定时间点复位所有计数器，参数是逗号分隔值的列表，表示从必须执行报告检查点的测试开始所经过的时间（以秒为单位）。 默认情况下，报告检查点处于关闭状态[off]。<br />
+&ndash;debug[=on|off] ：是否显示更多的调试信息，默认是[off]。<br />
+&ndash;validate[=on|off] ：在可能情况下执行验证检查，默认是[off]。<br />
+&ndash;help[=on|off] ：输出help信息，并退出。<br />
+&ndash;version[=on|off] ：输出版本信息, 并退出。<br />
+&ndash;config-file=FILENAME ：配置文件[]。<br />
+&ndash;tx-rate=N ：deprecated alias for –rate[0].<br />
+&ndash;max-requests=N ：deprecated alias for –events[0].<br />
+&ndash;max-time=N ：deprecated alias for –time[0].<br />
+&ndash;num-threads=N ：deprecated alias for –threads[1].</p>
+
+<p>Pseudo-Random Numbers Generator options<br />
+&ndash;rand-type=STRING ：分布的随机数{uniform(均匀分布)，Gaussian(高斯分布)，special(空间分布)}，默认是special。<br />
+&ndash;rand-spec-iter=N ：产生数的迭代次数，默认是12。<br />
+&ndash;rand-spec-pct=N ：值的百分比被视为’special’ (for special distribution)，默认是1。<br />
+&ndash;rand-spec-res=N ：’special’的百分比值，默认是75。<br />
+&ndash;rand-seed=N ：随机数发生器的种子，值为0时，将当前时间用作rng种子，默认值[0]。<br />
+&ndash;rand-pareto-h=N ：参数h用于pareto分布[0.2]。</p>
+
+<p>Log options<br />
+&ndash;verbosity=N ：日志详细级别{5-调试, 0-仅重要消息}，默认未[3]。<br />
+&ndash;percentile=N ：在延迟统计数据中计算的百分点 (1-100)，使用特殊值0来禁用百分比计算[95]。<br />
+&ndash;histogram[=on|off] ：在报告中打印滞后时间直方图，默认未[off]。</p>
+
+<p>三、Sysbench压测MySQL</p>
+
+<p>Sysbench压测MySQL流程：prepare(准备数据) -&gt; run(运行测试) -&gt; cleanup(清理数据)</p>
+
+<p>下面是目前社区提供的lua脚步（安装sysbench默认自带）</p>
+
+<p>/usr/share/sysbench/bulk_insert.lua<br />
+/usr/share/sysbench/oltp_common.lua<br />
+/usr/share/sysbench/oltp_delete.lua          #数据库删除测试文件<br />
+/usr/share/sysbench/oltp_insert.lua          #数据库插入测试文件<br />
+/usr/share/sysbench/oltp_point_select.lua<br />
+/usr/share/sysbench/oltp_read_only.lua       #数据库读测试文件<br />
+/usr/share/sysbench/oltp_read_write.lua      #数据库读写测试文件<br />
+/usr/share/sysbench/oltp_update_index.lua<br />
+/usr/share/sysbench/oltp_update_non_index.lua<br />
+/usr/share/sysbench/oltp_write_only.lua      #数据库写测试文件<br />
+/usr/share/sysbench/select_random_points.lua<br />
+/usr/share/sysbench/select_random_ranges.lua</p>
+
+<p>sysbench &ndash;db-driver=mysql &ndash;test=/usr/share/sysbench/oltp_insert.lua &ndash;table-size=1000000  &ndash;mysql-host=localhost &ndash;mysql-user=bench &ndash;mysql-password=bench &ndash;mysql-port=3306 &ndash;mysql-db=bench prepare<br />
+sysbench &ndash;db-driver=mysql &ndash;test=/usr/share/sysbench/oltp_insert.lua &ndash;table-size=1000000  &ndash;mysql-host=localhost &ndash;mysql-user=root &ndash;mysql-password= &ndash;mysql-port=3306 &ndash;mysql-db=test prepare</p>
+
+<p>以oltp_read_only.lua为例压测MySQL：<br />
+$ sysbench /usr/share/sysbench/oltp_read_only.lua <br />
+&ndash;mysql-host=127.0.0.1 <br />
+&ndash;mysql-port=3306 <br />
+&ndash;mysql-user=bench <br />
+&ndash;mysql-password=&lsquo;bench&rsquo; <br />
+&ndash;mysql-db=bench <br />
+&ndash;db-driver=mysql <br />
+&ndash;tables=10 <br />
+&ndash;table-size=1000000 <br />
+&ndash;report-interval=10 <br />
+&ndash;threads=128 <br />
+&ndash;time=120 <br />
+prepare    run    cleanup</p>
+
+<p>注意最后一行，一项测试开始前需要用prepare来准备好表和数据，run执行真正的压测，cleanup用来清除数据和表。</p>
+
+<p>对run运行的测试结果解读：<br />
+主要结果参数说明：</p>
+
+<pre><code>tps是平均每秒钟事务提交次数，qps表示每秒查询次数（包括read和write），transactions 事务每秒。
+</code></pre>
+
+<p>sysbench &ndash;test=oltp &ndash;oltp-table-size=1000000 &ndash;mysql-db=bench &ndash;mysql-user=bench &ndash;mysql-password=bench prepare<br />
+sysbench &ndash;test=oltp &ndash;oltp-table-size=1000000 &ndash;mysql-db=bench &ndash;mysql-user=bench &ndash;mysql-password=bench &ndash;max-time=60 &ndash;oltp-read-only=on &ndash;max-requests=0 &ndash;num-threads=8 run<br />
+sysbench &ndash;test=oltp &ndash;mysql-db=test &ndash;mysql-user=root &ndash;mysql-password=yourrootsqlpassword cleanup</p>
+
+<h3 id="create-tables-and-load-data">create tables and load data</h3>
+
+<pre><code class="language-bash">sysbench --db-driver=mysql --test=/usr/share/sysbench/oltp_insert.lua tests/include/oltp_legacy/oltp.lua --oltp-table-size=1000000  --mysql-host=localhost --mysql-user=bench --mysql-password=bench --mysql-port=3306 --mysql-db=bench prepare
+</code></pre>
+
+<h3 id="run">run</h3>
+
+<pre><code class="language-bash">sysbench --db-driver=mysql --test=/usr/share/sysbench/tests/include/oltp_legacy/oltp.lua --oltp-table-size=1000000 --mysql-db=demo --mysql-user=root --mysql-password=oracle --mysql-port=3306 --mysql-host=mysqlserver01 --time=60 --oltp-read-only=off --max-requests=0 --threads=8 run
+</code></pre>
+
+<p>sysbench &ndash;db-driver=mysql &ndash;mysql-db=test &ndash;mysql-port=3306 &ndash;mysql-user=bench &ndash;mysql-password=bench &ndash;test=oltp.lua &ndash;oltp_tables_count=20 &ndash;oltp-table-size=1000000 &ndash;rand-init=on prepare</p>
+
+<h1 id="fileio-测试">FileIO 测试</h1>
+
+<p>&ndash;file-num=N：生产测试文件的数量，默认未128。</p>
+
+<p>&ndash;file-block-size=N ：测试期间的块大小，如果想知道磁盘针对InnoDB存储引擎进行的测试，可以将其设置为16384，即InnoDB存储引擎页大小，默认为16384。</p>
+
+<p>&ndash;file-total-size=SIZE ：每个文件的带下，默认为2G。</p>
+
+<p>&ndash;file-test-mode=STRING ：文件测试模式，包含seqwr（顺序写）、seqrewr（顺序读写）、seqrd（顺序读）、rndrd（随机读）、rndwr（随机写）和rndrw（随机读写）。</p>
+
+<p>&ndash;file-io-mode=STRING ：文件操作的模式，同步还是异步，或者是选择MMAP（map映射）模式，默认为同步。</p>
+
+<p>&ndash;file-async-backlog=N ：打开文件时的选项，这是与API相关的参数。</p>
+
+<p>&ndash;file-extra-flags=STRING ：打开文件时的选项，这是与API相关的参数。</p>
+
+<p>&ndash;file-fsync-freq=N ：执行fsync函数的频率，fsync主要是同步磁盘文件，因为可能有系统和磁盘缓冲的关系。</p>
+
+<p>&ndash;file-fsync-all[=on|off] ：每执行完一次写操作，就执行一次fsync，默认未off。</p>
+
+<p>&ndash;file-fsync-end[=on|off] ：在测试结束时，执行fsync，默认为on。</p>
+
+<p>&ndash;file-fsync-mode=STRING ：文件同步函数的选择，同样是和API相关的参数，由于多个操作对fdatasync支持的不同，因此不建议使用fdatasync。默认为fsync。</p>
+
+<p>&ndash;file-merged-requests=N ：尽可能合并此数量的io请求(0-不合并)，默认为[0]。</p>
+
+<p>&ndash;file-rw-ratio=N ：测试时的读写比例，默认是2：1。</p>
+
+<p>Sysbench的fileio测试需要经过prepare、run和cleanup三个阶段。prepare是准备阶段，生产需要的测试文件，run是实际测试阶段，cleanup是清理测试产生的文件。例如进行16个文件、总大小2GB的fileio测试：<br />
+$ sysbench fileio <br />
+&ndash;file-num=16 <br />
+&ndash;file-total-size=2G <br />
+prepare</p>
+
+<p>接着就可以基于这些文件进行测试了，下面是16个线程下的随机读取性能：<br />
+$ sysbench fileio <br />
+&ndash;time=180 <br />
+&ndash;events=100000000 <br />
+&ndash;threads=16 <br />
+&ndash;file-num=16 <br />
+&ndash;file-total-size=2G <br />
+&ndash;file-test-mode=rndrd <br />
+&ndash;file-num=16 <br />
+&ndash;file-extra-flags=direct <br />
+&ndash;file-fsync-freq=0 <br />
+&ndash;file-block-size=16384 <br />
+run</p>
+
+<p>上述测试的最大随机数请求是100000000次，如果在180秒内不能完成，测试即结束。测试结束后可以看到如下的测试结果：</p>
+
+<p>Running the test with following options:<br />
+Number of threads: 16<br />
+Initializing random number generator from current time</p>
+
+<p>Extra file open flags: 3<br />
+16 files, 128MiB each<br />
+2GiB total file size<br />
+Block size 16KiB<br />
+Number of IO requests: 100000000<br />
+Read/Write ratio for combined random IO test: 1.50<br />
+Calling fsync() at the end of test, Enabled.<br />
+Using synchronous I/O mode<br />
+Doing random read test<br />
+Initializing worker threads&hellip;</p>
+
+<p>Threads started!</p>
+
+<p>File operations:<br />
+   reads/s:                      261.96  //磁盘IOPS;<br />
+   writes/s:                     0.00<br />
+   fsyncs/s:                     0.00</p>
+
+<p>Throughput:<br />
+   read, MiB/s:                  4.09    //磁盘每秒速率;<br />
+   written, MiB/s:               0.00</p>
+
+<p>General statistics:<br />
+   total time:                          180.1626s<br />
+   total number of events:              47196</p>
+
+<p>Latency (ms):</p>
+
+<pre><code>    min:                                  0.07
+    avg:                                 61.03
+    max:                               8221.04
+    95th percentile:                     46.63
+    sum:                            2880341.60
+</code></pre>
+
+<p>Threads fairness:<br />
+   events (avg/stddev):           2949.<sup>7500</sup>&frasl;<sub>618</sub>.72<br />
+   execution time (avg/stddev):   180.0213/0.05</p>
+
+<p>测试结束后，记得要执行cleanup，确保测试产生的文件都已经删除。<br />
+sysbench fileio <br />
+&ndash;file-num=16 <br />
+&ndash;file-total-size=2G <br />
+cleanup</p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/linux/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-sysbench/">blog.pytool.com/linux/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-sysbench/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/linux/cmd/2016-01-01-linux%E5%91%BD%E4%BB%A4-strace/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Linux命令 strace</span>
+      </a>
+      
+  </li>
+</ul>
+
+    
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(65)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    
+    
+     
+  
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a rel="nofollow" class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+   
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/post/english/chinaebr/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>E带E路翻译</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-2.5" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-2.5" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-2.5" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/android/" class="tag-link-2.5" title="1 Posts">android<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-5.5" title="1 Posts">ansible<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/apt/" class="tag-link-2.5" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-2.5" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-2.5" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-2.5" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-2.5" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-3.5" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-2.5" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-2.5" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-2.5" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-2.5" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-2.5" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-2.5" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-2.5" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-2.5" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-2.5" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-3.5" title="1 Posts">centos7<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link-2.5" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-2.5" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coreos/" class="tag-link-2.5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-2.5" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-2.5" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-13.5" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-2.5" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-2.5" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curd/" class="tag-link-4.5" title="1 Posts">curd<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-3.5" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-2.5" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-2.5" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-2.5" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-2.5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-2.5" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-2.5" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-14.5" title="1 Posts">docker<small>(13)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-2.5" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link-2.5" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-13.5" title="1 Posts">emacs<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-2.5" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-3.5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/etcd/" class="tag-link-2.5" title="1 Posts">etcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-2.5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expr/" class="tag-link-2.5" title="1 Posts">expr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/extundelete/" class="tag-link-2.5" title="1 Posts">extundelete<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-2.5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-2.5" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-2.5" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-2.5" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-2.5" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gdb/" class="tag-link-2.5" title="1 Posts">gdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-2.5" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-2.5" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link-2.5" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-59.5" title="1 Posts">golang<small>(58)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-2.5" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-2.5" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-2.5" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-3.5" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-2.5" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-2.5" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-2.5" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-2.5" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-2.5" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-10.5" title="1 Posts">hugo<small>(9)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-2.5" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-2.5" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-2.5" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-3.5" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/index/" class="tag-link-2.5" title="1 Posts">index<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-2.5" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-2.5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-2.5" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-2.5" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-11.5" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-2.5" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-5.5" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-2.5" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-7.5" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/join/" class="tag-link-2.5" title="1 Posts">join<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/js/" class="tag-link-2.5" title="1 Posts">js<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/key/" class="tag-link-2.5" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-7.5" title="1 Posts">linux<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-2.5" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-2.5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-2.5" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-2.5" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lunr/" class="tag-link-2.5" title="1 Posts">lunr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-2.5" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-3.5" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-9.5" title="1 Posts">mariadb<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-2.5" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-2.5" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-2.5" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-2.5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-8.5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-3.5" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-2.5" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-44.5" title="1 Posts">mysql<small>(43)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/navicat64/" class="tag-link-2.5" title="1 Posts">navicat64<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-2.5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-2.5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-2.5" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-2.5" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-28.5" title="1 Posts">nginx<small>(27)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-4.5" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-2.5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-3.5" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ntp/" class="tag-link-2.5" title="1 Posts">ntp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-2.5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-2.5" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-2.5" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-3.5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pdf/" class="tag-link-2.5" title="1 Posts">pdf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/perf/" class="tag-link-2.5" title="1 Posts">perf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-4.5" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-2.5" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-3.5" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prepare/" class="tag-link-2.5" title="1 Posts">prepare<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prometheus/" class="tag-link-6.5" title="1 Posts">prometheus<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-2.5" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-6.5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-2.5" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-2.5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-2.5" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-2.5" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-2.5" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-5.5" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-2.5" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-2.5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-2.5" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-2.5" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-3.5" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-2.5" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-2.5" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-2.5" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-2.5" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-2.5" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-9.5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-4.5" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-2.5" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-2.5" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-7.5" title="1 Posts">shell<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-2.5" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-2.5" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-4.5" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-2.5" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-2.5" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-2.5" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-6.5" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/strace/" class="tag-link-2.5" title="1 Posts">strace<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-2.5" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-2.5" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-2.5" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-2.5" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-2.5" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysbench/" class="tag-link-3.5" title="1 Posts">sysbench<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysctlcd/" class="tag-link-2.5" title="1 Posts">sysctlcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-2.5" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-2.5" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-3.5" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/telegraf/" class="tag-link-2.5" title="1 Posts">telegraf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-2.5" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-3.5" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-2.5" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-2.5" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-2.5" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-3.5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-3.5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-2.5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-2.5" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-2.5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link-2.5" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-2.5" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-12.5" title="1 Posts">vim<small>(11)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link-2.5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-2.5" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-3.5" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-2.5" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-2.5" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-2.5" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-3.5" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xargs/" class="tag-link-2.5" title="1 Posts">xargs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-3.5" title="1 Posts">xidel<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-3.5" title="1 Posts">xml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-2.5" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-2.5" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-3.5" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/zabbix/" class="tag-link-2.5" title="1 Posts">zabbix<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2.5" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link-2.5" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link-2.5" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+</body>
+</html>
+

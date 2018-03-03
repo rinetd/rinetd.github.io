@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<title>Linux之MariaDB基础详解 - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="Linux之MariaDB基础详解 MariaDB中文手册 远程登录 MySQL / MariaDB数据库配置教程 Mysql创建及删除用户命令 MariaDB/">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Linux之MariaDB基础详解 - 时光小栈">
+<meta itemprop="description" content="Linux之MariaDB基础详解 MariaDB中文手册 远程登录 MySQL / MariaDB数据库配置教程 Mysql创建及删除用户命令 MariaDB/">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux之MariaDB基础详解 - 时光小栈" />
+<meta property="og:description" content="Linux之MariaDB基础详解 MariaDB中文手册 远程登录 MySQL / MariaDB数据库配置教程 Mysql创建及删除用户命令 MariaDB/">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/database/mysql/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+<link rel="canonical" href="//blog.pytool.com/database/mysql/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/">
+<link rel='shortlink' href="//blog.pytool.com/database/mysql/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/awesome/">Awesome</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/database/">Database</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/devops/">Devops</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/frontend/">Frontend</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/language/">Language</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/software/">Software</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/windows/">Windows</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/post/">Post</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/about/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    
+    
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+          
+        
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="category tag">数据库</a>
+                </li>
+                
+                
+                  <li><a href="//blog.pytool.com/tags/mariadb">MariaDB</a> </li>
+                
+              </ul>
+
+
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Linux之MariaDB基础详解</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年02月26日 15:30:01 · 8989 Words ·
+                    ~18min reading time |
+                    
+                    
+                    <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/database/mysql/2016-02-29%20mysql%20MariaDB%e5%9f%ba%e7%a1%80%e8%af%a6%e8%a7%a3.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<p><a href="http://www.jianshu.com/p/e59afa955a2d" target="_blank">Linux之MariaDB基础详解</a><br />
+<a href="http://www.zhdba.com/mysqlops/2013/08/16/mariadb-cn_1001/" target="_blank">MariaDB中文手册</a><br />
+<a href="http://www.111cn.net/database/MongoDB/93332.htm" target="_blank">远程登录 MySQL / MariaDB数据库配置教程</a><br />
+<a href="http://www.bitscn.com/pdb/mysql/201407/226089.html" target="_blank">Mysql创建及删除用户命令</a><br />
+<a href="http://www.it165.net/database/html/201404/6158.html" target="_blank">MariaDB/MySQL之用户管理及忘记数据管理员密码解决办法</a><br />
+<a href="http://www.jb51.net/article/39454.htm" target="_blank">MySQL——修改root密码的4种方法</a><br />
+[](<a href="https://tinpont.com/2017/fix-yum-download-mariadb-slow/" target="_blank">https://tinpont.com/2017/fix-yum-download-mariadb-slow/</a>)</p>
+
+<p>MaxScale：实现MySQL读写分离与负载均衡的中间件利器</p>
+
+<h1 id="mysql-编码问题">mysql 编码问题</h1>
+
+<h3 id="字符集查看">字符集查看</h3>
+
+<p>查看当前数据库的字符集和校对规则：<br />
+mysql&gt; show variables like &lsquo;character_set_database&rsquo;;<br />
+mysql&gt; show variables like &lsquo;collation_database&rsquo;;<br />
+数据库编码：<br />
+ALTER DATABASE db_name DEFAULT CHARACTER SET character_name<br />
+show create database db_name;<br />
+表的字符集和校对规则：<br />
+ALTER TABLE logtest CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci;<br />
+mysql&gt; show create table table_name \G;<br />
+查看字段编码：<br />
+<code>alter table db_name.tbl_name change name name varchar(50) character set latin1 collate latin1_swedish_ci;</code><br />
+<code>show full fields from db_name.tbl_name;</code></p>
+
+<p>show full columns from table_name;<br />
+show full fields from table_name;</p>
+
+<p>MySQL处理连接时，外部连接发送过来的SQL请求会根据以下顺序进行转换：<br />
+character_set_client           //客户连接所采用的字符集<br />
+|<br />
+character_set_connection  //MySQL连接字符集<br />
+|<br />
+character_set_database    //数据库所采用的字符集（表，列）<br />
+|<br />
+character_set_results        //客户机显示所采用的字符集</p>
+
+<h3 id="utf8mb4-编码">utf8mb4 编码</h3>
+
+<p><code>CREATE DATABASE example_staging DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;</code></p>
+
+<pre><code>- CHARACTER 字符集 
+- COLLATE 校对集
+</code></pre>
+
+<p><code>mysqldump -uroot -p example --default-character-set=utf8mb4  &gt; /tmp/example.sql</code><br />
+<code>mysql --default-character-set=utf8mb4 -uroot -p example_staging &lt; /tmp/example.sql</code></p>
+
+<p>解决: 保持mariadb 版本一致  mariadb:5.5</p>
+
+<h3 id="字符集是utf8">字符集是utf8:</h3>
+
+<p><code>CREATE DATABASE IF NOT EXISTS yourdbname DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</code><br />
+<code>alter table table db_name.tbl_name convert to character set utf8 collate utf8_general_ci;</code> 修改字符集<br />
+COLLATE utf8_general_ci:  数据库校对规则。该三部分分别为数据库字符集、通用、区分大小写。<br />
+utf8_unicode_ci比较准确，<br />
+utf8_general_ci速度比较快。通常情况下 utf8_general_ci的准确性就够我们用的了，在我看过很多程序源码后，发现它们大多数也用的是utf8_general_ci，所以新建数据 库时一般选用utf8_general_ci就可以了。</p>
+
+<h3 id="gbk字符集">gbk字符集:</h3>
+
+<p><code>create database yourdb DEFAULT CHARACTER SET gbk COLLATE gbk_chinese_ci;</code></p>
+
+<h2 id="旧数据升级办法">旧数据升级办法</h2>
+
+<p>以原来的字符集为latin1为例，升级成为utf8的字符集。原来的表: old_table (default charset=latin1)，新表：new_table(default charset=utf8)。<br />
+第一步：导出旧数据<br />
+mysqldump &ndash;default-character-set=latin1 -hlocalhost -uroot -B my_db &ndash;tables old_table &gt; old.sql<br />
+第二步：转换编码(类似unix/linux环境下)<br />
+iconv -t utf-8 -f gb2312 -c old.sql &gt; new.sql<br />
+或者可以去掉 -f 参数，让iconv自动判断原来的字符集<br />
+iconv -t utf-8 -c old.sql &gt; new.sql<br />
+在这里，假定原来的数据默认是gb2312编码。<br />
+第三步：导入<br />
+修改old.sql，在插入/更新语句开始之前，增加一条sql语句：</p>
+
+<p>&ldquo;SET NAMES utf8;&rdquo;</p>
+
+<p>，保存。<br />
+mysql -hlocalhost -uroot my_db &lt; new.sql<br />
+大功告成！！</p>
+
+<h1 id="权限管理">权限管理</h1>
+
+<p>CREATE USER <code>bench</code>@<code>%</code> IDENTIFIED BY &lsquo;bench&rsquo;;</p>
+
+<h3 id="1-服务器-系统级-root权限授予">1. 服务器   系统级 root权限授予</h3>
+
+<p>GRANT Alter, Alter Routine, Create, Create Routine, Create Temporary Tables, Create User, Create View, Delete, Drop, Event, Execute, File, Grant Option, Index, Insert, Lock Tables, Process, References, Reload, Replication Client, Replication Slave, Select, Show Databases, Show View, Shutdown, Super, Trigger, Update ON <em>.</em> TO <code>bench</code>@<code>%</code>;</p>
+
+<h3 id="2-数据库级别-权限授予">2. 数据库级别 权限授予</h3>
+
+<p>grant all privileges ON <code>gocron</code>.* TO <code>bench</code>@<code>%</code>;  +    GRANT Grant Option ON <code>gocron</code>.* TO <code>bench</code>@<code>%</code>;</p>
+
+<p>grant all privileges ON <code>test</code>.* TO <code>bench</code>@<code>%</code>;   # 同一个用户授权多个数据库<br />
+等价<br />
+GRANT Alter, Alter Routine, Create, Create Routine, Create Temporary Tables, Create View, Delete, Drop, Event, Execute, Grant Option, Index, Insert, Lock Tables, References, Select, Show View, Trigger, Update ON <code>gocron</code>.* TO <code>bench</code>@<code>%</code>;</p>
+
+<h3 id="3-表级别-权限授予">3. 表级别   权限授予</h3>
+
+<p>GRANT Alter, Create, Create View, Delete, Drop, Grant Option, Index, Insert, References, Select, Show View, Trigger, Update ON TABLE <code>guoan</code>.<code>dede_admin</code> TO <code>bench</code>@<code>%</code>;</p>
+
+<h3 id="master-data-权限-couldn-t-execute-flush-40101-local-tables-access-denied-you-need-at-least-one-of-the-reload-privilege-s-for-this-operation-1227">&ndash;master-data 权限 <code>Couldn't execute 'FLUSH /*!40101 LOCAL */ TABLES': Access denied; you need (at least one of) the RELOAD privilege(s) for this operation (1227)</code></h3>
+
+<p><code>GRANT RELOAD,REPLICATION CLIENT ON *.* TO 'your_user'@'localhost';</code></p>
+
+<h3 id="4-prometheus-权限">4. prometheus 权限</h3>
+
+<p>GRANT REPLICATION CLIENT, PROCESS, SUPER, SELECT ON <em>.</em> TO &lsquo;pmm&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &lsquo;percona2018&rsquo;;<br />
+  GRANT SELECT, UPDATE, DELETE, DROP ON performance_schema.* TO &lsquo;pmm&rsquo;@&lsquo;%&rsquo;;</p>
+
+<h1 id="设置缓存大小">设置缓存大小</h1>
+
+<p>[mysqld]<br />
+tmp_table_size=2G<br />
+max_heap_table_size=2G</p>
+
+<p>SET GLOBAL tmp_table_size = 1024 * 1024 * 1024 * 2;<br />
+SET GLOBAL max_heap_table_size = 1024 * 1024 * 1024 * 2;<br />
+SELECT @@max_heap_table_size;</p>
+
+<h1 id="docker运行mariadb">docker运行mariadb</h1>
+
+<p><code>sudo chown -R 999:999 /var/run/mysqld</code></p>
+
+<p><code>docker run -d --restart=always --name mariadb -p 3306:3306 -e MYSQL_ROOT_PASSWORD= -v /docker/mysql:/var/lib/mysql rinetd/mariadb</code></p>
+
+<h2 id="美团sqladvior优化">美团SQLAdvior优化</h2>
+
+<p>docker run &ndash;rm imred/sqladvisor -h xx  -P xx  -u xx -p &lsquo;xx&rsquo; -d xx -q &ldquo;sql&rdquo; -v 1</p>
+
+<h2 id="重新初始化mysql">重新初始化mysql</h2>
+
+<p><code>mysql_install_db &amp;&amp; chown -R mysql:mysql /var/lib/mysql</code></p>
+
+<h2 id="centos7-镜像解决方案">CentOS7 镜像解决方案</h2>
+
+<p><code>ansible all -m copy -a &quot;src=/etc/yum.repos.d/MariaDB.repo  dest=/etc/yum.repos.d/MariaDB.repo  mode=0644&quot;</code><br />
+创建并编辑MariaDB的源配置<br />
+sudo vi /etc/yum.repos.d/MariaDB.repo</p>
+
+<pre><code># MariaDB 10.2 CentOS repository list - created 2017-08-15 08:02 UTC
+# http://downloads.mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos7-amd64
+gpgkey= https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+</code></pre>
+
+<p>执行安装命令：<br />
+yum clean all &amp;&amp; rm -rf /var/cache/yum # 防止报错<br />
+yum makecache</p>
+
+<p>sudo yum install mariadb-server</p>
+
+<p>如果在用阿里云的服务器，可以将上述配置中的域名替换成</p>
+
+<pre><code>http://mirrors.aliyun.com/
+</code></pre>
+
+<p>以上yum配置经修改后同样的适用于其他源，详细内容请往下看<br />
+sudo apt-get install mariadb-client<br />
+yum -y install MariaDB-server MariaDB-client<br />
+sudo apt-get install mariadb-galera-server galera</p>
+
+<h2 id="自动补全">自动补全</h2>
+
+<p>linux中mysql的配置文件在 /etc/mysql</p>
+
+<p>修改my.cnf<br />
+在#no-auto-rehash</p>
+
+<pre><code># faster start of mysql but no tab completition 一行之下添加一行：
+auto-rehash
+</code></pre>
+
+<h2 id="统计">统计</h2>
+
+<p><code>SELECT ktitle,COUNT(*) FROM</code>ultrax<code>.</code>pre_fx_vote_log<code>WHERE</code>kid<code>= '89'</code></p>
+
+<h2 id="mysql查询数据表中某字段重复出现的次数-并按照次数排序">Mysql查询数据表中某字段重复出现的次数，并按照次数排序</h2>
+
+<p><code>select [name],count(*) from [table] group by [name] order by count(*) DESC limit 10</code><br />
+<code>SELECT ktitle,COUNT(*) FROM</code>ultrax<code>.</code>pre_fx_vote_log<code>group by ktitle order by count(*) DESC limit 15
+</code></p>
+
+<h2 id="开启-mysql-查询日志">开启 mysql 查询日志</h2>
+
+<p>| general_log                                     | ON                                                                                                           |<br />
+| general_log_file                          | /var/log/mysql/mysql.log</p>
+
+<p>mysql&gt;set global general_log_file=&lsquo;/tmp/general.log&rsquo;;<br />
+mysql&gt;set global general_log=on;<br />
+mysql&gt;set global general_log=off;</p>
+
+<pre><code># 	 &amp;&amp; sed -i -e &quot;s/^#general_log_file/general_log_file/&quot; /etc/mysql/my.cnf\
+# 	 &amp;&amp; sed -i -e &quot;s/^#general_log/general_log/&quot; /etc/mysql/my.cnf\
+# 	 &amp;&amp; sed -i -e &quot;s/^#log_slow_queries/log_slow_queries/&quot; /etc/mysql/my.cnf\
+# 	 &amp;&amp; sed -i -e &quot;s/^#long_query_time.*/long_query_time = 1/&quot; /etc/mysql/my.cnf
+</code></pre>
+
+<h2 id="mysql-配置超时时间">mysql 配置超时时间</h2>
+
+<p>show global variables like &lsquo;%timeout%&rsquo;;</p>
+
+<p>设置超时时间，临时生效（以秒为单位）：<br />
+  msyql&gt; set global wait_timeout=86400;<br />
+  msyql&gt; set global interactive_timeout=86400;<br />
+修改配置文件/etc/my.cnf.d/server.conf</p>
+
+<pre><code>    在 [mysqld]下添加
+        wait_timeout=86400
+</code></pre>
+
+<pre><code>            sed -i 's/^interactive-timeout.*/interactive-timeout = 86400/' /etc/my.cnf
+            sed -i 's/^wait-timeout.*/wait-timeout = 86400/' /etc/my.cnf
+</code></pre>
+
+<h2 id="密码错误-error-1045-28000-access-denied-for-user-root-172-17-0-4-using-password-yes">密码错误 ERROR 1045 (28000)  : Access denied for user &lsquo;root&rsquo;@&lsquo;172.17.0.4&rsquo; (using password: YES)</h2>
+
+<p>解决方法：密码输入错误，仔细检查密码</p>
+
+<h2 id="权限问题-do-you-already-have-another-mysqld-server-running-on-socket-var-run-mysqld-mysqld-sock">权限问题 Do you already have another mysqld server running on socket: /var/run/mysqld/mysqld.sock ?</h2>
+
+<pre><code>  `id mysql`
+  `uid=27(mysql) gid=27(mysql) groups=27(mysql)`
+  `uid=33(www-data) gid=33(www-data) groups=33(www-data)`
+</code></pre>
+
+<ol>
+<li><code>sudo userdel mysql</code><br /></li>
+<li><code>sudo groupadd -r -g 999 mysql &amp;&amp; sudo useradd -r -u 999  -c mysql -g mysql -d /var/lib/mysql -s /usr/sbin/nologin mysql</code><br /></li>
+<li><code>sudo gpasswd -a ${USER} mysql</code><br /></li>
+<li><code>sudo chown -R mysql:mysql /var/lib/mysql /var/run/mysqld</code><br /></li>
+<li><code>docker run -d --name mysql -v $PWD/database/mysql:/var/lib/mysql -v /var/run/mysqld:/var/run/mysqld -e MYSQL_ROOT_PASSWORD=root mysql</code><br /></li>
+<li><code>docker exec -it mysql bash</code><br />
+<code>usermod -u 999 mysql</code><br />
+<code>groupmod -g 999 mysql</code><br />
+find / -user 1005 -exec chown -h foo {} \;<br />
+find / -group 2000 -exec chgrp -h foo {} \;<br />
+<br /></li>
+</ol>
+
+<h1 id="mysql数据库从gbk转换到utf-8最简单解决方案">MySQL数据库从GBK转换到UTF-8最简单解决方案</h1>
+
+<p>&ndash;default-character-set=utf8 指定导出sql文件编码utf8格式</p>
+
+<p>1、使用mysqldump导出 [表结构]，如：</p>
+
+<pre><code>  mysqldump -d -u root -p 数据库名 &gt;/root/struct.sql
+</code></pre>
+
+<p>2、使用mysqldump以[指定utf8编码]导出[表数据]（其中&ndash;default-character-set=utf8 为所需编码，可按需修改），如：</p>
+
+<pre><code>  mysqldump --default-character-set=utf8 -t -u root -p 数据库名 &gt;/root/data.sql
+</code></pre>
+
+<p>3、打开表结构转存（/root/struct.sql），将所有CREATE TABLE中的编码替换为所需编码；</p>
+
+<pre><code> ` DEFAULT CHARSET=gbk; =&gt;   DEFAULT CHARSET=utf8 ; `
+</code></pre>
+
+<p>4、 重新导入</p>
+
+<p>导出表时，如果出现1044错误，添加   &ndash;skip-lock-tables  可以解决：<br />
+mysqldump -d -u root -p 数据库名 &ndash;skip-lock-tables &gt;/root/struct.sql<br />
+mysqldump &ndash;default-character-set=utf8 -t -u root -p 数据库名 &ndash;skip-lock-tables &gt;/root/data.sql</p>
+
+<h2 id="dedecms-gbk-转-utf8">dedecms GBK 转 UTF8</h2>
+
+<p>docker exec -i mariadb mysqldump -d -uroot -p guoan &gt;guoanstuct.sql<br />
+docker exec -i mariadb mysqldump -t &ndash;default-character-set=utf8 -uroot -p guoan &gt;guoan.sql</p>
+
+<h2 id="如何设置不区分表名大小写">如何设置不区分表名大小写。</h2>
+
+<p>一般情况下 Linux 服务器默认安装 MySQL 的数据库表名是区分大小写的，如果 ECS 上安装的 MySQL 不支持表名区分大小下，则按照如下方法操作即可：</p>
+
+<p>用 root 登录，修改 /etc/my.cnf （注意：以实际 my.cnf 配置文件路径为准）<br />
+在 [mysqld] 节点下，加入一行： <code>lower_case_table_names=1</code><br />
+重启 MySQL 即可；</p>
+
+<h2 id="权限">权限</h2>
+
+<p>GRANT SELECT, INSERT, UPDATE, REFERENCES, DELETE, CREATE, DROP, ALTER, INDEX, TRIGGER, CREATE VIEW, SHOW VIEW, EXECUTE, ALTER ROUTINE, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, EVENT<br />
+ ON <code>wechat</code>.* TO &lsquo;wechat&rsquo;;</p>
+
+<p>GRANT GRANT OPTION ON <code>wechat</code>.* TO &lsquo;wechat&rsquo;;</p>
+
+<p>grant select, insert, update, delete, create, drop, references, index, alter,</p>
+
+<pre><code>    create temporary tables, lock tables, create view, show view, create routine,
+    alter routine, execute, trigger
+</code></pre>
+
+<p>on <code>Sample</code>.* to &lsquo;acme-manager&rsquo;@&lsquo;%&rsquo;;</p>
+
+<p>grant create,select,insert,update,create view,show view,event,alter,trigger,index,alter on fgg.* to &lsquo;allen2016&rsquo;@&lsquo;%&rsquo; identified by<br />
+&lsquo;allen2016soft*88&rsquo; with grant option;<br />
+flush privileges;</p>
+
+<h2 id="执行命令">执行命令</h2>
+
+<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;show databases;&quot;</code><br />
+<code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;show databases; select user,host from mysql.user;&quot;</code>`</p>
+
+<h2 id="创建数据库">创建数据库</h2>
+
+<p><code>CREATE DATABASE IF NOT EXISTS</code>tpcms<code>DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci</code><br />
+<code>CREATE DATABASE IF NOT EXISTS</code>guoan<code>DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci</code></p>
+
+<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;CREATE DATABASE IF NOT EXISTS ytjxc DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci&quot;</code><br />
+<code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;CREATE DATABASE IF NOT EXISTS ytjxc DEFAULT CHARACTER SET utf8 &quot;</code></p>
+
+<h2 id="创建并授权用户">创建并授权用户</h2>
+
+<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'XXXX' WITH GRANT OPTION; FLUSH PRIVILEGES;&quot;</code></p>
+
+<h1 id="docker-有个坑-内网ip不一定都是172-0-0-x-还有可能是192-0-0-x-所以-user-1-2-保险起见用-user">docker 有个坑 内网ip不一定都是172.0.0.x 还有可能是192.0.0.x 所以 &lsquo;user&rsquo;@&lsquo;1_2.%&rsquo; 保险起见用 &lsquo;user&rsquo;@&lsquo;%&rsquo;</h1>
+
+<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;GRANT ALL PRIVILEGES  ON *.* TO 'user'@'1_2.%' IDENTIFIED BY 'XXXX'; FLUSH PRIVILEGES;&quot;</code></p>
+
+<h2 id="备份全部数据库">备份全部数据库</h2>
+
+<p><code>docker exec -it mariadb mysqldump -uroot -proot --all-databases &gt;bak.sql</code></p>
+
+<h2 id="备份指定数据库">备份指定数据库</h2>
+
+<p><code>docker exec -it mariadb mysqldump -uroot -proot chengzhi &gt;bak.sql</code></p>
+
+<p>#恢复指定数据库<br />
+<code>docker exec -i wuye_mysql mysql -uroot -ptoor sanyang &lt;sanyang2016-4-28.sql</code></p>
+
+<h2 id="mariadb-无法启动-用户-权限">mariadb 无法启动 [用户 + 权限]</h2>
+
+<p><code>sudo chown -R 999:999 mysql</code><br />
+ <code>rm -f /var/lib/mysql/aria_log*</code><br />
+ <code>rm -f /var/lib/mysql/ib_logfile*</code></p>
+
+<h2 id="mysql-执行shell命令">mysql 执行shell命令</h2>
+
+<p>mysql&gt; <code>system ifconfig -a</code></p>
+
+<h2 id="修复mariadb-数据库">修复mariadb 数据库</h2>
+
+<p><code>mysql_upgrade -u root -p</code></p>
+
+<h2 id="初始化数据">初始化数据</h2>
+
+<p><code>mysql_install_db --defaults-file=/etc/mysql/my.cnf --datadir=/var/data/db/mariadb/ --user=mysql</code></p>
+
+<h2 id="登录数据库">登录数据库</h2>
+
+<p><code>mysql -h127.0.0.1 -P3306 -uroot  -proot -e 'show databases;'</code><br />
+<code>mysql -S /var/run/mysqld/mysqld.sock -uroot -p</code></p>
+
+<h2 id="mariadb-允许远程访问方式">mariadb 允许远程访问方式</h2>
+
+<p><code>mysql -h 139.129.108.163 -u kyxx -p</code></p>
+
+<h2 id="创建数据库-1">创建数据库</h2>
+
+<p>CREATE DATABASE IF NOT EXISTS yourdbname DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</p>
+
+<p>create database yourdb DEFAULT CHARACTER SET gbk COLLATE gbk_chinese_ci;</p>
+
+<h2 id="创建用户并授权">创建用户并授权</h2>
+
+<p>//把所有用户的权限授予username@&lsquo;hostname&rsquo;,密码是your_passwd<br />
+  <code>mysql&gt;grant all on *.* to username@'hostname' indentified by [password]'your_passwd'</code></p>
+
+<p>命令:GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo;<br />
+  privileges - 用户的操作权限,如 SELECT INSERT UPDATE   DELETE 等.如果要授予所的权限则使用ALL.;</p>
+
+<pre><code>            select,insert,update,delete,create,drop,index,alter,grant,references,reload,shutdown,process,file
+</code></pre>
+
+<p>databasename - 数据库名,<br />
+  tablename-表名,如果要授予该用户对所有数据库和表的相应操作权限则可用<em>表示, 如</em>.*</p>
+
+<p>例子:<br />
+  GRANT SELECT, INSERT ON test.user TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;<br />
+  GRANT ALL ON <em>.</em> TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;</p>
+
+<p>注意:用以上命令授权的用户不能给其它用户授权,如果想让该用户可以授权,用以下命令:<br />
+  GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo; WITH GRANT OPTION;<br />
+  <code>GRANT ALL PRIVILEGES ON *.* TO 'kyxx'@'123.132.%.%' IDENTIFIED BY '888888' WITH GRANT OPTION; FLUSH PRIVILEGES;</code><br />
+  #root可从任何IP登陆，注意修改密码:&lsquo;888888&rsquo;<br />
+  <code>GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '888888' WITH GRANT OPTION;</code><br />
+  #root可从指定IP登陆，注意修改密码:&lsquo;888888&rsquo;、IP:&lsquo;192.168.1.188&rsquo;<br />
+  <code>GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.168.1.188' IDENTIFIED BY '888888' WITH GRANT OPTION;</code><br />
+  GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER ON <em>.</em> TO &lsquo;huijin&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &lsquo;Huijin2017@!&rsquo;; FLUSH PRIVILEGES;</p>
+
+<h2 id="数据库备份恢复">数据库备份恢复</h2>
+
+<p><code>show databases;</code><br />
+  <code>mysqldump -uroot -p database &gt;bak.sql</code><br />
+  <code>mysqldump -uroot -p -A &gt;bak.sql</code><br />
+  <code>show variables like 'open%';</code></p>
+
+<p>mysql&gt; source /var/lib/mysql/ghost.sql</p>
+
+<p>关于导入导出docker中的mysql数据库<br />
+2.执行导出（备份）数据库命令<br />
+由第一步的结果可知，我们的mysql运行在一个叫mysql-online的docker容器中。而我们要备份的数据库就在里面，叫做test_db。mysql的用户名密码均为root，我们将文件备份到/opt/sql_bak文件夹下。</p>
+
+<pre><code>docker exec -it mysql-online mysqldump -uroot -proot test_db &gt; /opt/sql_bak/test_db.sql
+</code></pre>
+
+<p>3.执行导入（恢复）数据库命令：<br />
+目的：由第二步导出的sql文件，复制一个数据库。<br />
+首先我们进去，创建一个空白的数据库：</p>
+
+<pre><code>docker exec -it mysql-online mysql -uroot -proot
+create database test_db_copy;
+</code></pre>
+
+<p>然后我们将sql文件导入：</p>
+
+<pre><code>docker exec -i mysql-online mysql -uroot -proot test_db_copy &lt; /opt/sql_bak/test_db.sql
+</code></pre>
+
+<h2 id="注意-这里需要将参数-it-更换为-i-否则会报错-cannot-enable-tty-mode-on-non-tty-input">注意：这里需要将参数 -it 更换为 -i ，否则会报错：&rdquo;cannot enable tty mode on non tty input&rdquo;</h2>
+
+<h2 id="查询用户">查询用户</h2>
+
+<pre><code>0. ` show databases; `
+1. ` show tables from mysql; `
+2. ` show columns from mysql.user; `
+3. ` select user,host,authentication_string from mysql.user; `
+</code></pre>
+
+<p>show grants;</p>
+
+<ol>
+<li>show tables或show tables from database_name; &ndash; 显示当前数据库中所有表的名称。<br /></li>
+<li>show databases; &ndash; 显示mysql中所有数据库的名称。<br /></li>
+<li>show columns from table_name from database_name; 或show columns from database_name.table_name; &ndash; 显示表中列名称。<br /></li>
+<li>show grants for user_name; &ndash; 显示一个用户的权限，显示结果类似于grant 命令。<br /></li>
+<li>show index from table_name; &ndash; 显示表的索引。<br /></li>
+<li>show status; &ndash; 显示一些系统特定资源的信息，例如，正在运行的线程数量。<br /></li>
+<li>show variables; &ndash; 显示系统变量的名称和值。<br /></li>
+<li>show processlist; &ndash; 显示系统中正在运行的所有进程，也就是当前正在执行的查询。大多数用户可以查看他们自己的进程，但是如果他们拥有process权限，就可以查看所有人的进程，包括密码。<br /></li>
+<li>show table status; &ndash; 显示当前使用或者指定的database中的每个表的信息。信息包括表类型和表的最新更新时间。<br /></li>
+<li>show privileges; &ndash; 显示服务器所支持的不同权限。<br /></li>
+<li>show create database database_name; &ndash; 显示create database 语句是否能够创建指定的数据库。<br /></li>
+<li>show create table table_name; &ndash; 显示create database 语句是否能够创建指定的数据库。<br /></li>
+<li>show engines; &ndash; 显示安装以后可用的存储引擎和默认引擎。<br /></li>
+<li>show innodb status; &ndash; 显示innoDB存储引擎的状态。<br /></li>
+<li>show logs; &ndash; 显示BDB存储引擎的日志。<br /></li>
+<li>show warnings; &ndash; 显示最后一个执行的语句所产生的错误、警告和通知。<br /></li>
+<li>show errors; &ndash; 只显示最后一个执行语句所产生的错误。<br /></li>
+<li>show [storage] engines; &ndash;显示安装后的可用存储引擎和默认引擎。<br />
+<br /></li>
+</ol>
+
+<p>################################################################################<br />
+##MySQL——修改root密码的N种方法</p>
+
+<ol>
+<li><p>MySQL忘记管理员密码的解决办法<br />
+/etc/init.d/mysql stop<br />
+mysqld_safe &ndash;user=mysql &ndash;skip-grant-tables &ndash;skip-networking &amp;<br />
+mysqld &ndash;skip-grant-tables &amp;<br />
+mysql -u root mysql<br />
+mysql&gt;use mysql<br />
+mysql&gt;update user set password=password(&ldquo;toor&rdquo;) where user=&ldquo;root&rdquo;;<br />
+mysql&gt;flush privileges;</p></li>
+
+<li><p>用SET PASSWORD命令<br />
+首先登录MySQL。<br />
+格式：mysql&gt; set password for 用户名@localhost = password(&lsquo;新密码&rsquo;);<br />
+例子：mysql&gt; set password for root@localhost = password(&lsquo;123&rsquo;);</p></li>
+
+<li><p>用mysqladmin<br />
+格式：mysqladmin -u用户名 -p旧密码 password 新密码<br />
+例子：mysqladmin -uroot -p123456 password 123<br />
+修改root密码<br />
+<code>mysqladmin -u root password 'root'</code></p></li>
+
+<li><p>用UPDATE直接编辑user表<br />
+首先登录MySQL。<br />
+mysql&gt; use mysql;<br />
+mysql&gt; update user set password=password(&lsquo;123&rsquo;) where user=&lsquo;root&rsquo; and host=&lsquo;localhost&rsquo;;<br />
+mysql&gt; flush privileges;</p></li>
+</ol>
+
+<p>/etc/init.d/mysql restart<br />
+mysql -uroot -p<br />
+###############################################################################<br />
+创建用户<br />
+CREATE USER foo;<br />
+INSERT INTO user(User, Host, Password) VALUES(&lsquo;foo&rsquo;, &lsquo;%&rsquo;, Password(&lsquo;hello&rsquo;));<br />
+SELECT User, Host, Password FROM user WHERE User = &lsquo;foo&rsquo;;</p>
+
+<p>删除用户<br />
+DROP USER A;<br />
+drop user &lsquo;kyxx&rsquo;@&lsquo;123.132.226.%&rsquo;;<br />
+DELETE FROM user WHERE User = &lsquo;FOO&rsquo;;</p>
+
+<p>创建备份用户<br />
+CREATE USER &lsquo;backupuser&rsquo;@&lsquo;localhost&rsquo; IDENTIFIED BY &lsquo;password&rsquo;;<br />
+GRANT SELECT,SHOW VIEW,LOCK TABLES,RELOAD,REPLICATION CLIENT ON <em>.</em> TO &lsquo;backupuser&rsquo;@&lsquo;localhost&rsquo;;<br />
+FLUSH PRIVILEGES;</p>
+
+<p>用户设置密码<br />
+SET PASSWORD FOR A = Password(&lsquo;hello&rsquo;);</p>
+
+<p>重命名用户<br />
+RENAME USER a TO A;<br />
+UPDATE user SET User = &lsquo;FOO&rsquo; WHERE User = &lsquo;foo&rsquo;;<br />
+SELECT User, Host, Password FROM user WHERE User = &lsquo;FOO&rsquo;;</p>
+
+<p>查看用户权限<br />
+SHOW GRANTS FOR A;</p>
+
+<p>修改用户权限<br />
+GRANT SELECT ON crashcourse.* TO A;<br />
+grant all on <em>.</em> to homestead;<br />
+解除用户权限<br />
+REVOKE SELECT ON crashcourse.* FROM A;</p>
+
+<h2 id="一-用户授权">一、用户授权</h2>
+
+<p>1、我们可以直接创建用户账：<br />
+//使用password关键字的话，可以加密密码<br />
+<code>mysql&gt;create user username@'hostname' [identified by [password]'your_passwd']</code></p>
+
+<p>命令:CREATE USER &lsquo;username&rsquo;@&lsquo;host&rsquo; IDENTIFIED BY &lsquo;password&rsquo;;<br />
+说明:<br />
+username - 你将创建的用户名, host - 指定该用户在哪个主机上可以登陆,如果是本地用户可用localhost, 如果想让该用户可以从任意远程主机登陆,可以使用通配符%.<br />
+password - 该用户的登陆密码,密码可以为空,如果为空则该用户可以不需要密码登陆服务器.<br />
+例子:<br />
+CREATE USER &lsquo;root&rsquo;@&lsquo;localhost&rsquo; IDENTIFIED BY &lsquo;123456&rsquo;;<br />
+CREATE USER &lsquo;username&rsquo;@&lsquo;192.168.1.10_&rsquo; IDENDIFIED BY &lsquo;123456&rsquo;;<br />
+CREATE USER &lsquo;username&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &lsquo;123456&rsquo;;<br />
+CREATE USER &lsquo;username&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &ldquo;;<br />
+CREATE USER &lsquo;username&rsquo;@&lsquo;%&rsquo;;</p>
+
+<p>2、也可以在授权的时候创建用户帐户：<br />
+//把所有用户的权限授予username@&lsquo;hostname&rsquo;,密码是your_passwd<br />
+<code>mysql&gt;grant all on *.* to username@'hostname' indentified by [password]'your_passwd'</code></p>
+
+<p>命令:GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo;<br />
+privileges - 用户的操作权限,如 SELECT INSERT UPDATE DELETE 等.如果要授予所的权限则使用ALL.;<br />
+databasename - 数据库名,<br />
+tablename-表名,如果要授予该用户对所有数据库和表的相应操作权限则可用<em>表示, 如</em>.*</p>
+
+<p>例子:<br />
+GRANT SELECT, INSERT ON test.user TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;<br />
+GRANT ALL ON <em>.</em> TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;</p>
+
+<p>注意:用以上命令授权的用户不能给其它用户授权,如果想让该用户可以授权,用以下命令:<br />
+GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo; WITH GRANT OPTION;</p>
+
+<p>3、如果需要更改用户名和密码的话：<br />
+//更改用户名<br />
+<code>mysql&gt;rename user old_name@'old_host' to new_name@'new_host'</code><br />
+//修改密码<br />
+<code>mysql&gt;set password for user_name@'host'=password（'new_passwd'）</code></p>
+
+<p>命令:<br />
+SET PASSWORD FOR &lsquo;username&rsquo;@&lsquo;host&rsquo; = PASSWORD(&lsquo;newpassword&rsquo;);<br />
+如果是当前登陆用户用SET PASSWORD = PASSWORD(&ldquo;newpassword&rdquo;);<br />
+例子: SET PASSWORD FOR &lsquo;username&rsquo;@&lsquo;%&rsquo; = PASSWORD(&ldquo;123456&rdquo;);</p>
+
+<p>4.撤销用户权限<br />
+命令: REVOKE privilege ON databasename.tablename FROM &lsquo;username&rsquo;@&lsquo;host&rsquo;;<br />
+说明: privilege, databasename, tablename - 同授权部分.<br />
+例子: REVOKE SELECT ON <em>.</em> FROM &lsquo;username&rsquo;@&lsquo;%&rsquo;;<br />
+注意: 假如你在给用户&rsquo;username&rsquo;@&lsquo;%&lsquo;授权的时候是这样的(或类似的):GRANT SELECT ON test.user TO &lsquo;username&rsquo;@&lsquo;%&rsquo;, 则在使用REVOKE SELECT ON <em>.</em> FROM &lsquo;username&rsquo;@&lsquo;%&rsquo;;命令并不能撤销该用户对test数据库中user表的SELECT 操作.相反,如果授权使用的是GRANT SELECT ON <em>.</em> TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;则REVOKE SELECT ON test.user FROM &lsquo;username&rsquo;@&lsquo;%&rsquo;;命令也不能撤销该用户对test数据库中user表的Select 权限.<br />
+具体信息可以用命令SHOW GRANTS FOR &lsquo;username&rsquo;@&lsquo;%&rsquo;; 查看.</p>
+
+<p>五.删除用户<br />
+命令: DROP USER &lsquo;username&rsquo;@&lsquo;host&rsquo;;</p>
+
+<p>##SQL测试</p>
+
+<pre><code>1.新建用户。
+//登录MYSQL
+@&gt;mysql -u root -p
+@&gt;密码
+//创建用户
+mysql&gt; mysql&gt; insert into mysql.user(Host,User,Password,ssl_cipher,x509_issuer,x509_sub
+ject) values(&quot;localhost&quot;,&quot;phplamp&quot;,password(&quot;1234&quot;),'','','');
+这样就创建了一个名为：phplamp 密码为：1234 的用户。
+然后登录一下。
+mysql&gt;exit;
+@&gt;mysql -u phplamp -p
+@&gt;输入密码
+mysql&gt;登录成功
+2.为用户授权。
+//登录MYSQL（有ROOT权限）。我里我以ROOT身份登录.
+@&gt;mysql -u root -p
+@&gt;密码
+//首先为用户创建一个数据库(phplampDB)
+mysql&gt;create database phplampDB;
+//授权phplamp用户拥有phplamp数据库的所有权限。
+&gt;grant all privileges on phplampDB.* to phplamp@localhost identified by '1234';
+//刷新系统权限表
+mysql&gt;flush privileges;
+mysql&gt;其它操作
+/*
+如果想指定部分权限给一用户，可以这样来写:
+mysql&gt;grant select,update on phplampDB.* to phplamp@localhost identified by '1234';
+//刷新系统权限表。
+mysql&gt;flush privileges;
+*/
+3.删除用户。
+@&gt;mysql -u root -p
+@&gt;密码
+mysql&gt;Delete FROM user Where User=&quot;phplamp&quot; and Host=&quot;localhost&quot;;
+mysql&gt;flush privileges;
+//删除用户的数据库
+mysql&gt;drop database phplampDB;
+4.修改指定用户密码。
+@&gt;mysql -u root -p
+@&gt;密码
+mysql&gt;update mysql.user set password=password('新密码') where User=&quot;phplamp&quot; and Host=&quot;localhost&quot;;
+mysql&gt;flush privileges;
+5.列出所有数据库
+mysql&gt;show database;
+6.切换数据库
+mysql&gt;use '数据库名';
+7.列出所有表
+mysql&gt;show tables;
+8.显示数据表结构
+mysql&gt;describe 表名;
+9.删除数据库和数据表
+mysql&gt;drop database 数据库名;
+
+</code></pre>
+
+<hr />
+
+<p>&ndash; 查看MySQL的状态<br />
+status;<br />
+&ndash; 显示支持的引擎<br />
+show engines;<br />
+&ndash; 显示所有数据库<br />
+show databases;<br />
+&ndash; 切换数据库上下文,即设置当前会话的默认数据库<br />
+use mysql;<br />
+&ndash; 显示本数据库所有的表<br />
+show tables;<br />
+&ndash; 显示表中列名称<br />
+show columns from table_name from database_name;<br />
+show columns from database_name.table_name;<br />
+&ndash; 显示一个用户的权限，显示结果类似于grant 命令<br />
+show grants for user_name;<br />
+&ndash; 显示表的索引<br />
+show index from table_name;<br />
+&ndash; 显示变量<br />
+show variables;<br />
+&ndash; 显示插件<br />
+show plugins;</p>
+
+<p>&ndash; 查第一条<br />
+select * from table_name limit 1;<br />
+&ndash; 查询最后一条<br />
+select day from table_name order by id desc limit 1;<br />
+&ndash; 查询前30条记录<br />
+select * from table_name limit 0,30</p>
+
+<p>&ndash; 简单查询<br />
+select id,userId from t_test  where userId=&lsquo;admin&rsquo; ;<br />
+&ndash; 创建一个表<br />
+CREATE TABLE t_test (<br />
+  id int(11) UNSIGNED NOT NULL AUTO_INCREMENT,<br />
+  userId char(36),<br />
+  lastLoginTime timestamp,<br />
+  PRIMARY KEY (id)<br />
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;</p>
+
+<p>&ndash; 插入测试数据<br />
+insert into t_test(userId)</p>
+
+<pre><code>values
+</code></pre>
+
+<p>(&lsquo;admin&rsquo;)<br />
+,(&lsquo;haha&rsquo;)<br />
+;</p>
+
+<p>##修改数据存放目录</p>
+
+<h1 id="停止数据库">停止数据库</h1>
+
+<p>service mysql stop</p>
+
+<h1 id="创建目录-假设没有的话">创建目录,假设没有的话</h1>
+
+<p>mkdir /usr/local/ieternal/mysql_data</p>
+
+<h1 id="拷贝默认数据库到新的位置">拷贝默认数据库到新的位置</h1>
+
+<h1 id="a-命令是将文件属性一起拷贝-否则各种问题">-a 命令是将文件属性一起拷贝,否则各种问题</h1>
+
+<p>cp -a /var/lib/mysql /usr/local/ieternal/mysql_data</p>
+
+<h1 id="备份原来的数据">备份原来的数据</h1>
+
+<p>cp -a /etc/my.cnf /etc/my.cnf_original</p>
+
+<h1 id="其实查看-etc-my-cnf-文件可以发现">其实查看 /etc/my.cnf 文件可以发现</h1>
+
+<h1 id="mariadb-的此文件之中只有一个包含语句">MariaDB 的此文件之中只有一个包含语句</h1>
+
+<h1 id="所以需要修改的配置文件为-etc-my-cnf-d-server-cnf">所以需要修改的配置文件为 /etc/my.cnf.d/server.cnf</h1>
+
+<p>cp /etc/my.cnf.d/server.cnf /etc/my.cnf.d/server.cnf_original<br />
+vim /etc/my.cnf.d/server.cnf</p>
+
+<h1 id="在文件的-mysqld-节下添加内容">在文件的 mysqld 节下添加内容</h1>
+
+<pre><code>[mysqld]
+datadir=/usr/local/ieternal/mysql_data/mysql
+socket=/var/lib/mysql/mysql.sock
+#default-character-set=utf8
+character_set_server=utf8
+slow_query_log=on
+slow_query_log_file=/usr/local/ieternal/mysql_data/slow_query_log.log
+long_query_time=2
+</code></pre>
+
+<p>其中,也只有 datadir 和 socket 比较重要; 而 default-character-set 是 mysql 自己认识的,而 mariadb5.5 就不认识,相当于变成了 character_set_server</p>
+
+<p>服务器操作系统：CentOS 7<br />
+Web 服务器 IP 地址：192.168.33.61<br />
+数据库服务器 IP 地址：192.168.33.63</p>
+
+<h2 id="允许外网访问">允许外网访问</h2>
+
+<p>第一步：编辑 my.cnf<br />
+vi /etc/my.cnf<br />
+vi /etc/my.cnf.d/server.cnf<br />
+在 [mysqld] 这个区域的下面，找到 bind-address ，如果没有，就去添加一行：<br />
+[mysqld]<br />
+bind-address=192.168.33.63</p>
+
+<p>service mariadb restart<br />
+systemctl restart mariadb<br />
+sudo /etc/init.d/mysql start</p>
+
+<h2 id="第二步-添加远程用户">第二步：添加远程用户</h2>
+
+<p><code>CREATE USER 'username'@'host' IDENTIFIED BY 'password';</code><br />
+现在数据库服务可以接受远程的连接，不过目前还没有用户拥有远程连接的权限，你需要再手工去添加一个远程用户，先用 root 用户登录到数据库服务：<br />
+mysql -u root -p<br />
+然后去创建一个数据库：<br />
+create database drupal;<br />
+再创建一个新的用户，注意这个用户是在 Web 服务器上可以使用的用户，所以需要指定一个 Web 服务器的 IP 地址：<br />
+<code>create user 'drupal'@'192.168.33.61' identified by 'drupal'</code>;<br />
+也就是，drupal 这个用户，只能在 192.168.33.61 这个 IP 地址的服务器上连接到数据库服务器。再去给这个用户分配权限：<br />
+<code>grant all privileges on drupal.* to ' drupal'@'192.168.33.61';</code><br />
+立即生效，再执行：<br />
+<code>flush privileges;</code><br />
+##第三步：远程连接</p>
+
+<p>在 Web 服务器上，试着去登录一下数据库服务器上的数据库系统：<br />
+mysql -u drupal -h 192.168.33.63 -p<br />
+这里我们用 -h 选择，指定了一下要登录到的服务器的 IP 地址。这个 IP 地址就是数据库服务器的 IP 地址。<br />
+如果你发看到类似下面这样的错误：<br />
+ERROR 2003 (HY000): Can&rsquo;t connect to MySQL server on &lsquo;192.168.33.63&rsquo; (113 &ldquo;No route to host&rdquo;)<br />
+很有可能是在数据库服务器上的防火墙的配置原因，配置一下 CentOS 7 自带的防火墙 Firewalld ：<br />
+firewall-cmd &ndash;zone=public &ndash;add-port=3306/tcp<br />
+完成以后，重新再到 Web 服务器上尝试连接数据库服务器。<br />
+补充:## mariaDB 创建用户</p>
+
+<blockquote>
+<p>我假定你已经做完初始化数据库的操作了（禁掉root的远程访问）,然后在本地用root帐号连接数据库了。</p>
+</blockquote>
+
+<h2 id="mysql-u-root-p-mysql">mysql -u root -p mysql</h2>
+
+<p>a. 准备数据目录</p>
+
+<pre><code>以/mydata/data为例；
+</code></pre>
+
+<p>b. 配置mariadb</p>
+
+<pre><code>                # groupadd -r -g 306 mysql
+                # useradd -r -g 306 -u 306 mysql
+                # tar xf mariadb-VERSION.tar.xz -C /usr/local
+                # ln -sv mariadb-version mysql
+                # cd /usr/local/mysql
+                # chown -R root:mysql ./*
+                # scripts/mysql_install_db --datadir=/mydata/data --user=mysql
+                # cp supper-files/mysql.server /etc/rc.d/init.d/mysqld
+                # chkconfig --add mysqld
+</code></pre>
+
+<p>c. 准备配置文件</p>
+
+<pre><code>配置格式：类ini格式，为各程序均通过单个配置文件提供配置信息；
+[prog_name]
+</code></pre>
+
+<p>能用二进制格式安装,配置文件查找次序：<br />
+/etc/my.cnf &ndash;&gt; /etc/mysql/my.cnf &ndash;&gt; &ndash;default-extra-file=/PATH/TO/CONF_FILE &ndash;&gt; ~/.my.cnf</p>
+
+<p>OS提供的mariadb rpm包安装的配置文件查找次序:<br />
+/etc/mysql/my.cnf &ndash;&gt; /etc/my.cnf &ndash;&gt; &ndash;default-extra=/PATH/TO/conf_file &ndash;&gt; ~/my.cnf</p>
+
+<p>以上两者越靠后就是最后生效的.</p>
+
+<p># mkdir /etc/mysql<br />
+  # cp support-files/my-large.cnf /etc/mysql/my.cnf</p>
+
+<p>添加三个选项：</p>
+
+<pre><code>  [mysqld]
+  datadir = /mydata/data
+  innodb_file_per_table = on
+  skip_name_resolve = on
+</code></pre>
+
+<h2 id="maridb程序的组成">MariDB程序的组成</h2>
+
+<p>MariaDB-client  客户端工具像mysql CLI,mysqldump,和其它<br />
+MariaDB-common  符集文件和/etc/my.cnf<br />
+MariaDB-compat  客户端旧共享库,可能老版本的MariaDB或MySQL客户端需要<br />
+MariaDB-devel   开发header和静态库。<br />
+MariaDB-server  服务器和服务器工具,像myisamchk和mysqlhotcopy都在这里<br />
+MariaDB-shared  动态客户端库<br />
+MariaDB-test    mysql-client-test可执行和mysql-test框架进行测试<br />
+Client</p>
+
+<pre><code>mysql : CLI交互式客户端程序
+mysqldump : 备份工具
+mysqladmin: 管理工具
+mysqlbinlog : 查看二进制日志工具
+</code></pre>
+
+<p>Server</p>
+
+<pre><code>mysqld: 服务端进程
+mysqld_safe : 服务端进程,默认也是运行的此进程
+mysqld_multi : 服务端进程, 多实例
+mysql_upgrade : 升级工具
+
+          服务端监听的两种socket地址
+
+              ip socket
+                  监听在3306/tcp,支持远程通信
+              unix socket
+                  监听在sock文件上(/tmp/mysql.sock, /var/lib/mysql/mysql.sock),仅支持本地通信,通信主机为localhost,127.0.0.1都基于unix socket文件通信
+</code></pre>
+
+<h2 id="命令行交互式客户端程序-mysql工具">命令行交互式客户端程序&mdash;mysql工具</h2>
+
+<p><code>mysql -h127.0.0.1 -uroot  -proot1234569 -e 'show databases;'</code></p>
+
+<pre><code>-uUSERNAME : 用户名,默认为root
+-pPASSWD : 用户的密码
+-hHOST : 服务器主机,默认为localhost
+  DB_NAME: 连接到服务端之后,指明默认数据库
+-e 'SCRIPT' : 连接至MYSQL运行某命令后,直接退出,并返回结果
+</code></pre>
+
+<p>注意: mysql的用户帐号由两部分组成,&lsquo;username&rsquo;@&lsquo;hostname&rsquo;,其中host用于限制此用户可通过哪些主机连接当前的MSYQL服务器</p>
+
+<pre><code>  支持通配符:
+      % : 匹配任意长度的任意字符
+      172.16.%.%
+      _ : 匹配任意单个字符
+  内置命令
+      \u DB_NAME : 设定哪个库为默认数据库
+      \q : 退出
+      \d CHAR : 设定新的语句结束符
+      \g : 语句通用结束标记
+      \G : 语句结束标记,但以竖排方式显示
+      \s : 返回客户端与服务端的连接状态
+      \c : 取消命令运行
+</code></pre>
+
+<p>通过mysql协议发往服务器执行并取回结果,每个命令都必须有结束符,默认为&rdquo;;&ldquo;,示例如下:</p>
+
+<p>for i in {1..100};</p>
+
+<pre><code>do AGE=$[$RANDOM%100];
+mysql -uroot -pM8T9cw -e &quot;insert mydb.student(id,name,age) value ($i,\&quot;stu$i\&quot;,$AGE);&quot;;
+</code></pre>
+
+<p>done</p>
+
+<p>获取命令帮助</p>
+
+<pre><code>help
+
+
+
+grant 普通数据用户，查询、插入、更新、删除 数据库中所有表数据的权利。
+
+grant select on testdb.* to common_user@’%’
+
+grant insert on testdb.* to common_user@’%’
+
+grant update on testdb.* to common_user@’%’
+
+grant delete on testdb.* to common_user@’%’
+
+或者，用一条 MySQL 命令来替代：
+
+grant select, insert, update, delete on testdb.* to common_user@’%’
+
+9&gt;.grant 数据库开发人员，创建表、索引、视图、存储过程、函数。。。等权限。
+
+grant 创建、修改、删除 MySQL 数据表结构权限。
+
+grant create on testdb.* to developer@’192.168.0.%’;
+
+grant alter on testdb.* to developer@’192.168.0.%’;
+
+grant drop on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 外键权限。
+
+grant references on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 临时表权限。
+
+grant create temporary tables on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 索引权限。
+
+grant index on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 视图、查看视图源代码 权限。
+
+grant create view on testdb.* to developer@’192.168.0.%’;
+
+grant show view on testdb.* to developer@’192.168.0.%’;
+
+grant 操作 MySQL 存储过程、函数 权限。
+
+grant create routine on testdb.* to developer@’192.168.0.%’; -- now, can show procedure status
+
+grant alter routine on testdb.* to developer@’192.168.0.%’; -- now, you can drop a procedure
+
+grant execute on testdb.* to developer@’192.168.0.%’;
+
+10&gt;.grant 普通 DBA 管理某个 MySQL 数据库的权限。
+
+grant all privileges on testdb to dba@’localhost’
+
+其中，关键字 “privileges” 可以省略。
+
+11&gt;.grant 高级 DBA 管理 MySQL 中所有数据库的权限。
+
+grant all on *.* to dba@’localhost’
+
+12&gt;.MySQL grant 权限，分别可以作用在多个层次上。
+
+1. grant 作用在整个 MySQL 服务器上：
+
+grant select on *.* to dba@localhost; -- dba 可以查询 MySQL 中所有数据库中的表。
+
+grant all on *.* to dba@localhost; -- dba 可以管理 MySQL 中的所有数据库
+
+2. grant 作用在单个数据库上：
+
+grant select on testdb.* to dba@localhost; -- dba 可以查询 testdb 中的表。
+
+3. grant 作用在单个数据表上：
+
+grant select, insert, update, delete on testdb.orders to dba@localhost;
+
+4. grant 作用在表中的列上：
+
+grant select(id, se, rank) on testdb.apache_log to dba@localhost;
+
+5. grant 作用在存储过程、函数上：
+
+grant execute on procedure testdb.pr_add to ’dba’@’localhost’
+
+grant execute on function testdb.fn_add to ’dba’@’localhost’
+注意：修改完权限以后 一定要刷新服务，或者重启服务，刷新服务用：FLUSH PRIVILEGES。
+
+
+权限表
+权限  说明
+all
+alter
+alter routine   使用alter procedure 和drop procedure
+create
+create routine  使用create  procedure
+create temporary tables     使用create temporary table
+create  user
+create view
+delete
+drop
+execute     使用call和存储过程
+file    使用select into outfile  和load data infile
+grant option    可以使用grant和revoke
+index   可以使用create index 和drop index
+insert
+lock tables     锁表
+process     使用show full processlist
+reload     使用flush
+replication client  服务器位置访问
+replocation slave   由复制从属使用
+select
+show databases
+show view
+shutdown    使用mysqladmin shutdown 来关闭mysql
+super
+update
+usage   无访问权限
+</code></pre>
+
+<h2 id="destoon-修复会员资料未认证">destoon 修复会员资料未认证</h2>
+
+<ol>
+<li>destoon 通过edittime 是否大于0 来判断是否完善资料<br />
+update destoon_member a inner join destoon_company b on a.userid=b.userid and b.validated=1 and a.edittime=0 set a.edittime=&lsquo;1511576804&rsquo;;<br />
+<br /></li>
+</ol>
+
+<p>select count(edittime) from destoon_member where edittime&gt;0;<br />
+select count(company) from destoon_company where validated = 1;</p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/database/mysql/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/">blog.pytool.com/database/mysql/2016-02-29-mysql-mariadb%E5%9F%BA%E7%A1%80%E8%AF%A6%E8%A7%A3/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/post/%E6%B5%81%E5%AA%92%E4%BD%93/2016-02-29-easydarwin%E9%85%8D%E7%BD%AE/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>EasyDarwin 配置</span>
+      </a>
+      
+  </li>
+</ul>
+
+    
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android%E5%BA%95%E5%B1%82/">Android底层</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/english/">English</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(65)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/lessons/">Lessons</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%86%85%E6%A0%B8/">Linux内核</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%91%BD%E4%BB%A4/">Linux命令</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux%E5%9F%BA%E7%A1%80/">Linux基础</a>
+        <small>(98)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%A5%87%E7%9C%9F%E5%BC%82%E5%AE%9D/">奇真异宝</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8Flinux/">嵌入式linux</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95/">数据算法</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(8)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91/">端口转发</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(44)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    
+    
+     
+  
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a rel="nofollow" class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+   
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/database/mysql/mariadb-galera/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux之MariaDB集群</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-2.5" title="1 Posts">ack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-2.5" title="1 Posts">activity<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-2.5" title="1 Posts">adb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/android/" class="tag-link-2.5" title="1 Posts">android<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-5.5" title="1 Posts">ansible<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/apt/" class="tag-link-2.5" title="1 Posts">apt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-2.5" title="1 Posts">aria2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-2.5" title="1 Posts">arp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-2.5" title="1 Posts">atom<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-2.5" title="1 Posts">autohotkey<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-3.5" title="1 Posts">awesome<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-2.5" title="1 Posts">awk<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-2.5" title="1 Posts">bash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-2.5" title="1 Posts">bat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-2.5" title="1 Posts">bc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-2.5" title="1 Posts">bower<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-2.5" title="1 Posts">burpssuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-2.5" title="1 Posts">burpsuite<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-2.5" title="1 Posts">capistrano<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-2.5" title="1 Posts">cash<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-3.5" title="1 Posts">centos7<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link-2.5" title="1 Posts">coffeescript<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-2.5" title="1 Posts">composer<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coreos/" class="tag-link-2.5" title="1 Posts">coreos<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-2.5" title="1 Posts">crontab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-2.5" title="1 Posts">cryptsetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-13.5" title="1 Posts">css<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-2.5" title="1 Posts">css3<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-2.5" title="1 Posts">ctags<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curd/" class="tag-link-4.5" title="1 Posts">curd<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-3.5" title="1 Posts">curl<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-2.5" title="1 Posts">date<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-2.5" title="1 Posts">dd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-2.5" title="1 Posts">debug<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-2.5" title="1 Posts">devops<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-2.5" title="1 Posts">discourse<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-2.5" title="1 Posts">dnsmasq<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-14.5" title="1 Posts">docker<small>(13)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-2.5" title="1 Posts">dpkg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link-2.5" title="1 Posts">editorconfig<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-13.5" title="1 Posts">emacs<small>(12)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-2.5" title="1 Posts">enca<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-3.5" title="1 Posts">encode<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/etcd/" class="tag-link-2.5" title="1 Posts">etcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-2.5" title="1 Posts">expect<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expr/" class="tag-link-2.5" title="1 Posts">expr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/extundelete/" class="tag-link-2.5" title="1 Posts">extundelete<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-2.5" title="1 Posts">ffmpeg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-2.5" title="1 Posts">find<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-2.5" title="1 Posts">firewall<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-2.5" title="1 Posts">fonts<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-2.5" title="1 Posts">fstab<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gdb/" class="tag-link-2.5" title="1 Posts">gdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-2.5" title="1 Posts">git<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-2.5" title="1 Posts">go<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link-2.5" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-59.5" title="1 Posts">golang<small>(58)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-2.5" title="1 Posts">gpg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-2.5" title="1 Posts">grep<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-2.5" title="1 Posts">hexdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-3.5" title="1 Posts">hexo<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-2.5" title="1 Posts">hmac<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-2.5" title="1 Posts">html<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-2.5" title="1 Posts">html5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-2.5" title="1 Posts">http<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-2.5" title="1 Posts">httperf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-10.5" title="1 Posts">hugo<small>(9)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-2.5" title="1 Posts">hydra<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-2.5" title="1 Posts">i18n<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-2.5" title="1 Posts">ifttt<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-3.5" title="1 Posts">imagemagick<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/index/" class="tag-link-2.5" title="1 Posts">index<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-2.5" title="1 Posts">insomnia<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-2.5" title="1 Posts">intent<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-2.5" title="1 Posts">ios<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-2.5" title="1 Posts">iotop<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-11.5" title="1 Posts">ip<small>(10)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-2.5" title="1 Posts">iproute2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-5.5" title="1 Posts">iptables<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-2.5" title="1 Posts">irc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-7.5" title="1 Posts">javascript<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/join/" class="tag-link-2.5" title="1 Posts">join<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/js/" class="tag-link-2.5" title="1 Posts">js<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/key/" class="tag-link-2.5" title="1 Posts">key<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-7.5" title="1 Posts">linux<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-2.5" title="1 Posts">linux命令<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-2.5" title="1 Posts">locale<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-2.5" title="1 Posts">losetup<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-2.5" title="1 Posts">lsof<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lunr/" class="tag-link-2.5" title="1 Posts">lunr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-2.5" title="1 Posts">lvm2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-3.5" title="1 Posts">makefile<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-9.5" title="1 Posts">mariadb<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-2.5" title="1 Posts">mathjax<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-2.5" title="1 Posts">mbr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-2.5" title="1 Posts">md5<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-2.5" title="1 Posts">md5sum<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-8.5" title="1 Posts">meteor<small>(7)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-3.5" title="1 Posts">mongodb<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-2.5" title="1 Posts">mtr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-44.5" title="1 Posts">mysql<small>(43)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/navicat64/" class="tag-link-2.5" title="1 Posts">navicat64<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-2.5" title="1 Posts">nessus<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-2.5" title="1 Posts">netcat<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-2.5" title="1 Posts">netsh<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-2.5" title="1 Posts">nexpose<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-28.5" title="1 Posts">nginx<small>(27)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-4.5" title="1 Posts">nmap<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-2.5" title="1 Posts">nodejs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-3.5" title="1 Posts">npm<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ntp/" class="tag-link-2.5" title="1 Posts">ntp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-2.5" title="1 Posts">oauth2<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-2.5" title="1 Posts">objdump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-2.5" title="1 Posts">openssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-3.5" title="1 Posts">pandoc<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pdf/" class="tag-link-2.5" title="1 Posts">pdf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/perf/" class="tag-link-2.5" title="1 Posts">perf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-4.5" title="1 Posts">php<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-2.5" title="1 Posts">postgresql<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-3.5" title="1 Posts">powershell<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prepare/" class="tag-link-2.5" title="1 Posts">prepare<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prometheus/" class="tag-link-6.5" title="1 Posts">prometheus<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-2.5" title="1 Posts">proxy<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-6.5" title="1 Posts">python<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-2.5" title="1 Posts">redis<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-2.5" title="1 Posts">rename<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-2.5" title="1 Posts">repo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-2.5" title="1 Posts">resin<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-2.5" title="1 Posts">responsive<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-5.5" title="1 Posts">restful<small>(4)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-2.5" title="1 Posts">rethinkdb<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-2.5" title="1 Posts">retina<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-2.5" title="1 Posts">root<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-2.5" title="1 Posts">route<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-3.5" title="1 Posts">rsync<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-2.5" title="1 Posts">rtsp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-2.5" title="1 Posts">ruby<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-2.5" title="1 Posts">samba<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-2.5" title="1 Posts">sar<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-2.5" title="1 Posts">scp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-9.5" title="1 Posts">scrapy<small>(8)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-4.5" title="1 Posts">sed<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-2.5" title="1 Posts">selenium<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-2.5" title="1 Posts">sftp<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-7.5" title="1 Posts">shell<small>(6)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-2.5" title="1 Posts">snap<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-2.5" title="1 Posts">sort<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-4.5" title="1 Posts">ssh<small>(3)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-2.5" title="1 Posts">ssl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-2.5" title="1 Posts">sso<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-2.5" title="1 Posts">ssrf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-6.5" title="1 Posts">stm32<small>(5)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/strace/" class="tag-link-2.5" title="1 Posts">strace<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-2.5" title="1 Posts">sublime<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-2.5" title="1 Posts">sudo<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-2.5" title="1 Posts">svg<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-2.5" title="1 Posts">swagger<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-2.5" title="1 Posts">swarm<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysbench/" class="tag-link-3.5" title="1 Posts">sysbench<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysctlcd/" class="tag-link-2.5" title="1 Posts">sysctlcd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-2.5" title="1 Posts">systemctl<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-2.5" title="1 Posts">tc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-3.5" title="1 Posts">tcpdump<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/telegraf/" class="tag-link-2.5" title="1 Posts">telegraf<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-2.5" title="1 Posts">time<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-3.5" title="1 Posts">timezone<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-2.5" title="1 Posts">tmux<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-2.5" title="1 Posts">top<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-2.5" title="1 Posts">tr<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-3.5" title="1 Posts">tshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-3.5" title="1 Posts">ubuntu<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-2.5" title="1 Posts">ulimit<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-2.5" title="1 Posts">underscore<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-2.5" title="1 Posts">unpack<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link-2.5" title="1 Posts">update-alternatives<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-2.5" title="1 Posts">useradd<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-12.5" title="1 Posts">vim<small>(11)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link-2.5" title="1 Posts">visualstudiocode<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-2.5" title="1 Posts">vlc<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-3.5" title="1 Posts">webpack3<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-2.5" title="1 Posts">wget<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-2.5" title="1 Posts">windows10<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-2.5" title="1 Posts">windump<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-3.5" title="1 Posts">wireshark<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xargs/" class="tag-link-2.5" title="1 Posts">xargs<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-3.5" title="1 Posts">xidel<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-3.5" title="1 Posts">xml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-2.5" title="1 Posts">xmllint<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-2.5" title="1 Posts">xpath<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-3.5" title="1 Posts">yaml<small>(2)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/zabbix/" class="tag-link-2.5" title="1 Posts">zabbix<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-2.5" title="1 Posts">响应式<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="tag-link-2.5" title="1 Posts">自动化测试<small>(1)</small></a>
+      
+         <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link-2.5" title="1 Posts">账户系统<small>(1)</small></a>
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+</body>
+</html>
+
