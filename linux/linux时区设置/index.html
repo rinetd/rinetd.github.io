@@ -1,0 +1,1869 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<title>Linux 时区设置 - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="https://segmentfault.com/a/1190000005026503 GMT &#43; 8 = UTC &#43; 8 = CST CST= UTC &#43; 8 = GMT &#43; 8 北京时间等于 UTC &#43; 8 小时 CST:中国标准时间（China Standard Time) 等价于 UTC:世界标准时间(Universal">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Linux 时区设置 - 时光小栈">
+<meta itemprop="description" content="https://segmentfault.com/a/1190000005026503 GMT &#43; 8 = UTC &#43; 8 = CST CST= UTC &#43; 8 = GMT &#43; 8 北京时间等于 UTC &#43; 8 小时 CST:中国标准时间（China Standard Time) 等价于 UTC:世界标准时间(Universal">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux 时区设置 - 时光小栈" />
+<meta property="og:description" content="https://segmentfault.com/a/1190000005026503 GMT &#43; 8 = UTC &#43; 8 = CST CST= UTC &#43; 8 = GMT &#43; 8 北京时间等于 UTC &#43; 8 小时 CST:中国标准时间（China Standard Time) 等价于 UTC:世界标准时间(Universal">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/linux/linux%E6%97%B6%E5%8C%BA%E8%AE%BE%E7%BD%AE/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+<link rel="canonical" href="//blog.pytool.com/linux/linux%E6%97%B6%E5%8C%BA%E8%AE%BE%E7%BD%AE/">
+<link rel='shortlink' href="//blog.pytool.com/linux/linux%E6%97%B6%E5%8C%BA%E8%AE%BE%E7%BD%AE/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/algorithm/">Algorithm</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/awesome/">Awesome</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/database/">Database</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/devops/">Devops</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/frontend/">Frontend</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/language/">Language</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/software/">Software</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/wiki/">Wiki</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/windows/">Windows</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/me/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    
+    
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+          
+        
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a rel="nofollow" href="//blog.pytool.com/categories/linux/" rel="category tag">linux</a>
+                </li>
+                
+                
+                  <li><a href="//blog.pytool.com/tags/timezone">timezone</a> </li>
+                
+              </ul>
+
+
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Linux 时区设置</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年09月27日 15:58:27 · 6576 Words ·
+                    ~14min reading time |
+                    
+                    
+                    <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/Linux%e6%97%b6%e5%8c%ba%e8%ae%be%e7%bd%ae.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<p><a href="https://segmentfault.com/a/1190000005026503" target="_blank">https://segmentfault.com/a/1190000005026503</a></p>
+
+<p>GMT + 8 = UTC + 8 = CST<br />
+CST= UTC + 8 = GMT + 8  北京时间等于 UTC + 8 小时<br />
+CST:中国标准时间（China Standard Time)  等价于<br />
+UTC:世界标准时间(Universal Time/Temps Cordonn&amp;eacute) + 8<br />
+GMT：格林尼治标准时间(Greenwich Mean Time) 等于UTC时间<br />
+PST是太平洋标准时间（西八区），与北京时间（东八区）时差-16个小时，也就是北京时间减去16就是PST时间。而PDT比PST早1个小时，就是说PDT与北京时间时差为-15小时<br />
+<code>timedatectl</code></p>
+
+<pre><code>  Local time: Mon 2018-01-15 18:07:21 CST
+</code></pre>
+
+<p>Universal time: Mon 2018-01-15 10:07:21 UTC</p>
+
+<pre><code>    RTC time: Mon 2018-01-15 18:07:21
+   Time zone: Asia/Shanghai (CST, +0800)
+ NTP enabled: yes
+</code></pre>
+
+<p>NTP synchronized: yes<br />
+ RTC in local TZ: yes</p>
+
+<pre><code>  DST active: n/a
+</code></pre>
+
+<h1 id="linux-如何计算系统显示时间">linux 如何计算系统显示时间</h1>
+
+<ul>
+<li>计算机上显示时间 locatetime<br /></li>
+<li>硬件时间 就是主板上BIOS的RTC 时钟时间<br /></li>
+
+<li><p>设置时区 [UTC] 就是伦敦时间 [PRC]是Asia/Shanghai别名 北京时间 可以通过tzselect进行设置<br />
+Linux系统上显示的time总是通过系统上的timezone设置的</p>
+
+<h1 id="如何保证windows和linux时间同步">如何保证windows和linux时间同步？</h1></li>
+
+<li><p>设置显示时间为  本地时间(Local time) CST - sudo timedatectl set-local-rtc true</p></li>
+
+<li><p>硬件时间[RTC]为 本地时间(Local time) CST - hwclock &ndash;systohc &ndash;localtime  # 将LOCAL时间存入RTC<br />
+注意: RTC设为本地时间会有告警;<br />
+因为硬件时钟不能保存时区和夏令时调整，修改后就无法从硬件时钟中读取出准确标准时间；不建议修改。</p>
+
+<p>在左边的导航菜单，导航到 <code>HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\TimeZoneInformation</code><br />
+在右边窗口，右键点击空白位置，然后选择 New &gt;&gt; DWORD(32 bit) Value。 <code>RealTimeIsUniversal</code> 并设置值为 1。</p></li>
+</ul>
+
+<ol>
+<li><p>设置硬件[RTC]时间为(UTC)   &ndash;adjust-system-clock  根据时钟时间设置显示时间<br />
+timedatectl set-local-rtc 0   # 设置硬件时间为(UTC)<br />
+##等效命令<br />
+hwclock &ndash;systohc &ndash;utc        # 将UTC时间存入RTC<br />
+hwclock &ndash;systohc &ndash;localtime  # 将LOCAL时间存入RTC</p></li>
+
+<li><p>设置时区  timezone <code>/etc/timezone</code><br />
+echo &ldquo;Asia/Shanghai&rdquo; &gt; /etc/timezone<br />
+timedatectl set-timezone UTC<br />
+timedatectl set-timezone PRC<br />
+<code>timedatectl set-timezone Asia/Shanghai</code></p></li>
+
+<li><p>设置本地时间localtime <code>/etc/localtime</code></p></li>
+</ol>
+
+<p><code>sudo dpkg-reconfigure -f noninteractive tzdata</code><br />
+等价 <code>sudo DEBIAN_FRONTEND=noninteractive dpkg-reconfigure tzdata</code><br />
+等价 <code>ln -snf /usr/share/zoneinfo/$TZ /etc/localtime</code></p>
+
+<p>#<br />
+timedatectl list-timezones<br />
+timedatectl set-timezone “Asia/Kolkata”<br />
+timedatectl set-local-rtc 0<br />
+timedatectl set-ntp true     === systemctl enable ntpd</p>
+
+<p>2.设置日期与时间</p>
+
+<p>timedatectl set-time &ldquo;YYYY-MM-DD HH:MM:SS&rdquo;<br />
+timedatectl set-time &ldquo;YYYY-MM-DD&rdquo;<br />
+timedatectl set-time &ldquo;HH:MM:SS&rdquo;</p>
+
+<p>################################################################################<br />
+最近在搞RTC，常用的两个命令式 date 和 hwclock。</p>
+
+<p>date命令：操作内核时间（可以理解为软件时间）</p>
+
+<pre><code>#date -s 20110120        //设置本地日期为 2011年01月20号，这样会把具体时间设置成空00:00:00
+#date -s 12:23:23        //设置本地时间，不会对日期做更改
+#date -s &quot;12:12:23 2011-01-20&quot;   //设置日期和具体时间
+</code></pre>
+
+<p>hwclock命令：操作硬件RTC芯片时间（可以理解为硬件时间）</p>
+
+<pre><code>hwclock -r or hwclock --show           显示硬件时钟与日期
+hwclock -s or hwclock --hctosys        将系统时钟调整为与目前的硬件时钟一致。
+hwclock -w or hwclock --systohc        将硬件时钟调整为与目前的系统时钟一致。
+
+功能说明：显示与设定硬件时钟。
+    语法：hwclock [--adjust][--debug][--directisa][--hctosys][--show][--systohc][--test]
+[--utc][--version][--set --date=&lt;日期与时间&gt;]
+
+    补充说明：在Linux中有硬件时钟与系统时钟等两种时钟。硬件时钟是指主机板上的时钟设备，也就是通常可在BIOS画面设定的时钟。系统时钟则是指 kernel中的时钟。当Linux启动时，系统时钟会去读取硬件时钟的设定，之后系统时钟即独立运作。所有Linux相关指令与函数都是读取系统时钟的设定。
+
+    参数：
+    --adjust 　hwclock每次更改硬件时钟时，都会记录在/etc/adjtime文件中。使用--adjust参数，可使hwclock根据先前的记录来估算硬件时钟的偏差，并用来校正目前的硬件时钟。
+    --debug 　显示hwclock执行时详细的信息。
+    --directisa hwclock预设从/dev/rtc设备来存取硬件时钟。若无法存取时，可用此参数直接以I/O指令来存取硬件时钟。
+    --hctosys   将系统时钟调整为与目前的硬件时钟一致。
+    --set --date=&lt;日期与时间&gt; 　设定硬件时钟。
+    --show      显示硬件时钟的时间与日期。
+    --systohc   将硬件时钟调整为与目前的系统时钟一致。
+    --test      仅测试程序，而不会实际更改硬件时钟。
+    --utc       若要使用格林威治时间，请加入此参数，hwclock会执行转换的工作。
+    --version   显示版本信息
+</code></pre>
+
+<p>&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash; Linux时间相差8小时备忘录 &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;</p>
+
+<p>一、内核启动时</p>
+
+<p>内核先读取配置文件 /etc/sysconfig/clock 来确定RTC存的是LOCAL or UTC</p>
+
+<p>vi /etc/sysconfig/clock</p>
+
+<p>ZONE=&ldquo;Asia/Shanghai&rdquo;      # 本地时区<br />
+UTC=true                  # true表示RTC保存的时间是UTC时间，false表示保存的是本地时间<br />
+ARC=false                 # 参考hwclock的manpage<br />
+SRM=false</p>
+
+<p>接着内核调用函数 rtc_systohc()，从RTC内读时间，并根据LOCAL or UTC来设置系统时间</p>
+
+<p>二、hwclock设置RTC芯片</p>
+
+<p>hwclock &ndash;systohc &ndash;utc        # 将UTC时间存入RTC<br />
+hwclock &ndash;systohc &ndash;localtime  # 将LOCAL时间存入RTC</p>
+
+<p>hwclock &ndash;systohc<br />
+没有指定LOCAL or UTC，hwclock 根据配置来确定RTC里面存LOCAL orUTC<br />
+找配置文件的优先级顺序为：</p>
+
+<pre><code>$ADJTIME_PATH、/var/state/adjtime、/var/lib/hwclock/adjtime、/etc/adjtime
+</code></pre>
+
+<p>配置文件内有写LOCAL 或 RTC<br />
+没有配置文件的话，hwclock认为RTC里面存的是LOCAL</p>
+
+<p>三、时区配置</p>
+
+<p>cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime<br />
+########<br />
+I&rsquo;ve been using the following script to set Ubuntu 14.04 servers to UTC timezone:</p>
+
+<pre><code>echo &quot;Etc/UTC&quot; &gt; /etc/timezone
+dpkg-reconfigure --frontend noninteractive tzdata
+echo UTC=yes &gt;&gt; /etc/default/rcS
+</code></pre>
+
+<p>Now, in 16.04 it seems that I can configure everything with timedatectl. Now my script looks like:</p>
+
+<pre><code>timedatectl set-local-rtc 0   # 设置硬件时间为(UTC)
+timedatectl set-timezone UTC  # 设置显示时间为 (UTC)
+timedatectl set-ntp 1
+
+timedatectl set-local-rtc 1   # 设置硬件时钟为本地时区(PRC)
+timedatectl set-timezone PRC  # 设显示时间为中国区时间(UTC+8)
+timedatectl
+</code></pre>
+
+<p>将你的硬件时钟设置为本地时区(PRC)：</p>
+
+<h1 id="timedatectl-set-local-rtc-1">timedatectl set-local-rtc 1</h1>
+
+<p>将你的硬件时钟设置为协调世界时（UTC）：</p>
+
+<h1 id="timedatectl-set-local-rtc-0">timedatectl set-local-rtc 0</h1>
+
+<p>将Linux系统时钟同步到远程NTP服务器</p>
+
+<p>NTP即Network Time Protocol（网络时间协议），是一个互联网协议，用于同步计算机之间的系统时钟。timedatectl实用程序可以自动同步你的Linux系统时钟到使用NTP的远程服务器。</p>
+
+<p><strong>注意</strong>，你必须在系统上安装NTP以实现与NTP服务器的自动时间同步。</p>
+
+<p>要开始自动时间同步到远程NTP服务器，在终端键入以下命令。</p>
+
+<h1 id="timedatectl-set-ntp-true">timedatectl set-ntp true</h1>
+
+<p>要禁用NTP时间同步，在终端键入以下命令。</p>
+
+<h1 id="timedatectl-set-ntp-false">timedatectl set-ntp false</h1>
+
+<p>只设置时间的话，我们可以使用set-time开关以及HH：MM：SS（小时，分，秒）的时间格式。</p>
+
+<h1 id="timedatectl-set-time-15-58-30">timedatectl set-time 15:58:30</h1>
+
+<p>7.只设置日期的话，我们可以使用set-time开关以及YY：MM：DD（年，月，日）的日期格式。</p>
+
+<h1 id="timedatectl-set-time-20151120">timedatectl set-time 20151120</h1>
+
+<p>8.设置日期和时间：</p>
+
+<h1 id="timedatectl-set-time-16-10-40-2015-11-20">timedatectl set-time &lsquo;16:10:40 2015-11-20&rsquo;</h1>
+
+<p>通用协调时(UTC, Universal Time Coordinated) 与 格林尼治平均时(GMT, Greenwich Mean Time) 与北京时间的关系。<br />
+GMT=UTC<br />
+UTC+8=北京时间</p>
+
+<p>UTC和GMT都是指的格林尼治标准时间，只不过UTC的称呼更为正式一点。两者的区别在于前者是一个天文上的概念，而后者是基于一个原子钟。在UTC中，每一年或两年会有一个“闰秒”，而我们一般不理 会这个“闰秒”，但是在Java中，这造成我们有时会出现60秒或61秒。<br />
+整个地球分为二十四时区，每个时区都有自己的本地时间。在国际无线电通信场合，为了统一起见，使用一个统一的时间，称为通用协调时(UTC, Universal Time Coordinated)。UTC与格林尼治平均时(GMT, Greenwich Mean Time)一样，都与英国伦敦的本地时相同。在本文中，UTC与GMT含义完全相同。<br />
+北京时区是东八区，领先UTC八个小时，在电子邮件信头的Date域记为+0800。如果在电子邮件的信头中有这么一行：<br />
+Date: Fri, 08 Nov 2002 09:42:22 +0800<br />
+说明信件的发送地的地方时间是二○○二年十一月八号，星期五，早上九点四十二分（二十二秒），这个地方的本地时领先UTC八个小时(+0800， 就是东八区时间)。电子邮件信头的Date域使用二十四小时的时钟，而不使用AM和PM来标记上下午。</p>
+
+<p>以这个电子邮件的发送时间为例，如果要把这个时间转化为UTC，可以使用一下公式：<br />
+UTC + 时区差 ＝ 本地时间<br />
+时区差东为正，西为负。在此，把东八区时区差记为 +0800，<br />
+<code>UTC + (＋0800) = 本地（北京）时间 (1)</code><br />
+那么，<code>UTC = 本地时间（北京时间)）- 0800 (2)</code><br />
+0942 - 0800 = 0142<br />
+即UTC是当天凌晨一点四十二分二十二秒。如果结果是负数就意味着是UTC前一天，把这个负数加上2400就是UTC在前一天的时间。例如，本地（北京）时间是 0432 （凌晨四点三十二分），那么，UTC就是 0432 - 0800 = -0368，负号意味着是前一天， -0368 + 2400 = 2032，既前一天的晚上八点三十二分。<br />
+纽约的时区是西五区，比UTC落后五个小时，记为 -0500：<br />
+UTC ＋ （-0500） = 纽约时间 （3）<br />
+UTC ＝ 纽约时间 ＋ 0500 （4）<br />
+把（2）式 － （4）式相比较，<br />
+UTC = 北京时间 － 0800 ＝ 纽约时间 ＋ 0500 （5）<br />
+即 北京时间 ＝ 纽约时间 ＋ 1300 （6）<br />
+即北京时间领先纽约时间十 三个小时，由（6）式，<br />
+纽约时间 ＝ 北京时间 － 1300 （7）<br />
+在四月下旬，纽约又换用夏令时，又称为日光节约时，比标准纽约时间提前一个小时，实际成为西四区的标准时间，成为 -0400。<br />
+UTC ＋ （－0400） = 纽约夏令时，套用以上公式，<br />
+北京时间 ＝ 纽约夏令时 ＋ 1200<br />
+纽约夏令时 ＝ 北京时间 － 1200<br />
+在这些转换中，最重要的公式就是<br />
+UTC ＋ 时区差 ＝ 本地时间<br />
+时区差东为正，西为负。例如，东八区（北京）是 +0800，西五区（纽约）是-0500，加州是西八区，是-0800，美国中部时区是西六区，-0600，美国山地时区是西七区，-0700，太平洋时区是西八区，-0800，在夏天使用夏时制，成为-0700。德国时区是东一区，+0100，夏天变为+0200。<br />
+多数电子邮件程序，例如Outlook Express，在显示时间时，计算机程序把时间先转换成为本地时间再显示，例如，邮件的Date域为：<br />
+Date: Fri, 08 Nov 2002 09:42:22 +0800<br />
+Outlook Express在显示时就显示为：<br />
+Date: Thur, 07 Nov 2002 08:42:22 pm，把北京时间转换成为了纽约时间，而且把二十四小时格式的时间转换成为了十二小时的格式。当然，为了时间转换正确，发送方和接受方的计算机的时区都要设置正确，在这里，发送方的时区要正确地设为北京时区东八区，而我的时区要设为西五区。<br />
+为了方便起见，我在这里放上纽约，加洲以及北京实时显示的时钟，以省去计算的麻烦。</p>
+
+<p>格林尼治标准时间（GMT，旧译“格林威治平均时间”或“格林威治标准时间”）是指位于伦敦郊区的皇家格林尼治天文台的标准时间，因为本初子午线被定义在通过那里的经线。<br />
+  理论上来说，格林尼治标准时间的正午是指当太阳横穿格林尼治子午线时（也就是在格林尼治上空最高点时）的时间。由于地球在它的椭圆轨道里的运动速度不均匀，这个时刻可能和实际的太阳时相差16分钟。<br />
+  地球每天的自转是有些不规则的，而且正在缓慢减速。所以，格林尼治时间已经不再被作为标准时间使用。现在的标准时间——协调世界时（UTC）——由原子钟提供。<br />
+  自1924年2月5日开始，格林尼治天文台每隔一小时会向全世界发放调时信息<br />
+  中国大陆、中国香港、中国澳门、中国台湾、蒙古国、新加坡、马来西亚、菲律宾、西澳大利亚州的时间与UTC的时差均为+8，也就是UTC+8</p>
+
+<h1 id="时间以及时区设置">时间以及时区设置</h1>
+
+<p>首先确认使用[UTC]还是local time.</p>
+
+<ol>
+<li>UTC(Universal Time Coordinated)=GMT(Greenwich Mean Time)<br /></li>
+<li>Local time 是你手表上的时间<br />
+<br /></li>
+</ol>
+
+<p>传统的POSIX计算机(Solaris,bsd,unix)使用UTC格式<br />
+linux可以处理UTC时间和蹩脚的Windows所使用的local time</p>
+
+<p>到底是使用UTC还是local time可以这样来确定：<br />
+如果机器上同时安装有Linux和Windows，建议使用local time<br />
+如果机器上只安装有Linux，建议使用utc<br />
+确定后编辑/etc/sysconfig/clock, UTC=0 是local time; UTC=1 是UTC(GMT)</p>
+
+<p>1) 使用cat /etc/sysconfig/clock查看当前时区<br />
+linux5:~ # cat /etc/sysconfig/clock</p>
+
+<h2 id="path-system-environment-clock">Path:                System/Environment/Clock</h2>
+
+<h2 id="description-information-about-your-timezone-and-time">Description:         Information about your timezone and time</h2>
+
+<h2 id="type-string">Type:                string</h2>
+
+<h2 id="servicerestart-boot-clock">ServiceRestart:      boot.clock</h2>
+
+<p>#</p>
+
+<h1 id="set-to-u-if-your-system-clock-is-set-to-utc-and-to-localtime">Set to &ldquo;-u&rdquo; if your system clock is set to UTC, and to &ldquo;&ndash;localtime&rdquo;</h1>
+
+<h1 id="if-your-clock-runs-that-way">if your clock runs that way.</h1>
+
+<p>#<br />
+HWCLOCK=&ldquo;-u&rdquo;</p>
+
+<h2 id="type-string-europe-berlin-europe-london-europe-paris">Type:                string(Europe/Berlin,Europe/London,Europe/Paris)</h2>
+
+<h2 id="servicerestart-boot-clock-1">ServiceRestart:      boot.clock</h2>
+
+<p>#</p>
+
+<h1 id="timezone-e-g-cet">Timezone (e.g. CET)</h1>
+
+<h1 id="this-will-set-usr-lib-zoneinfo-localtime">(this will set /usr/lib/zoneinfo/localtime)</h1>
+
+<p>#<br />
+TIMEZONE=&ldquo;US/Pacific&rdquo;<br />
+DEFAULT_TIMEZONE=&ldquo;US/Pacific&rdquo;<br />
+linux5:~ #</p>
+
+<p>2) 使用tzselect设置时区,最后结果如下</p>
+
+<p>You can make this change permanent for yourself by appending the line</p>
+
+<pre><code>    TZ='Asia/Shanghai'; export TZ
+</code></pre>
+
+<p>to the file &lsquo;.profile&rsquo; in your home directory; then log out and log in again.</p>
+
+<p>Here is that TZ value again, this time on standard output so that you<br />
+can use the /usr/bin/tzselect command in shell scripts:<br />
+Asia/Shanghai<br />
+linux5:~ #</p>
+
+<p>3) 复制相应的时区文件，替换系统默认时区<br />
+linux5:~ # cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime<br />
+linux5:~ #</p>
+
+<p>4) 将当前时间写入BIOS永久生效（避免重启后失效）<br />
+linux5:~ # hwclock<br />
+Tue Jan 29 18:22:59 2008  -0.565688 seconds<br />
+linux5:~ #</p>
+
+<ol>
+<li>配置ntp客户端<br />
+编辑/etc/ntp.conf,增加一行server 10.30.1.10,其中10.30.1.105就是时钟服务器,如下<br />
+linux:/var/log # grep -v # /etc/ntp.conf<br />
+<br /></li>
+</ol>
+
+<p>server 10.30.1.105</p>
+
+<p>查看ntp服务的状态<br />
+linux:/var/log # /etc/init.d/xntpd  status<br />
+Checking for network time protocol daemon (NTPD):                    unused</p>
+
+<p>设置时区以及时间<br />
+/usr/sbin/zic -l PRC<br />
+/bin/date &ldquo;+%H:%M:%S - %d-%m-%Y&rdquo;</p>
+
+<p>写回硬件时钟<br />
+/sbin/hwclock &ndash;hctosys &ndash;localtime<br />
+或者写回硬件时钟： hwclock &ndash;systohc</p>
+
+<p>在/etc/rc.d/rc5.d创建xntp服务的启动脚本<br />
+linux:/etc/rc.d/rc5.d # ln -s ../xntpd S14xntpd<br />
+查看ntp时间调整纪录<br />
+linux:/var/log # grep ntp messages<br />
+Aug 14 07:19:51 linux ntpdate[2837]: step time server 10.30.1.105 offset 2.010174 sec<br />
+Aug 14 07:19:51 linux ntpd[2884]: ntpd 4.2.0a@1.1213-r Wed Jun 30 18:37:03 UTC 2004 (1)<br />
+Aug 14 07:19:51 linux ntpd[2884]: precision = 1.000 usec<br />
+Aug 14 07:19:51 linux ntpd[2884]: Listening on interface wildcard, 0.0.0.0#123<br />
+Aug 14 07:19:51 linux ntpd[2884]: Listening on interface wildcard, ::#123<br />
+Aug 14 07:19:51 linux ntpd[2884]: Listening on interface lo, 127.0.0.1#123<br />
+Aug 14 07:19:51 linux ntpd[2884]: Listening on interface eth0, 10.40.157.66#123<br />
+Aug 14 07:19:51 linux ntpd[2884]: kernel time sync status 0040</p>
+
+<p>mmscbill:~ # date<br />
+Wed May  7 15:53:10 CST 2008<br />
+这里时区设置没有错. PRC是时区的名称,它对应/usr/share/lib/zoneinfo下的PRC时区文件.<br />
+CST是Chinese Standard Time的缩写,用在date命令的输出中.它是定义在PRC时区文件中.看<br />
+一下/usr/share/lib/zoneinfo/src下的asia文件就知道是怎么回事了.</p>
+
+<p>修改系统时间(bjchenxu，laixi781211，hutuworm)<br />
+date -s “2003-04-14 cst”，cst指时区，时间设定用date -s 18:10<br />
+修改后执行clock -w 写到CMOS<br />
+hwclock &ndash;systohc<br />
+set the hardware clock to the current system time</p>
+
+<p>timedatectl命令对于RHEL / CentOS 7和基于Fedora 21+的分布式系统来说，是一个新工具，它作为systemd系统和服务管理器的一部分，代替旧的传统的用在基于Linux分布式系统的sysvinit守护进程的date命令。</p>
+
+<p>timedatectl命令可以查询和更改系统时钟和设置，你可以使用此命令来设置或更改当前的日期，时间和时区，或实现与远程NTP服务器的自动系统时钟同步。</p>
+
+<p>在本教程中，我要讲的是，如何在你的Linux系统上，通过使用来自于终端使用timedatectl命令的NTP，设置date、time、timezone和synchronize time来管理时间。</p>
+
+<p>让你的Linux服务器或系统保持正确的时间是一个很好的实践，它有以下优点：</p>
+
+<pre><code>维护及时操作的系统任务，因为在Linux中的大多数任务都是由时间来控制的。
+记录事件和系统上其它信息等的正确时间。
+</code></pre>
+
+<p>如何查找和设置Linux本地时区</p>
+
+<p>1.要显示系统的当前时间和日期，使用命令行中的timedatectl命令，如下：</p>
+
+<h1 id="timedatectl-status">timedatectl  status</h1>
+
+<p>在上面的示例中，RTC time就是硬件时钟的时间。</p>
+
+<p>2.Linux系统上的time总是通过系统上的timezone设置的，要查看当前时区，按如下做：</p>
+
+<h1 id="timedatectl">timedatectl</h1>
+
+<p>OR</p>
+
+<h1 id="timedatectl-grep-time">timedatectl | grep Time</h1>
+
+<p>3.要查看所有可用的时区，运行以下命令：</p>
+
+<h1 id="timedatectl-list-timezones">timedatectl list-timezones</h1>
+
+<p>4.要根据地理位置找到本地的时区，运行以下命令：</p>
+
+<h1 id="timedatectl-list-timezones-egrep-o-asia-b">timedatectl list-timezones |  egrep  -o “Asia/B.*”</h1>
+
+<h1 id="timedatectl-list-timezones-egrep-o-europe-l">timedatectl list-timezones |  egrep  -o “Europe/L.*”</h1>
+
+<h1 id="timedatectl-list-timezones-egrep-o-america-n">timedatectl list-timezones |  egrep  -o “America/N.*”</h1>
+
+<p>5.要在Linux中设置本地时区，使用set-timezone开关，如下所示。</p>
+
+<h1 id="timedatectl-set-timezone-asia-kolkata">timedatectl set-timezone “Asia/Kolkata”</h1>
+
+<p>推荐使用和设置协调世界时，即UTC。</p>
+
+<h1 id="timedatectl-set-timezone-utc">timedatectl set-timezone UTC</h1>
+
+<p>你需要输入正确命名的时区，否者在你改变时区的时候，可能会发生错误。在下面的例子中，由于 “Asia/Kalkata” 这个时区是不正确的，因此导致了错误。</p>
+
+<p>如何在Linux中设置时间和日期</p>
+
+<p>6.你可以使用timedatectl命令，设置系统上的日期和时间，如下所示：</p>
+
+<p>设置Linux中的时间</p>
+
+<p>只设置时间的话，我们可以使用set-time开关以及HH：MM：SS（小时，分，秒）的时间格式。</p>
+
+<h1 id="timedatectl-set-time-15-58-30-1">timedatectl set-time 15:58:30</h1>
+
+<p>在Linux中设置日期</p>
+
+<p>7.只设置日期的话，我们可以使用set-time开关以及YY：MM：DD（年，月，日）的日期格式。</p>
+
+<h1 id="timedatectl-set-time-20151120-1">timedatectl set-time 20151120</h1>
+
+<p>8.设置日期和时间：</p>
+
+<h1 id="timedatectl-set-time-16-10-40-2015-11-20-1">timedatectl set-time &lsquo;16:10:40 2015-11-20&rsquo;</h1>
+
+<p>如何在Linux中查找和设置硬件时钟</p>
+
+<p>9.要设置硬件时钟以协调世界时，UTC，可以使用 set-local-rtc boolean-value选项，如下所示：</p>
+
+<p>首先确定你的硬件时钟是否设置为本地时区：</p>
+
+<h1 id="timedatectl-grep-local">timedatectl | grep local</h1>
+
+<p>将你的硬件时钟设置为本地时区：</p>
+
+<h1 id="timedatectl-set-local-rtc-1-1">timedatectl set-local-rtc 1</h1>
+
+<p>将你的硬件时钟设置为协调世界时（UTC）：</p>
+
+<h1 id="timedatectl-set-local-rtc-0-1">timedatectl set-local-rtc 0</h1>
+
+<p>将Linux系统时钟同步到远程NTP服务器</p>
+
+<p>NTP即Network Time Protocol（网络时间协议），是一个互联网协议，用于同步计算机之间的系统时钟。timedatectl实用程序可以自动同步你的Linux系统时钟到使用NTP的远程服务器。</p>
+
+<p>注意，你必须在系统上安装NTP以实现与NTP服务器的自动时间同步。</p>
+
+<p>要开始自动时间同步到远程NTP服务器，在终端键入以下命令。</p>
+
+<h1 id="timedatectl-set-ntp-true-1">timedatectl set-ntp true</h1>
+
+<p>要禁用NTP时间同步，在终端键入以下命令。</p>
+
+<h1 id="timedatectl-set-ntp-false-1">timedatectl set-ntp false</h1>
+
+<p>总结</p>
+
+<p>本教程中描述的都是一些非常简单的例子，希望它们能对你设置各种Linux系统时钟和时区有帮助。有不同的看法，也请不吝指教。</p>
+
+<p>译文链接：<a href="http://www.codeceo.com/article/linux-timedatectl-set-time.html" target="_blank">http://www.codeceo.com/article/linux-timedatectl-set-time.html</a><br />
+英文原文：How to Set Time, Timezone and Synchronize System Clock Using timedatectl Comman</p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/linux/linux%E6%97%B6%E5%8C%BA%E8%AE%BE%E7%BD%AE/">blog.pytool.com/linux/linux%E6%97%B6%E5%8C%BA%E8%AE%BE%E7%BD%AE/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/linux/linux-fstab/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Linux 下/etc/fstab文件详解</span>
+      </a>
+      
+  </li>
+</ul>
+
+    
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/devops/">Devops</a>
+        <small>(55)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/docker/">Docker</a>
+        <small>(15)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(67)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux/">Linux</a>
+        <small>(76)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
+        <small>(107)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/windows/">Windows</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+        <small>(22)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(29)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(42)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    
+    
+     
+  
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a rel="nofollow" class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+   
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/linux/linux-swap%E5%88%86%E5%8C%BA%E6%96%87%E4%BB%B6/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux 用文件作为Swap分区</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-1" title="1 Posts">ack<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-1" title="1 Posts">activity<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-1" title="1 Posts">adb<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/android/" class="tag-link-1" title="1 Posts">android<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-11" title="1 Posts">ansible<small>(11)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-1" title="1 Posts">aria2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-1" title="1 Posts">arp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-1" title="1 Posts">atom<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-2" title="1 Posts">awesome<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-1" title="1 Posts">awk<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-1" title="1 Posts">bash<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-1" title="1 Posts">bat<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-1" title="1 Posts">bc<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-1" title="1 Posts">bower<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/brew/" class="tag-link-1" title="1 Posts">brew<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bubble/" class="tag-link-1" title="1 Posts">bubble<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-1" title="1 Posts">burpsuite<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-1" title="1 Posts">cash<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link-1" title="1 Posts">coffeescript<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-1" title="1 Posts">composer<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-1" title="1 Posts">crontab<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-12" title="1 Posts">css<small>(12)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-1" title="1 Posts">css3<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-1" title="1 Posts">ctags<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-1" title="1 Posts">date<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-1" title="1 Posts">dd<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-1" title="1 Posts">debug<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/defer/" class="tag-link-1" title="1 Posts">defer<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-1" title="1 Posts">devops<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-1" title="1 Posts">discourse<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-1" title="1 Posts">dnsmasq<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-16" title="1 Posts">docker<small>(16)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-1" title="1 Posts">dpkg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/drone/" class="tag-link-17" title="1 Posts">drone<small>(17)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link-1" title="1 Posts">editorconfig<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-1" title="1 Posts">enca<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-2" title="1 Posts">encode<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/etcd/" class="tag-link-2" title="1 Posts">etcd<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-1" title="1 Posts">expect<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expr/" class="tag-link-1" title="1 Posts">expr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/extundelete/" class="tag-link-1" title="1 Posts">extundelete<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-1" title="1 Posts">ffmpeg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-1" title="1 Posts">find<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-1" title="1 Posts">firewall<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/flannel/" class="tag-link-1" title="1 Posts">flannel<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-1" title="1 Posts">fonts<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-1" title="1 Posts">fstab<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gdb/" class="tag-link-1" title="1 Posts">gdb<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-1" title="1 Posts">git<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-1" title="1 Posts">go<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link-1" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-25" title="1 Posts">golang<small>(60)</small></a>
+          
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-1" title="1 Posts">gpg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-1" title="1 Posts">grep<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gui/" class="tag-link-1" title="1 Posts">gui<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-1" title="1 Posts">hexdump<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-2" title="1 Posts">hexo<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-1" title="1 Posts">hmac<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-1" title="1 Posts">html<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-1" title="1 Posts">html5<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-1" title="1 Posts">http<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-1" title="1 Posts">httperf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-9" title="1 Posts">hugo<small>(9)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-1" title="1 Posts">hydra<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-1" title="1 Posts">i18n<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-1" title="1 Posts">ifttt<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/index/" class="tag-link-1" title="1 Posts">index<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-1" title="1 Posts">insomnia<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-1" title="1 Posts">intent<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-1" title="1 Posts">ios<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-1" title="1 Posts">iotop<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-2" title="1 Posts">ip<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-13" title="1 Posts">iptables<small>(13)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-1" title="1 Posts">irc<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-6" title="1 Posts">javascript<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/join/" class="tag-link-1" title="1 Posts">join<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/js/" class="tag-link-1" title="1 Posts">js<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/k8s/" class="tag-link-1" title="1 Posts">k8s<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/key/" class="tag-link-1" title="1 Posts">key<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/kubernetes/" class="tag-link-10" title="1 Posts">kubernetes<small>(10)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-1" title="1 Posts">linux命令<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-1" title="1 Posts">locale<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-1" title="1 Posts">losetup<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-1" title="1 Posts">lsof<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lunr/" class="tag-link-1" title="1 Posts">lunr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-1" title="1 Posts">lvm2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-8" title="1 Posts">mariadb<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-1" title="1 Posts">mathjax<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-1" title="1 Posts">mbr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-1" title="1 Posts">md5<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-1" title="1 Posts">md5sum<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-2" title="1 Posts">mongodb<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-1" title="1 Posts">mtr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-25" title="1 Posts">mysql<small>(47)</small></a>
+          
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/navicat64/" class="tag-link-1" title="1 Posts">navicat64<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-1" title="1 Posts">nessus<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-1" title="1 Posts">netcat<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-1" title="1 Posts">netsh<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-1" title="1 Posts">nexpose<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-25" title="1 Posts">nginx<small>(27)</small></a>
+          
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-3" title="1 Posts">nmap<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-1" title="1 Posts">nodejs<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-2" title="1 Posts">npm<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ntp/" class="tag-link-1" title="1 Posts">ntp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-1" title="1 Posts">oauth2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-1" title="1 Posts">objdump<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-1" title="1 Posts">openssl<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pdf/" class="tag-link-1" title="1 Posts">pdf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/perf/" class="tag-link-1" title="1 Posts">perf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-3" title="1 Posts">php<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pip/" class="tag-link-1" title="1 Posts">pip<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/playbook/" class="tag-link-1" title="1 Posts">playbook<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prepare/" class="tag-link-1" title="1 Posts">prepare<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prometheus/" class="tag-link-6" title="1 Posts">prometheus<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-1" title="1 Posts">proxy<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-1" title="1 Posts">redis<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-1" title="1 Posts">rename<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-1" title="1 Posts">repo<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-1" title="1 Posts">resin<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-1" title="1 Posts">rethinkdb<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-1" title="1 Posts">retina<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-1" title="1 Posts">root<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-1" title="1 Posts">route<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-1" title="1 Posts">rtsp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-1" title="1 Posts">ruby<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-1" title="1 Posts">samba<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-1" title="1 Posts">sar<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scoop/" class="tag-link-1" title="1 Posts">scoop<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-1" title="1 Posts">scp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-1" title="1 Posts">selenium<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-1" title="1 Posts">sftp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/signal/" class="tag-link-1" title="1 Posts">signal<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-1" title="1 Posts">snap<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-1" title="1 Posts">sort<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-1" title="1 Posts">ssl<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-1" title="1 Posts">sso<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-1" title="1 Posts">ssrf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/strace/" class="tag-link-1" title="1 Posts">strace<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-1" title="1 Posts">sublime<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-1" title="1 Posts">sudo<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-1" title="1 Posts">svg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-1" title="1 Posts">swagger<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-1" title="1 Posts">swarm<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysctlcd/" class="tag-link-1" title="1 Posts">sysctlcd<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/syslog/" class="tag-link-1" title="1 Posts">syslog<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-1" title="1 Posts">systemctl<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/taints/" class="tag-link-1" title="1 Posts">taints<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/telegraf/" class="tag-link-1" title="1 Posts">telegraf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-1" title="1 Posts">time<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-1" title="1 Posts">tmux<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-1" title="1 Posts">top<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-1" title="1 Posts">tr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-1" title="1 Posts">ulimit<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-1" title="1 Posts">unpack<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link-1" title="1 Posts">update-alternatives<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-1" title="1 Posts">useradd<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-11" title="1 Posts">vim<small>(11)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link-1" title="1 Posts">visualstudiocode<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-1" title="1 Posts">vlc<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-1" title="1 Posts">wget<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-1" title="1 Posts">windows10<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-1" title="1 Posts">windump<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xargs/" class="tag-link-1" title="1 Posts">xargs<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-1" title="1 Posts">xmllint<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-1" title="1 Posts">xpath<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/zabbix/" class="tag-link-1" title="1 Posts">zabbix<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-1" title="1 Posts">响应式<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-1" title="1 Posts">微服务<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link-1" title="1 Posts">账户系统<small>(1)</small></a>
+        
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+</body>
+</html>
+

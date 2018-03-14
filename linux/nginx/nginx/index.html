@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="//blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<title>Linux命令 Nginx - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="Nginx怎样部署SSL证书 nginx运维与架构 nginx服务器安装及配置文件详解 Nginx 配置文件详解 Nginx RTMP 模块 nginx-rtmp-module 指令详解 使用Nginx&#43;FFMPE">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Linux命令 Nginx - 时光小栈">
+<meta itemprop="description" content="Nginx怎样部署SSL证书 nginx运维与架构 nginx服务器安装及配置文件详解 Nginx 配置文件详解 Nginx RTMP 模块 nginx-rtmp-module 指令详解 使用Nginx&#43;FFMPE">
+<meta itemprop="image" content="//blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux命令 Nginx - 时光小栈" />
+<meta property="og:description" content="Nginx怎样部署SSL证书 nginx运维与架构 nginx服务器安装及配置文件详解 Nginx 配置文件详解 Nginx RTMP 模块 nginx-rtmp-module 指令详解 使用Nginx&#43;FFMPE">
+<meta property="og:image" content="//blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="//blog.pytool.com/linux/nginx/nginx/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+<link rel="canonical" href="//blog.pytool.com/linux/nginx/nginx/">
+<link rel='shortlink' href="//blog.pytool.com/linux/nginx/nginx/"/>
+<link rel="shortcut icon" href="//blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="//blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="//blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="//blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="//blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="//blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="//blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="//blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="//blog.pytool.com/public/font/hack/css/hack.min.css">
+
+
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="//blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="//blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/">Home</a>
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/algorithm/">Algorithm</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/awesome/">Awesome</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/basic/">Basic</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/database/">Database</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/devops/">Devops</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/edit/">Edit</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/frontend/">Frontend</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hacker/">Hacker</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/hardware/">Hardware</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/language/">Language</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/linux/">Linux</a>
+          
+        </li>
+        
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/software/">Software</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/wiki/">Wiki</a>
+          
+        </li>
+        
+          
+          <li class="menu-item menu-item-type-post_type menu-item-object-page">
+            <a rel="nofollow" href="//blog.pytool.com/windows/">Windows</a>
+          
+        </li>
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="//blog.pytool.com/me/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    
+    
+    
+
+  </nav>
+  
+
+  <div class="container group">
+    <div class="container-inner">
+      <div class="group pad">
+          
+        
+
+      </div>
+    </div>
+    
+  </div>
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a rel="nofollow" href="//blog.pytool.com/categories/linux/" rel="category tag">linux</a>
+                </li>
+                
+                
+                  <li><a href="//blog.pytool.com/tags/nginx">nginx</a> </li>
+                
+              </ul>
+
+
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Linux命令 Nginx</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年02月26日 15:30:01 · 10850 Words ·
+                    ~22min reading time |
+                    
+                    
+                    <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/nginx/nginx.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      
+
+<p><a href="http://www.2zzt.com/dome.php?id=7591" target="_blank">Nginx怎样部署SSL证书</a><br />
+<a href="http://www.nginx.cn/" target="_blank">nginx运维与架构</a><br />
+<a href="https://segmentfault.com/a/1190000002797601" target="_blank">nginx服务器安装及配置文件详解</a><br />
+<a href="http://my.oschina.net/duxuefeng/blog/34880" target="_blank">Nginx 配置文件详解</a><br />
+<a href="http://blog.csdn.net/defonds/article/details/9274479" target="_blank">Nginx RTMP 模块 nginx-rtmp-module 指令详解</a><br />
+<a href="http://blog.csdn.net/wutong_login/article/details/42292787" target="_blank">使用Nginx+FFMPEG搭建HLS直播转码服务器</a><br />
+<a href="http://blog.chinaunix.net/uid-26000296-id-4335063.html" target="_blank">nginx搭建支持http和rtmp协议的流媒体服务器</a><br />
+<a href="http://blog.csdn.net/leixiaohua1020/article/details/11704355" target="_blank">RTMP流媒体播放过程</a><br />
+<a href="https://github.com/johnf/m3u8-segmenter" target="_blank">m3u8-segmenter</a><br />
+<a href="http://www.nginx.cn/install" target="_blank">Nginx安装</a><br />
+<a href="http://www.linuxidc.com/Linux/2013-10/92147.htm" target="_blank">root与alias的区别</a><br />
+<a href="https://segmentfault.com/a/1190000002797606" target="_blank">nginx配置location总结及rewrite规则写法</a><br />
+<a href="http://www.cnblogs.com/kevingrace/p/6095027.html" target="_blank">nginx应用总结（1）&ndash;基础认识和应用配置 - 散尽浮华 - 博客园</a><br />
+<a href="https://segmentfault.com/a/1190000002797601" target="_blank">nginx服务器安装及配置文件详解 - Sean&rsquo;s Notes - SegmentFault</a><br />
+<a href="http://www.jianshu.com/nb/3981534" target="_blank">Nginx.org 文档 - 文集 - 简书</a><br />
+<a href="http://www.jianshu.com/p/1430e4046fd9" target="_blank">翻译 nginx 的 server names </a></p>
+
+<p><a href="http://www.ttlsa.com/nginx/web-server-nginx-optimization/" target="_blank">Web服务器Nginx多方位优化策略 - 运维生存时间</a><br />
+######</p>
+
+<h2 id="hsts">HSTS</h2>
+
+<p><code>add_header Strict-Transport-Security max-age=2592000;</code></p>
+
+<p>nginx 仅通过检查请求首部中的 “HOST” 字段来决定让哪个虚拟主机处理访问请求</p>
+
+<ol>
+<li>要配置访问 /aa 到  /var/www/hello.test.com/index.html ，你应该使用 alias 而不是 root<br /></li>
+<li>要配置访问 /aa 到  /var/www/hello.test.com/aa/index.html 则使用root 会将匹配路径带入URI<br /></li>
+<li>配置子目录应该闭合，不要使用 /aa ，应该使用 /aa/ ; /aa 用于文件匹配<br /></li>
+<li>alias后面必须要用“/”结束，否则会找不到文件的;而root则可有可无<br /></li>
+<li>在 / 中配置root，在 /other 中配置alias是一个好习惯。<br />
+<br /></li>
+</ol>
+
+<pre><code>index index.html index.htm;
+
+location  /html {
+   alias /usr/share/nginx/;      ## /usr/share/nginx/
+   autoindex on;
+   autoindex_localtime on;
+   autoindex_exact_size off;
+}
+location /download/ {
+    root /etc/nginx;              ## /etc/nginx/download
+    index index.html index.htm;
+}
+
+</code></pre>
+
+<pre><code># 禁用php脚本解析
+location ~* ^/uploads/.*.(php|php5)$ {
+      deny all;
+}
+</code></pre>
+
+<p><a href="https://regexper.com" target="_blank">https://regexper.com</a><br />
+. ： 匹配除换行符以外的任意字符<br />
+\d ：匹配数字</p>
+
+<p>? ： 重复0次或1次</p>
+
+<ul>
+<li>： 重复1次或更多次<br /></li>
+<li>： 重复0次或更多次<br />
+<br /></li>
+</ul>
+
+<p>^ ： 匹配字符串的开始<br />
+$ ： 匹配字符串的介绍<br />
+{n} ： 重复n次<br />
+{n,} ： 重复n次或更多次<br />
+[c] ： 匹配单个字符c<br />
+[a-z] ： 匹配a-z小写字母的任意一个</p>
+
+<h1 id="location匹配规则">location匹配规则</h1>
+
+<ol>
+<li><p>语法规则（按优先级）<code>(=) &gt; (^~) &gt; (~,~*) &gt; ( ) &gt; (/)</code></p>
+
+<p>=     精确匹配<br />
+^~    url路径匹配 一般用来匹配目录,nginx不对url做编码，因此请求为/static/20%/aa，可以被规则^~ /static/ /aa匹配到（注意是空格）<br />
+~     区分大小写的正则匹配<br />
+~*    不区分大小写的正则匹配<br />
+!~    区分大小写不匹配的正则<br />
+!~*   不区分大小写不匹配的正则<br />
+&rsquo; &lsquo;   普通匹配<br />
+@     命名的 location，使用在内部定向时，例如 error_page, try_files<br />
+/  通用匹配，任何请求都会匹配到。</p></li>
+</ol>
+
+<h1 id="nginx下的rewrite规则">Nginx下的rewrite规则</h1>
+
+<p>一．正则表达式匹配，其中：<br />
+ ~ 为区分大小写匹配<br />
+ ~* 为不区分大小写匹配<br />
+ !~和!~* 分别为区分大小写不匹配及不区分大小写不匹配</p>
+
+<p>二．文件及目录匹配，其中：<br />
+ -f和!-f用来判断是否存在文件<br />
+ -d和!-d用来判断是否存在目录<br />
+ -e和!-e用来判断是否存在文件或目录<br />
+ -x和!-x用来判断文件是否可执行</p>
+
+<p>rewrite regex replacement [flag];</p>
+
+<p>三．rewrite指令的最后一项参数为flag标记，四种flag标记：<br />
+注: 这里的地址栏url不变，只是针对站内的url地址而言，只要是url重写必定改变地址栏</p>
+
+<ol>
+<li>为空 - 地址栏url不变，但是内容已经变化，也是永久性的重定向。地址栏url不变<br /></li>
+<li>last - url重写后，停止处理后续rewrite指令集马上发起一个新的请求，再次进入server块，重试location匹配，超过10次匹配不到报500错误，地址栏url不变 ;内部跳转,只对站内url重写有效<br /></li>
+<li>break - url重写后，停止处理后续rewrite指令集，并不在重新查找,直接使用当前资源，不再执行location里余下的语句，完成本次请求，地址栏url不变<br /></li>
+<li>redirect - 返回302临时重定向，url会跳转，爬虫不会更新url。 地址栏url重写<br /></li>
+<li>permanent - 返回301永久重定向。url会跳转。爬虫会更新url。 地址栏url重写<br />
+<br /></li>
+</ol>
+
+<p>1.last        相当于apache里面的[L]标记，表示rewrite。<br />
+2.break       本条规则匹配完成后，终止匹配，不再匹配后面的规则。<br />
+3.redirect    返回302临时重定向，浏览器地址会显示跳转后的URL地址。<br />
+4.permanent   返回301永久重定向，浏览器地址会显示跳转后的URL地址。</p>
+
+<pre><code>location /download/ {
+    rewrite ^(/download/.*)/media/(.*)..*$ $1/mp3/$2.mp3 break;
+    rewrite ^(/download/.*)/audio/(.*)..*$ $1/mp3/$2.ra break;
+    return 403;
+}
+</code></pre>
+
+<p>上面的正则表达式的一部分可以用圆括号，方便之后按照顺序用$1-$9来引用。<br />
+小括号()之间匹配的内容，可以在后面通过$1来引用，$2表示的是前面第二个()里的内容。正则里面容易让人困惑的是\转义特殊字符。</p>
+
+<p>如果我们将类似URL/photo/123456 重定向到/path/to/photo/12/1234/123456.png<br />
+rewrite &ldquo;/photo/([0-9]{2})([0-9]{2})([0-9]{2})&ldquo;/path/to/photo/$1/$1$2/$1$2$3.png ;</p>
+
+<p>如果一个URI匹配指定的正则表达式regex，URI就按照replacement重写。<br />
+rewrite按配置文件中出现的顺序执行。flags标志可以停止继续处理。<br />
+如果replacement以&rdquo;http://&ldquo;或&rdquo;https://&ldquo;开始，将不再继续处理，这个重定向将返回给客户端。<br />
+flag可以是如下参数<br />
+last 停止处理后续rewrite指令集，然后对当前重写的新URI在rewrite指令集上重新查找。<br />
+break 停止处理后续rewrite指令集，并不在重新查找,但是当前location内剩余非rewrite语句和location外的的非rewrite语句可以执行。<br />
+redirect 如果replacement不是以http:// 或https://开始，返回302临时重定向<br />
+permant 返回301永久重定向<br />
+最终完整的重定向URL包括请求scheme(http://,https://等),请求的server_name_in_redirect和 port_in_redirec三部分 ，说白了也就是http协议 域名 端口三部分组成。</p>
+
+<h2 id="nginx的全局变量-ngx-http-core-module模块提供的变量">nginx的全局变量 ngx_http_core_module模块提供的变量</h2>
+
+<pre><code>remote_addr               客户端ip,如：192.168.4.2
+binary_remote_addr        客户端ip（二进制)
+remote_port               客户端port，如：50472
+remote_user               已经经过Auth Basic Module验证的用户名
+host                       请求主机头字段，否则为服务器名称，如:dwz.stamhe.com
+`rewrite ^(.*)$	https://$host$1	permanent;` 强制跳转到https
+request                    用户请求信息，如：GET /?_a=index&amp;_m=show&amp;count=10 HTTP/1.1
+request_filename         当前请求的文件的路径名，由root或alias和URI request组合而成，如：/webserver/htdocs/dwz/index.php
+status                        请求的响应状态码,如:200
+body_bytes_sent         响应时送出的body字节数数量。即使连接中断，这个数据也是精确的,如：40
+content_length            请求头中的Content-length字段
+content_type               请求头中的Content-Type字段
+http_referer                 引用地址
+http_user_agent           客户端agent信息,如：Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/536.11 (KHTML, like Gecko) Chrome/20.0.1132.57 Safari/536.11
+args                            如：_a=index&amp;_m=show&amp;count=10
+document_uri               与$uri相同,如：/index.php
+document_root             针对当前请求的根路径设置值,如：/webserver/htdocs/dwz
+hostname                     如：centos53.localdomain
+http_cookie                  客户端cookie信息
+cookie_COOKIE             cookie   COOKIE变量的值
+is_args                         如果有$args参数，这个变量等于”?”，否则等于”&quot;，空值，如?
+limit_rate                      这个变量可以限制连接速率，0表示不限速
+query_string                 与$args相同,如：_a=index&amp;_m=show&amp;count=10
+realpath_root                如：/webserver/htdocs/dwz
+request_body                记录POST过来的数据信息
+request_body_file          客户端请求主体信息的临时文件名
+request_method            客户端请求的动作，通常为GET或POST,如：GET
+request_uri                   包含请求参数的原始URI，不包含主机名，如：”/foo/bar.php?arg=baz”。不能修改。如：/index.php?_a=index&amp;_m=show&amp;count=10
+scheme                         HTTP方法（如http，https）,如：http
+uri                                如：/index.php
+request_completion        如果请求结束，设置为OK. 当请求未结束或如果该请求不是请求链串的最后一个时，为空(Empty)，如：OK
+server_protocol              请求使用的协议，通常是HTTP/1.0或HTTP/1.1，如：HTTP/1.1
+server_addr                   服务器地址，在完成一次系统调用后可以确定这个值，如：192.168.4.129
+server_name                  服务器名称，如：dwz.stamhe.com
+server_port                   请求到达服务器的端口号,如：80
+</code></pre>
+
+<pre><code>$arg_PARAMETER HTTP 请求中某个参数的值，如/index.php?site=www.ttlsa.com，可以用$arg_site取得www.ttlsa.com这个值.
+$args HTTP 请求中的完整参数。例如，在请求/index.php?width=400&amp;height=200 中，$args表示字符串width=400&amp;height=200.
+$binary_remote_addr 二进制格式的客户端地址。例如：\x0A\xE0B\x0E
+$body_bytes_sent 表示在向客户端发送的http响应中，包体部分的字节数
+$content_length 表示客户端请求头部中的Content-Length 字段
+$content_type 表示客户端请求头部中的Content-Type 字段
+$cookie_COOKIE 表示在客户端请求头部中的cookie 字段
+$document_root 表示当前请求所使用的root 配置项的值
+$uri 表示当前请求的URI，不带任何参数
+$document_uri 与$uri 含义相同
+$request_uri 表示客户端发来的原始请求URI，带完整的参数。$uri和$document_uri未必是用户的原始请求，在内部重定向后可能是重定向后的URI，而$request_uri 永远不会改变，始终是客户端的原始URI.
+$host 表示客户端请求头部中的Host字段。如果Host字段不存在，则以实际处理的server（虚拟主机）名称代替。如果Host字段中带有端口，如IP:PORT，那么$host是去掉端口的，它的值为IP。$host 是全小写的。这些特性与http_HEADER中的http_host不同，http_host只取出Host头部对应的值。
+$hostname 表示 Nginx所在机器的名称，与 gethostbyname调用返回的值相同
+$http_HEADER 表示当前 HTTP请求中相应头部的值。HEADER名称全小写。例如，示请求中 Host头部对应的值 用 $http_host表
+$sent_http_HEADER 表示返回客户端的 HTTP响应中相应头部的值。HEADER名称全小写。例如，用 $sent_ http_content_type表示响应中 Content-Type头部对应的值
+$is_args 表示请求中的 URI是否带参数，如果带参数，$is_args值为 ?，如果不带参数，则是空字符串
+$limit_rate 表示当前连接的限速是多少，0表示无限速
+$nginx_version 表示当前 Nginx的版本号
+$query_string 请求 URI中的参数，与 $args相同，然而 $query_string是只读的不会改变
+$remote_addr 表示客户端的地址
+$remote_port 表示客户端连接使用的端口
+$remote_user 表示使用 Auth Basic Module时定义的用户名
+$request_filename 表示用户请求中的 URI经过 root或 alias转换后的文件路径
+$request_body 表示 HTTP请求中的包体，该参数只在 proxy_pass或 fastcgi_pass中有意义
+$request_body_file 表示 HTTP请求中的包体存储的临时文件名
+$request_completion 当请求已经全部完成时，其值为 “ok”。若没有完成，就要返回客户端，则其值为空字符串；或者在断点续传等情况下使用 HTTP range访问的并不是文件的最后一块，那么其值也是空字符串。
+$request_method 表示 HTTP请求的方法名，如 GET、PUT、POST等
+$scheme 表示 HTTP scheme，如在请求 https://nginx.com/中表示 https
+$server_addr 表示服务器地址
+$server_name 表示服务器名称
+$server_port 表示服务器端口
+$server_protocol 表示服务器向客户端发送响应的协议，如 HTTP/1.1或 HTTP/1.0
+</code></pre>
+
+<p>upstram 模块</p>
+
+<p>upstream 模块负债负载均衡模块，通过一个简单的调度算法来实现客户端IP到后端服务器的负载均衡。我先学习怎么用，具体的使用实例以后再说。</p>
+
+<pre><code>upstream iyangyi.com{
+    ip_hash;
+    server 192.168.12.1:80;
+    server 192.168.12.2:80 down;
+    server 192.168.12.3:8080  max_fails=3  fail_timeout=20s;
+    server 192.168.12.4:8080;
+}
+</code></pre>
+
+<p>在上面的例子中，通过upstream指令指定了一个负载均衡器的名称iyangyi.com。这个名称可以任意指定，在后面需要的地方直接调用即可。</p>
+
+<p>里面是ip_hash这是其中的一种负载均衡调度算法，下面会着重介绍。紧接着就是各种服务器了。用server关键字表识，后面接ip。</p>
+
+<p>Nginx的负载均衡模块目前支持4种调度算法:</p>
+
+<pre><code>weight 轮询（默认）。每个请求按时间顺序逐一分配到不同的后端服务器，如果后端某台服务器宕机，故障系统被自动剔除，使用户访问不受影响。weight。指定轮询权值，weight值越大，分配到的访问机率越高，主要用于后端每个服务器性能不均的情况下。
+ip_hash。每个请求按访问IP的hash结果分配，这样来自同一个IP的访客固定访问一个后端服务器，有效解决了动态网页存在的session共享问题。
+fair。比上面两个更加智能的负载均衡算法。此种算法可以依据页面大小和加载时间长短智能地进行负载均衡，也就是根据后端服务器的响应时间来分配请求，响应时间短的优先分配。Nginx本身是不支持fair的，如果需要使用这种调度算法，必须下载Nginx的upstream_fair模块。
+url_hash。按访问url的hash结果来分配请求，使每个url定向到同一个后端服务器，可以进一步提高后端缓存服务器的效率。Nginx本身是不支持url_hash的，如果需要使用这种调度算法，必须安装Nginx 的hash软件包。
+</code></pre>
+
+<p>在HTTP Upstream模块中，可以通过server指令指定后端服务器的IP地址和端口，同时还可以设定每个后端服务器在负载均衡调度中的状态。常用的状态有：</p>
+
+<pre><code>down，表示当前的server暂时不参与负载均衡。
+backup，预留的备份机器。当其他所有的非backup机器出现故障或者忙的时候，才会请求backup机器，因此这台机器的压力最轻。
+max_fails，允许请求失败的次数，默认为1。当超过最大次数时，返回proxy_next_upstream 模块定义的错误。
+fail_timeout，在经历了max_fails次失败后，暂停服务的时间。max_fails可以和fail_timeout一起使用。
+</code></pre>
+
+<p>注意 当负载调度算法为ip_hash时，后端服务器在负载均衡调度中的状态不能是weight和backup。</p>
+
+<p>################################################################################<br />
+1.卸载Nginx<br />
+apt-get remove nginx*</p>
+
+<h2 id="准备工作">准备工作</h2>
+
+<p>mkdir Nginx &amp;&amp; cd ~/Nginx/</p>
+
+<p><a href="http://nginx.org/" target="_blank">Nginx官网</a></p>
+
+<ol>
+<li>下载<br />
+<code>git clone git@github.com:nginx/nginx.git</code><br /></li>
+<li>配置<br />
+<code>./configure --help</code><br />
+<br /></li>
+</ol>
+
+<p>###############################################################################</p>
+
+<p>sudo apt-get -y install autoconf automake build-essential libass-dev libgpac-dev libsdl1.2-dev libtheora-dev libtool libvdpau-dev libvorbis-dev libx11-dev libxext-dev libxfixes-dev pkg-config texi2html zlib1g-dev libssl-dev</p>
+
+<h3 id="编译环境gcc-g-开发库之类">编译环境gcc g++ 开发库之类</h3>
+
+<p>ubuntu/debian：</p>
+
+<pre><code>sudo apt-get install build-essential
+sudo apt-get install libtool
+</code></pre>
+
+<p>centos/redhat：</p>
+
+<pre><code>安装make：
+yum -y install gcc automake autoconf libtool make
+安装g++:
+yum install gcc gcc-c++
+</code></pre>
+
+<h3 id="添加依赖-install-zlib-zlib-devel-openssl-openssl-devel-pcre-devel">添加依赖: install zlib zlib-devel openssl openssl-devel pcre-devel</h3>
+
+<p>zlib:nginx提供gzip模块，需要zlib库支持<br />
+openssl:nginx提供ssl功能<br />
+pcre:支持地址重写rewrite功能</p>
+
+<h3 id="1-pcre-需要安装libpcre">1.pcre 需要安装libpcre</h3>
+
+<p>&ndash;with-pcre=/usr/local/src/pcre-8.34</p>
+
+<p>ubuntu/debian：<br />
+sudo apt-get install libpcre3 libpcre3-dev</p>
+
+<p>centos/redhat：<br />
+yum install pcre-devel</p>
+
+<pre><code>wget ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.34.tar.gz
+tar -zxvf pcre-8.34.tar.gz
+cd pcre-8.34
+./configure
+make
+make install
+</code></pre>
+
+<h3 id="2-ssl-modules-require-the-openssl-library">2.SSL modules require the OpenSSL library</h3>
+
+<p>&ndash;with-http_ssl_module<br />
+&ndash;with-openssl=/usr/local/src/openssl-1.0.1c</p>
+
+<p>ubuntu/debian：<br />
+sudo apt-get install openssl<br />
+sudo apt-get install libssl-dev</p>
+
+<p>centos/redhat：<br />
+yum -y install openssl openssl-devel</p>
+
+<pre><code>wget http://www.openssl.org/source/openssl-1.0.1c.tar.gz
+tar -zxvf openssl-1.0.1c.tar.gz
+</code></pre>
+
+<h3 id="3-zlib">3.zlib</h3>
+
+<p>&ndash;with-zlib=/usr/local/src/zlib-1.2.8<br />
+安装zlib库<br />
+<a href="http://zlib.net/zlib-1.2.8.tar.gz" target="_blank">http://zlib.net/zlib-1.2.8.tar.gz</a> 下载最新的 zlib 源码包，使用下面命令下载编译和安装 zlib包：<br />
+cd /usr/local/src<br />
+wget <a href="http://zlib.net/zlib-1.2.8.tar.gz" target="_blank">http://zlib.net/zlib-1.2.8.tar.gz</a><br />
+tar -zxvf zlib-1.2.8.tar.gz<br />
+cd zlib-1.2.8<br />
+./configure<br />
+make<br />
+make install<br />
+################################################################################</p>
+
+<h2 id="模块">模块:</h2>
+
+<h2 id="编译安装ffmpeg及其依赖包">编译安装ffmpeg及其依赖包</h2>
+
+<p><a href="https://trac.ffmpeg.org/" target="_blank">https://trac.ffmpeg.org/</a><br />
+<code>git clone git@github.com:FFmpeg/FFmpeg.git</code><br />
+<code>cd ffmpeg</code><br />
+#./configure<br />
+&ndash;prefix=/opt/ffmpeg/ <br />
+&ndash;enable-version3 <br />
+&ndash;enable-libvpx <br />
+&ndash;enable-libfaac <br />
+&ndash;enable-libmp3lame <br />
+&ndash;enable-libvorbis <br />
+&ndash;enable-libx264 <br />
+&ndash;enable-libxvid <br />
+&ndash;enable-shared <br />
+&ndash;enable-gpl <br />
+&ndash;enable-postproc <br />
+&ndash;enable-nonfree <br />
+&ndash;enable-avfilter <br />
+&ndash;enable-pthreads<br />
+&ndash;prefix=/usr &ndash;extra-version=0ubuntu0.15.10.1 &ndash;build-suffix=-ffmpeg &ndash;toolchain=hardened &ndash;libdir=/usr/lib/x86_64-linux-gnu &ndash;incdir=/usr/include/x86_64-linux-gnu &ndash;enable-gpl &ndash;enable-shared &ndash;disable-stripping &ndash;enable-avresample &ndash;enable-avisynth &ndash;enable-frei0r &ndash;enable-gnutls &ndash;enable-ladspa &ndash;enable-libass &ndash;enable-libbluray &ndash;enable-libbs2b &ndash;enable-libcaca &ndash;enable-libcdio &ndash;enable-libflite &ndash;enable-libfontconfig &ndash;enable-libfreetype &ndash;enable-libfribidi &ndash;enable-libgme &ndash;enable-libgsm &ndash;enable-libmodplug &ndash;enable-libmp3lame &ndash;enable-libopenjpeg &ndash;enable-openal &ndash;enable-libopus &ndash;enable-libpulse &ndash;enable-librtmp &ndash;enable-libschroedinger &ndash;enable-libshine &ndash;enable-libspeex &ndash;enable-libtheora &ndash;enable-libtwolame &ndash;enable-libvorbis &ndash;enable-libvpx &ndash;enable-libwavpack &ndash;enable-libwebp &ndash;enable-libxvid &ndash;enable-libzvbi &ndash;enable-opengl &ndash;enable-x11grab &ndash;enable-libdc1394 &ndash;enable-libiec61883 &ndash;enable-libzmq &ndash;enable-libssh &ndash;enable-libsoxr &ndash;enable-libx264 &ndash;enable-libopencv &ndash;enable-libx265<br />
+#make &amp;&amp; make install<br />
+vim objs/Makefile (修改objs/Makefile文件, 去掉其中的&rdquo;-Werror&rdquo;), 然后就能够正常编译了.</p>
+
+<p><a href="https://github.com/arut/nginx-rtmp-module" target="_blank">nginx-rtmp-module</a><br />
+  <code>git clone git@github.com:arut/nginx-rtmp-module.git</code><br />
+  ./configure &ndash;add-module=/path/to/nginx-rtmp-module<br />
+  ./configure &ndash;add-module=/path/to/nginx-rtmp-module &ndash;with-http_ssl_module<br />
+  ./configure &ndash;add-module=/path/to-nginx/rtmp-module &ndash;with-debug</p>
+
+<p>#编译错误<br />
+./nginx-rtmp-module/ngx_rtmp_core_module.c</p>
+
+<pre><code>@@ -557,7 +557,11 @@ ngx_rtmp_core_listen(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+             break;
+         }
+
++#if (nginx_version &gt;= 1011000)
++        if (ngx_memcmp(ls[i].sockaddr + off, &amp;u.sockaddr + off, len) != 0) {
++#else
+         if (ngx_memcmp(ls[i].sockaddr + off, u.sockaddr + off, len) != 0) {
++#endif
+             continue;
+         }
+
+@@ -577,7 +581,11 @@ ngx_rtmp_core_listen(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
+
+     ngx_memzero(ls, sizeof(ngx_rtmp_listen_t));
+
++#if (nginx_version &gt;= 1011000)
++    ngx_memcpy(ls-&gt;sockaddr, &amp;u.sockaddr, u.socklen);
++#else
+     ngx_memcpy(ls-&gt;sockaddr, u.sockaddr, u.socklen);
++#endif
+
+     ls-&gt;socklen = u.socklen;
+     ls-&gt;wildcard = u.wildcard;
+</code></pre>
+
+<p><a href="http://h264.code-shop.com/trac/wiki/Mod-H264-Streaming-Nginx-Version2#Download" target="_blank">nginx_mod_h264_streaming(支持h264编码的视频)</a><br />
+wget <a href="http://h264.code-shop.com/download/nginx_mod_h264_streaming-2.2.7.tar.gz" target="_blank">http://h264.code-shop.com/download/nginx_mod_h264_streaming-2.2.7.tar.gz</a><br />
+tar -zxvf nginx_mod_h264_streaming-2.2.7.tar.gz</p>
+
+<p><code>git clone git@github.com:vivus-ignis/nginx_mod_h264_streaming.git</code></p>
+
+<p>./configure &ndash;add-module=$HOME/nginx_mod_h264_streaming &ndash;sbin-path=/usr/local/sbin &ndash;with-debug</p>
+
+<ol>
+<li>将 ./nginx_mod_h264_streaming/src/ngx_http_streaming_module.c 文件中以下代码删除或者是注释掉就可以了：<br />
+```<br />
+/* TODO: Win32 */<br />
+<br /></li>
+</ol>
+
+<p>// if (r-&gt;zero_in_uri)<br />
+// {<br />
+//    return NGX_DECLINED;<br />
+// }</p>
+
+<pre><code>
+################################################################################
+cp auto/configure .
+#配置nginx
+./configure \
+--prefix=/usr/local/nginx \
+--with-http_flv_module \
+--with-http_mp4_module \
+--with-http_ssl_module \
+--with-http_gzip_static_module \
+--with-http_stub_status_module \
+--with-pcre \
+--user=nginx \
+--group=nginx \
+--sbin-path=/usr/sbin/nginx \
+--conf-path=/etc/nginx/nginx.conf \
+--add-module=../nginx-rtmp-module \
+--add-module=../nginx_mod_h264_streaming \
+#--with-cc-opt=-I/opt/ffmpeg/include \
+--with-ld-opt=’-L/opt/ffmpeg/lib -Wl,-rpath=/opt/ffmpeg/lib’\
+
+#--pid-path=/usr/local/nginx/logs/nginx.pid \
+#--error-log-path=/usr/local/nginx/logs/error.log \
+#--http-log-path=/usr/local/nginx/logs/access.log \
+##编译错误解决
+1. mp4_reader.
+</code></pre>
+
+<h1 id="vim-objs-makefile-修改objs-makefile文件-去掉其中的-werror-然后就能够正常编译了">vim objs/Makefile (修改objs/Makefile文件, 去掉其中的&rdquo;-Werror&rdquo;), 然后就能够正常编译了.</h1>
+
+<pre><code>
+make -j4 &amp;&amp; sudo make install
+##
+make -f objs/Makefile install
+</code></pre>
+
+<p>mv &lsquo;/usr/sbin/nginx&rsquo; &lsquo;/usr/sbin/nginx.old&rsquo;<br />
+cp objs/nginx &lsquo;/usr/sbin/nginx&rsquo;</p>
+
+<p>mkdir -p &lsquo;/etc/nginx&rsquo;<br />
+cp conf/mime.types &lsquo;/etc/nginx/mime.types.default&rsquo;<br />
+cp conf/nginx.conf &lsquo;/etc/nginx/nginx.conf&rsquo;<br />
+cp conf/nginx.conf &lsquo;/etc/nginx/nginx.conf.default&rsquo;</p>
+
+<p>mkdir -p &lsquo;/usr/local/nginx/logs&rsquo;<br />
+cp -R docs/html &lsquo;/usr/local/nginx&rsquo;</p>
+
+<pre><code>##添加类型支持
+vim /usr/local/nginx/conf/mime.types
+</code></pre>
+
+<p>application/vnd.apple.mpegurl m3u8;<br />
+application/x-mpegURL                 m3u8;</p>
+
+<p>video/MP2T                             ts;<br />
+``<code>
+###################################################
+sudo vim /etc/nginx/nginx.conf
+</code> + include /etc/nginx/conf.d/*.conf; `</p>
+
+<p>1.建立nginx<br />
+sudo groupadd -r nginx<br />
+sudo useradd -s /sbin/nologin -g nginx -r nginx<br />
+id nginx　</p>
+
+<p>2.验证配置文件<br />
+sudo nginx -t<br />
+sudo nginx -t -c /usr/local/nginx/conf/nginx.conf</p>
+
+<p>3.启动nginx<br />
+sudo nginx<br />
+ps -ef | grep nginx</p>
+
+<p>4.更改配置重启nginx　　<br />
+nginx -s reload<br />
+kill -HUP 主进程号或进程号文件路径</p>
+
+<p>5.查询nginx主进程号<br />
+　　ps -ef | grep nginx<br />
+　　从容停止   kill -QUIT 主进程号<br />
+　　快速停止   kill -TERM 主进程号<br />
+　　强制停止   kill -9 nginx<br />
+　　若nginx.conf配置了pid文件路径，如果没有，则在logs目录下<br />
+　　kill -信号类型 &lsquo;/usr/local/nginx/logs/nginx.pid&rsquo;</p>
+
+<p>403解决办法：chown -R nginx:nginx /htdocs</p>
+
+<ol>
+<li>添加 crossdomain.xml 解决m3u8播放问题<br />
+sudo cp ./EasyDarwin/EasyDarwin/WinNTSupport/Movies/crossdomain.xml /usr/local/nginx/html/<br />
+<br /></li>
+</ol>
+
+<p>###################################################<br />
+cp auto/configure .</p>
+
+<h1 id="centos-默认配置">centos 默认配置</h1>
+
+<p>&ndash;prefix=/etc/nginx<br />
+ &ndash;sbin-path=/usr/sbin/nginx<br />
+ &ndash;conf-path=/etc/nginx/nginx.conf<br />
+ &ndash;error-log-path=/var/log/nginx/error.log<br />
+ &ndash;http-log-path=/var/log/nginx/access.log<br />
+ &ndash;pid-path=/var/run/nginx.pid<br />
+ &ndash;lock-path=/var/run/nginx.lock<br />
+ &ndash;http-client-body-temp-path=/var/cache/nginx/client_temp<br />
+ &ndash;http-proxy-temp-path=/var/cache/nginx/proxy_temp<br />
+ &ndash;http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp<br />
+ &ndash;http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp<br />
+ &ndash;http-scgi-temp-path=/var/cache/nginx/scgi_temp<br />
+ &ndash;user=nginx<br />
+ &ndash;group=nginx<br />
+ &ndash;with-http_ssl_module<br />
+ &ndash;with-http_realip_module<br />
+ &ndash;with-http_addition_module<br />
+ &ndash;with-http_sub_module<br />
+ &ndash;with-http_dav_module<br />
+ &ndash;with-http_flv_module<br />
+ &ndash;with-http_mp4_module<br />
+ &ndash;with-http_gunzip_module<br />
+ &ndash;with-http_gzip_static_module<br />
+ &ndash;with-http_random_index_module<br />
+ &ndash;with-http_secure_link_module<br />
+ &ndash;with-http_stub_status_module<br />
+ &ndash;with-http_auth_request_module<br />
+ &ndash;with-mail<br />
+ &ndash;with-mail_ssl_module<br />
+ &ndash;with-file-aio<br />
+ &ndash;with-ipv6<br />
+ &ndash;with-http_spdy_module<br />
+ &ndash;with-cc-opt=&lsquo;-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong &ndash;param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic&rsquo;</p>
+
+<p>configure arguments: ubuntu 16<br />
+ &ndash;with-cc-opt=&lsquo;-g -O2 -fPIE -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2&rsquo;<br />
+ &ndash;with-ld-opt=&lsquo;-Wl,-Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now&rsquo;<br />
+ &ndash;prefix=/usr/share/nginx<br />
+ &ndash;conf-path=/etc/nginx/nginx.conf<br />
+ &ndash;http-log-path=/var/log/nginx/access.log<br />
+ &ndash;error-log-path=/var/log/nginx/error.log<br />
+ &ndash;lock-path=/var/lock/nginx.lock<br />
+ &ndash;pid-path=/run/nginx.pid<br />
+ &ndash;http-client-body-temp-path=/var/lib/nginx/body<br />
+ &ndash;http-fastcgi-temp-path=/var/lib/nginx/fastcgi<br />
+ &ndash;http-proxy-temp-path=/var/lib/nginx/proxy<br />
+ &ndash;http-scgi-temp-path=/var/lib/nginx/scgi<br />
+ &ndash;http-uwsgi-temp-path=/var/lib/nginx/uwsgi<br />
+ &ndash;with-debug<br />
+ &ndash;with-pcre-jit<br />
+ &ndash;with-ipv6<br />
+ &ndash;with-http_ssl_module<br />
+ &ndash;with-http_stub_status_module<br />
+ &ndash;with-http_realip_module<br />
+ &ndash;with-http_auth_request_module<br />
+ &ndash;with-http_addition_module<br />
+ &ndash;with-http_dav_module<br />
+ &ndash;with-http_geoip_module<br />
+ &ndash;with-http_gunzip_module<br />
+ &ndash;with-http_gzip_static_module<br />
+ &ndash;with-http_image_filter_module<br />
+ &ndash;with-http_v2_module<br />
+ &ndash;with-http_sub_module<br />
+ &ndash;with-http_xslt_module<br />
+ &ndash;with-stream<br />
+ &ndash;with-stream_ssl_module<br />
+ &ndash;with-mail<br />
+ &ndash;with-mail_ssl_module<br />
+ &ndash;with-threads</p>
+
+<p>////////////////////////////////////////////////////////////////////<br />
+<a href="http://blog.csdn.net/eric1012/article/details/6052154" target="_blank">Nginx编译参数详细介绍</a><br />
+&ndash;prefix= 指向安装目录<br />
+&ndash;sbin-path 指向（执行）程序文件（nginx）<br />
+&ndash;conf-path= 指向配置文件（nginx.conf）<br />
+&ndash;error-log-path= 指向错误日志目录<br />
+&ndash;pid-path= 指向pid文件（nginx.pid）<br />
+&ndash;lock-path= 指向lock文件（nginx.lock）（安装文件锁定，防止安装文件被别人利用，或自己误操作。）<br />
+&ndash;user= 指定程序运行时的非特权用户<br />
+&ndash;group= 指定程序运行时的非特权用户组<br />
+&ndash;builddir= 指向编译目录<br />
+&ndash;with-rtsig_module 启用rtsig模块支持（实时信号）<br />
+&ndash;with-select_module 启用select模块支持（一种轮询模式,不推荐在高载环境下使用）禁用：&ndash;without-select_module<br />
+&ndash;with-poll_module 启用poll模块支持（功能与select相同，与select特性相同，为一种轮询模式,不推荐在高载环境下使用）<br />
+&ndash;with-file-aio 启用file aio支持（一种APL文件传输格式）<br />
+&ndash;with-ipv6 启用ipv6支持<br />
+&ndash;with-http_ssl_module 启用ngx_http_ssl_module支持（使支持https请求，需已安装openssl）<br />
+&ndash;with-http_realip_module 启用ngx_http_realip_module支持（这个模块允许从请求标头更改客户端的IP地址值，默认为关）<br />
+&ndash;with-http_addition_module 启用ngx_http_addition_module支持（作为一个输出过滤器，支持不完全缓冲，分部分响应请求）<br />
+&ndash;with-http_xslt_module 启用ngx_http_xslt_module支持（过滤转换XML请求）<br />
+&ndash;with-http_image_filter_module 启用ngx_http_image_filter_module支持（传输JPEG/GIF/PNG 图片的一个过滤器）（默认为不启用。gd库要用到）<br />
+&ndash;with-http_geoip_module 启用ngx_http_geoip_module支持（该模块创建基于与MaxMind GeoIP二进制文件相配的客户端IP地址的ngx_http_geoip_module变量）<br />
+&ndash;with-http_sub_module 启用ngx_http_sub_module支持（允许用一些其他文本替换nginx响应中的一些文本）<br />
+&ndash;with-http_dav_module 启用ngx_http_dav_module支持（增加PUT,DELETE,MKCOL：创建集合,COPY和MOVE方法）默认情况下为关闭，需编译开启<br />
+&ndash;with-http_flv_module 启用ngx_http_flv_module支持（提供寻求内存使用基于时间的偏移量文件）<br />
+&ndash;with-http_gzip_static_module 启用ngx_http_gzip_static_module支持（在线实时压缩输出数据流）<br />
+&ndash;with-http_random_index_module 启用ngx_http_random_index_module支持（从目录中随机挑选一个目录索引）<br />
+&ndash;with-http_secure_link_module 启用ngx_http_secure_link_module支持（计算和检查要求所需的安全链接网址）<br />
+&ndash;with-http_degradation_module  启用ngx_http_degradation_module支持（允许在内存不足的情况下返回204或444码）<br />
+&ndash;with-http_stub_status_module 启用ngx_http_stub_status_module支持（获取nginx自上次启动以来的工作状态）<br />
+&ndash;without-http_charset_module 禁用ngx_http_charset_module支持（重新编码web页面，但只能是一个方向&ndash;服务器端到客户端，并且只有一个字节的编码可以被重新编码）<br />
+&ndash;without-http_gzip_module 禁用ngx_http_gzip_module支持（该模块同-with-http_gzip_static_module功能一样）<br />
+&ndash;without-http_ssi_module 禁用ngx_http_ssi_module支持（该模块提供了一个在输入端处理处理服务器包含文件（SSI）的过滤器，目前支持SSI命令的列表是不完整的）<br />
+&ndash;without-http_userid_module 禁用ngx_http_userid_module支持（该模块用来处理用来确定客户端后续请求的cookies）<br />
+&ndash;without-http_access_module 禁用ngx_http_access_module支持（该模块提供了一个简单的基于主机的访问控制。允许/拒绝基于ip地址）<br />
+&ndash;without-http_auth_basic_module禁用ngx_http_auth_basic_module（该模块是可以使用用户名和密码基于http基本认证方法来保护你的站点或其部分内容）<br />
+&ndash;without-http_autoindex_module 禁用disable ngx_http_autoindex_module支持（该模块用于自动生成目录列表，只在ngx_http_index_module模块未找到索引文件时发出请求。）<br />
+&ndash;without-http_geo_module 禁用ngx_http_geo_module支持（创建一些变量，其值依赖于客户端的IP地址）<br />
+&ndash;without-http_map_module 禁用ngx_http_map_module支持（使用任意的键/值对设置配置变量）<br />
+&ndash;without-http_split_clients_module 禁用ngx_http_split_clients_module支持（该模块用来基于某些条件划分用户。条件如：ip地址、报头、cookies等等）<br />
+&ndash;without-http_referer_module 禁用disable ngx_http_referer_module支持（该模块用来过滤请求，拒绝报头中Referer值不正确的请求）<br />
+&ndash;without-http_rewrite_module 禁用ngx_http_rewrite_module支持（该模块允许使用正则表达式改变URI，并且根据变量来转向以及选择配置。如果在server级别设置该选项，那么他们将在 location之前生效。如果在location还有更进一步的重写规则，location部分的规则依然会被执行。如果这个URI重写是因为location部分的规则造成的，那么 location部分会再次被执行作为新的URI。 这个循环会执行10次，然后Nginx会返回一个500错误。）<br />
+&ndash;without-http_proxy_module 禁用ngx_http_proxy_module支持（有关代理服务器）<br />
+&ndash;without-http_fastcgi_module 禁用ngx_http_fastcgi_module支持（该模块允许Nginx 与FastCGI 进程交互，并通过传递参数来控制FastCGI 进程工作。 ）FastCGI一个常驻型的公共网关接口。<br />
+&ndash;without-http_uwsgi_module 禁用ngx_http_uwsgi_module支持（该模块用来医用uwsgi协议，uWSGI服务器相关）<br />
+&ndash;without-http_scgi_module 禁用ngx_http_scgi_module支持（该模块用来启用SCGI协议支持，SCGI协议是CGI协议的替代。它是一种应用程序与HTTP服务接口标准。它有些像FastCGI但他的设计 更容易实现。）<br />
+&ndash;without-http_memcached_module 禁用ngx_http_memcached_module支持（该模块用来提供简单的缓存，以提高系统效率）<br />
+-without-http_limit_zone_module 禁用ngx_http_limit_zone_module支持（该模块可以针对条件，进行会话的并发连接数控制）<br />
+&ndash;without-http_limit_req_module 禁用ngx_http_limit_req_module支持（该模块允许你对于一个地址进行请求数量的限制用一个给定的session或一个特定的事件）<br />
+&ndash;without-http_empty_gif_module 禁用ngx_http_empty_gif_module支持（该模块在内存中常驻了一个1*1的透明GIF图像，可以被非常快速的调用）<br />
+&ndash;without-http_browser_module 禁用ngx_http_browser_module支持（该模块用来创建依赖于请求报头的值。如果浏览器为modern ，则$modern_browser等于modern_browser_value指令分配的值；如 果浏览器为old，则$ancient_browser等于 ancient_browser_value指令分配的值；如果浏览器为 MSIE中的任意版本，则 $msie等于1）<br />
+&ndash;without-http_upstream_ip_hash_module 禁用ngx_http_upstream_ip_hash_module支持（该模块用于简单的负载均衡）<br />
+&ndash;with-http_perl_module 启用ngx_http_perl_module支持（该模块使nginx可以直接使用perl或通过ssi调用perl）<br />
+&ndash;with-perl_modules_path= 设定perl模块路径<br />
+&ndash;with-perl= 设定perl库文件路径<br />
+&ndash;http-log-path= 设定access log路径<br />
+&ndash;http-client-body-temp-path= 设定http客户端请求临时文件路径<br />
+&ndash;http-proxy-temp-path= 设定http代理临时文件路径<br />
+&ndash;http-fastcgi-temp-path= 设定http fastcgi临时文件路径<br />
+&ndash;http-uwsgi-temp-path= 设定http uwsgi临时文件路径<br />
+&ndash;http-scgi-temp-path= 设定http scgi临时文件路径<br />
+-without-http 禁用http server功能<br />
+&ndash;without-http-cache 禁用http cache功能<br />
+&ndash;with-mail 启用POP3/IMAP4/SMTP代理模块支持<br />
+&ndash;with-mail_ssl_module 启用ngx_mail_ssl_module支持<br />
+&ndash;without-mail_pop3_module 禁用pop3协议（POP3即邮局协议的第3个版本,它是规定个人计算机如何连接到互联网上的邮件服务器进行收发邮件的协议。是因特网电子邮件的第一个离线协议标 准,POP3协议允许用户从服务器上把邮件存储到本地主机上,同时根据客户端的操作删除或保存在邮件服务器上的邮件。POP3协议是TCP/IP协议族中的一员，主要用于 支持使用客户端远程管理在服务器上的电子邮件）<br />
+&ndash;without-mail_imap_module 禁用imap协议（一种邮件获取协议。它的主要作用是邮件客户端可以通过这种协议从邮件服务器上获取邮件的信息，下载邮件等。IMAP协议运行在TCP/IP协议之上， 使用的端口是143。它与POP3协议的主要区别是用户可以不用把所有的邮件全部下载，可以通过客户端直接对服务器上的邮件进行操作。）<br />
+&ndash;without-mail_smtp_module 禁用smtp协议（SMTP即简单邮件传输协议,它是一组用于由源地址到目的地址传送邮件的规则，由它来控制信件的中转方式。SMTP协议属于TCP/IP协议族，它帮助每台计算机在发送或中转信件时找到下一个目的地。）<br />
+&ndash;with-google_perftools_module 启用ngx_google_perftools_module支持（调试用，剖析程序性能瓶颈）<br />
+&ndash;with-cpp_test_module 启用ngx_cpp_test_module支持<br />
+&ndash;add-module= 启用外部模块支持<br />
+&ndash;with-cc= 指向C编译器路径<br />
+&ndash;with-cpp= 指向C预处理路径<br />
+&ndash;with-cc-opt= 设置C编译器参数（PCRE库，需要指定&ndash;with-cc-opt=”-I /usr/local/include”，如果使用select()函数则需要同时增加文件描述符数量，可以通过&ndash;with-cc- opt=”-D FD_SETSIZE=2048”指定。）<br />
+&ndash;with-ld-opt= 设置连接文件参数。（PCRE库，需要指定&ndash;with-ld-opt=”-L /usr/local/lib”。）<br />
+&ndash;with-cpu-opt= 指定编译的CPU，可用的值为: pentium, pentiumpro, pentium3, pentium4, athlon, opteron, amd64, sparc32, sparc64, ppc64<br />
+&ndash;without-pcre 禁用pcre库<br />
+&ndash;with-pcre 启用pcre库<br />
+&ndash;with-pcre= 指向pcre库文件目录<br />
+&ndash;with-pcre-opt= 在编译时为pcre库设置附加参数<br />
+&ndash;with-md5= 指向md5库文件目录（消息摘要算法第五版，用以提供消息的完整性保护）<br />
+&ndash;with-md5-opt= 在编译时为md5库设置附加参数<br />
+&ndash;with-md5-asm 使用md5汇编源<br />
+&ndash;with-sha1= 指向sha1库目录（数字签名算法，主要用于数字签名）<br />
+&ndash;with-sha1-opt= 在编译时为sha1库设置附加参数<br />
+&ndash;with-sha1-asm 使用sha1汇编源<br />
+&ndash;with-zlib= 指向zlib库目录<br />
+&ndash;with-zlib-opt= 在编译时为zlib设置附加参数<br />
+&ndash;with-zlib-asm= 为指定的CPU使用zlib汇编源进行优化，CPU类型为pentium, pentiumpro<br />
+&ndash;with-libatomic 为原子内存的更新操作的实现提供一个架构<br />
+&ndash;with-libatomic= 指向libatomic_ops安装目录<br />
+&ndash;with-openssl= 指向openssl安装目录<br />
+&ndash;with-openssl-opt 在编译时为openssl设置附加参数<br />
+&ndash;with-debug 启用debug日志</p>
+
+                      
+                    </div>
+                    <div style="border: 1px dashed #e0e0e0; padding: 10px 10px 10px 10px; background-color: #fffeee; background-repeat: no-repeat; background-attachment: scroll; background-position: 1% 50%; -moz-background-size: auto auto; -moz-background-clip: -moz-initial; -moz-background-origin: -moz-initial; -moz-background-inline-policy: -moz-initial;">
+    <div style="float:left;margin-top:0px;">
+    <img src="//blog.pytool.com/public/qrcode.jpg" width="129px" height="129px"/>
+    <div style="text-align:center;">微信扫一扫交流</div>
+    </div>
+    <div>
+        <p style="margin-top:0px;">作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+        
+        <br />本文出处：<a target="_blank" href="//blog.pytool.com/linux/nginx/nginx/">blog.pytool.com/linux/nginx/nginx/</a>
+        <br />
+        文章版权归本人所有，欢迎转载，但未经作者同意必须保留此段声明，且在文章页面明显位置给出原文连接，否则保留追究法律责任的权利。 </p>
+    </div>
+</div>
+
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="//blog.pytool.com/linux/nginx/nginx-status/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Linux命令 Nginx</span>
+      </a>
+      
+  </li>
+</ul>
+
+    
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/devops/">Devops</a>
+        <small>(55)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/docker/">Docker</a>
+        <small>(15)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/golang/">Golang</a>
+        <small>(67)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux/">Linux</a>
+        <small>(76)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
+        <small>(107)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/windows/">Windows</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+        <small>(22)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(29)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(42)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="//blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    
+    
+     
+  
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a rel="nofollow" class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+   
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="//blog.pytool.com/linux/nginx/nginx-basicauth-htpasswd/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux命令 Nginx basicauth</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ack/" class="tag-link-1" title="1 Posts">ack<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/activity/" class="tag-link-1" title="1 Posts">activity<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/adb/" class="tag-link-1" title="1 Posts">adb<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/android/" class="tag-link-1" title="1 Posts">android<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ansible/" class="tag-link-11" title="1 Posts">ansible<small>(11)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/aria2/" class="tag-link-1" title="1 Posts">aria2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/arp/" class="tag-link-1" title="1 Posts">arp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/atom/" class="tag-link-1" title="1 Posts">atom<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awesome/" class="tag-link-2" title="1 Posts">awesome<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/awk/" class="tag-link-1" title="1 Posts">awk<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bash/" class="tag-link-1" title="1 Posts">bash<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bat/" class="tag-link-1" title="1 Posts">bat<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bc/" class="tag-link-1" title="1 Posts">bc<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bower/" class="tag-link-1" title="1 Posts">bower<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/brew/" class="tag-link-1" title="1 Posts">brew<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/bubble/" class="tag-link-1" title="1 Posts">bubble<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/burpsuite/" class="tag-link-1" title="1 Posts">burpsuite<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cash/" class="tag-link-1" title="1 Posts">cash<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/coffeescript/" class="tag-link-1" title="1 Posts">coffeescript<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/composer/" class="tag-link-1" title="1 Posts">composer<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/crontab/" class="tag-link-1" title="1 Posts">crontab<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css/" class="tag-link-12" title="1 Posts">css<small>(12)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/css3/" class="tag-link-1" title="1 Posts">css3<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ctags/" class="tag-link-1" title="1 Posts">ctags<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/date/" class="tag-link-1" title="1 Posts">date<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dd/" class="tag-link-1" title="1 Posts">dd<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/debug/" class="tag-link-1" title="1 Posts">debug<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/defer/" class="tag-link-1" title="1 Posts">defer<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/devops/" class="tag-link-1" title="1 Posts">devops<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/discourse/" class="tag-link-1" title="1 Posts">discourse<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dnsmasq/" class="tag-link-1" title="1 Posts">dnsmasq<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/docker/" class="tag-link-16" title="1 Posts">docker<small>(16)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/dpkg/" class="tag-link-1" title="1 Posts">dpkg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/drone/" class="tag-link-17" title="1 Posts">drone<small>(17)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/editorconfig/" class="tag-link-1" title="1 Posts">editorconfig<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/enca/" class="tag-link-1" title="1 Posts">enca<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/encode/" class="tag-link-2" title="1 Posts">encode<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/etcd/" class="tag-link-2" title="1 Posts">etcd<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expect/" class="tag-link-1" title="1 Posts">expect<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/expr/" class="tag-link-1" title="1 Posts">expr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/extundelete/" class="tag-link-1" title="1 Posts">extundelete<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ffmpeg/" class="tag-link-1" title="1 Posts">ffmpeg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/find/" class="tag-link-1" title="1 Posts">find<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/firewall/" class="tag-link-1" title="1 Posts">firewall<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/flannel/" class="tag-link-1" title="1 Posts">flannel<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fonts/" class="tag-link-1" title="1 Posts">fonts<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/fstab/" class="tag-link-1" title="1 Posts">fstab<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gdb/" class="tag-link-1" title="1 Posts">gdb<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/git/" class="tag-link-1" title="1 Posts">git<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go/" class="tag-link-1" title="1 Posts">go<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/go-shadowsocks2/" class="tag-link-1" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/golang/" class="tag-link-25" title="1 Posts">golang<small>(60)</small></a>
+          
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gpg/" class="tag-link-1" title="1 Posts">gpg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/grep/" class="tag-link-1" title="1 Posts">grep<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/gui/" class="tag-link-1" title="1 Posts">gui<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexdump/" class="tag-link-1" title="1 Posts">hexdump<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hexo/" class="tag-link-2" title="1 Posts">hexo<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hmac/" class="tag-link-1" title="1 Posts">hmac<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html/" class="tag-link-1" title="1 Posts">html<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/html5/" class="tag-link-1" title="1 Posts">html5<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/http/" class="tag-link-1" title="1 Posts">http<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/httperf/" class="tag-link-1" title="1 Posts">httperf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hugo/" class="tag-link-9" title="1 Posts">hugo<small>(9)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/hydra/" class="tag-link-1" title="1 Posts">hydra<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/i18n/" class="tag-link-1" title="1 Posts">i18n<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ifttt/" class="tag-link-1" title="1 Posts">ifttt<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/index/" class="tag-link-1" title="1 Posts">index<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/insomnia/" class="tag-link-1" title="1 Posts">insomnia<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/intent/" class="tag-link-1" title="1 Posts">intent<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ios/" class="tag-link-1" title="1 Posts">ios<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iotop/" class="tag-link-1" title="1 Posts">iotop<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ip/" class="tag-link-2" title="1 Posts">ip<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/iptables/" class="tag-link-13" title="1 Posts">iptables<small>(13)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/irc/" class="tag-link-1" title="1 Posts">irc<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/javascript/" class="tag-link-6" title="1 Posts">javascript<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/join/" class="tag-link-1" title="1 Posts">join<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/js/" class="tag-link-1" title="1 Posts">js<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/k8s/" class="tag-link-1" title="1 Posts">k8s<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/key/" class="tag-link-1" title="1 Posts">key<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/kubernetes/" class="tag-link-10" title="1 Posts">kubernetes<small>(10)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-1" title="1 Posts">linux命令<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/locale/" class="tag-link-1" title="1 Posts">locale<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/losetup/" class="tag-link-1" title="1 Posts">losetup<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lsof/" class="tag-link-1" title="1 Posts">lsof<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lunr/" class="tag-link-1" title="1 Posts">lunr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lvm2/" class="tag-link-1" title="1 Posts">lvm2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mariadb/" class="tag-link-8" title="1 Posts">mariadb<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mathjax/" class="tag-link-1" title="1 Posts">mathjax<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mbr/" class="tag-link-1" title="1 Posts">mbr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5/" class="tag-link-1" title="1 Posts">md5<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/md5sum/" class="tag-link-1" title="1 Posts">md5sum<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mongodb/" class="tag-link-2" title="1 Posts">mongodb<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mtr/" class="tag-link-1" title="1 Posts">mtr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/mysql/" class="tag-link-25" title="1 Posts">mysql<small>(47)</small></a>
+          
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/navicat64/" class="tag-link-1" title="1 Posts">navicat64<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nessus/" class="tag-link-1" title="1 Posts">nessus<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netcat/" class="tag-link-1" title="1 Posts">netcat<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/netsh/" class="tag-link-1" title="1 Posts">netsh<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nexpose/" class="tag-link-1" title="1 Posts">nexpose<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nginx/" class="tag-link-25" title="1 Posts">nginx<small>(27)</small></a>
+          
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nmap/" class="tag-link-3" title="1 Posts">nmap<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/nodejs/" class="tag-link-1" title="1 Posts">nodejs<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/npm/" class="tag-link-2" title="1 Posts">npm<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ntp/" class="tag-link-1" title="1 Posts">ntp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/oauth2/" class="tag-link-1" title="1 Posts">oauth2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/objdump/" class="tag-link-1" title="1 Posts">objdump<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/openssl/" class="tag-link-1" title="1 Posts">openssl<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pdf/" class="tag-link-1" title="1 Posts">pdf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/perf/" class="tag-link-1" title="1 Posts">perf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/php/" class="tag-link-3" title="1 Posts">php<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/pip/" class="tag-link-1" title="1 Posts">pip<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/playbook/" class="tag-link-1" title="1 Posts">playbook<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prepare/" class="tag-link-1" title="1 Posts">prepare<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/prometheus/" class="tag-link-6" title="1 Posts">prometheus<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/proxy/" class="tag-link-1" title="1 Posts">proxy<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/redis/" class="tag-link-1" title="1 Posts">redis<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rename/" class="tag-link-1" title="1 Posts">rename<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/repo/" class="tag-link-1" title="1 Posts">repo<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/resin/" class="tag-link-1" title="1 Posts">resin<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/restful/" class="tag-link-4" title="1 Posts">restful<small>(4)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rethinkdb/" class="tag-link-1" title="1 Posts">rethinkdb<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/retina/" class="tag-link-1" title="1 Posts">retina<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/root/" class="tag-link-1" title="1 Posts">root<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/route/" class="tag-link-1" title="1 Posts">route<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/rtsp/" class="tag-link-1" title="1 Posts">rtsp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ruby/" class="tag-link-1" title="1 Posts">ruby<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/samba/" class="tag-link-1" title="1 Posts">samba<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sar/" class="tag-link-1" title="1 Posts">sar<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scoop/" class="tag-link-1" title="1 Posts">scoop<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scp/" class="tag-link-1" title="1 Posts">scp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/selenium/" class="tag-link-1" title="1 Posts">selenium<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sftp/" class="tag-link-1" title="1 Posts">sftp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/signal/" class="tag-link-1" title="1 Posts">signal<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/snap/" class="tag-link-1" title="1 Posts">snap<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sort/" class="tag-link-1" title="1 Posts">sort<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssl/" class="tag-link-1" title="1 Posts">ssl<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sso/" class="tag-link-1" title="1 Posts">sso<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ssrf/" class="tag-link-1" title="1 Posts">ssrf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/strace/" class="tag-link-1" title="1 Posts">strace<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sublime/" class="tag-link-1" title="1 Posts">sublime<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sudo/" class="tag-link-1" title="1 Posts">sudo<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/svg/" class="tag-link-1" title="1 Posts">svg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swagger/" class="tag-link-1" title="1 Posts">swagger<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/swarm/" class="tag-link-1" title="1 Posts">swarm<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/sysctlcd/" class="tag-link-1" title="1 Posts">sysctlcd<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/syslog/" class="tag-link-1" title="1 Posts">syslog<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/systemctl/" class="tag-link-1" title="1 Posts">systemctl<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/taints/" class="tag-link-1" title="1 Posts">taints<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/telegraf/" class="tag-link-1" title="1 Posts">telegraf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/time/" class="tag-link-1" title="1 Posts">time<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tmux/" class="tag-link-1" title="1 Posts">tmux<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/top/" class="tag-link-1" title="1 Posts">top<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tr/" class="tag-link-1" title="1 Posts">tr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/ulimit/" class="tag-link-1" title="1 Posts">ulimit<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/unpack/" class="tag-link-1" title="1 Posts">unpack<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/update-alternatives/" class="tag-link-1" title="1 Posts">update-alternatives<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/useradd/" class="tag-link-1" title="1 Posts">useradd<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vim/" class="tag-link-11" title="1 Posts">vim<small>(11)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/visualstudiocode/" class="tag-link-1" title="1 Posts">visualstudiocode<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/vlc/" class="tag-link-1" title="1 Posts">vlc<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wget/" class="tag-link-1" title="1 Posts">wget<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windows10/" class="tag-link-1" title="1 Posts">windows10<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/windump/" class="tag-link-1" title="1 Posts">windump<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xargs/" class="tag-link-1" title="1 Posts">xargs<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xmllint/" class="tag-link-1" title="1 Posts">xmllint<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/xpath/" class="tag-link-1" title="1 Posts">xpath<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/zabbix/" class="tag-link-1" title="1 Posts">zabbix<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-1" title="1 Posts">响应式<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-1" title="1 Posts">微服务<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="//blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link-1" title="1 Posts">账户系统<small>(1)</small></a>
+        
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="//blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="//blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="//blog.pytool.com/assets/js/myblog.js"></script>
+
+</body>
+</html>
+
