@@ -1,0 +1,2633 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <meta charset="UTF-8">
+  <base href="http://blog.pytool.com/">
+  <script>
+    document._writeOriginal = document.write;
+    document.write = function(str) {
+        if (str.indexOf('livereload.js') > -1) {
+            document._writeOriginal(str);
+        } else {
+            document._writeOriginal('<!-- Be Hijack!! -->');
+        }
+    }
+  </script>
+<script>document.documentElement.className = document.documentElement.className.replace("no-js", "js");</script>
+<title>Linux命令 ssh - 时光小栈</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+<meta name="description" content="ssh的连接重用 牢记25个最佳的SSH命令 16条技巧让你更高效使用SSH ssh通过代理连接服务器 SSH端口中转全攻略 Tunnel：论如何在内">
+<meta name="author" content=rinetd>
+<meta name="publisher" content=rinetd@163.com>
+
+<meta itemprop="name" content="Linux命令 ssh - 时光小栈">
+<meta itemprop="description" content="ssh的连接重用 牢记25个最佳的SSH命令 16条技巧让你更高效使用SSH ssh通过代理连接服务器 SSH端口中转全攻略 Tunnel：论如何在内">
+<meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
+
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Linux命令 ssh - 时光小栈" />
+<meta property="og:description" content="ssh的连接重用 牢记25个最佳的SSH命令 16条技巧让你更高效使用SSH ssh通过代理连接服务器 SSH端口中转全攻略 Tunnel：论如何在内">
+<meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
+<meta property="og:url" content="http://blog.pytool.com/linux/cmd/linux-ssh/" />
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+<link rel="canonical" href="http://blog.pytool.com/linux/cmd/linux-ssh/">
+<link rel='shortlink' href="http://blog.pytool.com/linux/cmd/linux-ssh/"/>
+<link rel="shortcut icon" href="http://blog.pytool.com/public/favicon.ico"/>
+
+<link rel="stylesheet" id="human-style-css" href="http://blog.pytool.com/wp-content/themes/hueman/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css1" href="http://blog.pytool.com/wp-content/themes/hueman/custom.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="human-style-css2" href="http://blog.pytool.com/wp-content/themes/hueman-child/style.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="responsive-css" href="http://blog.pytool.com/wp-content/themes/hueman/responsive.css" type="text/css" media="all"/>
+<link rel="stylesheet" id="font-awesome-css" href="http://blog.pytool.com/wp-content/themes/hueman/fonts/font-awesome.min.css" type="text/css" media="all"/>
+
+<link rel="stylesheet" href="http://blog.pytool.com/public/highlight/styles/github.css">
+<link rel="stylesheet" id="human-style-css3" href="http://blog.pytool.com/wp-content/themes/hueman-child/user.css" type="text/css" media="all"/>
+<link rel="stylesheet" href="http://blog.pytool.com/public/font/hack/css/hack.min.css">
+
+
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header">
+
+  <nav class="nav-container group" id="nav-topbar">
+    <div class="nav-toggle"><i class="fa fa-bars"></i></div>
+    <div class="nav-text"></div>
+    <div class="nav-wrap container">
+      <a rel="nofollow" href="http://blog.pytool.com/" class="nav-cs-icon">
+        <img width="40" height="40" src="http://blog.pytool.com/public/avatar.png" alt="rinetd" title="Home">
+      </a>
+
+      <ul id="menu-default-menu" class="nav container-inner group">
+        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a rel="nofollow" href="http://blog.pytool.com/">Home</a></li>
+          
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/awesome/">Awesome </a>
+              
+              
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/basic/">Basic </a>
+              
+              
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/database/">Database </a>
+              
+                       
+                 <ul>
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/database/mongo/">Mongo</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/database/mysql/">Mysql</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/database/redis/">Redis</a>
+                        
+                      </li>                
+                    
+                  </ul>
+                
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/devops/">Devops </a>
+              
+                       
+                 <ul>
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/oauth2/">OAuth2</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/ansible/">Ansible</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/docker/">Docker</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/drone/">Drone</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/elk/">Elk</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/etcd/">Etcd</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/kubernetes/">Kubernetes</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/prometheus/">Prometheus</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/">文档生成器</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">自动部署</a>
+                        
+                      </li>                
+                    
+                  </ul>
+                
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/edit/">Edit </a>
+              
+              
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/frontend/">Frontend </a>
+              
+                       
+                 <ul>
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/frontend/vue/">Vue</a>
+                        
+                      </li>                
+                    
+                  </ul>
+                
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/hacker/">Hacker </a>
+              
+              
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/hardware/">Hardware </a>
+              
+                       
+                 <ul>
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                        
+                      </li>                
+                    
+                  </ul>
+                
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/language/">Language </a>
+              
+                       
+                 <ul>
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/language/android/">Android</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/language/golang/">Golang</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/language/php/">Php</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/language/python/">Python</a>
+                        
+                      </li>                
+                    
+                  </ul>
+                
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/linux/">Linux </a>
+              
+                       
+                 <ul>
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/linux/cmd/">Cmd</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/linux/haproxy/">Haproxy</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/linux/ip/">Ip</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/linux/lvs/">Lvs</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/linux/nginx/">Nginx</a>
+                        
+                      </li>                
+                      
+                      <li >
+                        <a href="http://blog.pytool.com/linux/shell/">Shell</a>
+                        
+                      </li>                
+                    
+                  </ul>
+                
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/math/">Math </a>
+              
+              
+            </li>
+          
+        
+        
+            
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/software/">Software </a>
+              
+              
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/wiki/">Wiki </a>
+              
+              
+            </li>
+          
+        
+        
+            
+            <li class="menu-item menu-item-type-post_type menu-item-object-page">
+              <a rel="nofollow" href="http://blog.pytool.com/windows/">Windows </a>
+              
+              
+            </li>
+          
+        
+        
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="http://blog.pytool.com/me/">about</a>
+        </li>
+        
+
+        
+      </ul>
+
+    </div>
+
+    
+    
+    
+
+  </nav>
+  
+
+  
+  
+
+</header>
+
+
+
+  <div class="container" id="page">
+    <div class="container-inner">
+      <div class="main">
+        <div class="main-inner group">
+          <section class="content">
+            <div class="page-title pad group">
+              <ul class="meta-single group">
+                
+                <li class="category">
+                  <a rel="nofollow" href="http://blog.pytool.com/categories/linux-%E5%91%BD%E4%BB%A4/" rel="category tag">Linux 命令</a>
+                </li>
+                
+                
+                  <li><a href="http://blog.pytool.com/tags/ssh">ssh</a> </li>
+                
+              </ul>
+
+
+            </div>
+
+            <div class="pad group">
+
+              <article
+                  class="post type-post status-publish format-standard has-post-thumbnail hentry category-australien tag-bondi-beach tag-city2surf tag-sydney">
+                <div class="post-inner group">
+
+                  <h1 class="post-title">Linux命令 ssh</h1>
+
+                  <p class="post-byline">
+                    by  · 2016年01月06日 · 13440 Words ·
+                    ~27min reading time |
+                    
+                    
+                    <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/cmd/linux-ssh.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                  </p>
+
+                  <div class="clear"></div>
+
+                  <div class="entry">
+                    <div class="entry-inner">
+                      
+                      <p>作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+                      </br>原文链接：<a target="_blank" href="http://blog.pytool.com/linux/cmd/linux-ssh/"> Linux命令 ssh</a> </p>
+                      
+
+<p><a href="http://www.fwolf.com/blog/post/385" target="_blank">ssh的连接重用</a><br />
+<a href="http://os.51cto.com/art/201304/390042.htm" target="_blank">牢记25个最佳的SSH命令</a><br />
+<a href="http://kb.cnblogs.com/page/113289/" target="_blank">16条技巧让你更高效使用SSH</a><br />
+<a href="https://www.52os.net/articles/ssh-over-proxies.html?utm_source=tuicool&amp;utm_medium=referral" target="_blank">ssh通过代理连接服务器</a><br />
+<a href="http://www.91ri.org/13679.html" target="_blank">SSH端口中转全攻略</a><br />
+<a href="http://www.freebuf.com/sectool/109223.html" target="_blank">Tunnel：论如何在内网中自由渗透 </a><br />
+usage: ssh [-1246AaCfGgKkMNnqsTtVvXxYy] [-b bind_address] [-c cipher_spec]</p>
+
+<pre><code>       [-D [bind_address:]port] [-E log_file] [-e escape_char]
+       [-F configfile] [-I pkcs11] [-i identity_file] [-L address]
+       [-l login_name] [-m mac_spec] [-O ctl_cmd] [-o option] [-p port]
+       [-Q query_option] [-R address] [-S ctl_path] [-W host:port]
+       [-w local_tun[:remote_tun]] [user@]hostname [command]
+</code></pre>
+
+<p>-b bind_address  当有多个网卡时,指定绑定的ip<br />
+ -c cipher_spec   加密算法   “3des”, “blowfish”, and “des”.</p>
+
+<hr />
+
+<p><img src="https://static-js.b0.upaiyun.com/wp-content/uploads/2015/07/SSH7.jpg" alt="" /><br />
+RSA 公钥验证和匹配的已知可信远程主机是一种有效防止中间人攻击的手段。不过在批量 scp 或者 ssh 的时候，可能会出现一水儿的 RSA 公钥验证请求。这种时候，要不然需要手工输入一长串的 yes；要不然连输入的机会都没有，就被刷屏了。</p>
+
+<h1 id="限制ip访问-etc-hosts-allow-立即生效">限制IP访问 /etc/hosts.allow 立即生效</h1>
+
+<ol>
+<li>在ssh的配置文件：/etc/ssh/sshd_config中添加如下一行即可<br />
+<code>
+Allowusers username@192.168.1.100 #允许某个ip用什么帐户登陆
+AllowUsers root@tardis root@tardis.drwho.com
+Allowusers root@123.132.226.66 root@123.132.252.42
+</code><br /></li>
+<li>修改/etc/hosts.allow文件可以控制允许访问本机的IP<br />
+```<br />
+在这个文件中添加sshd: 允许访问的IP地址<br />
+sshd:123.132.226.66,123.132.252.42:allow<br />
+<br /></li>
+</ol>
+
+<p>1：修改“/etc/hosts.allow”文件，在最下面添加一行：<br />
+  sshd:192.168.100.0/255.255.255.0        #允许局域网内所有机器访问服务器上的sshd进程<br />
+  sshd:60.28.160.244   #允许外网的60.28.160.244访问这个服务器上的sshd进程<br />
+  sshd:11.8.,12.1.,18.3.:allow<br />
+  sshd:123.132.252.42,123.132.226.66,139.129.234.31,139.129.108.163:allow<br />
+2：修改“/etc/hosts.deny”文件，在最后一行添加：<br />
+  sshd:all:Deny  #禁止所有</p>
+
+<pre><code>
+# 1. ssh scp等消除每次问yes/no,避免需要手工输入一长串的 yes这种情况
+可以在 scp 或者 ssh 的时候加上 -o StrictHostKeyChecking=no 即可。
+  `ssh -o StrictHostKeyChecking=no `
+
+  `vi /etc/ssh/ssh_config`
+      StrictHostKeyChecking no
+
+# 2. ssh保持连接 5分钟发送一个数据包 5*60
+`ssh -o TCPKeepAlive=yes -o ServerAliveInterval=300 `
+
+#3.
+```bash
+
+#!/bin/sh
+for i in {2..18}
+do
+expect&lt;&lt;!
+  spawn ssh-copy-id -i root@10.114.0.${i}
+  expect &quot;*yes/no)?*&quot;
+  send &quot;yes\r&quot;
+  expect &quot;*password:*&quot;
+  send &quot;Lybb@2017\r&quot;
+  expect eof
+！
+done
+
+</code></pre>
+
+<h1 id="l-正向代理-端口转发-正向隧道">-L 正向代理 端口转发 正向隧道</h1>
+
+<pre><code>-L [bind_address:]port:host:hostport
+-L [bind_address:]port:remote_socket
+-L local_socket:host:hostport
+-L local_socket:remote_socket
+</code></pre>
+
+<p><code>ssh -L 9999:localhost:8384 machine</code><br />
+This will bind to your local port 9999 and forward all connections from there to port 8384 on the target machine. This still works even if Syncthing is bound to listen on localhost only.</p>
+
+<h2 id="本机访问代理后面的内网机器-且中间没有防火墙-执行点在本机-localhost-lhost">本机访问代理后面的内网机器,且中间没有防火墙; 执行点在本机<a href="LHOST" target="_blank">localhost</a></h2>
+
+<p>LHOST －&gt; proxy －&gt; RHOST</p>
+
+<p>本地访问127.0.0.1:port1就是host:port2(用的更多)<br />
+ssh -CfNg -L local_port:target_ip:target_port proxy_user@proxy_ip    #本地转发<br />
+<code>ssh -CNfg -L 0.0.0.0:2222:139.129.234.31:22 root@139.129.108.163 -p 222</code></p>
+
+<p>可以将dmz_host的hostport端口通过proxy_ip转发到本地的port端口<br />
+<code>ssh -qTfnN -L local_port:unreachable_ip:unreachable__port -l dmz_user dmz_ip -p 222</code>   #正向隧道，监听本地port</p>
+
+<p>dmz == proxy 代理机<br />
+target == Rhost==remote 目标机</p>
+
+<pre><code>-q Quiet mode.                    安静模式
+-T Disable pseudo-tty allocation. 禁用伪终端,自动化时使用。不占用 shell 了
+-C Enable compression.            压缩数据传输。
+-N Do not execute a shell or command. 不执行远程命令，端口转发就用它了，通常与-f连用。
+-f Fork into background after authentication.  后台运行 认证用户/密码，通常和-N连用，不用登录到远程主机。并推荐加上 -n 参数。
+-n Redirects stdin from /dev/null (actually, prevents reading from stdin). -f 推荐的，不加这条参数应该也行。
+-g Allow remote hosts to connect to forwarded ports. 在-L/-R/-D参数中，允许远程主机连接到建立的转发的端口，如果不加这个参数，只允许本地主机建立连接。
+</code></pre>
+
+<hr />
+
+<h1 id="r-反向代理-反向隧道">-R  反向代理 反向隧道</h1>
+
+<pre><code>-R [bind_address:]port:host:hostport
+-R [bind_address:]port:local_socket
+-R remote_socket:host:hostport
+-R remote_socket:local_socket
+</code></pre>
+
+<h2 id="用于内网穿透防火墙限制-执行点在-rhost-肉鸡target-rhost">用于内网穿透防火墙限制;执行点在[RHOST]肉鸡target (RHOST)</h2>
+
+<p>LHOST&lt;&mdash;&gt;proxy&lt;&mdash;firewall&mdash;&gt;Rhost</p>
+
+<p><code>ssh -CfNg -R port2:127.0.0.1:port1 user@host</code>    #远程转发<br />
+访问host:port2就是访问127.0.0.1:port1</p>
+
+<ol>
+<li><code>ssh -qTCNfg -R 8000:localhost:8080 root@139.129.108.163</code><br />
+转发外网139.129.108.163:8000的流量-&gt;内网(RHOST) 127.0.0.1:8080 ((RHOST)内网执行)<br /></li>
+<li><code>nc -l 8001 -c &quot;nc localhost 8000&quot;</code> #外网执行 本机端口转发<br />
+<code>ssh -qTCNfL *:8001:localhost:8000 localhost</code> #本机端口转发8001-&gt;8000<br />
+<br /></li>
+</ol>
+
+<p>可以将dmz_host的hostport端口转发到remote_ip的port端口 dzm == local<br />
+<code>ssh -qTCNfn -R remote_port:dmz_host:dmz_port -l user remote_ip</code>   #反向隧道，用于内网穿透防火墙限制之类</p>
+
+<h2 id="d-bind-address-port-动态映射-做socks5代理使用">-D [bind_address:]port 动态映射 [做socks5代理使用]</h2>
+
+<p>ssh -qTfnN -D port remotehost</p>
+
+<p>ssh方式使用google<br />
+ssh  -qTfnN -D 7070 root@xx.xx.xx.xx -p3009</p>
+
+<p>SOCKS主机:127.0.0.1   端口:7070<br />
+确定后就可以正常使用google</p>
+
+<p>把socks代理转换成http代理:privoxy</p>
+
+<p>5、自动连接和防断线脚本</p>
+
+<pre><code>```bat
+:1
+plink -pw “password” -D 7070 user@serverip
+goto 1
+```
+apt-get install sshpass
+`sshpass -p &quot;password&quot; ssh -D 7070 user@serverip`
+
+然后写脚本autossh.sh，内容如下：
+```bash
+#!/bin/bash
+
+while [ '' == '' ]
+do
+ssh_d_process_num=`ps aux|grep -E 'ssh \-' |grep -v grep |wc -l`
+if [ &quot;$ssh_d_process_num&quot; == &quot;0&quot; ]; then
+  /home/user/sshpass -p &quot;password&quot; ssh -D 7070 user@ServerIP &amp;
+fi
+
+sleep 300
+done
+```
+</code></pre>
+
+<h2 id="ssh打洞">SSH打洞</h2>
+
+<p>使用场景</p>
+
+<pre><code>开发联调。别人只能访问到你的外网地址，但是你想在本地机器监测并调试
+内网内容资源展示
+</code></pre>
+
+<p>基本流程就是别人访问外网，然后外网转发到内网，实际的内容是在内网。因为外网不能主动访问到内网，所以下面这条命令一定要从内网运行。<br />
+#暴露内网的3306给remotehost的9123，这样别人访问外网的9123实际就是访问的内网的3306<br />
+<code>ssh -R 9123:127.0.0.1:3306 username@remotehost</code><br />
+流量转发<br />
+使用场景</p>
+
+<pre><code>本地不能直接连接处于内网的mysql，可以通过ssh forward上去
+</code></pre>
+
+<p>这条命令会转发本地3308的流程到mysqlhost的3306端口<br />
+<code>ssh -L 3308:mysqlhost:3306 user@sshhost</code><br />
+还是比较好区分这两种命令的。R代表remote，L代表local，如果是-R表示remote -&gt; local，-L标志local-&gt;remote</p>
+
+<p>################################################################################<br />
+移除fingerprint<br />
+ <code>ssh-keygen -f &quot;/home/ubuntu/.ssh/known_hosts&quot; -R 47.90.57.192</code></p>
+
+<h2 id="允许密码登录">允许密码登录</h2>
+
+<p>vi /etc/ssh/sshd_config</p>
+
+<pre><code> PasswordAuthentication yes
+ #PasswordAuthentication no
+</code></pre>
+
+<p>在服务器添加完公钥之后，ssh服务器然后报了错误 sign_and_send_pubkey: signing failed: agent refused operation<br />
+ 然后执行了以下命令才好 <code>eval &quot;$(ssh-agent -s)&quot;</code><br />
+ ssh-add</p>
+
+<h1 id="不输密码登录ssh">不输密码登录SSH</h1>
+
+<p>ssh-keygen<br />
+  -b <bits>       密钥长度，默认为2048<br />
+  -t <type>       密钥类型, rsa|des&hellip; （默认类型为rsa)<br />
+  SSH1：   RSA<br />
+  SSH2：   RSA, DSA,  ECDSA<br />
+  -N <password>   新密码<br />
+  -f <file>        指定密钥文件，创建时会同时生成一个.pub结尾的公钥文件。<br />
+  -C <comment><br />
+  -c            修改公钥或私钥文件中的注释<br />
+  -p            修改私钥文件密码<br />
+  -P <password>   旧密码<br />
+  -e            导出为其它格式的密钥文件，可以转换密钥类型<br />
+  -i            从其他格式的密钥文件导入，可以转换密钥类型<br />
+  -m  <PEM|PKCS8|RFC4716>   与-e,-i配合使用，指明导出或导入的密钥文件格式<br />
+  -y        读入密钥并显示公钥</p>
+
+<h3 id="生成密钥">生成密钥</h3>
+
+<p><code>ssh-keygen -t rsa -b 2048 -C &quot;kig5.com&quot;</code></p>
+
+<h3 id="复制密钥">复制密钥</h3>
+
+<ol>
+<li><code>cat ~/.ssh/id_rsa.pub | ssh user@machine “mkdir ~/.ssh; cat &gt;&gt; ~/.ssh/authorized_keys”</code><br /></li>
+
+<li><p><code>ssh-copy-id root@deedbeef.com</code></p>
+
+<h3 id="ssh目录权限">.ssh目录权限</h3>
+
+<p>0) /root目录用户必须 <code>root:root</code><br />
+1) .ssh目录的权限必须是700<br />
+2) .ssh/authorized_keys文件权限必须大于400<br />
+chown $(id -u):$(id -g) $HOME<br />
+chmod 700 ~/.ssh<br />
+chmod 600 ~/.ssh/id_rsa<br />
+chmod 644 ~/.ssh/id_rsa.pub<br />
+chmod 400 ~/.ssh/authorized_keys<br />
+3) 编辑sshd_config配置文件<br />
+<code>vim /etc/ssh/sshd_config</code><br />
+PubkeyAuthentication yes<br />
+AuthorizedKeysFile     %h/.ssh/authorized_keys<br />
+useDNS no</p></li>
+</ol>
+
+<p>找到#PubkeyAuthentication yes并把注释去掉<br />
+找到#AuthorizedKeysFile     ~/.ssh/authorized_keys，去掉注释<br />
+找到useDNS yes &ndash;&gt; 改为useDNS no  #关闭DNS查找加速客户端连接 不改的话ssh客户端连接的时候会很慢。<br />
+这两行的意思是打开Pubkey认证方式，把pubkey放在~/.ssh/authorized_keys ,在我的机器上对应的是/root/.ssh/authorized_keys</p>
+
+<h1 id="远程执行命令">远程执行命令</h1>
+
+<h1 id="ssh-连接服务器时使自动启动-tmux">ssh 连接服务器时使自动启动 tmux</h1>
+
+<p>通过SSH连接屏幕<br />
+<code>ssh -t root@keyicloud.com tmux a</code><br />
+ssh user@host -t &lsquo;tmux list-session; if [[ $? -eq  0 ]]; then tmux attach; else tmux;fi&rsquo;</p>
+
+<h1 id="通过中间主机建立ssh连接">通过中间主机建立SSH连接</h1>
+
+<p>ssh -t reachable_host ssh unreachable_host<br />
+  -t 提供一个远程服务器的虚拟tty终端</p>
+
+<h1 id="通过ssh运行复杂的远程shell命令">通过SSH运行复杂的远程shell命令</h1>
+
+<p>ssh host -l user &lsquo;<code>cat cmd.txt</code>&lsquo;</p>
+
+<h2 id="ssh-安全与后门">ssh 安全与后门</h2>
+
+<p>这里的场景和前段时间的 redis + ssh 漏洞很相似，那么这里需要看一下服务器是否有ssh服务，如果有的话，那么直接把/root/.ssh目录挂载到container内，比如/tmp /.ssh，然后修改/tmp/.ssh/authorized_keys 文件，把自己的public key写进去，修改权限为600，然后就可以以root用户登录了。</p>
+
+<p>注：有些服务器会配置不允许root用户直接登录，可以通过挂载 /etc/ssh/sshd_config 查看配置。这个时候，你换一个用户目录写入就行，并且挂载修改 /etc/sudoers 文件，直接配置成免密码，sudo切换root即可。</p>
+
+<p>如果没有运行ssh服务，那么也可以利用挂载写crontab定时任务，比如ubuntu root用户的crontab文件在 /var/spool/cron/crontabs/root，反弹一个shell～</p>
+
+<h2 id="配置允许指定user访问">配置允许指定user访问</h2>
+
+<p>AllowUsers/AllowGroups与DenyUsers/DenyGroups<br />
+AllowUsers允许指定的用户可以通过ssh服务登录该服务器,如果使用了AllowUsers,则只有AllowUsers的用户可以登录服务器,其它用户不能登录服务器.<br />
+注意:<br />
+1)如果我们使用PermitRootLogin no(阻止Root用户登录),那样AllowUsers root是不会生效的.<br />
+2)如果我们使用DenyUsers阻止某用户登录,而AllowUsers开放某用户登录,则以DenyUsers为准.<br />
+3)如果我们使用DenyGroups阻止某用户组登录,而AllowUsers开放某用户登录,也以DenyGroups为准.<br />
+4)如果增加多个用户,各用户名之间用空格分隔,例如:AllowUsers root test test1<br />
+最后我们对AllowUsers进行测试:<br />
+1) ssh服务端:<br />
+vi /etc/ssh/sshd_config<br />
+AllowUsers test<br />
+存盘退出,并重启sshd服务<br />
+/etc/init.d/sshd restart</p>
+
+<p>2) ssh客户端:<br />
+  此时我们使用用户test1登录系统,发现无法登录,如下:<br />
+  ssh  test1@192.168.27.142<br />
+  test1@192.168.27.142&rsquo;s password:<br />
+  Permission denied, please try again.</p>
+
+<p>转为使用test用户,登录成功,说明AllowUsers是起作用的,如下:<br />
+  ssh  test@192.168.27.142<br />
+  test@192.168.27.142&rsquo;s password:<br />
+  Last login: Sat Jun  4 18:50:52 2011 from 192.168.27.143</p>
+
+<p>AllowGroups/DenyUsers/DenyGroups的用法都比较简单,我们在此不一一举例.</p>
+
+<h1 id="ssh中如何配置只允许某个ip以某个账号登录服务器">ssh中如何配置只允许某个IP以某个账号登录服务器？</h1>
+
+<p>使用TCP wrappers仅允许指定的主机连接</p>
+
+<p>如果你想在你的网络上只允许特定的主机才能连接到你的SSH服务，但又不想使用或弄乱你的iptables配置，那这个方法非常有用，你可以使用TCP wrappers。在这个例子中对sshd进行TCP包裹，我将创建一条规则允许本地子网192.168.1.0/24和远程193.180.177.13的自己连接到我的SSH服务。<br />
+默认情况下，TCP wrappers首先在/etc/hosts.deny中查找看主机是否允许访问该服务，接下来，TCP wrappers查找/etc/hosts.allow看是否有规则允许该主机服务指定的服务，我将在/etc/hosts.deny中创建一个规则，如下：<br />
+sshd: ALL</p>
+
+<p>这意味着默认情况下所有主机被拒绝访问SSH服务，这是应该的，否则所有主机都能访问SSH服务，因为TCP wrappers首先在hosts.deny中查找，如果这里没有关于阻止SSH服务的规则，任何主机都可以连接。</p>
+
+<p>接下来，在/etc/hosts.allow中创建一个规则允许指定的主机使用SSH服务：<br />
+sshd: 192.168.1 193.180.177.13</p>
+
+<p>现在，只有来自192.168.1.0/24和193.180.177.13的主机能够访问SSH服务了，其他主机在连接时还没有到登陆提示符时就被断开了，并收到错误提示，如下：<br />
+ssh_exchange_identification: Connection closed by remote host</p>
+
+<p>7、使用iptables允许特定的主机连接<br />
+ iptables -A INPUT -p tcp -m state &ndash;state NEW &ndash;source 193.180.177.13 &ndash;dport 22 -j ACCEPT<br />
+ 并确保没有其他的主机可以访问SSH服务：<br />
+ iptables -A INPUT -p tcp &ndash;dport 22 -j DROP</p>
+
+<p>8、SSH时间锁定技巧<br />
+你可以使用不同的iptables参数来限制到SSH服务的连接，让其在一个特定的时间范围内可以连接，其他时间不能连接。你可以在下面的任何例子中使用/second、/minute、/hour或/day开关。<br />
+第一个例子，如果一个用户输入了错误的密码，锁定一分钟内不允许在访问SSH服务，这样每个用户在一分钟内只能尝试一次登陆：<br />
+~# iptables -A INPUT -p tcp -m state &ndash;syn &ndash;state NEW &ndash;dport 22 -m limit &ndash;limit 1/minute &ndash;limit-burst 1 -j ACCEPT<br />
+~# iptables -A INPUT -p tcp -m state &ndash;syn &ndash;state NEW &ndash;dport 22 -j DROP<br />
+第二个例子，设置iptables只允许主机193.180.177.13连接到SSH服务，在尝试三次失败登陆后，iptables允许该主机每分钟尝试一次登陆：<br />
+~# iptables -A INPUT -p tcp -s 193.180.177.13 -m state &ndash;syn &ndash;state NEW &ndash;dport 22 -m limit &ndash;limit 1/minute &ndash;limit-burst 1 -j ACCEPT<br />
+~# iptables -A INPUT -p tcp -s 193.180.177.13 -m state &ndash;syn &ndash;state NEW &ndash;dport 22 -j DROP</p>
+
+<hr />
+
+<p>##剪切板<br />
+sudo apt-get install xclip<br />
+xclip -sele clip ~/.ssh/id_rsa.pub</p>
+
+<p>ssh root@1.0.9.8</p>
+
+<p>#add a user for login as root, add -m to create home/tsnd folder<br />
+useradd sona -m<br />
+passwd sona</p>
+
+<p>cat /etc/sudoers<br />
+visudo</p>
+
+<h1 id="add-line">add line</h1>
+
+<h1 id="ctrl-x-then-y-remove-ending-tmp-in-file-name-to-quit-nano-and-save-settings">Ctrl + X , then y, remove ending .tmp in file name to quit nano and save settings</h1>
+
+<p>sona  ALL=(ALL:ALL) ALL</p>
+
+<h1 id="configure-ssh-server-settings">Configure SSH server settings</h1>
+
+<p>vi /etc/ssh/sshd_config</p>
+
+<p>Port 420<br />
+#2048 or 1024 both working<br />
+ServerKeyBits 2048<br />
+PermitRooLogin no<br />
+PasswordAuthentication no<br />
+RSAAuthentication yes<br />
+PubkeyAuthentication yes</p>
+
+<h1 id="add-new-lines">add new lines</h1>
+
+<p>MaxStartups 5<br />
+AllowUsers aywusq</p>
+
+<p>Set SSH key for new SSH user</p>
+
+<p>su sona   #swicth to sona and set the public key<br />
+mkdir ~/.ssh<br />
+touch ~/.ssh/authorized_keys<br />
+vi ~/.ssh/authorized_keys</p>
+
+<h1 id="paste-the-public-key">paste the public key</h1>
+
+<p>chmod 400 ~/.ssh/authorized_keys<br />
+chmod 700 ~/.ssh</p>
+
+<p>#one said: id_rsa is 600，id_rsa.pub is 644</p>
+
+<p>service ssh restart<br />
+#/etc//init.d/ssh restart</p>
+
+<p>Test the new SSH server</p>
+
+<p>Please note: DON&rsquo;t close the terminal, create a new terminal window to test the new ssh_config, we need to change settings if we are unable log in using the rsa key</p>
+
+<p>#log in using the rsa key on local machine<br />
+ssh -i path_to_id_rsa -p 420 sona@1.0.9.8<br />
+su<br />
+#enter root password to swich as root user<br />
+exit</p>
+
+<p><a href="http://kb.cnblogs.com/page/113289/" target="_blank">16条技巧让你更高效使用SSH</a><br />
+SSH有很多非常酷的特性，如何它是你每天的工作伴侣，那么我想你有必要了解以下16条高效使用SSH的秘籍，它们帮你节省的时间肯定会远远大于你用来配置它们的时间。</p>
+
+<p>　　1. 多条连接共享</p>
+
+<p>　　如果你需要在多个窗口中打开到同一个服务器的连接，而不想每次都输入用户名，密码，或是等待连接建立，那么你可以配置SSH的连接共享选项，在本地打开你的SSH配置文件，通常它们位于~/.ssh/config，然后添加下面2行：</p>
+
+<p>ControlMaster auto<br />
+ControlPath /tmp/ssh<em>mux</em>%h<em>%p</em>%r</p>
+
+<p>　　现在试试断开你与服务器的连接，并建立一条新连接，然后打开一个新窗口，再创建一条连接，你会发现，第二条连接几乎是在瞬间就建立好了。</p>
+
+<p>　　Windows用户</p>
+
+<p>　　如果你是Windows用户，很不幸，最流行的开源SSH客户端Putty并不支持这个特性，但是Windows上也有OpenSSH的实现，比如这个Copssh，如果你觉得下面的一些技巧对你很有帮助，或许你应该试试Copssh。</p>
+
+<p>　　文件传输</p>
+
+<p>　　连接共享不止可以帮助你共享多个SSH连接，如果你需要通过SFTP与服务器传输文件，你会发现，它们使用的依然是同一条连接，如果你使用的Bash，你会发现，你甚至SSH甚至支持Tab对服务器端文件进行自动补全，共享连接选项对于那些需要借助SSH的工具，比如rsync，git等等也同样有效。</p>
+
+<p>　　2. 长连接</p>
+
+<p>　　如果你发现自己每天需要连接同一个服务器无数次，那么长连接选项就是为你准备的：</p>
+
+<p>ControlPersist 4h</p>
+
+<p>　　现在你每次通过SSH与服务器建立连接之后，这条连接将被保持4个小时，即使在你退出服务器之后，这条连接依然可以重用，因此，在你下一次（4小时之内）登录服务器时，你会发现连接以闪电般的速度建立完成，这个选项对于通过scp拷贝多个文件提速尤其明显，因为你不在需要为每个文件做单独的认证了。</p>
+
+<p>　　3. 别再输入密码</p>
+
+<p>　　如果你还在通过密码方式登录SSH，那么你或许应该试试SSH Keys，首先使用OpenSSH为自己声称一对密钥：</p>
+
+<p>$ ssh-keygen</p>
+
+<p>　　跟随指示，完成之后，你应该可以在你的.ssh目录下看到两个文件，id_rsa就是你的私钥，而id_ras.pub则是你的公钥，现在你需要将你的公钥拷贝到服务器上，如果你的系统有ssh-copy-id命令，拷贝会很简单：　　</p>
+
+<p>$ ssh-copy-id smylers@compo.example.org</p>
+
+<p>　　否则，你需要手动将你的私钥拷贝的服务器上的~/.ssh/authorized_keys文件中：</p>
+
+<p>$ &lt; ~/.ssh/id_rsa.pub ssh clegg.example.org ‘mkdir -p .ssh; cat &gt;&gt; .ssh/authorized_keys; chmod go-w .ssh .ssh/authorized_keys’</p>
+
+<p>　　现在试试重新连接到SSH服务器，或是拷贝文件，是不是已经不需要再输入密码了？</p>
+
+<p>　　相关链接：不输入密码ssh直接登录阿里云Linux主机</p>
+
+<p>　　为Putty配置SSH Key</p>
+
+<p>　　Putty也可以使用SSH Key，从Putty网站下载PuttyGen和Pageant，然后使用PuttyGen生成你的密钥，将公钥拷贝到服务器的’.ssh/authorized_keys’目录，然后运行Pageant，导入你的私钥，让它在后台运行，险隘你就可以使用Putty通过公钥直接登录服务器了，你可以在Putty手册的第8，9章了解关于这一特性的详细介绍。</p>
+
+<p>　　4. 连接中转</p>
+
+<p>　　有时候你可能需要从一个服务器连接另外一个服务器，比如在两个服务器之间直接传输数据，而不用通过本地电脑中转：</p>
+
+<p>www1 $ scp -pr templates www2:$PWD</p>
+
+<p>　　（顺便说一下，当你需要在两台服务器间拷贝文件时，$PWD变量时非常有用的），因为即使你已经在两台服务器上添加了你本地电脑的公钥，scp默认仍然会提示你输入密码：这是因为你用来作为跳板的那台服务器上并没有你的私钥，所以，第二胎服务器会拒绝你的公钥，但是一定不要通过将你的私钥拷贝到中转服务器上来解决这个问题，你可以使用agent forwarding来解决这个问题，只要在你的.ssh/config文件中加入下面这行代码就可以了：</p>
+
+<p>ForwardAgent yes</p>
+
+<p>　　或者是在Putty中勾上Allow agent forwarding选项，现在你的本地SSH就变成了第一台服务器的SSH代理，从第一台服务器在连接其它服务器就变和和在你本地一样简单，注意，如果要开启这个选项，前提是这个中间服务器值得你信任。</p>
+
+<p>　　5. 省略主机名</p>
+
+<p>　　输入服务器的完整主机名来建立一个新的SSH连接实在是太乏味无聊了，尤其是当你有一组拥有相同域名但是子域名不同的服务器需要管理时，比如下面这样：</p>
+
+<p>　　* www1.example.com<br />
+　　* www2.example.com<br />
+　　* mail.example.com<br />
+　　* intranet.internal.example.com<br />
+　　* backup.internal.example.com<br />
+　　* dev.internal.example.com</p>
+
+<p>　　或许你的网络已经配置了可以直接使用短域名，比如intranet，但是如果你的网络不支持，实际上你可以自己搞定这个问题，而不用求助网络管理员。</p>
+
+<p>　　解决办法根据你用的操作系统而略有差异，下面是我的Ubuntu系统的配置：</p>
+
+<p>prepend domain-search internal.example.com, example.com;</p>
+
+<p>　　然后你需要重启网络:</p>
+
+<p>$ sudo restart network-manager</p>
+
+<p>　　不同的系统，这两条命令可能会略有差异。</p>
+
+<p>　　5. 主机别名</p>
+
+<p>　　你也可以在你的SSH配置中直接定义主机别名，就像下面这样：</p>
+
+<p>Host dev<br />
+HostName dev.internal.example.com</p>
+
+<p>　　你还可以使用通配符来进行分组：</p>
+
+<p>Host dev intranet backup<br />
+HostName %h.internal.example.com</p>
+
+<p>Host www* mail<br />
+HostName %h.example.com</p>
+
+<p>　　在Putty中你可以为每个主机名保存单独的session，然后双击建立连接（但是它可能没办法支持通配符）。</p>
+
+<p>　　7. 省去用户名</p>
+
+<p>　　如果你在远程服务器上的用户名和你本地的用户名不同，你同样可以在SSH配置中进行设置：</p>
+
+<p>Host www* mail<br />
+HostName %h.example.com<br />
+User simon</p>
+
+<p>　　现在就算我的本地用户名是 smylers，我仍然可以这样连接我的服务器：　　</p>
+
+<p>$ ssh www2</p>
+
+<p>　　SSH会使用simon账户连接你的服务器，同样，Putty可以保存这个信息在你的session中。</p>
+
+<p>　　8. 在服务器间跳转</p>
+
+<p>　　有些时候，你可能没法直接连接到某台服务器，而需要使用一台中间服务器进行中转，这个过程也可以自动化。首先确保你已经为服务器配置了公钥访问，并开启了agent forwarding，现在你就可以通过2条命令来连接目标服务器，不会有任何提示输入：</p>
+
+<p>$ ssh gateway<br />
+gateway $ ssh db</p>
+
+<p>　　然后在你的本地SSH配置中，添加下面这条配置：</p>
+
+<p>Host db<br />
+HostName db.internal.example.com<br />
+ProxyCommand ssh gateway netcat -q 600 %h %p</p>
+
+<p>　　现在你就可以通过一条命令来直接连接目标服务器了:</p>
+
+<p>$ ssh db</p>
+
+<p>　　这里你可能会需要等待长一点的时间，因为SSH需要进行两次认证，注意netcat也有可能被写成nc或者ncat或者前面还需要加上g，你需要检查你的中间服务器来确定实际的参数。</p>
+
+<p>　　9. 突破网络端口限制</p>
+
+<p>　　有些时候，你使用的网络可能只开放了80端口，或者它们封锁了SSH端口（默认的22端口），这种情况下，你可以通过配置SSH服务器在80或者443端口进行监听来突破封锁，只需要编辑你的服务器的/etc/ssh/sshd_config文件：</p>
+
+<p>　　Port 443</p>
+
+<p>　　然后重启SSH服务器：</p>
+
+<p>$ sudo reload ssh</p>
+
+<p>　　当然这样做的前提是你的服务器没有使用HTTPS服务，但是实际上你只需要设置一台服务器使用HTTPS端口就够了，你可以访问这台服务器，使用我们前面提到的技术利用它作为跳板来访问其它服务器。但是记住，你需要提前配置好这台服务器，这样万一当你身处一个只能访问Web的网络环境时，就可以省掉打电话让其他人帮你配置中间服务器的麻烦了。</p>
+
+<p>　　10. 穿越Web代理</p>
+
+<p>　　有些时候，你所在的网络不止封锁SSH端口，它们有可能更进一步，只让你通过Web代理来访问网络，幸运的是我们有一个叫做Corkscrew的程序可以通过Web代理在发送SSH数据。Corkscrew的使用非常简单，一般我都是在需要时搜索，然后直接下载，跟随网站上的指示，然后就搞定了，一般你需要这样一条配置：　　</p>
+
+<p>ProxyCommand corkscrew proxy.example.org 8080 %h %p</p>
+
+<p>　　11. 远程GUI</p>
+
+<p>　　有时候通过本地的GUI程序来访问远程服务器的文件会非常有用，比如，编辑一副图片，或者查看一个PDF文件，或者只是简单的通过一个非命令行的编辑器来修改代码，我发现GVim要比终端里的Vim更有用，因为我可以通过gvimopens打开一个新窗口来编辑文件，而用当前的SSH窗口继续执行其它操作，不要这样做，你需要先在你的SSH配置中开启一个叫做X forwarding的选项：</p>
+
+<p>ForwardX11 yes</p>
+
+<p>　　这个选项需要服务器配置才能起作用，服务器也需要开启X forwarding，你可以在服务器的/etc/ssh/sshd_config中添加下面这个命令：　　</p>
+
+<p>X11Forwarding yes</p>
+
+<p>　　同时你还需要确保安装了xauth，编辑器，图片查看器以及其它的你需要运行的图形化程序，这种方式只有在支持本地X服务器的操作提供才可以工作，Mac和Windows上都有免费的X Server，你可能需要花些时间配置它们，相比之下，切换到Linux相对会更容易一下。</p>
+
+<p>　　12. 本地操作远程文件</p>
+
+<p>　　另一种让远程GUI程序显示在本地的替代方案就是让本地的GUI程序可以直接操作远程文件，你可以通过SSHFS来实现，只需要创建一个空目录，然后使用SSHFS将一个远程目录mount到这个目录就可以了：</p>
+
+<p>$ mkdir gallery_src<br />
+$ sshfs dev:projects/gallery/src gallery_src<br />
+$ cd gallery_src<br />
+$ ls</p>
+
+<p>　　现在你就可以使用任何你喜欢的本地程序来便捷这个目录中的文件了，它们看起来是在你的本地，但其实时远程服务器上的文件，你可以使用fusermount命令来unmount这些文件，不要担心记不住，它们就在sshfs手册的顶上：　　</p>
+
+<p>$ cd ..<br />
+$ fusermount -u gallery_src</p>
+
+<p>　　SSHFS可以在Linux和OSX上工作，Windows用户我目前还没找到什么好办法。</p>
+
+<p>　　13. 通过Vim访问远程文件</p>
+
+<p>　　Vim有一个内置的功能可以直接编辑远程文件，需要借助SCP URL：</p>
+
+<p>$ gvim scp://dev/projects/gallery/src/templates/search.html.tt</p>
+
+<dl>
+<dt>　　这中方式明显不如SSHFS灵活，但是如果你只需要对远程服务器的1，2个文件进行编辑时，这条命令就要更灵活一些了，并且可以在Windows上你也可以这样做：　　<br />
+<br /></dt>
+</dl>
+
+<p>:help netrw-problems</p>
+
+<p>　　14. 使用本地App连接远程服务器</p>
+
+<p>　　有时可能有些服务，比如数据库或是Web服务器，它们运行在远程服务器上，但是如果有用方式可以直接从本地程序连接它们，那会非常有用，要做到这一点，你需要用到端口转发(port forwarding)，举个例子，如果你的服务器运行Postgres（并且只允许本地访问），那么你就可以在你的SSH配置中加入：</p>
+
+<p>Host db<br />
+LocalForward 5433 localhost:5432</p>
+
+<p>　　现在当你连接你的SSH服务器时，它会在你本地电脑打开一个5433端口（我随便挑的），并将所有发送到这个端口的数据转发到服务器的5432端口（Postgres的默认端口），然后，只要你和服务器建立了连接，你就可以通过5433端口来访问服务器的Postgres了。</p>
+
+<p>$ ssh db</p>
+
+<p>　　现在打开另外一个窗口，你就可以通过下面这条命令在本地连接你的Postgres数据库了：</p>
+
+<p>$ psql -h localhost -p 5443 orders</p>
+
+<p>　　如果你想要使用服务器不支持的图形化Postgres客户端时，这条命令会显得尤其有用：</p>
+
+<p>$ pgadmin3 &amp;</p>
+
+<p>　　或者你有一个后台的Web服务器，你不希望直接通过Internet访问它，你也可以通过端口转发来访问它：</p>
+
+<p>Host api<br />
+LocalForward 8080 localhost:80</p>
+
+<p>　　现在连接到服务器：　　</p>
+
+<p>$ ssh api</p>
+
+<p>　　然后将浏览器指向你选择的端口号：　　</p>
+
+<p>$ firefox <a href="http://localhost:8080/" target="_blank">http://localhost:8080/</a></p>
+
+<p>　　15. 减少延迟</p>
+
+<p>　　如果每次连接服务器都意味着你需要等待几十秒而无所事事，那么你或许应该试试在你的SSH配置中加入下面这条：</p>
+
+<p>GSSAPIAuthentication no</p>
+
+<p>　　如果这条命令有效的话，你应该通知你的系统管理员让他在服务器上禁用这个选项，这样其他人就不用再分别添加这条配置到它们的本地配置了。</p>
+
+<p>　　16. 加速连接</p>
+
+<p>　　如果你确保你和某个服务器之间的连接是安全的（比如通过公司内网连接），那么你就可以通过选择arcfourencryption算法来让数据传输更快一些：</p>
+
+<p>Host dev<br />
+Ciphers arcfour</p>
+
+<p>　　注意这个加速是以牺牲数据的加密性为代价的，所以如果你连接的是位于网上的服务器，千万不要打开这个选项，并且确保你是通过VPN建立的连接。</p>
+
+<p>　　开始行动吧！</p>
+
+<p>　　以上就是我收集的高效使用SSH的技巧合集了，如果你还有更多技巧想要分享，记得通过Smylers@cpan.org或是通过@Smylers2来和我联系。</p>
+
+<p>　　现在就赶紧行动试试通过这些技巧来让你的SSH更有效率吧！</p>
+
+<ul>
+<li><p>ssh_config<br />
+** man<br />
+*** PATTERNS<br />
+模式(patterns)包含零个或多个非空字符, &lsquo;*&rsquo; (匹配零个或多个字符), &lsquo;?&rsquo; (匹配至少一个字符).<br />
+例如, 对 &ldquo;.co.uk&rdquo; 这组域名下的所有主机指定一组说明, 下面的模式(pattern)能够被使用:</p>
+
+<pre><code>Host *.co.uk
+</code></pre>
+
+<p>下面的模式(pattern)能够匹配任何在 192.168.0.[0-9] 网段下的主机:</p>
+
+<pre><code>Host 192.168.0.?
+</code></pre>
+
+<p>模式列表(pattern-list)是逗号分隔的模式(pattern)的列表. 模式列表中的模式可能需要在它们前面<br />
+使用感叹号来进行排除. 例如, 允许在一个组织内, 来自任何地方的密钥被使用, 除了来自 &ldquo;dialup&rdquo;<br />
+部分, 下面的条目可以被使用(在 authorized_keys):</p>
+
+<pre><code>from=&quot;!*.dialup.example.com,*.example.com&quot;
+</code></pre></li>
+
+<li><p>sshd_config<br />
+** man<br />
+*** keywords and their meanings</p>
+
+<ul>
+<li>AcceptEnv :: 指定由用户发送过来的环境变量哪些可以被拷贝到任务 environ(7) 中<br /></li>
+<li>AddressFamily :: 指定 sshd(8) 可以使用哪些地址簇, 共三个参数可选 any, inet, inet6<br />
+       默认参数为 any<br /></li>
+<li>AllowAgentForwarding :: 指定 ssh-agent(1) 转发是否被认可. 默认为 yes . 需要指出的是<br />
+仅用此选项并不能提高安全性, 除非用户被仅用 shell 访问, 否则用户总是可以安装自己的转发工具<br /></li>
+<li>AllowGroups :: 此关键词能够接受以空格分隔 group &ldquo;名字&rdquo; 组成的列表. 如果指定的话将只允许<br />
+     列表中的主组及所属组中的用户登录. 仅可以使用用户组的名字, 用户组 ID 是<br />
+     不允许使用的. 默认情况下所有用户组均可登录.(允许列出的用户组成员登录而拒绝<br />
+             其余的所有用户组成员)<br /></li>
+<li>AllowTcpForwarding :: 指定是否可以进行 TCP 转发. 可接收的参数是: yes/all, no, local,<br />
+remote. 默认为 yes. 需要指出仅用此选项并不能提高安全性, 除非用户被仅用 shell 访问,<br />
+ 否则用户总是可以安装自己的转发工具.<br /></li>
+<li>AllowUsers :: (允许列出的用户登录而拒绝其余的所有用户)这个关键词可以接收以用户名字的形式<br />
+            并以空格分隔的列表. 如果指定, 那么仅当与列表中指出的用户名匹配时才可登录.<br />
+            仅用户名被认可, 用户 ID 是不被认可的. 默认情况允许所有用户登录. 如果形式<br />
+            为 USER@HOST , 那么 USER 和 HOST 被分开检查, 限制来自特定主机去登录到<br />
+            特定用户. HOST 可以暂时理解为网关地址<br /></li>
+
+<li><p>Match :: 引入了一个条件块. 如果在 Match 行的所有条件都满足, 那么下一行的关键字会覆盖配置<br />
+   文件中的全局设置, 直到另外一个 Match , 或者文件结尾.</p>
+
+<p>Match 使用的参数是一个或者多个 &ldquo;条件-模式(criteria-pattern)&rdquo; 对. 可使用的条件<br />
+   是 User, Group, Host, LocalAddress, LocalPort, Address. 可匹配的模式包括<br />
+   单一条目或者用逗号分隔的列表或者可用的通配符或者是 &ldquo;!&rdquo; 进行否定.</p>
+
+<p>在 Address 条件的模式中, 可额外包含如下形式 <code>192.0.2.0/24''
+</code>3ffe:ffff::/32&rdquo;</p>
+
+<p>只有部分关键字可以被用于 Match . 这些关键字包括:</p>
+
+<pre><code> AcceptEnv, AllowAgentForwarding,
+     AllowGroups, AllowTcpForwarding, AllowUsers, AuthenticationMethods,
+     AuthorizedKeysCommand, AuthorizedKeysCommandUser,
+     AuthorizedKeysFile, AuthorizedPrincipalsFile, Banner,
+     ChrootDirectory, DenyGroups, DenyUsers, ForceCommand, GatewayPorts,
+     GSSAPIAuthentication, HostbasedAuthentication,
+     HostbasedUsesNameFromPacketOnly, KbdInteractiveAuthentication,
+     KerberosAuthentication, MaxAuthTries, MaxSessions,
+     PasswordAuthentication, PermitEmptyPasswords, PermitOpen,
+     PermitRootLogin, PermitTunnel, PubkeyAuthentication,
+     RhostsRSAAuthentication, RSAAuthentication, X11DisplayOffset,
+     X11Forwarding and X11UseLocalHost.
+</code></pre></li>
+
+<li><p>AuthenticationMethods :: (目前不太清楚如何使用)指定一些必须成功的完成对一个用户授权访问<br />
+ 的验证方法. 这个参数必须包含一个或多个由逗号分隔的验证方法的列表. 成功的验证需要完成</p></li>
+
+<li><p>AuthorizedKeysCommand :: (我们熟悉的是使用公钥文件来验证用户, 但 man 手册中还提供了一<br />
+种可以通过命令来验证公钥的方法)</p></li>
+
+<li><p>AuthorizedKeysCommandUser :: (运行验证公钥命令的用户)</p></li>
+
+<li><p>AuthorizedKeysFile :: 指定可以用来做用户验证的包含公钥的文件. 格式在 sshd(8) 中的<br />
+AUTHORIZED_KEYS FILE FORMAT 一节描述. AuthorizedKeysFile 可以包含形如 %T 的标记,<br />
+这些标记会在连接过程中被替换. 将这些标记扩展后, AuthorizedKeysFile 采取绝对路径或者<br />
+ 相对与用户的相对路径. 多个文件可以被列出, 文件名由空格分隔<br />
+如下一些标记被定义为:</p>
+
+<ul>
+<li>%% :: 指代字面意义上的 &lsquo;%&rsquo;<br /></li>
+<li>%h :: 指代已经验证通过的用户的家目录<br /></li>
+<li>%u :: 指代已经验证通过的用户名<br /></li>
+</ul></li>
+
+<li><p>Banner :: 指定文件包含的内容将在验证前展示给远程用户. 如果参数为 &lsquo;none&rsquo; 则不会展示任何<br />
+内容, 这个选项只在协议 2 中有效. 默认情况, 无任何显示.</p></li>
+
+<li><p>ChallengeResponseAuthentication :: (没有看懂)</p></li>
+
+<li><p>ChrootDirectory :: 指定验证后用来 chroot 用的目录的路径名. 组成路径名的所有部分必须是<br />
+root 拥有的目录, 任何人或用户都不可以有写权限. 在 chroot 后, sshd 会切换工作目录到<br />
+用户的家目录(即设定的目录)</p></li>
+
+<li><p>Ciphers :: 指定哪些密码类型是被 协议2 允许的. 多个密码使用逗号分隔.</p></li>
+
+<li><p>ClientAliveInterval :: 设置以秒为单位的超时间隔, 当没有接收到来自 client 端的数据后,<br />
+sshd 将会通过加密通道请求 clinet 响应. 默认为 0 , 表示将没有任何消息发送到 client 端.<br />
+这个选项仅应用在协议2.</p></li>
+
+<li><p>ClientAliveCountMax :: 设置 client alive 消息的数量, 这些消息会在 sshd 无法接收到任何<br />
+由 client 传回的消息时发送. 当 client alive 消息发送次数到达阀值上限, sshd 将会断开<br />
+client 连接并终止会话. 这个选项与 <em>TCPKeepAlive</em> 是不同的<br />
+默认值是 3. 如果 <em>ClientAliveInterval</em> 设置 15, 并且 <em>ClientAliveCountMax</em> 为预设<br />
+值, 那么 cliant 端在 45 秒内无响应的话会断开连接. 仅用在协议 2.</p></li>
+
+<li><p>Compression :: 指定是否压缩被允许或者延迟到用户成功验证后. 参数必须是 &ldquo;yes&rdquo;, &ldquo;delayed&rdquo;,</p>
+
+<pre><code> &quot;no&quot;. 默认是 &quot;delayed&quot;
+</code></pre></li>
+
+<li><p>DenyGroups :: 这个关键词可以接收一个列表, 由空格分隔的用户组名字的列表. 对于在主组及所属</p>
+
+<pre><code>组匹配的用户登录是被禁止的. 只有组名字是被允许的, 组 ID 是不接受的.
+(拒绝一个所属组成员, 而允许其余的所有所属组成员登录)
+</code></pre></li>
+
+<li><p>DenyUsers :: (同DenyGroups)</p></li>
+
+<li><p>ForceCommand :: 强制执行由 ForceCommand 指定的命令, 忽略任何由客户端以及 ~/.ssh/rc</p>
+
+<pre><code>  提供的命令. 命令会被以用户登录 shell 的 -c 选项引用. 适用于 shell,
+  command 或者 subsystem execution. 多用于 Match 块.
+</code></pre></li>
+
+<li><p>GatewayPorts :: 指定远程主机是否被允许连接到由客户端转发的端口. 默认 sshd 绑定远程端口</p>
+
+<pre><code>  转发到回环地址. 这防止了其他远程主机连接到转发端口. GatewayPorts 能被
+  用于指定 sshd 应该允许远程端口转发绑定到非回环地址. 来使其他主机连接.
+  包含三个参数: no, yes, clientspecified.
+</code></pre></li>
+
+<li><p>GSSAPIAuthentication :: 指定基于 GSSAPI 的用户验证是否被允许</p></li>
+
+<li><p>GSSAPIKeyExchange ::</p></li>
+
+<li><p>GSSAPICleanupCredentials ::</p></li>
+
+<li><p>GSSAPIStrictAcceptorCheck ::</p></li>
+
+<li><p>GSSAPIStoreCredentialsOnRekey ::</p></li>
+
+<li><p>HostbasedAuthentication ::</p></li>
+
+<li><p>HostbasedUsesNameFromPacketOnly ::</p></li>
+
+<li><p>HostCertificate ::</p></li>
+
+<li><p>ListenAddress :: 指定 sshd 应该监听本地的哪个端口</p></li>
+
+<li><p>LoginGraceTime :: 在本次用户失败登录服务器断开连接. 默认 120 秒. 如果值为 0 那么没有限制</p></li>
+
+<li><p>LogLevel :: 日志等级</p></li>
+
+<li><p>MACs ::</p></li>
+
+<li><p>MaxAuthTries :: 指定每次连接最大尝试认证的次数. 一旦失败次数达到这个值的一半, 额外的失败</p>
+
+<pre><code>  会被记录. 默认值为 6.
+</code></pre></li>
+
+<li><p>MaxSessions :: 指定每个网络能够打开会话的最大数量, 当使用 inetd(8) 运行 sshd 时此选项</p>
+
+<pre><code> 是没有效果的
+</code></pre></li>
+
+<li><p>MaxStartups :: 当使用 inetd(8) 运行 sshd 时此选项是没有效果的.</p></li>
+
+<li><p>PasswordAuthentication :: 指定密码验证是否允许. 默认是不允许的</p></li>
+
+<li><p>PermitEmptyPasswords :: 当密码验证被允许时, 此选项指定是否服务器接受账号的空密码. 默认是<br />
+&ldquo;no&rdquo;</p></li>
+
+<li><p>PermitOpen :: 指定一个目标, 说明哪些 tcp 端口转发是被允许的. 转发规范必须是下列形式:</p>
+
+<pre><code>PermitOpen host:port
+        PermitOpen IPv4_addr:port
+        PermitOpen [IPv6_addr]:port
+
+多个转发可以通过使用空格分隔来指定. &quot;any&quot; 允许所有转发, &quot;none&quot; 禁止所有转发
+</code></pre></li>
+
+<li><p>PermitRootLogin :: 指定 root 是否可以使用 ssh(1) 登录. 接受的参数必须是 &ldquo;yes&rdquo;,<br />
+&ldquo;without-password&rdquo;, &ldquo;forced-commands-only&rdquo;, or &ldquo;no&rdquo;.<br />
+如果选项被设置为 &ldquo;without-password&rdquo;, 那么密码验证将会被禁止.<br />
+如果选项被设置为 &ldquo;forced-commands-only&rdquo;, root 使用公钥登录被允许, 但是只有当 command<br />
+许昂想被指定时才生效果. 其他的任何验证方式都是不被允许的.</p></li>
+
+<li><p>PermitTunnel :: 指定 tun(4) 设备转发是否被允许. 参数必须为 &ldquo;yes&rdquo;, &ldquo;point-to-point&rdquo;,</p>
+
+<pre><code>  &quot;ethernet&quot;, &quot;no&quot;
+</code></pre></li>
+
+<li><p>PermitUserEnvironment ::</p></li>
+
+<li><p>PidFile ::</p></li>
+
+<li><p>PrintLastLog :: 指定 sshd(8) 是否应该打印出上次用户登录的日期时间.</p></li>
+
+<li><p>PrintMotd :: 指定 sshd(8) 当用户登录交互界面时是否打印 /etc/motd 中的提示内容. 默认是 &ldquo;yes&rdquo;</p></li>
+
+<li><p>Protocol :: 指定 sshd(8) 支持的协议版本. 可能的值为 &ldquo;1&rdquo; 或 &ldquo;2&rdquo;</p></li>
+
+<li><p>PubkeyAuthentication :: 指定公钥验证是否被允许.</p></li>
+
+<li><p>RevokedKeys :: 指定被撤销的公钥. 列在此文件中的密钥将会被拒绝公钥验证. 注意: 如果此文件不可</p>
+
+<pre><code> 读, 那么公钥验证将拒绝所有的用户. 密钥可以被指定为一个文本文件, 每行列出一个
+ 公钥, 或者or as an OpenSSH Key Revocation List (KRL) as generated by
+         ssh-keygen(1).
+</code></pre></li>
+
+<li><p>RhostsRSAAuthentication ::</p></li>
+
+<li><p>RSAAuthentication ::</p></li>
+
+<li><p>SACLSupport ::</p></li>
+
+<li><p>ServerKeyBits :: 指定在接受登录前 sshd 需要检查用户的文件及家目录的文件的属性和属主.</p></li>
+
+<li><p>Subsystem :: (可以配置一个相对安全的 sftp 服务)</p></li>
+
+<li><p>SyslogFacility :: 当 ssd 记录日志时提供的设备代码. 可能的值为:</p>
+
+<pre><code>(这些值的含义可参考 rsyslog 手册, 会根据 rsyslog 的配置将日志记录到
+            对应的位置)
+DAEMON, USER, AUTH, LOCAL0, LOCAL1, LOCAL2, LOCAL3,
+            LOCAL4, LOCAL5, LOCAL6, LOCAL7.
+</code></pre></li>
+
+<li><p>TCPKeepAlive :: 指定系统是否应该发送 TCP keepalive 消息到另一端. 如果被发送, 连接中断</p>
+
+<pre><code>  或者机器中的一个断掉将会适当的注意到. 然而这以为如果路由临时掉线连接就会
+  中断, 那么有些人就会觉得这让人很讨厌. 另一方面, TCP keepalive 没有发送,
+  ssh 会话可能会无限期的存在与 server 中, 如同幽灵用户, 浪费服务器资源.
+</code></pre></li>
+
+<li><p>TrustedUserCAKeys ::</p></li>
+
+<li><p>UseDNS ::</p></li>
+
+<li><p>UsePrivilegeSeparation :: 指定 sshd 是否分离权限, 通过创建非特权子进程的方式处理网络传输<br />
+在成功验证后, 额外的进行将会被创建, 此进程拥有被验证过的用户的权限. 这样做的目的是为了防止<br />
+ 通过有缺陷的子进程提升权限，从而使系统更加安全。</p></li>
+</ul></li>
+
+<li><p>ssh command<br />
+** -D [bind_address:]port<br />
+Specifies a local ``dynamic&rdquo; application-level port forwarding.<br />
+This works by allocating a socket to listen to port on the local<br />
+side, optionally bound to the specified bind_address.  Whenever a<br />
+connection is made to this port, the connection is forwarded over<br />
+the secure channel, and the application protocol is then used to<br />
+determine where to connect to from the remote machine.  Currently<br />
+the SOCKS4 and SOCKS5 protocols are supported, and ssh will act<br />
+as a SOCKS server.  Only root can forward privileged ports.<br />
+Dynamic port forwardings can also be specified in the<br />
+configuration file.</p></li>
+</ul>
+
+<p>IPv6 addresses can be specified by enclosing the address in<br />
+   square brackets.  Only the superuser can forward privileged<br />
+   ports.  By default, the local port is bound in accordance with<br />
+   the GatewayPorts setting.  However, an explicit bind_address may<br />
+   be used to bind the connection to a specific address.  The<br />
+   bind_address of `<code>localhost'' indicates that the listening port
+   be bound for local use only, while an empty address or</code>*&rsquo;<br />
+   indicates that the port should be available from all interfaces.</p>
+
+<p>** -L [bind_address:]port:host:hostport<br />
+   Specifies that the given port on the local (client) host is to be<br />
+   forwarded to the given host and port on the remote side.  This<br />
+   works by allocating a socket to listen to port on the local side,<br />
+   optionally bound to the specified bind_address.  Whenever a<br />
+   connection is made to this port, the connection is forwarded over<br />
+   the secure channel, and a connection is made to host port<br />
+   hostport from the remote machine.  Port forwardings can also be<br />
+   specified in the configuration file.  IPv6 addresses can be<br />
+   specified by enclosing the address in square brackets.  Only the<br />
+   superuser can forward privileged ports.  By default, the local<br />
+   port is bound in accordance with the GatewayPorts setting.<br />
+   However, an explicit bind_address may be used to bind the<br />
+   connection to a specific address.  The bind_address of<br />
+   `<code>localhost'' indicates that the listening port be bound for
+   local use only, while an empty address or</code>*&rsquo; indicates that the<br />
+   port should be available from all interfaces.</p>
+
+<p>** -R [bind_address:]port:host:hostport<br />
+   Specifies that the given port on the remote (server) host is to<br />
+   be forwarded to the given host and port on the local side.  This<br />
+   works by allocating a socket to listen to port on the remote<br />
+   side, and whenever a connection is made to this port, the<br />
+   connection is forwarded over the secure channel, and a connection<br />
+   is made to host port hostport from the local machine.</p>
+
+<p>Port forwardings can also be specified in the configuration file.<br />
+   Privileged ports can be forwarded only when logging in as root on<br />
+   the remote machine.  IPv6 addresses can be specified by enclosing<br />
+   the address in square brackets.</p>
+
+<p>By default, the listening socket on the server will be bound to<br />
+   the loopback interface only.  This may be overridden by<br />
+   specifying a bind_address.  An empty bind_address, or the address<br />
+   `*&lsquo;, indicates that the remote socket should listen on all<br />
+   interfaces.  Specifying a remote bind_address will only succeed<br />
+   if the server&rsquo;s GatewayPorts option is enabled (see<br />
+   sshd_config(5)).</p>
+
+<p>If the port argument is `0&rsquo;, the listen port will be dynamically<br />
+   allocated on the server and reported to the client at run time.<br />
+   When used together with -O forward the allocated port will be<br />
+   printed to the standard output.</p>
+
+<ul>
+<li>experience<br />
+** 私钥转发<br />
+
+<ol>
+<li>$ ssh-agent<br /></li>
+<li>$ ssh-add<br /></li>
+<li>$ ssh -A user@host<br />
+** 远程端口转发<br />
+*** 环境<br />
+共涉及三台机器([[../proj_img/ssh_remote_port_forward.png][网络环境图片链接]]):<br /></li>
+<li>puppet server :: (ubuntu, 192.168.24.16) 提供 puppet, openvpn 服务等<br /></li>
+<li>Windows juniper vpn client :: (windows, 192.168.24.128) 提供访问<br />
+ application 所在服务器的网络环境<br /></li>
+<li>application server :: (ubuntu, juniper vpn 10.192.168.16) 对外提供指定服务.<br />
+ 服务器处在某局域网内, 无法访问任何外部网络, 且对外只提供 80 端口访问. 当<br />
+ 管理员处在局域网以外时只能通过登录 windows 系统的 juniper vpn 网络访问服<br />
+ 务器的 22 等端口.<br />
+<br /></li>
+</ol></li>
+</ul>
+
+<p>*** 部署 application 过程</p>
+
+<pre><code>为了简便,快速,准确地部署 application, 必须使用 puppet 服务及外部软件源. 由于
+在Windows 上存在模拟 Linux 系统的 cygwin 工具, 故可以利用此工具安装 sshd 服务.
+当 Windows juniper vpn client 连接到 application 内部网络后, 利用 ssh 端口转
+发即可将 Windows 系统当作跳板, 实现我们想要地一切. Windows 上执行的命令如下:
+
+#+BEGIN_SRC SHELL
+将 Windows 系统的 22 端口转发到 application 服务器的 2222 端口
+ssh -R 2222:localhost:22 user@application.com
+#+END_SRC
+
+当我们将 Windows 的 22 端口转发到 application 内部时, 其实并未脱离 Windows的
+束缚, 且意义不大. 我们希望将某台 Linux 的某个端口转发至 application 内部.
+application 可以通过这个 Linux 端口通向外面的世界, 并且外面的世界也可以通过此
+端口顺利进入 application 内部. 为了达到这样的效果可以考虑将 TCP 协议的
+Openvpn 服务端口转发至 application 内部. 利用这个端口可将外部机器与
+application 间组成局域网, 且 appliction 也可通过 Openvpn 访问外部网络.
+Windows 上执行的命令为如下:
+
+#+BEGIN_SRC SHELL
+# Windows: 192.168.24.128
+# openvpn server: 192.168.24.16
+# 将 openvpn server 的 1194 端口转发至 application 的 1194 端口
+ssh -R 1194:192.168.24.16:1194 user@application.com
+#+END_SRC
+
+再在 application 中添加相应的路由即可. 或者在 openvpn client 配置中设置
+openvpn 地址为默认网关即可.
+</code></pre>
+
+                      
+                    </div>
+                    
+                    <div class="clear"></div>
+                  </div>
+                  
+
+                </div>
+                
+              </article>
+              
+              <div class="clear"></div>
+              
+
+              
+<section id="comments" class="themeform">
+  <div id="SOHUCS"></div>
+	<script type="text/javascript">
+	(function(){
+		if (window.location.hostname === 'localhost') return;
+		if (window.location.hostname === '127.0.0.1') return;
+
+		var appid = 'cytgPrsTW';
+		var conf = 'prod_a8b514a0c64b034bba38e466be98c266';
+		var width = window.innerWidth || document.documentElement.clientWidth;
+		if (width < 960) {window.document.write('<script id="changyan_mobile_js" charset="utf-8" type="text/javascript" src="https://changyan.sohu.com/upload/mobile/wap-js/changyan_mobile.js?client_id=' + appid + '&conf=' + conf + '"><\/script>'); } else { var loadJs=function(d,a){var c=document.getElementsByTagName("head")[0]||document.head||document.documentElement;var b=document.createElement("script");b.setAttribute("type","text/javascript");b.setAttribute("charset","UTF-8");b.setAttribute("src",d);if(typeof a==="function"){if(window.attachEvent){b.onreadystatechange=function(){var e=b.readyState;if(e==="loaded"||e==="complete"){b.onreadystatechange=null;a()}}}else{b.onload=a}}c.appendChild(b)};loadJs("https://changyan.sohu.com/upload/changyan.js",function(){window.changyan.api.config({appid:appid,conf:conf})}); }
+	})();
+	</script>
+
+  
+
+  
+
+
+
+  
+
+
+</section>
+
+            </div>
+          </section>
+          <div class="sidebar s1">
+  <a class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>Follow:</p>
+      <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+    </div>
+
+    <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="http://blog.pytool.com/linux/cmd/linux-network-ss/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Linux命令 ss</span>
+      </a>
+      
+  </li>
+</ul>
+
+    
+    <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/devops/">Devops</a>
+        <small>(61)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/docker/">Docker</a>
+        <small>(15)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/golang/">Golang</a>
+        <small>(68)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/linux/">Linux</a>
+        <small>(77)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
+        <small>(107)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/windows/">Windows</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+        <small>(22)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(29)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(39)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="http://blog.pytool.com/categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    
+    
+     
+  
+  </div>
+  
+</div>
+
+          <div class="sidebar s2">
+  <a rel="nofollow" class="sidebar-toggle" title="Expand Sidebar"><i class="fa icon-sidebar-toggle"></i></a>
+  <div class="sidebar-content">
+    <div class="sidebar-top group">
+      <p>More</p>
+    </div>
+
+    
+   
+    <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="http://blog.pytool.com/linux/cmd/linux-ssh-agent/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux命令 ssh-agent</span>
+      </a>
+      
+  </li>
+</ul>
+
+    <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ack/" class="tag-link-1" title="1 Posts">ack<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/activity/" class="tag-link-1" title="1 Posts">activity<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/adb/" class="tag-link-1" title="1 Posts">adb<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/android/" class="tag-link-1" title="1 Posts">android<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/aria2/" class="tag-link-1" title="1 Posts">aria2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/arp/" class="tag-link-1" title="1 Posts">arp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/atom/" class="tag-link-1" title="1 Posts">atom<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/autohotkey/" class="tag-link-1" title="1 Posts">autohotkey<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/awesome/" class="tag-link-2" title="1 Posts">awesome<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/awk/" class="tag-link-1" title="1 Posts">awk<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/bash/" class="tag-link-1" title="1 Posts">bash<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/bc/" class="tag-link-1" title="1 Posts">bc<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/bower/" class="tag-link-1" title="1 Posts">bower<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/brew/" class="tag-link-1" title="1 Posts">brew<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/bubble/" class="tag-link-1" title="1 Posts">bubble<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/burpssuite/" class="tag-link-1" title="1 Posts">burpssuite<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/burpsuite/" class="tag-link-1" title="1 Posts">burpsuite<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/can/" class="tag-link-1" title="1 Posts">can<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/capistrano/" class="tag-link-1" title="1 Posts">capistrano<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/cash/" class="tag-link-1" title="1 Posts">cash<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/coffeescript/" class="tag-link-1" title="1 Posts">coffeescript<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/composer/" class="tag-link-1" title="1 Posts">composer<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/crontab/" class="tag-link-1" title="1 Posts">crontab<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/cryptsetup/" class="tag-link-1" title="1 Posts">cryptsetup<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/css/" class="tag-link-11" title="1 Posts">css<small>(11)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/css3/" class="tag-link-1" title="1 Posts">css3<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ctags/" class="tag-link-1" title="1 Posts">ctags<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/date/" class="tag-link-1" title="1 Posts">date<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/dd/" class="tag-link-1" title="1 Posts">dd<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/debug/" class="tag-link-1" title="1 Posts">debug<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/decode/" class="tag-link-1" title="1 Posts">decode<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/defer/" class="tag-link-1" title="1 Posts">defer<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/devops/" class="tag-link-1" title="1 Posts">devops<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/discourse/" class="tag-link-1" title="1 Posts">discourse<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/dnsmasq/" class="tag-link-1" title="1 Posts">dnsmasq<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/docker/" class="tag-link-17" title="1 Posts">docker<small>(17)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/dpkg/" class="tag-link-1" title="1 Posts">dpkg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/drone/" class="tag-link-17" title="1 Posts">drone<small>(17)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/editorconfig/" class="tag-link-1" title="1 Posts">editorconfig<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/enca/" class="tag-link-1" title="1 Posts">enca<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/encode/" class="tag-link-3" title="1 Posts">encode<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/etcd/" class="tag-link-4" title="1 Posts">etcd<small>(4)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/expect/" class="tag-link-1" title="1 Posts">expect<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/expr/" class="tag-link-1" title="1 Posts">expr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/extundelete/" class="tag-link-1" title="1 Posts">extundelete<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ffmpeg/" class="tag-link-1" title="1 Posts">ffmpeg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/find/" class="tag-link-1" title="1 Posts">find<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/firewall/" class="tag-link-1" title="1 Posts">firewall<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/flannel/" class="tag-link-1" title="1 Posts">flannel<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/fonts/" class="tag-link-1" title="1 Posts">fonts<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/free/" class="tag-link-1" title="1 Posts">free<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/fstab/" class="tag-link-1" title="1 Posts">fstab<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/gdb/" class="tag-link-1" title="1 Posts">gdb<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/git/" class="tag-link-1" title="1 Posts">git<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/go/" class="tag-link-1" title="1 Posts">go<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/go-shadowsocks2/" class="tag-link-1" title="1 Posts">go-shadowsocks2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/golang/" class="tag-link-25" title="1 Posts">golang<small>(62)</small></a>
+          
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/gpg/" class="tag-link-1" title="1 Posts">gpg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/grep/" class="tag-link-1" title="1 Posts">grep<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/gui/" class="tag-link-1" title="1 Posts">gui<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/hexdump/" class="tag-link-1" title="1 Posts">hexdump<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/hexo/" class="tag-link-2" title="1 Posts">hexo<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/hmac/" class="tag-link-1" title="1 Posts">hmac<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/html/" class="tag-link-1" title="1 Posts">html<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/html5/" class="tag-link-1" title="1 Posts">html5<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/http/" class="tag-link-1" title="1 Posts">http<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/httperf/" class="tag-link-1" title="1 Posts">httperf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/hugo/" class="tag-link-10" title="1 Posts">hugo<small>(10)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/hydra/" class="tag-link-1" title="1 Posts">hydra<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/i18n/" class="tag-link-1" title="1 Posts">i18n<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ifttt/" class="tag-link-1" title="1 Posts">ifttt<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/index/" class="tag-link-1" title="1 Posts">index<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/insomnia/" class="tag-link-1" title="1 Posts">insomnia<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/intent/" class="tag-link-1" title="1 Posts">intent<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ios/" class="tag-link-1" title="1 Posts">ios<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/iotop/" class="tag-link-1" title="1 Posts">iotop<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ip/" class="tag-link-2" title="1 Posts">ip<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/iptables/" class="tag-link-13" title="1 Posts">iptables<small>(13)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/irc/" class="tag-link-1" title="1 Posts">irc<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/javascript/" class="tag-link-6" title="1 Posts">javascript<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/join/" class="tag-link-1" title="1 Posts">join<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/js/" class="tag-link-1" title="1 Posts">js<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/jwt/" class="tag-link-2" title="1 Posts">jwt<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/k8s/" class="tag-link-1" title="1 Posts">k8s<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/key/" class="tag-link-1" title="1 Posts">key<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/kubernetes/" class="tag-link-10" title="1 Posts">kubernetes<small>(10)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/linux%E5%91%BD%E4%BB%A4/" class="tag-link-1" title="1 Posts">linux命令<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/locale/" class="tag-link-1" title="1 Posts">locale<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/losetup/" class="tag-link-1" title="1 Posts">losetup<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/lsof/" class="tag-link-1" title="1 Posts">lsof<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/lunr/" class="tag-link-1" title="1 Posts">lunr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/lvm2/" class="tag-link-1" title="1 Posts">lvm2<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/mariadb/" class="tag-link-8" title="1 Posts">mariadb<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/mathjax/" class="tag-link-1" title="1 Posts">mathjax<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/mbr/" class="tag-link-1" title="1 Posts">mbr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/md5/" class="tag-link-1" title="1 Posts">md5<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/md5sum/" class="tag-link-1" title="1 Posts">md5sum<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/mongo/" class="tag-link-1" title="1 Posts">mongo<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/mongodb/" class="tag-link-2" title="1 Posts">mongodb<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/mtr/" class="tag-link-1" title="1 Posts">mtr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/mysql/" class="tag-link-25" title="1 Posts">mysql<small>(47)</small></a>
+          
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/navicat64/" class="tag-link-1" title="1 Posts">navicat64<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/nessus/" class="tag-link-1" title="1 Posts">nessus<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/netcat/" class="tag-link-1" title="1 Posts">netcat<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/netsh/" class="tag-link-1" title="1 Posts">netsh<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/nexpose/" class="tag-link-1" title="1 Posts">nexpose<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/nginx/" class="tag-link-25" title="1 Posts">nginx<small>(26)</small></a>
+          
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/nmap/" class="tag-link-3" title="1 Posts">nmap<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/nodejs/" class="tag-link-1" title="1 Posts">nodejs<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/npm/" class="tag-link-2" title="1 Posts">npm<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ntp/" class="tag-link-1" title="1 Posts">ntp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/oauth2/" class="tag-link-2" title="1 Posts">oauth2<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/objdump/" class="tag-link-1" title="1 Posts">objdump<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/openid/" class="tag-link-1" title="1 Posts">openid<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/openssl/" class="tag-link-1" title="1 Posts">openssl<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/pdf/" class="tag-link-1" title="1 Posts">pdf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/perf/" class="tag-link-1" title="1 Posts">perf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/php/" class="tag-link-3" title="1 Posts">php<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/pip/" class="tag-link-1" title="1 Posts">pip<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/playbook/" class="tag-link-1" title="1 Posts">playbook<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/postgresql/" class="tag-link-1" title="1 Posts">postgresql<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/prepare/" class="tag-link-1" title="1 Posts">prepare<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/prometheus/" class="tag-link-6" title="1 Posts">prometheus<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/proxy/" class="tag-link-1" title="1 Posts">proxy<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/redis/" class="tag-link-1" title="1 Posts">redis<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/rename/" class="tag-link-1" title="1 Posts">rename<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/repo/" class="tag-link-1" title="1 Posts">repo<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/resin/" class="tag-link-1" title="1 Posts">resin<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/responsive/" class="tag-link-1" title="1 Posts">responsive<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/restful/" class="tag-link-5" title="1 Posts">restful<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/rethinkdb/" class="tag-link-1" title="1 Posts">rethinkdb<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/retina/" class="tag-link-1" title="1 Posts">retina<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/root/" class="tag-link-1" title="1 Posts">root<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/route/" class="tag-link-1" title="1 Posts">route<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/rtsp/" class="tag-link-1" title="1 Posts">rtsp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ruby/" class="tag-link-1" title="1 Posts">ruby<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/samba/" class="tag-link-1" title="1 Posts">samba<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/sar/" class="tag-link-1" title="1 Posts">sar<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/scoop/" class="tag-link-1" title="1 Posts">scoop<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/scp/" class="tag-link-1" title="1 Posts">scp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/selenium/" class="tag-link-1" title="1 Posts">selenium<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/seo/" class="tag-link-4" title="1 Posts">seo<small>(4)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/sftp/" class="tag-link-1" title="1 Posts">sftp<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/shell/" class="tag-link-6" title="1 Posts">shell<small>(6)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/signal/" class="tag-link-1" title="1 Posts">signal<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/snap/" class="tag-link-1" title="1 Posts">snap<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/sort/" class="tag-link-1" title="1 Posts">sort<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ssl/" class="tag-link-1" title="1 Posts">ssl<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/sso/" class="tag-link-1" title="1 Posts">sso<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ssrf/" class="tag-link-1" title="1 Posts">ssrf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/strace/" class="tag-link-1" title="1 Posts">strace<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/sublime/" class="tag-link-1" title="1 Posts">sublime<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/sudo/" class="tag-link-1" title="1 Posts">sudo<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/svg/" class="tag-link-1" title="1 Posts">svg<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/swagger/" class="tag-link-1" title="1 Posts">swagger<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/swarm/" class="tag-link-2" title="1 Posts">swarm<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/sysctlcd/" class="tag-link-1" title="1 Posts">sysctlcd<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/syslog/" class="tag-link-1" title="1 Posts">syslog<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/systemctl/" class="tag-link-1" title="1 Posts">systemctl<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/taints/" class="tag-link-1" title="1 Posts">taints<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/telegraf/" class="tag-link-1" title="1 Posts">telegraf<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/time/" class="tag-link-1" title="1 Posts">time<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/tmux/" class="tag-link-1" title="1 Posts">tmux<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/top/" class="tag-link-1" title="1 Posts">top<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/tr/" class="tag-link-1" title="1 Posts">tr<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/ulimit/" class="tag-link-1" title="1 Posts">ulimit<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/underscore/" class="tag-link-1" title="1 Posts">underscore<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/unpack/" class="tag-link-1" title="1 Posts">unpack<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/update-alternatives/" class="tag-link-1" title="1 Posts">update-alternatives<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/useradd/" class="tag-link-1" title="1 Posts">useradd<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/vim/" class="tag-link-11" title="1 Posts">vim<small>(11)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/visualstudiocode/" class="tag-link-1" title="1 Posts">visualstudiocode<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/vlc/" class="tag-link-1" title="1 Posts">vlc<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/wget/" class="tag-link-1" title="1 Posts">wget<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/windows/" class="tag-link-2" title="1 Posts">windows<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/windows10/" class="tag-link-1" title="1 Posts">windows10<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/windump/" class="tag-link-1" title="1 Posts">windump<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/xargs/" class="tag-link-1" title="1 Posts">xargs<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/xmllint/" class="tag-link-1" title="1 Posts">xmllint<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/xpath/" class="tag-link-1" title="1 Posts">xpath<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/zabbix/" class="tag-link-1" title="1 Posts">zabbix<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/%E5%93%8D%E5%BA%94%E5%BC%8F/" class="tag-link-1" title="1 Posts">响应式<small>(1)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-2" title="1 Posts">微服务<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="http://blog.pytool.com/tags/%E8%B4%A6%E6%88%B7%E7%B3%BB%E7%BB%9F/" class="tag-link-1" title="1 Posts">账户系统<small>(1)</small></a>
+        
+      
+  </div>
+</div>
+
+    
+
+    
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+ga('create', 'UA-106129999-2', 'auto');
+ga('send', 'pageview');
+</script>
+<script async src='//www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+<footer id="footer">
+  <section class="container" id="footer-bottom">
+    <div class="container-inner">
+      <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+      <div class="pad group">
+        <div class="grid one-half">
+          <div id="copyright">
+              <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+              
+          </div>
+          
+        </div>
+        
+        <div class="grid one-half last">
+          <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+        </div>
+      </div>
+
+    </div>
+    
+  </section>
+  
+</footer>
+
+
+
+<script src="http://blog.pytool.com/public/highlight/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="http://blog.pytool.com/wp-content/themes/hueman/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript" src="http://blog.pytool.com/wp-content/themes/hueman/js/scripts.js"></script>
+<script type="text/javascript" src="http://blog.pytool.com/assets/picturefill/picturefill.min.js"></script>
+<script type="text/javascript" src="http://blog.pytool.com/assets/js/jquery.matchHeight-min.js"></script>
+<script type="text/javascript" async defer src="http://blog.pytool.com/assets/js/myblog.js"></script>
+
+</body>
+</html>
+
