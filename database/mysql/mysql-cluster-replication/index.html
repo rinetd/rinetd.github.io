@@ -1,0 +1,2488 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <base href="http://blog.pytool.com/">
+  <title>mysql 主从、主主复制 </title>
+  
+  <meta charset="UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  
+  <meta name="description" content="slave端配置 1.中继日志是连接mastert和slave的信息，它是复制的核心，I/O线程将来自master的事件存储到中继日志中，中继">
+  <meta name="author" content=rinetd>
+  <meta name="publisher" content=rinetd@163.com>
+
+  <meta itemprop="name" content="mysql 主从、主主复制 - 时光小栈">
+  <meta itemprop="description" content="slave端配置 1.中继日志是连接mastert和slave的信息，它是复制的核心，I/O线程将来自master的事件存储到中继日志中，中继">
+  <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="mysql 主从、主主复制 - 时光小栈" />
+  <meta property="og:description" content="slave端配置 1.中继日志是连接mastert和slave的信息，它是复制的核心，I/O线程将来自master的事件存储到中继日志中，中继">
+  <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
+  <meta property="og:url" content="http://blog.pytool.com/database/mysql/mysql-cluster-replication/" />
+  
+  <meta name="baidu-site-verification" content="pCInWQYbNT" />
+  <meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+  
+
+
+
+
+
+
+  <link rel="canonical" href="../../../database/mysql/mysql-cluster-replication/">
+  <link rel='shortlink' href="http://blog.pytool.com/database/mysql/mysql-cluster-replication/"/>
+  <link rel="shortcut icon" href="../../../public/favicon.ico"/>
+
+  
+  
+  
+
+  
+  
+
+  <link rel="stylesheet" href="../../../front/css/main.min.css" >
+  <link rel="stylesheet" href="../../../front/css/font-awesome.min.css" >
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <meta name="author" content="" />
+  <meta name="description" content="Don&#39;t put any lines in your CODE that you don&#39;t understand" />
+
+  
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@gohugoio" />
+  <meta name="twitter:title" content="时光小栈" />
+  <meta name="twitter:description" content="Don&#39;t put any lines in your CODE that you don&#39;t understand" />
+  <meta name="twitter:image" content="http://elmah.ir/img/twittercard.png" />
+
+
+
+
+<meta name="generator" content="Hugo 0.37" />
+
+
+<link rel="canonical" href="http://blog.pytool.com/database/mysql/mysql-cluster-replication/" />
+<link rel="alternative" href="../../../index.xml" title="时光小栈" type="application/atom+xml" />
+
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="format-detection" content="telephone=no,email=no,adress=no" />
+<meta http-equiv="Cache-Control" content="no-transform" />
+
+
+<meta name="robots" content="index,follow" />
+<meta name="referrer" content="origin-when-cross-origin" />
+
+
+
+
+
+
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="时光小栈" />
+<meta name="msapplication-tooltip" content="时光小栈" />
+<meta name='msapplication-navbutton-color' content="#5fbf5e" />
+<meta name="msapplication-TileColor" content="#5fbf5e" />
+<meta name="msapplication-TileImage" content="/img/tile-image-windows.png" />
+<link rel="icon" href="../../../img/favicon.ico" />
+<link rel="icon" type="image/png" sizes="16x16" href="../../../img/favicon-16x16.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="../../../img/favicon-32x32.png" />
+<link rel="icon" sizes="192x192" href="../../../img/touch-icon-android.png" />
+<link rel="apple-touch-icon" href="../../../img/touch-icon-apple.png" />
+<link rel="mask-icon" href="../../../img/safari-pinned-tab.svg" color="#5fbf5e" />
+
+
+
+<link rel="stylesheet" href="//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css" />
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header" class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent">
+    
+  <nav class="nav-container group mobile-menu mobile-sticky " id="nav-mobile" data-menu-id="header-1">
+    <div class="mobile-title-logo-in-header">
+        <p class="site-title">
+            <a class="custom-logo-link" href="http://blog.pytool.com" rel="home" title="Pytool | Home ">
+                
+                Pytool
+            </a>
+        </p>
+    </div>
+    <div class="ham__navbar-toggler-two collapsed" title="Menu" aria-expanded="false">
+        <div class="ham__navbar-span-wrapper">
+            <span class="line line-1"></span>
+            <span class="line line-2"></span>
+            <span class="line line-3"></span>
+        </div>
+    </div>
+    <div class="nav-text">mysql 主从、主主复制</div>
+    <div class="nav-wrap container">
+        <ul class="nav container-inner group mobile-search">
+            <li>
+                <form method="get" class="searchform themeform" action="https://demo-hueman.presscustomizr.com/">
+                    <div>
+                        <input type="text" class="search" name="s" onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"/>
+                    </div>
+                </form>
+            </li>
+        </ul>
+        <ul id="menu-topbar-menu" class="nav container-inner group">
+        
+            <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a href="http://blog.pytool.com ">Home</a>
+            </li>
+
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../../edit/">Edit </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../../database/">Database </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/database/mongo/">Mongo</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/database/mysql/">Mysql</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/database/redis/">Redis</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../../devops/">Devops </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/oauth2/">OAuth2</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/ansible/">Ansible</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/docker/">Docker</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/drone/">Drone</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/elk/">Elk</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/etcd/">Etcd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/kubernetes/">Kubernetes</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/prometheus/">Prometheus</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/">文档生成器</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">自动部署</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../../frontend/">Frontend </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/frontend/css/">Css</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/frontend/vue/">Vue</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../../hacker/">Hacker </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/01-info-gather/">01-Info-Gather</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/02-spoof/">02-Spoof</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/shells/">Shells</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../../hardware/">Hardware </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hardware/rtmp/">Rtmp</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../../language/">Language </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/android/">Android</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/awesome/">Awesome</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/golang/">Golang</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/golang/goher/">Goher</a>
+                                                
+                                            </li>                
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/golang/hugo/">Hugo</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/java/">Java</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/java/hadoop/">Hadoop</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/php/">Php</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/php/magento/">Magento</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/python/">Python</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/python/scrapy/">Scrapy</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../../linux/">Linux </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/cmd/">Cmd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/git/">Git</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/haproxy/">Haproxy</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/ip/">Ip</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/lvs/">Lvs</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/nginx/">Nginx</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/shell/">Shell</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../../machinelearning/">MachineLearning </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/machinelearning/math/">Math</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+        
+        
+        <li class="item ">
+                <a class="text" href="../../../series/">series</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../categories/">categories</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../tags/">tags</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../me/">about</a>
+        </li>
+
+        
+        </ul>
+    </div>
+  </nav>
+    
+  <nav class="nav-container group desktop-menu desktop-sticky " id="nav-topbar" data-menu-id="header-2">
+    <div class="nav-text">mysql 主从、主主复制</div>
+    
+    <div class="topbar-toggle-down">
+        <i class="fas fa-angle-double-down" aria-hidden="true" data-toggle="down" title="Expand menu"></i>
+        <i class="fas fa-angle-double-up" aria-hidden="true" data-toggle="up" title="Collapse menu"></i>
+    </div>
+
+    
+    <div class="nav-wrap container">
+      <ul id="menu-topbar-menu-1" class="nav container-inner group">
+        <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a rel="nofollow" href="../../../">Home</a></li>
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../edit/">Edit </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../database/">Database </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/database/mongo/">Mongo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/database/mysql/">Mysql</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/database/redis/">Redis</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../devops/">Devops </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/oauth2/">OAuth2</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/ansible/">Ansible</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/docker/">Docker</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/drone/">Drone</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/elk/">Elk</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/etcd/">Etcd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/kubernetes/">Kubernetes</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/prometheus/">Prometheus</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/">文档生成器</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">自动部署</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../frontend/">Frontend </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/frontend/css/">Css</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/frontend/vue/">Vue</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../hacker/">Hacker </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/01-info-gather/">01-Info-Gather</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/02-spoof/">02-Spoof</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/shells/">Shells</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../hardware/">Hardware </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hardware/rtmp/">Rtmp</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../language/">Language </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/android/">Android</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/awesome/">Awesome</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/golang/">Golang</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/java/">Java</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/php/">Php</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/python/">Python</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../linux/">Linux </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/cmd/">Cmd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/git/">Git</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/haproxy/">Haproxy</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/ip/">Ip</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/lvs/">Lvs</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/nginx/">Nginx</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/shell/">Shell</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../machinelearning/">MachineLearning </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/machinelearning/math/">Math</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../../post/">Post </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/life/">Life</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/reship/">Reship</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/basic/">Basic</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/english/">English</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/seo/">Seo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/software/">Software</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/wiki/">Wiki</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/windows/">Windows</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+       
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="../../../series/">series</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="../../../categories/">categories</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="../../../tags/">tags</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="../../../me/">about</a>
+        </li>
+        
+
+        
+      </ul>
+      
+    </div>
+    
+    
+  
+  </nav>
+  
+
+  
+  
+
+</header>
+
+  <div class="container" id="page">
+      <div class="container-inner">
+          <div class="main">
+              <div class="main-inner group">
+                  <div class="content">
+    
+        <div class="pad group page-title">
+                <ul class="meta-single group">
+                  
+                  <li><span class="fa fa-folder-open"></span></li>
+                  
+                  <li class="category">
+                    <a rel="nofollow" href="../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" rel="category tag">数据库</a>
+                  </li>
+                  
+                </ul>
+        </div>
+
+        
+        <div class="pad group">
+            <article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list">
+                <div class="post-inner group">
+                        <h1 class="post-title">mysql 主从、主主复制</h1>
+
+                        <p class="post-byline">
+                          by  · 2016年02月26日 · 3161 Words ·
+                          ~7min reading time |
+                          
+                          
+                          <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/database/mysql/mysql-cluster-replication.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                        </p>
+                    <div class="clear"></div>
+                    <div class="entry themeform">
+                        <div class="entry-inner">
+                            <p>原文作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+                            </br>
+                            原文链接：<a target="_blank" href="http://blog.pytool.com/database/mysql/mysql-cluster-replication/"> mysql 主从、主主复制</a> 
+                            </p>
+                            
+
+<h2 id="slave端配置">slave端配置</h2>
+
+<h4 id="1-中继日志是连接mastert和slave的信息-它是复制的核心-i-o线程将来自master的事件存储到中继日志中-中继日志充当缓冲-这样master不必等待slave执行完成就可以发送下一个事件">1.中继日志是连接mastert和slave的信息，它是复制的核心，I/O线程将来自master的事件存储到中继日志中，中继日志充当缓冲，这样master不必等待slave执行完成就可以发送下一个事件。</h4>
+
+<pre><code>relay_log=relay-log     
+</code></pre>
+
+<h4 id="2-只读模式-仅对非super权限的用户有效">2.只读模式,仅对非super权限的用户有效</h4>
+
+<pre><code>read_only=on
+</code></pre>
+
+<p>set global read_only=1;<br />
+show global variables like &ldquo;%read_only%&ldquo;;</p>
+
+<h4 id="3-设置备节点延迟的时间-单位秒">3.设置备节点延迟的时间，单位秒。</h4>
+
+<p><code>stop slave; change master to master_delay = 1800;start slave;</code> #延时半小时<br />
+<code>stop slave; change master to master_delay = 60;start slave;</code>   #延时一分钟</p>
+
+<h2 id="1-mysql主从部分库表同步">1. mysql主从部分库表同步</h2>
+
+<p>replication 中通过以下参数减少binlog数据量<br />
+binlog-do-db：指定mysql的binlog日志记录哪个db<br />
+replication-do-db 参数是在slave上配置，指定slave要复制哪个库</p>
+
+<h3 id="master端">master端：</h3>
+
+<pre><code>设置同步的数据库，多个库写多条语句
+</code></pre>
+
+<p>&ndash;binlog-do-db 二进制日志记录的数据库（多数据库用逗号，隔开）</p>
+
+<pre><code>忽略同步的数据库，多个库写多条语句
+</code></pre>
+
+<p>&ndash;binlog-ignore-db 二进制日志中忽略数据库 （多数据库用逗号，隔开）</p>
+
+<pre><code class="language-conf">binlog-do-db = lybb
+binlog-ignore-db = mysql
+binlog-ignore-db = performance_schema
+binlog-ignore-db = information_schema
+binlog-ignore-db = test
+</code></pre>
+
+<h3 id="slave端">slave端</h3>
+
+<p>&ndash;replication-do-db    设定需要复制的数据库（多数据库使用逗号，隔开）<br />
+&ndash;replication-ignore-db 设定需要忽略的复制数据库 （多数据库使用逗号，隔开）<br />
+&ndash;replication-do-table  设定需要复制的表<br />
+&ndash;replication-ignore-table 设定需要忽略的复制表<br />
+&ndash;replication-wild-do-table 同replication-do-table功能一样，但是可以通配符<br />
+&ndash;replication-wild-ignore-table 同replication-ignore-table功能一样，但是可以加通配符</p>
+
+<h2 id="2-master-00001-binlog日志自动删除时间">2. master.00001 binlog日志自动删除时间</h2>
+
+<p>expire_logs_days=5</p>
+
+<h2 id="3-设置主从复制延时时间">3. 设置主从复制延时时间</h2>
+
+<p>[](<a href="http://www.cnblogs.com/zhoujinyi/p/4527964.html" target="_blank">http://www.cnblogs.com/zhoujinyi/p/4527964.html</a>)</p>
+
+<h3 id="master端-主动预防">master端：主动预防</h3>
+
+<p>mysql 可以指定三个参数，用于复制线程重连主库：</p>
+
+<pre><code class="language-conf">--master-retry-count = 86400 
+--master-connect-retry = 60 
+--slave-net-timeout = 3600
+</code></pre>
+
+<p>具体的重试策略为：备库过了 slave-net-timeout 秒还没有收到主库来的数据，它就会开始第一次重试。然后每过 master-connect-retry 秒，备库会再次尝试重连主库。直到重试了 master-retry-count 次，它才会放弃重试。如果重试的过程中，连上了主库，那么它认为当前主库是好的，又会开始 slave-net-timeout 秒的等待。</p>
+
+<p>slave-net-timeout 的默认值是 3600 秒， master-connect-retry 默认为 60 秒， master-retry-count默认为 86400 次。也就是说，如果主库一个小时都没有任何数据变更发送过来，备库才会尝试重连主库。这就是为什么在我们模拟的场景下，一个小时后，备库才会重连主库，继续同步数据变更的原因。</p>
+
+<h1 id="实战-mysql主从热备">实战：mysql主从热备</h1>
+
+<p><code>slave</code>通过<code>master</code>的<code>binary log</code>，采用<code>异步</code>的方式将master的数据复制到slave端。</p>
+
+<h2 id="1-master端">1. master端</h2>
+
+<ol>
+<li>创建replication用户<br />
+<code>grant replication slave on *.* to 'repl'@'%' identified by '123456';</code><br />
+<code>sql
+grant lock tables, reload, replication slave,replication client on *.* to 'repl'@'10.114.0.%' identified by '123456'; flush privileges;
+</code><br /></li>
+<li>修改配置文件<br />
+ master和slave的server-id不能一致<br />
+<br /></li>
+</ol>
+
+<h3 id="for-master-replication">for master replication</h3>
+
+<pre><code class="language-sql">[server]
+server_id=1
+log_bin=master-binlog
+log-bin-trust-function-creators=1 # view dont reqiure super privileged
+
+#binlog-do-db = lybb
+binlog-ignore-db = mysql,information_schema,performance_schema 
+binlog-ignore-db = test
+
+expire_logs_days = 7	#binlog files older than this will be purged
+max_binlog_size  = 256M #max size for binlog before rolling
+
+[mysqld]
+
+# 多主模式
+#auto-increment-offset = 1
+#auto-increment-increment = 3
+
+#[实时写入 可选] 每一次事务提交或事务外的指令都需要把日志写入（flush）硬盘,最大限度保证可靠性和一致性
+innodb_flush_log_at_trx_comit=1 
+sync_binlog = 1 
+
+</code></pre>
+
+<ol>
+<li><p>封锁commit操作 简称(ftwrl)，该命令主要用于备份工具获取一致性备份(数据与binlog位点匹配)</p>
+
+<pre><code class="language-sql">flush tables with read lock; 
+show master status;     
+mysqldump -uroot -p --master-data -b test &gt; backup_test.sql 
+unlock tables;
+</code></pre>
+
+<p><strong>note</strong>：不要退出当前<code>mysql cli</code>，否则lock失效</p></li>
+
+<li><p>查看<code>binary log</code>文件名和坐标<br />
+<code>show master status;</code><br />
+记录<code>file</code>和<code>position</code>的输出</p></li>
+</ol>
+
+<h2 id="slave配置">slave配置</h2>
+
+<p>修改配置文件<br />
+vim /etc/my.cnf.d/server.cnf</p>
+
+<h3 id="for-slave-replication">for slave replication</h3>
+
+<pre><code class="language-sql">[server]
+server-id=2
+read_only=ON    #只读设置，仅对非super权限的用户有效
+
+relay_log=relay-log
+log-slave-updates = ON #[必须]中继日志执行之后将变化写入自己的二进制文件 
+
+# replication-do-db=lybb
+replicate-ignore-db = mysql,information_schema,performance_schema 
+
+slave-skip-errors = all
+
+</code></pre>
+
+<ol>
+<li><p>停止slave</p>
+
+<pre><code class="language-sql">stop slave;
+reset slave all;
+</code></pre></li>
+
+<li><p>设置写入缓存大小。提高mysql导入速度。(和磁盘io差不多就行)<br />
+<code>set global bulk_insert_buffer_size=128*1024*1024;</code></p>
+
+<pre><code class="language-bash">mysql -uroot -p &lt; backup_test.sql
+</code></pre></li>
+
+<li><p>配置master信息<br />
+CHANGE MASTER TO MASTER_LOG_FILE=&lsquo;master-log.000002&rsquo;, MASTER_LOG_POS=560688166;<br />
+master_use_gtid=current_pos; GTID复制功能</p>
+
+<pre><code class="language-sql">change master to master_host='10.114.0.10', master_user='repl', master_password='123456', master_log_file='master-log.000002', master_log_pos=560688166, master_delay = 0;
+master-binlog.000001
+
+change master to master_host='10.26.28.74', master_user='repl', master_password='123456', master_log_file=' master-binlog.000001', master_log_pos=617;
+</code></pre></li>
+
+<li><p>修改缓存。启动复制<br />
+<code>set global bulk_insert_buffer_size=8*1024*1024;</code></p>
+
+<pre><code class="language-sql">start slave;
+</code></pre></li>
+</ol>
+
+<h2 id="后文">后文</h2>
+
+<p>如果是双主热备，反过来将slave也配置成master即可</p>
+
+<pre><code>auto-increment-increment = 2    //每次增长2
+auto-increment-offset = 1       //设置自动增长的字段的偏移 1 3 5 7
+</code></pre>
+
+<p>进入从服务器去复制主服务器的配置文件和数据</p>
+
+<pre><code class="language-sql">    change master to master_host='10.114.0.10',master_user='repl',master_password='123456',master_log_file='master-log.000003',master_log_pos=713404672;	#定义从主服务器的哪里开始复制文件
+    start slave io_thread;            	#启动，开始复制
+    show slave status\G			#查看从节点的slave 是否为开启状态
+                这么多信息中，我们只需要看2项，只要为yes即可，分别是：
+                slave_io_running: yes     # 去主库读二进制日志，然后保存到从库去
+                slave_sql_running: yes    # 将中继日志转换成为sql语句执行
+    show databases;			#查看数据库是否复制过来
+    show databases;			#查看数据库里的表是否复制过来
+</code></pre>
+
+<p><strong>注意：</strong> 如果这里主服务器已经工作很长时间，里面有太多以前存储的数据。需要先把主服务器的数据备份出来导入从服务器，在进行后期的主从同步复制。这样可以避免复制时主服务器的i/o压力过大。这里从备份文件中恢复到从节点后的复制，复制的起始点为备份操作时主节点所处的日志文件及事件记录的最后位置；另外，从服务器的服务器版本号要高于主服务器的版本号；</p>
+
+<h4 id="主主复制服务器配置">主主复制服务器配置：</h4>
+
+<p>既然两个两服务器为主主复制，那这两个服务器必须互为主从，这样两个服务器的数据库数据才能保持一样。所以这里两个节点各自都要开启binlog和relay log；</p>
+
+<p>但是，这里要注意：如果某个表里定义了一个自动增长的主键或唯一键id，那么这里就会遇到一个问题了。这样的话如果两边主机同时写入一个数据，两边同时增长id号，那这个id 就会冲突，就会出现问题了。所以我们在配置时一定要注意这一点；</p>
+
+<pre><code>vim /etc/my.cnf.d/server.cnf
+[server]
+	server_id = 1	 # 两个主机之间的id必须不同
+	log_bin = master-log
+	relay = relay-log
+
+# 这里要注意两个主机之间自动增长id时，主键的不一致。所以这里定义主键时要有所区别
+	auto_increment_offset=1			#定义第一个自动增长的id 为1
+	auto_increment_increment=2		#id 的步进数为二，使它一直为奇数
+</code></pre>
+
+<pre><code>vim /etc/my.cnf.d/server.cnf
+[server]
+	server_id = 2	# 两个主机之间的id必须不同
+	log_bin = master-log
+	relay = relay-log
+
+    # 这个节点使用偶数id
+	auto_increment_offset=2			#定义第一个自动增长id 为2
+	auto_increment_increment=2		#id 步进数为二，使id 一直为偶数
+</code></pre>
+
+<p>启动服务后执行如下两步：</p>
+
+<pre><code>    都授权对方一个有复制权限的用户账号；
+    各把对方指定为主节点；
+</code></pre>
+
+<p>进入服务器(1):</p>
+
+<pre><code>grant replication slave,replication client on *.* to 'repluser'@'172.18.35.%' identified by '123456';	
+	flush privileges;
+</code></pre>
+
+<pre><code># 同样的操作在 另一个服务器上也进行一遍
+	grant replication slave,replication client on *.* to 'repluser'@'172.18.35.%' identified by '123456';		
+	flush privileges;
+	show master status\g     #查看本机主节点的日志记录状态，使172.18.35.4 可以确定从哪里开始复制
+</code></pre>
+
+<p>配置</p>
+
+<pre><code>    show master status\g	  #查看本机主节点的日志记录状态，使172.18.35.5 可以确定从哪里开始复制
+    change master to master_host='172.18.35.5',master_user='repluser',master_password='123456',master_log_file='master-log.000001',master_log_pos=245;   #从上面172.18.35.5里查看的某个日志的位置开始复制
+    start slave
+    show slave status\g
+</code></pre>
+
+<p><img src="{{ site.baseurl }}/image/mysql/4-zhuzhu.png" alt="image" /></p>
+
+<p>进入服务器(2):172.18.35.5</p>
+
+<pre><code>    change master to master_host='172.18.35.4',master_user='repluser',master_password='123456',master_log_file='master-log.000001',master_log_pos=245;   #从上面172.18.35.4里查看的某个日志的位置开始复制
+    start slave
+    show slave status\g
+</code></pre>
+
+<p><img src="{{ site.baseurl }}/image/mysql/5-zhuzhu.png" alt="image" /></p>
+
+<p>到这里双主复制模型已经配置完毕，下面就可以进行测试了</p>
+
+<p>下面写了一些复制时需要注意的问题。我们上面只说了双主的复制，没有提到多主多从的复制。你如果有兴趣可以自己试试多主多从的模型；</p>
+
+<pre><code>复制时需要注意的问题：
+    1、从服务设定为“只读”；
+        在从服务器启动read_only=on，但它仅对非super权限的用户有效；
+
+    2、尽量确保复制时的事务安全
+        在master节点启用参数：
+            sync_binlog = on  #定义从服务器要同步复制
+
+            如果用到的是innodb存储引擎：
+                innodb_flush_logs_at_trx_commit=on  #每当事务发生时就要同步事务的二进制日志
+                innodb_support_xa=on                #innodb 支持分布式事务
+
+    3、从服务器意外中止时尽量避免自动启动复制线程
+            因为服务意外中断时，可能有些日志没有执行完毕，复制时可能会出现错误。所以要把最后的日志清除，再重新进行复制。
+
+    4、从节点：设置参数
+        sync_master_info=on     #实时同步主节点的二进制日志信息
+        sync_relay_log_info=on  #实时同步中继日志信息，防止服务器宕机后复制时数据的丢失
+</code></pre>
+
+<hr />
+
+<h1 id="mysql从库恢复并开启主从复制的过程">mysql从库恢复并开启主从复制的过程</h1>
+
+<p>本次过程大致如下：</p>
+
+<pre><code>1. 从主库找到一个备份文件，放到从库服务器。
+2. 恢复数据到从库
+    3. 找到binlog还原点
+4. 设置mysql还原点
+5. 启动从库开始主从复制
+</code></pre>
+
+<ol>
+<li><p>连接到数据库</p>
+
+<p>mysql -h127.0.0.1 -uroot -p ;</p></li>
+
+<li><p>切换数据库</p>
+
+<p>use yourdatabase;</p></li>
+
+<li><p>停止主从复制</p></li>
+</ol>
+
+<p>stop slave;<br />
+reset slave all;</p>
+
+<ol>
+<li>设置写入缓存大小。提高mysql导入速度。(和磁盘io差不多就行)<br />
+<br /></li>
+</ol>
+
+<p>set global bulk_insert_buffer_size=128*1024*1024;</p>
+
+<ol>
+<li>恢复数据 （根据自己的备份方式恢复）<br />
+<br /></li>
+</ol>
+
+<p>source /bakfile</p>
+
+<ol>
+<li>找到mysql binlog 备份点 （在linux 下面执行，其他操作系统同理）<br />
+<br /></li>
+</ol>
+
+<p>less  /bakfile</p>
+
+<p>找到<br />
+&ndash; change master to master_log_file=&lsquo;mysql-bin-190.000640&rsquo;, master_log_pos=120;<br />
+获取时间binlog文件名和pos。</p>
+
+<ol>
+<li>修改从库同步位置<br />
+<br /></li>
+</ol>
+
+<p>change master to<br />
+master_host=&lsquo;10.251.192.18&rsquo;,<br />
+master_user=&lsquo;sync&rsquo;,<br />
+master_password=&lsquo;dbect98773!_sync&rsquo;,<br />
+master_port=3306,<br />
+ master_log_file=&lsquo;mysql-bin-190.000640&rsquo;,<br />
+ master_log_pos=120;</p>
+
+<ol>
+<li>修改缓存。启动复制<br />
+<br /></li>
+</ol>
+
+<p>set global bulk_insert_buffer_size=8*1024*1024;<br />
+start slave ;</p>
+
+<ol>
+<li>查看主从同步状态<br />
+<br /></li>
+</ol>
+
+<p>show slave status \g;</p>
+
+<ol>
+<li>如果有问题。查看mysql 错误日志。<br /></li>
+<li>同步开始后可能会有少量的冲突出现 ，使用下面语句可以跳过一个事务并查看同步状态<br />
+<br /></li>
+</ol>
+
+<p>stop slave;<br />
+set global sql_slave_skip_counter = 1 ;<br />
+start slave ;<br />
+show slave status \g;</p>
+
+                        </div>                      
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </article>   
+            <div class="clear"></div>
+
+            
+            <p class="post-tags">
+                  <span class="fa fa-tags">Tags:</span>
+                  
+                    <a rel="tag" href="../../../tags/mariadb">mariadb</a>
+                  
+            </p>
+            
+            <div id="related-posts">
+                <div class="related-inner">
+                </div>
+            </div>
+            
+            <section id="comments" class="themeform">
+                    
+                
+            </section>
+        </div>
+</div>
+                  <div class="sidebar s1 collapsed" data-position="left" data-layout="col-3cm" data-sb-id="s1">
+    <a class="sidebar-toggle" title="Expand Sidebar">
+        <i class="fas icon-sidebar-toggle"></i>
+    </a>
+    <div class="sidebar-content">
+        <div class="sidebar-top group">
+            <p>Follow:</p>  
+                          
+<ul class="social-links">
+    
+    
+    
+    
+
+    
+    <li>
+        <a class="social-tooltip" href="mailto:" title="Email">
+            <i class="fa fa-envelope"></i></a>
+    </li>
+
+    
+    <li>
+        <a class="social-tooltip"  href="//github.com/" title="GitHub"><i
+                class="fa fa-github"></i></a>
+    </li>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    <li>
+        <a rel="nofollow" class="social-tooltip" title="RSS Feed"
+            aria-label="RSS Feed"
+            href="../../../feed" target="_blank"
+            style="color:rgba(255,255,255,0.7)">
+            <i class="fa fa-rss"></i>
+        </a>
+    </li>
+
+</ul>
+   
+        </div>
+            <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="http://blog.pytool.com/database/mysql/mysql-config-my.cnf/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>my.cnf详解</span>
+      </a>
+      
+  </li>
+</ul>
+
+            
+            <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/devops/">Devops</a>
+        <small>(63)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/docker/">Docker</a>
+        <small>(15)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/golang/">Golang</a>
+        <small>(67)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/linux/">Linux</a>
+        <small>(78)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
+        <small>(113)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/windows/">Windows</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+        <small>(22)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E5%B7%A5%E5%85%B7/">工具</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(36)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(39)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    </div>
+</div>
+                  <div class="sidebar s2 collapsed" data-position="right" data-layout="col-3cm" data-sb-id="s2">
+        <a class="sidebar-toggle" title="Expand Sidebar">
+            <i class="fas icon-sidebar-toggle"></i>
+        </a>
+        <div class="sidebar-content">
+            <div class="sidebar-top group">
+                <p>More</p>
+            </div>
+            <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="http://blog.pytool.com/database/mysql/mysql-command/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>mysql 命令行你知多少</span>
+      </a>
+      
+  </li>
+</ul>
+
+            <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/awesome/" class="tag-link-3" title="1 Posts">awesome<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/css/" class="tag-link-18" title="1 Posts">css<small>(18)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/docker/" class="tag-link-18" title="1 Posts">docker<small>(18)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/drone/" class="tag-link-18" title="1 Posts">drone<small>(18)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/encode/" class="tag-link-3" title="1 Posts">encode<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/etcd/" class="tag-link-4" title="1 Posts">etcd<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/flannel/" class="tag-link-2" title="1 Posts">flannel<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/git/" class="tag-link-4" title="1 Posts">git<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/golang/" class="tag-link-84" title="1 Posts">golang<small>(84)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/golang-uk-2016/" class="tag-link-2" title="1 Posts">golang-uk-2016<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/gophercon2016/" class="tag-link-5" title="1 Posts">gophercon2016<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/gophercon2017/" class="tag-link-6" title="1 Posts">gophercon2017<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/gradle/" class="tag-link-3" title="1 Posts">gradle<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/hexo/" class="tag-link-2" title="1 Posts">hexo<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/html/" class="tag-link-2" title="1 Posts">html<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/http/" class="tag-link-2" title="1 Posts">http<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/ip/" class="tag-link-3" title="1 Posts">ip<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/iptables/" class="tag-link-13" title="1 Posts">iptables<small>(13)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/javascript/" class="tag-link-6" title="1 Posts">javascript<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/jwt/" class="tag-link-3" title="1 Posts">jwt<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/kubernetes/" class="tag-link-11" title="1 Posts">kubernetes<small>(11)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/mariadb/" class="tag-link-9" title="1 Posts">mariadb<small>(9)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/maven/" class="tag-link-2" title="1 Posts">maven<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/ml/" class="tag-link-2" title="1 Posts">ml<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/nginx/" class="tag-link-26" title="1 Posts">nginx<small>(26)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/nmap/" class="tag-link-3" title="1 Posts">nmap<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/notes/" class="tag-link-13" title="1 Posts">notes<small>(13)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/npm/" class="tag-link-3" title="1 Posts">npm<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/oauth2/" class="tag-link-2" title="1 Posts">oauth2<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/php/" class="tag-link-3" title="1 Posts">php<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/prometheus/" class="tag-link-8" title="1 Posts">prometheus<small>(8)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/restful/" class="tag-link-6" title="1 Posts">restful<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/scss/" class="tag-link-2" title="1 Posts">scss<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/seo/" class="tag-link-4" title="1 Posts">seo<small>(4)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/swagger/" class="tag-link-2" title="1 Posts">swagger<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/swarm/" class="tag-link-2" title="1 Posts">swarm<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/sysctl/" class="tag-link-2" title="1 Posts">sysctl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/ulimit/" class="tag-link-2" title="1 Posts">ulimit<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/vim/" class="tag-link-11" title="1 Posts">vim<small>(11)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/windows/" class="tag-link-2" title="1 Posts">windows<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/youtube/" class="tag-link-13" title="1 Posts">youtube<small>(13)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-2" title="1 Posts">微服务<small>(2)</small></a>
+        
+      
+        
+      
+  </div>
+</div>
+
+
+        </div>
+    </div>`
+
+              </div>
+              
+          </div>
+      
+   
+  </div>
+ 
+ 
+</div>
+<footer id="footer">
+    <section class="container" id="footer-bottom">
+      <div class="container-inner">
+        <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+        <div class="pad group">
+          <div class="grid one-half">
+            <div id="copyright">
+                <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+                
+            </div>
+            
+          </div>
+          
+          <div class="grid one-half last">
+            <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+          </div>
+        </div>
+  
+      </div>
+      
+    </section>
+    
+  </footer>
+
+
+
+<script type='text/javascript'>
+    var HUParams={
+        "_disabled":[],
+        "SmoothScroll":{
+            "Enabled":true,
+            "Options":{"touchpadSupport":false}
+        },
+        "centerAllImg":"1",
+        "timerOnScrollAllBrowsers":"1",
+        "extLinksStyle":"1",
+        "extLinksTargetExt":"1",
+        "extLinksSkipSelectors":{
+            "classes":["btn","button"],"ids":[]
+        },
+        "imgSmartLoadEnabled":"1",
+        "imgSmartLoadOpts":{
+            "parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],
+            "opts":{
+                "excludeImg":[".tc-holder-img"],
+                "fadeIn_options":100
+            }
+        },
+        "goldenRatio":"1.618","gridGoldenRatioLimit":"350",
+        "sbStickyUserSettings":{"desktop":true,"mobile":true},
+        "isWPMobile":"",
+        "menuStickyUserSettings":{
+            "desktop":"stick_up",
+            "mobile":"stick_up"
+        },
+        "isDevMode":"",
+        "ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1",
+            "frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},
+            "userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},
+            "isWelcomeNoteOn":"","welcomeContent":""};
+</script>
+
+
+
+<script src="https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript"  src="../../../front/js/scripts.js"></script> 
+
+
+
+
+
+
+<script>
+
+  $(".topbar-toggle-down").click(function(){
+    $("#nav-topbar").css("overflow","visible");
+  });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="back-to-top" id="back-to-top">
+  <i class="fa fa-angle-double-up"></i>
+</div>
+
+</body>
+</html>
+

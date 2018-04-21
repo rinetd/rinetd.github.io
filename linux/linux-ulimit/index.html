@@ -1,0 +1,2300 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+<head>
+  <base href="http://blog.pytool.com/">
+  <title>Linux 资源限制ulimit </title>
+  
+  <meta charset="UTF-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  
+  <meta name="description" content="先来说说ulimit的硬限制和软限制 硬限制用-H参数,软限制用-S参数. ulimit -a看到的是软限制,通过ulimit -a -H可以看到硬限制. 如果ul">
+  <meta name="author" content=rinetd>
+  <meta name="publisher" content=rinetd@163.com>
+
+  <meta itemprop="name" content="Linux 资源限制ulimit - 时光小栈">
+  <meta itemprop="description" content="先来说说ulimit的硬限制和软限制 硬限制用-H参数,软限制用-S参数. ulimit -a看到的是软限制,通过ulimit -a -H可以看到硬限制. 如果ul">
+  <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
+  
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Linux 资源限制ulimit - 时光小栈" />
+  <meta property="og:description" content="先来说说ulimit的硬限制和软限制 硬限制用-H参数,软限制用-S参数. ulimit -a看到的是软限制,通过ulimit -a -H可以看到硬限制. 如果ul">
+  <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
+  <meta property="og:url" content="http://blog.pytool.com/linux/linux-ulimit/" />
+  
+  <meta name="baidu-site-verification" content="pCInWQYbNT" />
+  <meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+  
+
+
+
+
+
+
+  <link rel="canonical" href="../../linux/linux-ulimit/">
+  <link rel='shortlink' href="http://blog.pytool.com/linux/linux-ulimit/"/>
+  <link rel="shortcut icon" href="../../public/favicon.ico"/>
+
+  
+  
+  
+
+  
+  
+
+  <link rel="stylesheet" href="../../front/css/main.min.css" >
+  <link rel="stylesheet" href="../../front/css/font-awesome.min.css" >
+  
+
+  
+  
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <meta name="author" content="" />
+  <meta name="description" content="Don&#39;t put any lines in your CODE that you don&#39;t understand" />
+
+  
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:site" content="@gohugoio" />
+  <meta name="twitter:title" content="时光小栈" />
+  <meta name="twitter:description" content="Don&#39;t put any lines in your CODE that you don&#39;t understand" />
+  <meta name="twitter:image" content="http://elmah.ir/img/twittercard.png" />
+
+
+
+
+<meta name="generator" content="Hugo 0.37" />
+
+
+<link rel="canonical" href="http://blog.pytool.com/linux/linux-ulimit/" />
+<link rel="alternative" href="../../index.xml" title="时光小栈" type="application/atom+xml" />
+
+
+<meta name="renderer" content="webkit" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="format-detection" content="telephone=no,email=no,adress=no" />
+<meta http-equiv="Cache-Control" content="no-transform" />
+
+
+<meta name="robots" content="index,follow" />
+<meta name="referrer" content="origin-when-cross-origin" />
+
+
+
+
+
+
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="时光小栈" />
+<meta name="msapplication-tooltip" content="时光小栈" />
+<meta name='msapplication-navbutton-color' content="#5fbf5e" />
+<meta name="msapplication-TileColor" content="#5fbf5e" />
+<meta name="msapplication-TileImage" content="/img/tile-image-windows.png" />
+<link rel="icon" href="../../img/favicon.ico" />
+<link rel="icon" type="image/png" sizes="16x16" href="../../img/favicon-16x16.png" />
+<link rel="icon" type="image/png" sizes="32x32" href="../../img/favicon-32x32.png" />
+<link rel="icon" sizes="192x192" href="../../img/touch-icon-android.png" />
+<link rel="apple-touch-icon" href="../../img/touch-icon-apple.png" />
+<link rel="mask-icon" href="../../img/safari-pinned-tab.svg" color="#5fbf5e" />
+
+
+
+<link rel="stylesheet" href="//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css" />
+
+</head>
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+<div id="wrapper">
+  <header id="header" class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent">
+    
+  <nav class="nav-container group mobile-menu mobile-sticky " id="nav-mobile" data-menu-id="header-1">
+    <div class="mobile-title-logo-in-header">
+        <p class="site-title">
+            <a class="custom-logo-link" href="http://blog.pytool.com" rel="home" title="Pytool | Home ">
+                
+                Pytool
+            </a>
+        </p>
+    </div>
+    <div class="ham__navbar-toggler-two collapsed" title="Menu" aria-expanded="false">
+        <div class="ham__navbar-span-wrapper">
+            <span class="line line-1"></span>
+            <span class="line line-2"></span>
+            <span class="line line-3"></span>
+        </div>
+    </div>
+    <div class="nav-text">Linux 资源限制ulimit</div>
+    <div class="nav-wrap container">
+        <ul class="nav container-inner group mobile-search">
+            <li>
+                <form method="get" class="searchform themeform" action="https://demo-hueman.presscustomizr.com/">
+                    <div>
+                        <input type="text" class="search" name="s" onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"/>
+                    </div>
+                </form>
+            </li>
+        </ul>
+        <ul id="menu-topbar-menu" class="nav container-inner group">
+        
+            <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a href="http://blog.pytool.com ">Home</a>
+            </li>
+
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../edit/">Edit </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../database/">Database </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/database/mongo/">Mongo</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/database/mysql/">Mysql</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/database/redis/">Redis</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../devops/">Devops </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/oauth2/">OAuth2</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/ansible/">Ansible</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/docker/">Docker</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/drone/">Drone</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/elk/">Elk</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/etcd/">Etcd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/kubernetes/">Kubernetes</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/prometheus/">Prometheus</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/">文档生成器</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">自动部署</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../frontend/">Frontend </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/frontend/css/">Css</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/frontend/vue/">Vue</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../hacker/">Hacker </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/01-info-gather/">01-Info-Gather</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/02-spoof/">02-Spoof</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hacker/shells/">Shells</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../hardware/">Hardware </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hardware/rtmp/">Rtmp</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../language/">Language </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/android/">Android</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/awesome/">Awesome</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/golang/">Golang</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/golang/goher/">Goher</a>
+                                                
+                                            </li>                
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/golang/hugo/">Hugo</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/java/">Java</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/java/hadoop/">Hadoop</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/php/">Php</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/php/magento/">Magento</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/language/python/">Python</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="http://blog.pytool.com/language/python/scrapy/">Scrapy</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../linux/">Linux </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/cmd/">Cmd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/git/">Git</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/haproxy/">Haproxy</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/ip/">Ip</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/lvs/">Lvs</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/nginx/">Nginx</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/linux/shell/">Shell</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a rel="nofollow" href="../../machinelearning/">MachineLearning </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="http://blog.pytool.com/machinelearning/math/">Math</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+        
+        
+        <li class="item ">
+                <a class="text" href="../../series/">series</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../categories/">categories</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../tags/">tags</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../me/">about</a>
+        </li>
+
+        
+        </ul>
+    </div>
+  </nav>
+    
+  <nav class="nav-container group desktop-menu desktop-sticky " id="nav-topbar" data-menu-id="header-2">
+    <div class="nav-text">Linux 资源限制ulimit</div>
+    
+    <div class="topbar-toggle-down">
+        <i class="fas fa-angle-double-down" aria-hidden="true" data-toggle="down" title="Expand menu"></i>
+        <i class="fas fa-angle-double-up" aria-hidden="true" data-toggle="up" title="Collapse menu"></i>
+    </div>
+
+    
+    <div class="nav-wrap container">
+      <ul id="menu-topbar-menu-1" class="nav container-inner group">
+        <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a rel="nofollow" href="../../">Home</a></li>
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../edit/">Edit </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../database/">Database </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/database/mongo/">Mongo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/database/mysql/">Mysql</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/database/redis/">Redis</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../devops/">Devops </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/oauth2/">OAuth2</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/ansible/">Ansible</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/docker/">Docker</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/drone/">Drone</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/elk/">Elk</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/etcd/">Etcd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/kubernetes/">Kubernetes</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/prometheus/">Prometheus</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/">文档生成器</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/">自动部署</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../frontend/">Frontend </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/frontend/css/">Css</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/frontend/vue/">Vue</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../hacker/">Hacker </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/01-info-gather/">01-Info-Gather</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/02-spoof/">02-Spoof</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hacker/shells/">Shells</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../hardware/">Hardware </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hardware/rtmp/">Rtmp</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../language/">Language </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/android/">Android</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/awesome/">Awesome</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/golang/">Golang</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/java/">Java</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/php/">Php</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/language/python/">Python</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../linux/">Linux </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/cmd/">Cmd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/git/">Git</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/haproxy/">Haproxy</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/ip/">Ip</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/lvs/">Lvs</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/nginx/">Nginx</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/linux/shell/">Shell</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../machinelearning/">MachineLearning </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/machinelearning/math/">Math</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a rel="nofollow" href="../../post/">Post </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/life/">Life</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/reship/">Reship</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/basic/">Basic</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/english/">English</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/seo/">Seo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/software/">Software</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/wiki/">Wiki</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="http://blog.pytool.com/post/windows/">Windows</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+       
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="../../series/">series</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="../../categories/">categories</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="../../tags/">tags</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a rel="nofollow" href="../../me/">about</a>
+        </li>
+        
+
+        
+      </ul>
+      
+    </div>
+    
+    
+  
+  </nav>
+  
+
+  
+  
+
+</header>
+
+  <div class="container" id="page">
+      <div class="container-inner">
+          <div class="main">
+              <div class="main-inner group">
+                  <div class="content">
+    
+        <div class="pad group page-title">
+                <ul class="meta-single group">
+                  
+                  <li><span class="fa fa-folder-open"></span></li>
+                  
+                  <li class="category">
+                    <a rel="nofollow" href="../../categories/linux-%E5%91%BD%E4%BB%A4/" rel="category tag">Linux 命令</a>
+                  </li>
+                  
+                </ul>
+        </div>
+
+        
+        <div class="pad group">
+            <article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list">
+                <div class="post-inner group">
+                        <h1 class="post-title">Linux 资源限制ulimit</h1>
+
+                        <p class="post-byline">
+                          by  · 2016年01月12日 · 2866 Words ·
+                          ~6min reading time |
+                          
+                          
+                          <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/Linux-ulimit.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                        </p>
+                    <div class="clear"></div>
+                    <div class="entry themeform">
+                        <div class="entry-inner">
+                            <p>原文作者：<a target="_blank" href="http://blog.pytool.com/">rinetd</a>
+                            </br>
+                            原文链接：<a target="_blank" href="http://blog.pytool.com/linux/linux-ulimit/"> Linux 资源限制ulimit</a> 
+                            </p>
+                            <p>先来说说ulimit的硬限制和软限制<br />
+硬限制用-H参数,软限制用-S参数.<br />
+ulimit -a看到的是软限制,通过ulimit -a -H可以看到硬限制.<br />
+如果ulimit不限定使用-H或-S,此时它会同时把两类限制都改掉的.<br />
+软限制可以限制用户/组对资源的使用,硬限制的作用是控制软限制.<br />
+超级用户和普通用户都可以扩大硬限制,但超级用户可以缩小硬限制,普通用户则不能缩小硬限制.<br />
+硬限制设定后,设定软限制时只能是小于或等于硬限制.<br />
+1)软限制不能超过硬限制<br />
+2)硬限制不能小于软限制<br />
+3)普通用户只能缩小硬限制,超级用户可以扩大硬限制<br />
+4)硬限制控制软限制,软限制来限制用户对资源的使用</p>
+
+<p>二)关于进程优先级的限制(scheduling priority)<br />
+这里的优先级指NICE值<br />
+这个值只对普通用户起作用,对超级用户不起作用,这个问题是由于CAP_SYS_NICE造成的.<br />
+例如调整普通用户可以使用的nice值为-10到20之间.<br />
+硬限制nice的限制为-15到20之间.<br />
+ulimit -H -e 35</p>
+
+<p>软限制nice的限制为-10到20之间<br />
+ulimit -S -e 30</p>
+
+<p>用nice命令,使执行ls的nice值为-10<br />
+nice -n -10 ls /tmp<br />
+ssh-BossiP2810  ssh-KITFTp2620  ssh-vIQDXV3333</p>
+
+<p>用nice命令,使执行ls的nice值为-11,此时超过了ulimit对nice的软限制,出现了异常.<br />
+nice -n -11 ls /tmp<br />
+nice: cannot set niceness: Permission denied</p>
+
+<p>三)内存锁定值的限制(max locked memory)<br />
+这个值只对普通用户起作用,对超级用户不起作用,这个问题是由于CAP_IPC_LOCK造成的.<br />
+linux对内存是分页管理的,这意味着有不需要时,在物理内存的数据会被换到交换区或磁盘上.<br />
+有需要时会被交换到物理内存,而将数据锁定到物理内存可以避免数据的换入/换出.<br />
+采用锁定内存有两个理由:<br />
+1)由于程序设计上需要,比如oracle等软件,就需要将数据锁定到物理内存.<br />
+2)主要是安全上的需要,比如用户名和密码等等,被交换到swap或磁盘,有泄密的可能,所以一直将其锁定到物理内存.</p>
+
+<p>四)进程打开文件的限制(open files)<br />
+这个值针对所有用户,表示可以在进程中打开的文件数.</p>
+
+<p>例如我们将open files的值改为3<br />
+ulimit -n 3</p>
+
+<p>五)信号可以被挂起的最大数(pending signals)</p>
+
+<p>这个值针对所有用户,表示可以被挂起/阻塞的最大信号数量</p>
+
+<p>六)可以创建使用POSIX消息队列的最大值,单位为bytes.(POSIX message queues)</p>
+
+<p>限制POSIX消息队列的最大值为1000个字节<br />
+ulimit -q 1000</p>
+
+<p>七)程序占用CPU的时间,单位是秒(cpu time)</p>
+
+<p>用ulimit将程序占用CPU的时间改为2秒,再运行程序.<br />
+ulimit -t 2</p>
+
+<p>程序2S后被kill掉了.</p>
+
+<p>八)限制程序实时优先级的范围,只针对普通用户.(real-time priority)<br />
+九)限制程序可以fork的进程数,只对普通用户有效(max user processes)<br />
+程序fork的进程数成倍的增加,这里是14个进程的输出.除自身外,其它13个进程都是test程序fork出来的.<br />
+我们将fork的限定到12,如下:<br />
+ulimit -u 12</p>
+
+<p>十)限制core文件的大小(core file size)</p>
+
+<p>如果在当前目录下没有core文件,我们应该调整ulimit对core的大小进行限制,如果core文件大小在这里指定为0,将不会产生core文件.<br />
+这里设定core文件大小为10个blocks.注:一个blocks在这里为1024个字节.</p>
+
+<p>ulimit -c 10<br />
+再次运行这个程序<br />
+./test<br />
+Segmentation fault (core dumped)</p>
+
+<p>查看core文件的大小<br />
+ls -lh core<br />
+-rw&mdash;&mdash;- 1 root root 12K 2011-03-08 13:54 core</p>
+
+<p>我们设定10个blocks应该是10*1024也不是10KB,为什么它是12KB呢,因为它的递增是4KB.<br />
+如果调整到14个blocks，我们将最大产生16KB的core文件.</p>
+
+<p>十一)限制进程使用数据段的大小(data seg size)</p>
+
+<p>Linux对于每个用户，系统限制其最大进程数。为提高性能，可以根据设备资源情况，设置各linux 用户的最大进程数<br />
+可以用<code>ulimit -a</code> 来显示当前的各种用户进程限制。<br />
+core file size          (blocks, -c) 0<br />
+data seg size           (kbytes, -d) unlimited<br />
+scheduling priority             (-e) 0<br />
+file size               (blocks, -f) unlimited<br />
+pending signals                 (-i) 31548<br />
+max locked memory       (kbytes, -l) 64<br />
+max memory size         (kbytes, -m) unlimited<br />
+open files                      (-n) 1024<br />
+pipe size            (512 bytes, -p) 8<br />
+POSIX message queues     (bytes, -q) 819200<br />
+real-time priority              (-r) 0<br />
+stack size              (kbytes, -s) 8192<br />
+cpu time               (seconds, -t) unlimited<br />
+max user processes              (-u) 31548<br />
+virtual memory          (kbytes, -v) unlimited<br />
+file locks                      (-x) unlimited</p>
+
+<p>-H hard 设置硬资源限制，一旦设置不能增加。                   ulimit – Hs 64；限制硬资源，线程栈大小为 64K。<br />
+-S soft 设置软资源限制，设置后可以增加，但是不能超过硬资源设置。 ulimit – Sn 32；限制软资源，32 个文件描述符。</p>
+
+<p>-a  显示当前所有的 limit 信息。                        ulimit – a；显示当前所有的 limit 信息。<br />
+-c  最大的 core 文件的大小， 以 blocks 为单位           ulimit – c unlimited； 对生成的 core 文件的大小不进行限制。<br />
+-d  进程最大的数据段的大小，以 Kbytes 为单位             ulimit -d unlimited；对进程的数据段大小不进行限制。<br />
+-f  file size   进程可以创建文件的最大值，以 blocks 为单位            ulimit – f 2048；限制进程可以创建的最大文件大小为 2048 blocks。<br />
+-l  最大可加锁内存大小，以 Kbytes 为单位。                ulimit – l 32；限制最大可加锁内存大小为 32 Kbytes。<br />
+-m  最大内存大小，以 Kbytes 为单位。                  ulimit – m unlimited；对最大内存不进行限制。<br />
+-n  open files 可以打开最大文件描述符的数量。                    ulimit – n 128；限制最大可以使用 128 个文件描述符。<br />
+-p  管道缓冲区的大小，以 Kbytes 为单位。               ulimit – p 512；限制管道缓冲区的大小为 512 Kbytes。<br />
+-s  线程栈大小，以 Kbytes 为单位。                      ulimit – s 512；限制线程栈的大小为 512 Kbytes。<br />
+-t  最大的 CPU 占用时间，以秒为单位。                    ulimit – t unlimited；对最大的 CPU 占用时间不进行限制。<br />
+-u  max user processes 用户最大可用的进程数。                           ulimit – u 64；限制用户最多可以使用 64 个进程。<br />
+-v  进程最大可用的虚拟内存，以 Kbytes 为单位。          ulimit – v 200000；限制最大可用的虚拟内存为 200000 Kbytes。</p>
+
+<p>下面我把某linux用户的最大进程数设为10000个：</p>
+
+<pre><code>ulimit -u 10240
+对于需要做许多 socket 连接并使它们处于打开状态的 Java 应用程序而言，
+最好通过使用 ulimit -n xx 修改每个进程可打开的文件数，缺省值是 1024。
+ulimit -n 4096 将每个进程可以打开的文件数目加大到4096，缺省为1024
+其他建议设置成无限制（unlimited）的一些重要设置是：
+数据段长度：ulimit -d unlimited
+最大内存大小：ulimit -m unlimited
+堆栈大小：ulimit -s unlimited
+CPU 时间：ulimit -t unlimited
+虚拟内存：ulimit -v unlimited
+</code></pre>
+
+<p>　　</p>
+
+<pre><code>暂时地，适用于通过 ulimit 命令登录 shell 会话期间。
+永久地，通过将一个相应的 ulimit 语句添加到由登录 shell 读取的文件中， 即特定于 shell 的用户资源文件，如：
+</code></pre>
+
+<p>1)、解除 Linux 系统的最大进程数和最大文件打开数限制：</p>
+
+<pre><code>    vi /etc/security/limits.conf
+    # 添加如下的行
+    * soft noproc 11000
+    * hard noproc 11000
+    * soft nofile 4100
+    * hard nofile 4100
+  说明：* 代表针对所有用户，noproc 是代表最大进程数，nofile 是代表最大文件打开数
+</code></pre>
+
+<p>2)、让 SSH 接受 Login 程式的登入，方便在 ssh 客户端查看 ulimit -a 资源限制：</p>
+
+<pre><code>    a、vi /etc/ssh/sshd_config
+        把 UserLogin 的值改为 yes，并把 # 注释去掉
+    b、重启 sshd 服务：
+          /etc/init.d/sshd restart
+</code></pre>
+
+<p>3)、修改所有 linux 用户的环境变量文件：</p>
+
+<pre><code>vi /etc/profile
+ulimit -u 10000
+ulimit -n 4096
+ulimit -d unlimited
+ulimit -m unlimited
+ulimit -s unlimited
+ulimit -t unlimited
+ulimit -v unlimited
+</code></pre>
+
+<p>保存后运行#source /etc/profile 使其生效<br />
+/**************************************<br />
+有时候在程序里面需要打开多个文件，进行分析，系统一般默认数量是1024，（用ulimit -a可以看到）对于正常使用是够了，但是对于程序来讲，就太少了。</p>
+
+<p>文件打开数量限制 默认1024 open files                      (-n) 1024</p>
+
+<p>修改2个文件。</p>
+
+<p>1./etc/security/limits.conf<br />
+vi /etc/security/limits.conf<br />
+加上：</p>
+
+<ul>
+<li>soft nofile 8192<br /></li>
+<li>hard nofile 20480<br />
+<br /></li>
+</ul>
+
+<p>2./etc/pam.d/login<br />
+session required /lib/security/pam_limits.so<br />
+/**********<br />
+另外确保/etc/pam.d/system-auth文件有下面内容<br />
+session required /lib/security/$ISA/pam_limits.so<br />
+这一行确保系统会执行这个限制。</p>
+
+<p>/***********</p>
+
+<p>3.一般用户的.bash_profile<br />
+#ulimit -n 1024<br />
+重新登陆ok</p>
+
+                        </div>                      
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </article>   
+            <div class="clear"></div>
+
+            
+            <p class="post-tags">
+                  <span class="fa fa-tags">Tags:</span>
+                  
+                    <a rel="tag" href="../../tags/ulimit">ulimit</a>
+                  
+            </p>
+            
+            <div id="related-posts">
+                <div class="related-inner">
+                </div>
+            </div>
+            
+            <section id="comments" class="themeform">
+                    
+                
+            </section>
+        </div>
+</div>
+                  <div class="sidebar s1 collapsed" data-position="left" data-layout="col-3cm" data-sb-id="s1">
+    <a class="sidebar-toggle" title="Expand Sidebar">
+        <i class="fas icon-sidebar-toggle"></i>
+    </a>
+    <div class="sidebar-content">
+        <div class="sidebar-top group">
+            <p>Follow:</p>  
+                          
+<ul class="social-links">
+    
+    
+    
+    
+
+    
+    <li>
+        <a class="social-tooltip" href="mailto:" title="Email">
+            <i class="fa fa-envelope"></i></a>
+    </li>
+
+    
+    <li>
+        <a class="social-tooltip"  href="//github.com/" title="GitHub"><i
+                class="fa fa-github"></i></a>
+    </li>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    <li>
+        <a rel="nofollow" class="social-tooltip" title="RSS Feed"
+            aria-label="RSS Feed"
+            href="../../feed" target="_blank"
+            style="color:rgba(255,255,255,0.7)">
+            <i class="fa fa-rss"></i>
+        </a>
+    </li>
+
+</ul>
+   
+        </div>
+            <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="http://blog.pytool.com/linux/cmd/linux-top/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Linux 监控命令 top</span>
+      </a>
+      
+  </li>
+</ul>
+
+            
+            <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/devops/">Devops</a>
+        <small>(63)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/docker/">Docker</a>
+        <small>(15)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/golang/">Golang</a>
+        <small>(67)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/linux/">Linux</a>
+        <small>(78)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
+        <small>(113)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/windows/">Windows</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+        <small>(22)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E5%B7%A5%E5%85%B7/">工具</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(36)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(27)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(39)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a rel="nofollow" href="../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(12)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    </div>
+</div>
+                  <div class="sidebar s2 collapsed" data-position="right" data-layout="col-3cm" data-sb-id="s2">
+        <a class="sidebar-toggle" title="Expand Sidebar">
+            <i class="fas icon-sidebar-toggle"></i>
+        </a>
+        <div class="sidebar-content">
+            <div class="sidebar-top group">
+                <p>More</p>
+            </div>
+            <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="http://blog.pytool.com/linux/cmd/linux-time/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux命令 time时间统计</span>
+      </a>
+      
+  </li>
+</ul>
+
+            <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/awesome/" class="tag-link-3" title="1 Posts">awesome<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/css/" class="tag-link-18" title="1 Posts">css<small>(18)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/docker/" class="tag-link-18" title="1 Posts">docker<small>(18)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/drone/" class="tag-link-18" title="1 Posts">drone<small>(18)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/encode/" class="tag-link-3" title="1 Posts">encode<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/etcd/" class="tag-link-4" title="1 Posts">etcd<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/flannel/" class="tag-link-2" title="1 Posts">flannel<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/git/" class="tag-link-4" title="1 Posts">git<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/golang/" class="tag-link-84" title="1 Posts">golang<small>(84)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/golang-uk-2016/" class="tag-link-2" title="1 Posts">golang-uk-2016<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/gophercon2016/" class="tag-link-5" title="1 Posts">gophercon2016<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/gophercon2017/" class="tag-link-6" title="1 Posts">gophercon2017<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/gradle/" class="tag-link-3" title="1 Posts">gradle<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/hexo/" class="tag-link-2" title="1 Posts">hexo<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/html/" class="tag-link-2" title="1 Posts">html<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/http/" class="tag-link-2" title="1 Posts">http<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/ip/" class="tag-link-3" title="1 Posts">ip<small>(3)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/iptables/" class="tag-link-13" title="1 Posts">iptables<small>(13)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/javascript/" class="tag-link-6" title="1 Posts">javascript<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/jwt/" class="tag-link-3" title="1 Posts">jwt<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/kubernetes/" class="tag-link-11" title="1 Posts">kubernetes<small>(11)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/linux/" class="tag-link-6" title="1 Posts">linux<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/mariadb/" class="tag-link-9" title="1 Posts">mariadb<small>(9)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/maven/" class="tag-link-2" title="1 Posts">maven<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/ml/" class="tag-link-2" title="1 Posts">ml<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/nginx/" class="tag-link-26" title="1 Posts">nginx<small>(26)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/nmap/" class="tag-link-3" title="1 Posts">nmap<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/notes/" class="tag-link-13" title="1 Posts">notes<small>(13)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/npm/" class="tag-link-3" title="1 Posts">npm<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/oauth2/" class="tag-link-2" title="1 Posts">oauth2<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/php/" class="tag-link-3" title="1 Posts">php<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/prometheus/" class="tag-link-8" title="1 Posts">prometheus<small>(8)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/python/" class="tag-link-5" title="1 Posts">python<small>(5)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/restful/" class="tag-link-6" title="1 Posts">restful<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/scss/" class="tag-link-2" title="1 Posts">scss<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/seo/" class="tag-link-4" title="1 Posts">seo<small>(4)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/swagger/" class="tag-link-2" title="1 Posts">swagger<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/swarm/" class="tag-link-2" title="1 Posts">swarm<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/sysctl/" class="tag-link-2" title="1 Posts">sysctl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/ulimit/" class="tag-link-2" title="1 Posts">ulimit<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/vim/" class="tag-link-11" title="1 Posts">vim<small>(11)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/windows/" class="tag-link-2" title="1 Posts">windows<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/youtube/" class="tag-link-13" title="1 Posts">youtube<small>(13)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="nofollow" rel="tag" href="../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-2" title="1 Posts">微服务<small>(2)</small></a>
+        
+      
+        
+      
+  </div>
+</div>
+
+
+        </div>
+    </div>`
+
+              </div>
+              
+          </div>
+      
+   
+  </div>
+ 
+ 
+</div>
+<footer id="footer">
+    <section class="container" id="footer-bottom">
+      <div class="container-inner">
+        <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+        <div class="pad group">
+          <div class="grid one-half">
+            <div id="copyright">
+                <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+                
+            </div>
+            
+          </div>
+          
+          <div class="grid one-half last">
+            <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo" rel="nofollow"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter" rel="nofollow"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub" rel="nofollow"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+          </div>
+        </div>
+  
+      </div>
+      
+    </section>
+    
+  </footer>
+
+
+
+<script type='text/javascript'>
+    var HUParams={
+        "_disabled":[],
+        "SmoothScroll":{
+            "Enabled":true,
+            "Options":{"touchpadSupport":false}
+        },
+        "centerAllImg":"1",
+        "timerOnScrollAllBrowsers":"1",
+        "extLinksStyle":"1",
+        "extLinksTargetExt":"1",
+        "extLinksSkipSelectors":{
+            "classes":["btn","button"],"ids":[]
+        },
+        "imgSmartLoadEnabled":"1",
+        "imgSmartLoadOpts":{
+            "parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],
+            "opts":{
+                "excludeImg":[".tc-holder-img"],
+                "fadeIn_options":100
+            }
+        },
+        "goldenRatio":"1.618","gridGoldenRatioLimit":"350",
+        "sbStickyUserSettings":{"desktop":true,"mobile":true},
+        "isWPMobile":"",
+        "menuStickyUserSettings":{
+            "desktop":"stick_up",
+            "mobile":"stick_up"
+        },
+        "isDevMode":"",
+        "ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1",
+            "frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},
+            "userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},
+            "isWelcomeNoteOn":"","welcomeContent":""};
+</script>
+
+
+
+<script src="https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript"  src="../../front/js/scripts.js"></script> 
+
+
+
+
+
+
+<script>
+
+  $(".topbar-toggle-down").click(function(){
+    $("#nav-topbar").css("overflow","visible");
+  });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="back-to-top" id="back-to-top">
+  <i class="fa fa-angle-double-up"></i>
+</div>
+
+</body>
+</html>
+
