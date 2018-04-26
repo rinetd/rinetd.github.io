@@ -1035,8 +1035,8 @@
                         <h1 class="post-title">深入浅出Redis</h1>
 
                         <p class="post-byline">
-                          by  · 2016年05月26日 · 8514 Words ·
-                          ~17min reading time |
+                          by  · 2016年05月26日 · 9628 Words ·
+                          ~20min reading time |
                           
                           
                           <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/database/redis/%e6%b7%b1%e5%85%a5%e6%b5%85%e5%87%baRedis.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
@@ -1066,6 +1066,29 @@ dpkg -i redis-desktop-manager_0.9.0.27_amd64.deb</p>
 Install package via Ubuntu Software Center
 Run RedisDesktopManager : /usr/share/redis-desktop-manager/bin/rdm or redis-desktop-manager
 </code></pre>
+
+<h2 id="key设计原则与技巧">KEY设计原则与技巧</h2>
+
+<p>用冒号作为分割是设计key的一种不成文的原则，遵循这种格式设计出的key在某些redis客户端下可以有效的识别；<br />
+Nosql数据库设计师，50%的工作就是给主键起个名，这话一点都不错，彻底从烦人的设计字段名称中解脱出来。</p>
+
+<p>1、统一表名。关系型数据库中的表名经常会用到下划线分割，用作hash键的时候显得不够简洁，比如一张表叫tm_user，转换成hash键的时候就叫user就可以了。</p>
+
+<p>2、统一主键。要求所有表中的自增主键完全一致，“完全”包括名称和数据类型，比如user这张表，主键就叫id,而不能是user_id。</p>
+
+<p>3、设计主键。还是以上面的user举例，user一般称为hash键，而这张的id称为范围键（range key），主键按照&rdquo;hash:range&rdquo;的形势构造，key=&ldquo;user:1&rdquo;表示存放的是mysql中user这张表的id为1的用户行数据。假设你的Nosql需要对应mysql多库，将库名也放进hashkey中，比如&rdquo;crm:user:1&rdquo;这样</p>
+
+<p>4、设计value格式。这里推荐用json格式。Nosql中数据类型和关系型数据库不一样，没有那么多复杂的类型。key永远是string类型，而value的类型分两种：</p>
+
+<p>基础类型：string和number类型；</p>
+
+<p>保留字：true、false、null</p>
+
+<p>具体可以参考json的数据规范ecma-404文档。</p>
+
+<p>5、举例，假设你的user表只要两个字段，id和name，最后格式就是这样：</p>
+
+<p>&ldquo;user:1&rdquo;=&ldquo;{&ldquo;id&rdquo;:1,&ldquo;name&rdquo;:&ldquo;红薯&rdquo;}&rdquo;</p>
 
 <h2 id="深入浅出redis">深入浅出Redis</h2>
 
@@ -1105,13 +1128,15 @@ redis.conf是Redis的配置文件
     结束Redis的进程也可以
 </code></pre>
 
-<pre><code>config set requirepass &quot;mypassword&quot; #启用密码
-vim /etc/redis/redis.conf
-	#requirepass foobared
+<h2 id="启用密码访问">启用密码访问</h2>
 
+<pre><code class="language-sh">config set requirepass &quot;mypassword&quot; #启用密码
+或 vim /etc/redis/redis.conf
+	#requirepass foobared
 sudo service redis restart
+
 redis-cli
-AUTH mypassword
+auth mypassword
 </code></pre>
 
 <p>redis-cli -h host -p port -a &ldquo;password&rdquo;</p>
@@ -1119,9 +1144,9 @@ AUTH mypassword
 <h1 id="基本命令">基本命令</h1>
 
 <p>info<br />
-CONFIG GET *                                获取所有配置<br />
-KEYS *                                  得到当前数据库中的存在的键名<br />
-TYPE key                                    返回key所存储的类型<br />
+config get *            获取所有配置<br />
+KEYS *                  得到当前数据库中的存在的键名<br />
+TYPE key                返回key所存储的类型<br />
 exists(key)：确认一个key是否存在<br />
 del(key)：删除一个key<br />
 type(key)：返回值的类型<br />
@@ -1129,29 +1154,48 @@ keys(pattern)：返回满足给定pattern的所有key<br />
 flushdb：删除当前选择数据库中的所有key<br />
 flushall：删除所有数据库中的所有key</p>
 
-<ol>
-<li><p>string 类型 key-value<br />
-SET name &ldquo;sona&rdquo;<br />
+<h3 id="1-string-类型-key-value">1. string 类型 key-value</h3>
+
+<p>SET name &ldquo;sona&rdquo;<br />
 MSET name &ldquo;sona&rdquo; password &ldquo;123456&rdquo;<br />
 get name<br />
-mget name</p></li>
+mget name</p>
 
-<li><p>Hash 类型 JSON<br />
-hkeys       hkey                返回hash中key的所有的field<br />
+<h3 id="2-hash-类型-json">2. Hash 类型 JSON</h3>
+
+<p>hkeys hkey                  返回hash中key的所有的field<br />
 hgetall hkey                返回hash表key中所有的field和value<br />
 hget hkey field<br />
 hmget hkey field field<br />
-HSET hkey field value<br />
-HMSET hkey field value field value</p></li>
+hset hkey field value<br />
+hmset hkey field value field value<br />
+hincrby <key> <field> <increment>   为哈希表 key 中的域 field 的值加上增量 increment 。增量也可以为负数<br />
+hvals <key>  返回所有hash表中的key的所有值<br />
+hdel <key>  <field>  [<field>&hellip;]  删除hash表中key的一个或者多个域的值。如果指定的field不存在，则忽略操作。</p>
 
-<li><p>list 列表类型 队列<br />
-LPUSH lkey value<br />
-lrange lkey 0 -1</p></li>
+<h3 id="4-list-列表类型-队列">4. list 列表类型 队列</h3>
 
-<li><p>set 集合类型<br />
-SADD skey value<br />
-smembers skey</p></li>
+<p>LPUSH lkey value<br />
+lrange lkey 0 -1</p>
 
+<h3 id="3-set-集合类型">3. set 集合类型</h3>
+
+<p>sadd(key, member)：向名称为key的set中添加元素member<br />
+srem(key, member) ：删除名称为key的set中的元素member<br />
+spop(key) ：随机返回并删除名称为key的set中一个元素<br />
+smove(srckey, dstkey, member) ：移到集合元素<br />
+scard(key) ：返回名称为key的set的基数<br />
+sismember(key, member) ：member是否是名称为key的set的元素<br />
+sinter(key1, key2,…key N) ：求交集<br />
+sinterstore(dstkey, (keys)) ：求交集并将交集保存到dstkey的集合<br />
+sunion(key1, (keys)) ：求并集<br />
+sunionstore(dstkey, (keys)) ：求并集并将并集保存到dstkey的集合<br />
+sdiff(key1, (keys)) ：求差集<br />
+sdiffstore(dstkey, (keys)) ：求差集并将差集保存到dstkey的集合<br />
+smembers(key) ：返回名称为key的set的所有元素<br />
+srandmember(key) ：随机返回名称为key的set的一个元素</p>
+
+<ol>
 <li><p>zadd 有序集合类型<br />
 ZADD zkey 1 redis<br />
 ZADD zkey 2 mysql<br />
@@ -2547,7 +2591,7 @@ extension=php_redis.dll<br />
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/linux/">Linux</a>
-        <small>(78)</small>
+        <small>(77)</small>
       </li>
     
       <li class="cat-item cat-item-1">
@@ -2850,6 +2894,8 @@ extension=php_redis.dll<br />
         
       
         
+      
+        
           <a rel="nofollow" rel="tag" href="../../../tags/gradle/" class="tag-link-3" title="1 Posts">gradle<small>(3)</small></a>
         
       
@@ -3090,6 +3136,8 @@ extension=php_redis.dll<br />
         
       
         
+          <a rel="nofollow" rel="tag" href="../../../tags/redis/" class="tag-link-2" title="1 Posts">redis<small>(2)</small></a>
+        
       
         
       
@@ -3301,6 +3349,8 @@ extension=php_redis.dll<br />
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/youtube/" class="tag-link-13" title="1 Posts">youtube<small>(13)</small></a>
+        
+      
         
       
         
