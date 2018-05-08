@@ -1087,7 +1087,7 @@ easy_install pip</p>
 
 <p>好的，现在你如果照着做的话，你已经在你的服务器上安装好了 Ansible。</p>
 
-<p>前面介绍过 Ansible 是通过 SSH 协议管理机器，Ansible 默认使用 SSH Keys 方式通信，这个也是 Ansible 官方极力推荐的方法，但是如果您想使用密码的话，当然也是可以的。为了启用密码验证，使用 &ndash;ask-pass 选项，在本文中，笔者采用密钥验证方式进行演示，读者可以根据的需要选择使用密码验证还是密钥验证。<br />
+<p>前面介绍过 Ansible 是通过 SSH 协议管理机器，Ansible 默认使用 SSH Keys 方式通信，这个也是 Ansible 官方极力推荐的方法，但是如果您想使用密码的话，当然也是可以的。为了启用密码验证，使用 --ask-pass 选项，在本文中，笔者采用密钥验证方式进行演示，读者可以根据的需要选择使用密码验证还是密钥验证。<br />
 Ansible 实战<br />
 使用 Ansible 在远程服务器上执行命令</p>
 
@@ -1101,7 +1101,7 @@ Ansible 实战<br />
  192.168.1.11</p>
 
 <p>中括号符号中的是组名，组名可以自定义，但建议使用一个有说明意义的名称，如 webserver、databaseServer，组名后是各组内的成员 IP。下面笔者通过 Ansible 在远程服务器上执行一条命令：<br />
-ansible webserver -a &ldquo;whoami&rdquo;<br />
+ansible webserver -a &quot;whoami&quot;<br />
 图 1.ansible 执行命令结果<br />
 图 1：ansible 执行命令结果</p>
 
@@ -1112,12 +1112,12 @@ ansible webserver – i /etc/ansible/other-hosts – a“whoami”</p>
 使用 Ansible 管理 MySQL 复制</p>
 
 <p>Ansible 附带了非常多的模块，Ansible 将之称为 “模块库”。模块可以在远程服务器上直接执行，也可以通过 Playbooks 执行，关于 Playbooks 将会在后面做介绍。Ansible 的模块非常丰富，包括云服务管理、文件、数据库、命令、网络等各个方面。笔者在这里演示如果通过 Ansible 其中的一个模块“mysql_replication” 来管理 MySQL 的复制。首先在配置好 MySQL master 服务器与 slave 服务器的 MySQL 环境，使其满足 MySQL 复制的配置需求，并且 MySQL 主从服务器都要安装 Python 的 MySQLdb 模块，通过 Ansible 在主、从服务器上安装 MySQLdb。<br />
-ansible databaseServer -m yum -a &ldquo;name=MySQL-python state=present&rdquo;</p>
+ansible databaseServer -m yum -a &quot;name=MySQL-python state=present&quot;</p>
 
 <p>在 MySQL master 服务器上创建 MySQL 复制帐号<br />
 mysql -uroot -p<br />
  mysql &gt; GRANT REPLICATION SLAVE,REPLICATION CLIENT<br />
-  ON <em>.</em> TO &lsquo;repl&rsquo;@&lsquo;192.168.1.%&rsquo; IDENTIFIED BY &lsquo;123456&rsquo;;<br />
+  ON <em>.</em> TO 'repl'@'192.168.1.%' IDENTIFIED BY '123456';<br />
  mysql &gt; flush privileges;<br />
  mysql &gt; quit;</p>
 
@@ -1154,20 +1154,20 @@ ansible mysql-slave -m mysql_replication</p>
 <pre><code>             – a &quot;login_user=root login_password=123456
 </code></pre>
 
-<p>mode=changemaster master_host=&lsquo;172.16.64.147&rsquo; master_user=repl<br />
- master_password=123456 master_log_file=mysql.000003 master_log_pos=711&rdquo;<br />
+<p>mode=changemaster master_host='172.16.64.147' master_user=repl<br />
+ master_password=123456 master_log_file=mysql.000003 master_log_pos=711&quot;<br />
 图 3.MySQL Change Master 执行结果：<br />
 图 3：MySQL Change Master 执行结果：</p>
 
 <p>在 MySQL 从服务器上启动复制<br />
 ansible mysql-slave -m mysql_replication<br />
- -a &ldquo;login_user=root login_password=123456 mode=startslave&rdquo;<br />
+ -a &quot;login_user=root login_password=123456 mode=startslave&quot;<br />
 图 4. 在 MySQL Slave 开启复制执行结果：<br />
 图 4：在 MySQL Slave 开启复制执行结果：</p>
 
 <p>查看 MySQL 复制状态<br />
 ansible mysql-slave -m mysql_replication<br />
--a &ldquo;login_user=root login_password=123456 mode=getslave&rdquo;<br />
+-a &quot;login_user=root login_password=123456 mode=getslave&quot;<br />
 图 5. 查看 MySQL 复制状态<br />
 图 5：查看 MySQL 复制状态</p>
 
@@ -1195,7 +1195,7 @@ cat /etc/ansible/roles/mysql/defaults/main.yml</p>
 <hr />
 
 <p>mysql_port: 3306<br />
- mysql_bind_address: &ldquo;0.0.0.0&rdquo;<br />
+ mysql_bind_address: &quot;0.0.0.0&quot;<br />
  mysql_root_db_pass: 123456</p>
 
 <p>mysql_db:</p>
@@ -1213,7 +1213,7 @@ replicate: no<br />
 <ul>
 <li>name: jack<br />
 pass: 123456<br />
-priv: &ldquo;<em>.</em>:ALL&rdquo;<br />
+priv: &quot;<em>.</em>:ALL&quot;<br />
 <br /></li>
 </ul>
 
@@ -1246,18 +1246,18 @@ service: name={{ mysql_service }} state=restarted<br />
 
 <ul>
 <li><p>name: Add the OS specific variables<br />
-include_vars: &ldquo;{{ ansible_os_family }}.yml&rdquo;</p></li>
+include_vars: &quot;{{ ansible_os_family }}.yml&quot;</p></li>
 
 <li><p>name: Install the mysql packages in Redhat derivatives<br />
 yum: name={{ item }} state=installed<br />
 with_items: mysql_pkgs<br />
-when: ansible_os_family == &lsquo;RedHat&rsquo;</p></li>
+when: ansible_os_family == 'RedHat'</p></li>
 
 <li><p>name: Install the mysql packages in Debian derivatives<br />
 apt: name={{ item }} state=installed update_cache=yes<br />
 with_items: mysql_pkgs<br />
 environment: env<br />
-when: ansible_os_family == &lsquo;Debian&rsquo;</p></li>
+when: ansible_os_family == 'Debian'</p></li>
 
 <li><p>name: Copy the my.cnf file<br />
 template: src=my.cnf.{{ ansible_os_family }}.j2 dest={{ mysql_conf_dir }}/my.cnf<br />
@@ -1272,14 +1272,14 @@ service: name={{ mysql_service }} state=started enabled=yes</p></li>
 mysql_user: name=root host={{ item }} password={{ mysql_root_db_pass }}<br />
 with_items:</p></li>
 
-<li><p>&rdquo;{{ ansible_hostname }}&rdquo;</p></li>
+<li><p>&quot;{{ ansible_hostname }}&quot;</p></li>
 
 <li><p>127.0.0.1</p></li>
 
 <li><p>::1</p></li>
 
 <li><p>localhost<br />
-when: ansible_hostname != &lsquo;localhost&rsquo;</p></li>
+when: ansible_hostname != 'localhost'</p></li>
 
 <li><p>name: update mysql root password for all root accounts<br />
 mysql_user: name=root host={{ item }} password={{ mysql_root_db_pass }}<br />
@@ -1290,65 +1290,65 @@ with_items:</p></li>
 <li><p>::1</p></li>
 
 <li><p>localhost<br />
-when: ansible_hostname == &lsquo;localhost&rsquo;</p></li>
+when: ansible_hostname == 'localhost'</p></li>
 
 <li><p>name: ensure anonymous users are not in the database<br />
-mysql_user: name=&rdquo; host={{ item }} login_user=root<br />
+mysql_user: name='' host={{ item }} login_user=root<br />
 login_password={{ mysql_root_db_pass }} state=absent<br />
 with_items:</p></li>
 
 <li><p>localhost</p></li>
 
-<li><p>&rdquo;{{ ansible_hostname }}&rdquo;</p></li>
+<li><p>&quot;{{ ansible_hostname }}&quot;</p></li>
 
 <li><p>name: remove the test database<br />
 mysql_db: name=test login_user=root<br />
 login_password={{ mysql_root_db_pass }} state=absent</p></li>
 
-<li><p>name: Create the database&rsquo;s<br />
+<li><p>name: Create the database's<br />
 mysql_db: name={{ item.name }}<br />
 login_user=root login_password={{ mysql_root_db_pass }} state=present<br />
 with_items: mysql_db<br />
-when: mysql_db|lower() != &lsquo;none&rsquo;</p></li>
+when: mysql_db|lower() != 'none'</p></li>
 
 <li><p>name: Create the database users<br />
 mysql_user: login_user=root<br />
 login_password={{ mysql_root_db_pass }}<br />
-name={{ item.name }} password={{ item.pass|default(&ldquo;foobar&rdquo;) }}<br />
-priv={{ item.priv|default(&rdquo;<em>.</em>:ALL&rdquo;) }}<br />
-state=present host={{ item.host | default(&ldquo;localhost&rdquo;) }}<br />
+name={{ item.name }} password={{ item.pass|default(&quot;foobar&quot;) }}<br />
+priv={{ item.priv|default(&quot;<em>.</em>:ALL&quot;) }}<br />
+state=present host={{ item.host | default(&quot;localhost&quot;) }}<br />
 with_items: mysql_users<br />
-when: mysql_users|lower() != &lsquo;none&rsquo;</p></li>
+when: mysql_users|lower() != 'none'</p></li>
 
 <li><p>name: Create the replication users<br />
 mysql_user: login_user=root login_password={{ mysql_root_db_pass }}<br />
-name={{ item.name }} host=&ldquo;%&rdquo; password={{ item.pass|default(&ldquo;foobar&rdquo;) }}<br />
-priv=<em>.</em>:&ldquo;REPLICATION SLAVE&rdquo; state=present<br />
+name={{ item.name }} host=&quot;%&quot; password={{ item.pass|default(&quot;foobar&quot;) }}<br />
+priv=<em>.</em>:&quot;REPLICATION SLAVE&quot; state=present<br />
 with_items: mysql_repl_user<br />
-when: mysql_repl_role == &lsquo;master&rsquo;</p></li>
+when: mysql_repl_role == 'master'</p></li>
 
 <li><p>name: Check if slave is already configured for replication<br />
 mysql_replication: login_user=root<br />
 login_password={{ mysql_root_db_pass }} mode=getslave<br />
 ignore_errors: true<br />
 register: slave<br />
-when: mysql_repl_role == &lsquo;slave&rsquo;</p></li>
+when: mysql_repl_role == 'slave'</p></li>
 
 <li><p>name: Ensure the hostname entry<br />
 for master is available for the client.<br />
-lineinfile: dest=/etc/hosts regexp=&ldquo;{{ mysql_repl_master }}&rdquo;<br />
-line=&ldquo;{{ mysql_repl_master +&rdquo; &ldquo; +<br />
-hostvars[mysql_repl_master].ansible_default_ipv4.address }}&rdquo;<br />
+lineinfile: dest=/etc/hosts regexp=&quot;{{ mysql_repl_master }}&quot;<br />
+line=&quot;{{ mysql_repl_master +&quot; &quot; +<br />
+hostvars[mysql_repl_master].ansible_default_ipv4.address }}&quot;<br />
 state=present<br />
-when: slave|failed and mysql_repl_role == &lsquo;slave&rsquo;<br />
+when: slave|failed and mysql_repl_role == 'slave'<br />
 and mysql_repl_master is defined</p></li>
 
 <li><p>name: Get the current master servers replication status<br />
 mysql_replication: login_user=root login_password=<br />
 {{ mysql_root_db_pass }} mode=getmaster<br />
-delegate_to: &ldquo;{{ mysql_repl_master }}&rdquo;<br />
+delegate_to: &quot;{{ mysql_repl_master }}&quot;<br />
 register: repl_stat<br />
-when: slave|failed and mysql_repl_role == &lsquo;slave&rsquo;<br />
+when: slave|failed and mysql_repl_role == 'slave'<br />
 and mysql_repl_master is defined</p></li>
 
 <li><p>name: Change the master in slave to start the replication<br />
@@ -1359,13 +1359,13 @@ master_log_file={{ repl_stat.File }}<br />
 master_log_pos={{ repl_stat.Position }}<br />
 master_user={{ mysql_repl_user[0].name }}<br />
 master_password={{ mysql_repl_user[0].pass }}<br />
-when: slave|failed and mysql_repl_role == &lsquo;slave&rsquo;<br />
+when: slave|failed and mysql_repl_role == 'slave'<br />
 and mysql_repl_master is defined</p></li>
 
 <li><p>name: start slave in slave to start the replication<br />
 mysql_replication: login_user=root login_password={{ mysql_root_db_pass }}<br />
 mode=startslave<br />
-when: slave|failed and mysql_repl_role == &lsquo;slave&rsquo;<br />
+when: slave|failed and mysql_repl_role == 'slave'<br />
 and mysql_repl_master is defined</p></li>
 </ul>
 
@@ -1398,7 +1398,7 @@ cat /etc/ansible/roles/mysql/templates/my.cnf.RedHat.j2<br />
  log_bin = mysql-bin<br />
  server-id = {{ mysql_db_id }}</p>
 
-<p>{% if mysql_repl_role == &lsquo;master&rsquo; %}<br />
+<p>{% if mysql_repl_role == 'master' %}<br />
  #log_bin = mysql-bin<br />
  expire_logs_days = 10<br />
  max_binlog_size = 100M</p>
@@ -1444,7 +1444,7 @@ cat /etc/ansible/roles/mysql/vars/RedHat.yml</p>
 
 <p>mysql_service: mysqld</p>
 
-<p>mysql_conf_dir: &ldquo;/etc/&rdquo;</p>
+<p>mysql_conf_dir: &quot;/etc/&quot;</p>
 
 <p>vars 目录中是此次操作所涉及到的变量信息。<br />
 代码 7.ansible 执行 MySQL 复制配置的 playbook 配置文件 mysql_repl.yml<br />
@@ -1455,7 +1455,7 @@ cat /etc/ansible/mysql_repl.yml</p>
 roles:<br /></li>
 
 <li><p>{role: mysql, mysql_db: none,mysql_users:<br />
-[{name: jack, pass: 123456, priv: &ldquo;<em>.</em>:ALL&rdquo;}],mysql_db_id: 1008 }</p></li>
+[{name: jack, pass: 123456, priv: &quot;<em>.</em>:ALL&quot;}],mysql_db_id: 1008 }</p></li>
 
 <li><p>hosts: mysql-slave<br />
 roles:</p></li>
@@ -1515,16 +1515,16 @@ ansible-playbook mysql_repl.yml<br />
 <p>TASK: [mysql | remove the test database] **************************************<br />
  changed: [192.168.1.10]</p>
 
-<p>TASK: [mysql | Create the database&rsquo;s] *****************************************<br />
- changed: [192.168.1.10] =&gt; (item={&lsquo;name&rsquo;: &lsquo;benz&rsquo;})<br />
- changed: [192.168.1.10] =&gt; (item={&lsquo;name&rsquo;: &lsquo;benz2&rsquo;})</p>
+<p>TASK: [mysql | Create the database's] *****************************************<br />
+ changed: [192.168.1.10] =&gt; (item={'name': 'benz'})<br />
+ changed: [192.168.1.10] =&gt; (item={'name': 'benz2'})</p>
 
 <p>TASK: [mysql | Create the database users] *************************************<br />
- changed: [192.168.1.10] =&gt; (item={&lsquo;pass&rsquo;: &lsquo;foobar&rsquo;, &lsquo;name&rsquo;: &lsquo;ben3&rsquo;, &lsquo;priv&rsquo;: &lsquo;<em>.</em>:ALL&rsquo;})<br />
- changed: [192.168.1.10] =&gt; (item={&lsquo;name&rsquo;: &lsquo;ben2&rsquo;, &lsquo;pass&rsquo;: &lsquo;foo&rsquo;})</p>
+ changed: [192.168.1.10] =&gt; (item={'pass': 'foobar', 'name': 'ben3', 'priv': '<em>.</em>:ALL'})<br />
+ changed: [192.168.1.10] =&gt; (item={'name': 'ben2', 'pass': 'foo'})</p>
 
 <p>TASK: [mysql | Create the replication users] **********************************<br />
- changed: [192.168.1.10] =&gt; (item={&lsquo;name&rsquo;: &lsquo;repl&rsquo;, &lsquo;pass&rsquo;: &lsquo;foobar&rsquo;})</p>
+ changed: [192.168.1.10] =&gt; (item={'name': 'repl', 'pass': 'foobar'})</p>
 
 <p>TASK: [mysql | Check if slave is already configured for replication] **********<br />
  skipping: [192.168.1.10]</p>
@@ -1778,7 +1778,7 @@ Ansible 与其它配置管理的对比</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1822,6 +1822,8 @@ Ansible 与其它配置管理的对比</p>
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -2047,7 +2049,7 @@ Ansible 与其它配置管理的对比</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -2165,7 +2167,7 @@ Ansible 与其它配置管理的对比</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2317,7 +2319,7 @@ Ansible 与其它配置管理的对比</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2598,6 +2600,32 @@ Ansible 与其它配置管理的对比</p>
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

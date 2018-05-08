@@ -1035,7 +1035,7 @@
                         <h1 class="post-title">Vim 使用进阶：10 种寄存器剖析</h1>
 
                         <p class="post-byline">
-                          by  · 2016年01月12日 · 2359 Words ·
+                          by  · 2016年01月12日 · 2357 Words ·
                           ~5min reading time |
                           
                           
@@ -1054,15 +1054,15 @@
 
 <p>无论是vim内部抑或外部的复制（[y]ank）、删除（[d]elete）、粘贴（[p]ut），在vim中都是借助registers（寄存器）实现的，vim共有9类寄存器：<br />
 名称                            标识                        说明<br />
-无名（unnamed）寄存器              &ldquo;&rdquo;                  缓存最后一次操作内容；<br />
-数字（numbered）寄存器              &ldquo;0 - &ldquo;9               缓存最近操作内容，复制与删除有别；<br />
-行内删除（small delete）          &ldquo;-                  缓存行内删除内容；<br />
-具名（named）寄存器                  &ldquo;a - &ldquo;z或&rdquo;A - &ldquo;Z   指定时可用；<br />
-只读（read-only）寄存器              &ldquo;:, &ldquo;., &ldquo;%, &ldquo;#      分别缓存最近命令、最近插入文本、当前文件名、当前交替文件名；<br />
-表达式（expression）寄存器         &ldquo;=                  只读，用于执行表达式命令；<br />
-选择及拖拽（selection and drop）   &ldquo;* , &ldquo;+ , &rdquo; ~       存取GUI选择文本，可用于与外部应用交互，使用前提为系统剪切板（+clipboard）可用；<br />
-黑洞（black hole）寄存器           &ldquo;_                 不缓存操作内容（干净删除）；<br />
-模式寄存器（last search pattern）  &ldquo;/                缓存最近的搜索模式。</p>
+无名（unnamed）寄存器              &quot;&quot;                  缓存最后一次操作内容；<br />
+数字（numbered）寄存器              &quot;0 - &quot;9               缓存最近操作内容，复制与删除有别；<br />
+行内删除（small delete）          &quot;-                  缓存行内删除内容；<br />
+具名（named）寄存器                  &quot;a - &quot;z或&quot;A - &quot;Z   指定时可用；<br />
+只读（read-only）寄存器              &quot;:, &quot;., &quot;%, &quot;#      分别缓存最近命令、最近插入文本、当前文件名、当前交替文件名；<br />
+表达式（expression）寄存器         &quot;=                  只读，用于执行表达式命令；<br />
+选择及拖拽（selection and drop）   &quot;* , &quot;+ , &quot; ~       存取GUI选择文本，可用于与外部应用交互，使用前提为系统剪切板（+clipboard）可用；<br />
+黑洞（black hole）寄存器           &quot;_                 不缓存操作内容（干净删除）；<br />
+模式寄存器（last search pattern）  &quot;/                缓存最近的搜索模式。</p>
 
 <p>上面的说明为简要概述，并不完全准确，详细说明须参考手册：:help copy-move</p>
 
@@ -1073,48 +1073,48 @@
 <p>在Vim中，寄存器被分为以下10种类型：</p>
 
 <ol>
-<li>未命名寄存器 &ldquo;&rdquo;<br /></li>
-<li>数字寄存器 &ldquo;0 ~ &ldquo;9<br /></li>
-<li>小型删除寄存器 &ldquo;-<br /></li>
-<li>字母寄存器 &ldquo;a ~ &ldquo;z 或 &ldquo;A ~ &ldquo;Z<br /></li>
-<li>只读寄存器3个 &ldquo;: &ldquo;. &ldquo;%<br /></li>
-<li>交替文件寄存器 &ldquo;#<br /></li>
-<li>表达式寄存器 &ldquo;=<br /></li>
-<li>选择拖放寄存器 &ldquo;* &ldquo;+ &ldquo;~<br /></li>
-<li>黑洞寄存器 &ldquo;_<br /></li>
-<li>搜索模式串寄存器 &ldquo;/<br />
+<li>未命名寄存器 &quot;&quot;<br /></li>
+<li>数字寄存器 &quot;0 ~ &quot;9<br /></li>
+<li>小型删除寄存器 &quot;-<br /></li>
+<li>字母寄存器 &quot;a ~ &quot;z 或 &quot;A ~ &quot;Z<br /></li>
+<li>只读寄存器3个 &quot;: &quot;. &quot;%<br /></li>
+<li>交替文件寄存器 &quot;#<br /></li>
+<li>表达式寄存器 &quot;=<br /></li>
+<li>选择拖放寄存器 &quot;* &quot;+ &quot;~<br /></li>
+<li>黑洞寄存器 &quot;_<br /></li>
+<li>搜索模式串寄存器 &quot;/<br />
 <br /></li>
 </ol>
 
 <p>这10个寄存器都有自己的特定使用场景，等下面分析完之后，你就能很清楚地知道它们都是干嘛的了！<br />
 寄存器的分析</p>
 
-<p>在正常模式（normal mode）下，我们使用 &ldquo;reg 来引用某个寄存器。而在其它情况下，我们使用 @reg 来引用某个寄存器。</p>
+<p>在正常模式（normal mode）下，我们使用 &quot;reg 来引用某个寄存器。而在其它情况下，我们使用 @reg 来引用某个寄存器。</p>
 
 <p>例如：</p>
 
 <p>#正常模式，使用寄存器a来复制当前行<br />
-&ldquo;ayy<br />
+&quot;ayy<br />
 #命令行模式，为寄存器a赋值<br />
-:let @a=&ldquo;some text&hellip;&rdquo;</p>
+:let @a=&quot;some text...&quot;</p>
 
-<p>:let @+=@&rdquo;   复制到 系统剪切板 +</p>
+<p>:let @+=@&quot;   复制到 系统剪切板 +</p>
 
-<p>接下来的文章中，我们将使用 &ldquo;x 的形式来表示 寄存器x。</p>
+<p>接下来的文章中，我们将使用 &quot;x 的形式来表示 寄存器x。</p>
 
 <p>OK，下面我们就来分析上述10种寄存器的具体使用场景，以及它们的作用。</p>
 
 <h2 id="1-未命名寄存器">1. 未命名寄存器</h2>
 
-<p>当我们使用 d, c, s, x 这几个命令修改文本，或者使用 y 复制文本的时候，无论是否指定了寄存器，这些内容会被储存到 &ldquo;&rdquo; 寄存器中，除非我们指定了黑洞寄存器 &ldquo;_</p>
+<p>当我们使用 d, c, s, x 这几个命令修改文本，或者使用 y 复制文本的时候，无论是否指定了寄存器，这些内容会被储存到 &quot;&quot; 寄存器中，除非我们指定了黑洞寄存器 &quot;_</p>
 
 <h2 id="2-数字寄存器">2. 数字寄存器</h2>
 
 <p>当我们进行文本的复制或删除操作时，内容就会存储到数字寄存器中。</p>
 
-<p>0号寄存器 &ldquo;0 储存最近一次复制的内容，除非指定了其它寄存器。</p>
+<p>0号寄存器 &quot;0 储存最近一次复制的内容，除非指定了其它寄存器。</p>
 
-<p>1号寄存器 &ldquo;1 存储最近一次删除或修改的内容，除非指定了其它寄存器，或内容不到一行（此时将会使用小型删除寄存器 &ldquo;- ）。</p>
+<p>1号寄存器 &quot;1 存储最近一次删除或修改的内容，除非指定了其它寄存器，或内容不到一行（此时将会使用小型删除寄存器 &quot;- ）。</p>
 
 <p>如果删除操作与以下移动命令一起使用，那么将总是使用1号寄存器：%，(，)， <code>，/，?，n，N，{，}。此时如果内容不到一行，&quot;-</code> 寄存器会被同时使用。</p>
 
@@ -1146,11 +1146,11 @@
 
 <p>存储当前视窗中另一个缓冲区文件的名称。也就是当我们按下 CTRL-^ 时将会跳转到的那个文件的名称。可手动更改它的值，从而让上述命令跳转到指定文件。</p>
 
-<p>let @# = &lsquo;buffer_name&rsquo;</p>
+<p>let @# = 'buffer_name'</p>
 
 <h2 id="7-表达式寄存器">7. 表达式寄存器</h2>
 
-<p>表达式寄存器与其它寄存器不同，它并不存储文本内容，而是用于计算表达式的值。在正常模式下输入 &ldquo;= ，或在插入模式下按 CTRL-R= 时，会进入到命令行，在这输入的命令会经过计算，然后得出结果。</p>
+<p>表达式寄存器与其它寄存器不同，它并不存储文本内容，而是用于计算表达式的值。在正常模式下输入 &quot;= ，或在插入模式下按 CTRL-R= 时，会进入到命令行，在这输入的命令会经过计算，然后得出结果。</p>
 
 <p>使用表达式寄存器，我们就可以在编辑文件时方便地让Vim替我们完成计算（可以是算术计算，也可以是函数调用），然后把结果插入到文本中。总之，表达式寄存器可以进一步简化我们的工作，非常方便！关于表达式的详细介绍，可以输入命令 :help expression 查看。</p>
 
@@ -1162,9 +1162,9 @@ Simple calculations with Vim's expression register
 
 <h2 id="8-选择拖放寄存器">8. 选择拖放寄存器</h2>
 
-<p>这是用于存储和获取GUI剪贴板内容的寄存器。当剪贴板不可用时，会自动使用未命名寄存器 &ldquo;&rdquo; 来代替。</p>
+<p>这是用于存储和获取GUI剪贴板内容的寄存器。当剪贴板不可用时，会自动使用未命名寄存器 &quot;&quot; 来代替。</p>
 
-<p>只读的 &ldquo;~ 寄存器用于存储拖放到Vim的内容。当有内容拖放到Vim中时，还会触发虚拟按键 <Drop>，可以通过映射该键来完成特定任务。</p>
+<p>只读的 &quot;~ 寄存器用于存储拖放到Vim的内容。当有内容拖放到Vim中时，还会触发虚拟按键 <Drop>，可以通过映射该键来完成特定任务。</p>
 
 <h2 id="9-黑洞寄存器">9. 黑洞寄存器</h2>
 
@@ -1183,7 +1183,7 @@ Simple calculations with Vim's expression register
 
 <p>当我们录制一串较长的命令时，可能因为某个地方出了错，导致录制失败，需要重新开始。不过，既然录制的宏存放于这些寄存器中，那么我们就能够像读取普通文本一样读取它们。</p>
 
-<p>例如，我使用寄存器 &ldquo;a 录制了一个宏，但是中间有个地方出了错。这时我可以使用 &ldquo;ap 将这串命令粘贴下来，然后修改出错的地方，最后选择这串命令，通过 &ldquo;ay 将它们复制回寄存器 &ldquo;a 。这样，我们不用重新录制命令，就完成了宏的修改，是不是很方便？</p>
+<p>例如，我使用寄存器 &quot;a 录制了一个宏，但是中间有个地方出了错。这时我可以使用 &quot;ap 将这串命令粘贴下来，然后修改出错的地方，最后选择这串命令，通过 &quot;ay 将它们复制回寄存器 &quot;a 。这样，我们不用重新录制命令，就完成了宏的修改，是不是很方便？</p>
 
                         </div>                      
                         <div class="clear"></div>
@@ -1395,7 +1395,7 @@ Simple calculations with Vim's expression register
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1439,6 +1439,8 @@ Simple calculations with Vim's expression register
       
         
           <a rel="nofollow" rel="tag" href="../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1664,7 +1666,7 @@ Simple calculations with Vim's expression register
         
       
         
-          <a rel="nofollow" rel="tag" href="../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1782,7 +1784,7 @@ Simple calculations with Vim's expression register
         
       
         
-          <a rel="nofollow" rel="tag" href="../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -1934,7 +1936,7 @@ Simple calculations with Vim's expression register
         
       
         
-          <a rel="nofollow" rel="tag" href="../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2215,6 +2217,32 @@ Simple calculations with Vim's expression register
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

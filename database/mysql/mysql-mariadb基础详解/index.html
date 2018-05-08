@@ -1035,8 +1035,8 @@
                         <h1 class="post-title">Linux之MariaDB基础详解</h1>
 
                         <p class="post-byline">
-                          by  · 2016年02月26日 · 8204 Words ·
-                          ~17min reading time |
+                          by  · 2016年02月26日 · 6234 Words ·
+                          ~13min reading time |
                           
                           
                           <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/database/mysql/mysql-MariaDB%e5%9f%ba%e7%a1%80%e8%af%a6%e8%a7%a3.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
@@ -1061,9 +1061,82 @@
 
 <p>MaxScale：实现MySQL读写分离与负载均衡的中间件利器</p>
 
+<h1 id="install">Install</h1>
+
+<h2 id="mariadb镜像配置">mariadb镜像配置</h2>
+
+<p><a href="https://downloads.mariadb.org/mariadb/repositories" target="_blank">https://downloads.mariadb.org/mariadb/repositories</a></p>
+
+<h3 id="ubuntu-镜像解决方案">Ubuntu 镜像解决方案</h3>
+
+<p>方式 1.<br />
+sudo apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8<br />
+sudo add-apt-repository 'deb [arch=amd64,i386,ppc64el] <a href="http://mirrors.tuna.tsinghua.edu.cn/mariadb/repo/10.2/ubuntu" target="_blank">http://mirrors.tuna.tsinghua.edu.cn/mariadb/repo/10.2/ubuntu</a> xenial main'</p>
+
+<p>方式 2. <code>vi /etc/apt/sources.list.d/MariaDB.list</code></p>
+
+<pre><code class="language-ini"># MariaDB 10.2 repository list - created 2018-05-07 01:22 UTC
+# http://downloads.mariadb.org/mariadb/repositories/
+deb [arch=amd64,i386] http://mirrors.tuna.tsinghua.edu.cn/mariadb/repo/10.2/ubuntu xenial main
+deb-src http://mirrors.tuna.tsinghua.edu.cn/mariadb/repo/10.2/ubuntu xenial main 
+</code></pre>
+
+<p>安装<br />
+sudo apt-get install mariadb-client<br />
+sudo apt-get install mariadb-galera-server galera</p>
+
+<h3 id="centos7-镜像解决方案">CentOS7 镜像解决方案</h3>
+
+<p><code>ansible all -m copy -a &quot;src=/etc/yum.repos.d/MariaDB.repo  dest=/etc/yum.repos.d/MariaDB.repo  mode=0644&quot;</code></p>
+
+<ol>
+<li>创建并编辑MariaDB的源配置<br />
+sudo vi /etc/yum.repos.d/MariaDB.repo<br />
+<br /></li>
+</ol>
+
+<pre><code class="language-ini"># MariaDB 10.2 CentOS repository list - created 2017-08-15 08:02 UTC
+# http://downloads.mariadb.org/mariadb/repositories/
+[mariadb]
+name=MariaDB
+baseurl=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos7-amd64
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+</code></pre>
+
+<p>执行安装命令：<br />
+yum clean all &amp;&amp; rm -rf /var/cache/yum # 防止报错<br />
+yum makecache<br />
+sudo yum install mariadb-server</p>
+
+<p>如果在用阿里云的服务器，可以将上述配置中的域名替换成</p>
+
+<pre><code>http://mirrors.aliyun.com/
+</code></pre>
+
+<p>以上yum配置经修改后同样的适用于其他源，详细内容请往下看<br />
+yum -y install MariaDB-server MariaDB-client</p>
+
+<h1 id="can-t-find-messagefile-usr-share-mysql-errmsg-sys">Can't find messagefile '/usr/share/mysql/errmsg.sys</h1>
+
+<p>【可能出错1】<br />
+Can't find messagefile '/usr/share/errmsg.sys'<br />
+【解决办法1】<br />
+sudo mysqld_safe --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --user=mysql &amp;</p>
+
+<p>(添加language=...报错不理会:An old style --language value with language specific part detected:/usr/local/mysql/share/english)</p>
+
+<p>【可能出错2】<br />
+Can’t start server : Bind on unix socket: Permission denied解决方法：<br />
+【解决办法2】改变你mysql编译安装目录的权限: chown -R mysql:mysql /usr/local/mysql</p>
+
+<p>【7】设置root密码。默认安装密码为空，为了安全你需要修改密码。</p>
+
+<p>#/usr/local/mysql/bin/mysqladmin -u root password '123456'</p>
+
 <h3 id="不重启修改mysql只读变量">不重启修改mysql只读变量</h3>
 
-<p>Variable &lsquo;log_slave_updates&rsquo; is a read only variable<br />
+<p>Variable 'log_slave_updates' is a read only variable<br />
 <code>system gdb -p $(pidof mysqld) -ex &quot;set opt_log_slave_updates=1&quot; -batch</code></p>
 
 <h3 id="mysql-加速数据导入">mysql 加速数据导入</h3>
@@ -1076,37 +1149,10 @@
 <li>导入数据之前执行<code>set unique_checks=0</code>来禁止对唯一索引的检查，数据导入完成之后再运行<code>set unique_checks=1</code>.<br /></li>
 <li>导入数据之前执行<code>set foreign_key_checks=0</code>来禁止对外键的检查，数据导入完成之后再执行<code>set foreign_key_checks=1</code>.<br /></li>
 <li>导入数据之前执行<code>set autocommit=0</code> 禁止自动事务的自动提交，数据导入完成之后，执行<code>set autocommit=1</code><br />
+<br />
+<br />
 <br /></li>
 </ol>
-
-<h1 id="权限管理">权限管理</h1>
-
-<p>CREATE USER <code>bench</code>@<code>%</code> IDENTIFIED BY &lsquo;bench&rsquo;;</p>
-
-<h3 id="1-服务器-系统级-root权限授予">1. 服务器   系统级 root权限授予</h3>
-
-<p>GRANT Alter, Alter Routine, Create, Create Routine, Create Temporary Tables, Create User, Create View, Delete, Drop, Event, Execute, File, Grant Option, Index, Insert, Lock Tables, Process, References, Reload, Replication Client, Replication Slave, Select, Show Databases, Show View, Shutdown, Super, Trigger, Update ON <em>.</em> TO <code>bench</code>@<code>%</code>;</p>
-
-<h3 id="2-数据库级别-权限授予">2. 数据库级别 权限授予</h3>
-
-<p>grant all privileges ON <code>gocron</code>.* TO <code>bench</code>@<code>%</code>;  +    GRANT Grant Option ON <code>gocron</code>.* TO <code>bench</code>@<code>%</code>;</p>
-
-<p>grant all privileges ON <code>test</code>.* TO <code>bench</code>@<code>%</code>;   # 同一个用户授权多个数据库<br />
-等价<br />
-GRANT Alter, Alter Routine, Create, Create Routine, Create Temporary Tables, Create View, Delete, Drop, Event, Execute, Grant Option, Index, Insert, Lock Tables, References, Select, Show View, Trigger, Update ON <code>gocron</code>.* TO <code>bench</code>@<code>%</code>;</p>
-
-<h3 id="3-表级别-权限授予">3. 表级别   权限授予</h3>
-
-<p>GRANT Alter, Create, Create View, Delete, Drop, Grant Option, Index, Insert, References, Select, Show View, Trigger, Update ON TABLE <code>guoan</code>.<code>dede_admin</code> TO <code>bench</code>@<code>%</code>;</p>
-
-<h3 id="master-data-权限-couldn-t-execute-flush-40101-local-tables-access-denied-you-need-at-least-one-of-the-reload-privilege-s-for-this-operation-1227">&ndash;master-data 权限 <code>Couldn't execute 'FLUSH /*!40101 LOCAL */ TABLES': Access denied; you need (at least one of) the RELOAD privilege(s) for this operation (1227)</code></h3>
-
-<p><code>GRANT RELOAD,REPLICATION CLIENT ON *.* TO 'your_user'@'localhost';</code></p>
-
-<h3 id="4-prometheus-权限">4. prometheus 权限</h3>
-
-<p>GRANT REPLICATION CLIENT, PROCESS, SUPER, SELECT ON <em>.</em> TO &lsquo;pmm&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &lsquo;percona2018&rsquo;;<br />
-  GRANT SELECT, UPDATE, DELETE, DROP ON performance_schema.* TO &lsquo;pmm&rsquo;@&lsquo;%&rsquo;;</p>
 
 <h1 id="设置缓存大小">设置缓存大小</h1>
 
@@ -1126,51 +1172,11 @@ SELECT @@max_heap_table_size;</p>
 
 <h2 id="美团sqladvior优化">美团SQLAdvior优化</h2>
 
-<p>docker run &ndash;rm imred/sqladvisor -h xx  -P xx  -u xx -p &lsquo;xx&rsquo; -d xx -q &ldquo;sql&rdquo; -v 1</p>
+<p>docker run --rm imred/sqladvisor -h xx  -P xx  -u xx -p 'xx' -d xx -q &quot;sql&quot; -v 1</p>
 
 <h2 id="重新初始化mysql">重新初始化mysql</h2>
 
 <p><code>mysql_install_db &amp;&amp; chown -R mysql:mysql /var/lib/mysql</code></p>
-
-<h2 id="mariadb镜像配置">mariadb镜像配置</h2>
-
-<p><a href="https://downloads.mariadb.org/mariadb/repositories" target="_blank">https://downloads.mariadb.org/mariadb/repositories</a></p>
-
-<h2 id="ubuntu">ubuntu</h2>
-
-<p>sudo apt-key adv &ndash;recv-keys &ndash;keyserver hkp://keyserver.ubuntu.com:80 0xF1656F24C74CD1D8<br />
-sudo add-apt-repository &lsquo;deb [arch=amd64,i386,ppc64el] <a href="http://mirrors.tuna.tsinghua.edu.cn/mariadb/repo/10.2/ubuntu" target="_blank">http://mirrors.tuna.tsinghua.edu.cn/mariadb/repo/10.2/ubuntu</a> xenial main&rsquo;</p>
-
-<h2 id="centos7-镜像解决方案">CentOS7 镜像解决方案</h2>
-
-<p><code>ansible all -m copy -a &quot;src=/etc/yum.repos.d/MariaDB.repo  dest=/etc/yum.repos.d/MariaDB.repo  mode=0644&quot;</code><br />
-创建并编辑MariaDB的源配置<br />
-sudo vi /etc/yum.repos.d/MariaDB.repo</p>
-
-<pre><code># MariaDB 10.2 CentOS repository list - created 2017-08-15 08:02 UTC
-# http://downloads.mariadb.org/mariadb/repositories/
-[mariadb]
-name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos7-amd64
-gpgkey= https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
-gpgcheck=1
-</code></pre>
-
-<p>执行安装命令：<br />
-yum clean all &amp;&amp; rm -rf /var/cache/yum # 防止报错<br />
-yum makecache</p>
-
-<p>sudo yum install mariadb-server</p>
-
-<p>如果在用阿里云的服务器，可以将上述配置中的域名替换成</p>
-
-<pre><code>http://mirrors.aliyun.com/
-</code></pre>
-
-<p>以上yum配置经修改后同样的适用于其他源，详细内容请往下看<br />
-sudo apt-get install mariadb-client<br />
-yum -y install MariaDB-server MariaDB-client<br />
-sudo apt-get install mariadb-galera-server galera</p>
 
 <h2 id="自动补全">自动补全</h2>
 
@@ -1198,7 +1204,7 @@ auto-rehash
 <p>| general_log                                     | ON                                                                                                           |<br />
 | general_log_file                          | /var/log/mysql/mysql.log</p>
 
-<p>mysql&gt;set global general_log_file=&lsquo;/tmp/general.log&rsquo;;<br />
+<p>mysql&gt;set global general_log_file='/tmp/general.log';<br />
 mysql&gt;set global general_log=on;<br />
 mysql&gt;set global general_log=off;</p>
 
@@ -1210,7 +1216,7 @@ mysql&gt;set global general_log=off;</p>
 
 <h2 id="mysql-配置超时时间">mysql 配置超时时间</h2>
 
-<p>show global variables like &lsquo;%timeout%&rsquo;;</p>
+<p>show global variables like '%timeout%';</p>
 
 <p>设置超时时间，临时生效（以秒为单位）：<br />
   msyql&gt; set global wait_timeout=86400;<br />
@@ -1225,7 +1231,7 @@ mysql&gt;set global general_log=off;</p>
             sed -i 's/^wait-timeout.*/wait-timeout = 86400/' /etc/my.cnf
 </code></pre>
 
-<h2 id="密码错误-error-1045-28000-access-denied-for-user-root-172-17-0-4-using-password-yes">密码错误 ERROR 1045 (28000)  : Access denied for user &lsquo;root&rsquo;@&lsquo;172.17.0.4&rsquo; (using password: YES)</h2>
+<h2 id="密码错误-error-1045-28000-access-denied-for-user-root-172-17-0-4-using-password-yes">密码错误 ERROR 1045 (28000)  : Access denied for user 'root'@'172.17.0.4' (using password: YES)</h2>
 
 <p>解决方法：密码输入错误，仔细检查密码</p>
 
@@ -1258,45 +1264,10 @@ find / -group 2000 -exec chgrp -h foo {} \;<br />
 在 [mysqld] 节点下，加入一行： <code>lower_case_table_names=1</code><br />
 重启 MySQL 即可；</p>
 
-<h2 id="权限">权限</h2>
-
-<p>GRANT SELECT, INSERT, UPDATE, REFERENCES, DELETE, CREATE, DROP, ALTER, INDEX, TRIGGER, CREATE VIEW, SHOW VIEW, EXECUTE, ALTER ROUTINE, CREATE ROUTINE, CREATE TEMPORARY TABLES, LOCK TABLES, EVENT<br />
- ON <code>wechat</code>.* TO &lsquo;wechat&rsquo;;</p>
-
-<p>GRANT GRANT OPTION ON <code>wechat</code>.* TO &lsquo;wechat&rsquo;;</p>
-
-<p>grant select, insert, update, delete, create, drop, references, index, alter,</p>
-
-<pre><code>    create temporary tables, lock tables, create view, show view, create routine,
-    alter routine, execute, trigger
-</code></pre>
-
-<p>on <code>Sample</code>.* to &lsquo;acme-manager&rsquo;@&lsquo;%&rsquo;;</p>
-
-<p>grant create,select,insert,update,create view,show view,event,alter,trigger,index,alter on fgg.* to &lsquo;allen2016&rsquo;@&lsquo;%&rsquo; identified by<br />
-&lsquo;allen2016soft*88&rsquo; with grant option;<br />
-flush privileges;</p>
-
 <h2 id="执行命令">执行命令</h2>
 
 <p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;show databases;&quot;</code><br />
 <code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;show databases; select user,host from mysql.user;&quot;</code>`</p>
-
-<h2 id="创建数据库">创建数据库</h2>
-
-<p><code>CREATE DATABASE IF NOT EXISTS</code>tpcms<code>DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci</code><br />
-<code>CREATE DATABASE IF NOT EXISTS</code>guoan<code>DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci</code></p>
-
-<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;CREATE DATABASE IF NOT EXISTS ytjxc DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci&quot;</code><br />
-<code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;CREATE DATABASE IF NOT EXISTS ytjxc DEFAULT CHARACTER SET utf8 &quot;</code></p>
-
-<h2 id="创建并授权用户">创建并授权用户</h2>
-
-<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'XXXX' WITH GRANT OPTION; FLUSH PRIVILEGES;&quot;</code></p>
-
-<h1 id="docker-有个坑-内网ip不一定都是172-0-0-x-还有可能是192-0-0-x-所以-user-1-2-保险起见用-user">docker 有个坑 内网ip不一定都是172.0.0.x 还有可能是192.0.0.x 所以 &lsquo;user&rsquo;@&lsquo;1_2.%&rsquo; 保险起见用 &lsquo;user&rsquo;@&lsquo;%&rsquo;</h1>
-
-<p><code>docker exec -i mariadb mysql -uroot -pXXXX -e &quot;GRANT ALL PRIVILEGES  ON *.* TO 'user'@'1_2.%' IDENTIFIED BY 'XXXX'; FLUSH PRIVILEGES;&quot;</code></p>
 
 <h2 id="备份全部数据库">备份全部数据库</h2>
 
@@ -1308,6 +1279,14 @@ flush privileges;</p>
 
 <p>#恢复指定数据库<br />
 <code>docker exec -i wuye_mysql mysql -uroot -ptoor sanyang &lt;sanyang2016-4-28.sql</code></p>
+
+<h2 id="修复gtid">修复gtid</h2>
+
+<p>Unable to load replication GTID slave state from mysql.gtid_slave_pos: Table 'mysql.gtid_slave_pos' doesn't exist&quot; and Last_Errno 1146</p>
+
+<p><code>mysql_upgrade</code></p>
+
+<p><code>show create table mysql.gtid_slave_pos\G</code></p>
 
 <h2 id="mariadb-无法启动-用户-权限">mariadb 无法启动 [用户 + 权限]</h2>
 
@@ -1325,7 +1304,7 @@ flush privileges;</p>
 
 <h2 id="初始化数据">初始化数据</h2>
 
-<p><code>mysql_install_db --defaults-file=/etc/mysql/my.cnf --datadir=/var/data/db/mariadb/ --user=mysql</code></p>
+<p><code>mysql_install_db --defaults-file=/etc/mysql/my.cnf --datadir=/var/lib/mysql --user=mysql</code></p>
 
 <h2 id="登录数据库">登录数据库</h2>
 
@@ -1336,38 +1315,10 @@ flush privileges;</p>
 
 <p><code>mysql -h 139.129.108.163 -u kyxx -p</code></p>
 
-<h2 id="创建数据库-1">创建数据库</h2>
+<h2 id="创建数据库">创建数据库</h2>
 
-<p>CREATE DATABASE IF NOT EXISTS yourdbname DEFAULT CHARSET utf8 COLLATE utf8_general_ci;</p>
-
-<p>create database yourdb DEFAULT CHARACTER SET gbk COLLATE gbk_chinese_ci;</p>
-
-<h2 id="创建用户并授权">创建用户并授权</h2>
-
-<p>//把所有用户的权限授予username@&lsquo;hostname&rsquo;,密码是your_passwd<br />
-  <code>mysql&gt;grant all on *.* to username@'hostname' indentified by [password]'your_passwd'</code></p>
-
-<p>命令:GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo;<br />
-  privileges - 用户的操作权限,如 SELECT INSERT UPDATE   DELETE 等.如果要授予所的权限则使用ALL.;</p>
-
-<pre><code>            select,insert,update,delete,create,drop,index,alter,grant,references,reload,shutdown,process,file
-</code></pre>
-
-<p>databasename - 数据库名,<br />
-  tablename-表名,如果要授予该用户对所有数据库和表的相应操作权限则可用<em>表示, 如</em>.*</p>
-
-<p>例子:<br />
-  GRANT SELECT, INSERT ON test.user TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;<br />
-  GRANT ALL ON <em>.</em> TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;</p>
-
-<p>注意:用以上命令授权的用户不能给其它用户授权,如果想让该用户可以授权,用以下命令:<br />
-  GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo; WITH GRANT OPTION;<br />
-  <code>GRANT ALL PRIVILEGES ON *.* TO 'kyxx'@'123.132.%.%' IDENTIFIED BY '888888' WITH GRANT OPTION; FLUSH PRIVILEGES;</code><br />
-  #root可从任何IP登陆，注意修改密码:&lsquo;888888&rsquo;<br />
-  <code>GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY '888888' WITH GRANT OPTION;</code><br />
-  #root可从指定IP登陆，注意修改密码:&lsquo;888888&rsquo;、IP:&lsquo;192.168.1.188&rsquo;<br />
-  <code>GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.168.1.188' IDENTIFIED BY '888888' WITH GRANT OPTION;</code><br />
-  GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER ON <em>.</em> TO &lsquo;huijin&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &lsquo;Huijin2017@!&rsquo;; FLUSH PRIVILEGES;</p>
+<p>CREATE DATABASE IF NOT EXISTS yourdbname DEFAULT CHARSET utf8 COLLATE utf8_general_ci;<br />
+create database yourdb DEFAULT CHARACTER SET gbk COLLATE gbk_chinese_ci;</p>
 
 <h2 id="数据库备份恢复">数据库备份恢复</h2>
 
@@ -1398,7 +1349,7 @@ create database test_db_copy;
 <pre><code>docker exec -i mysql-online mysql -uroot -proot test_db_copy &lt; /opt/sql_bak/test_db.sql
 </code></pre>
 
-<h2 id="注意-这里需要将参数-it-更换为-i-否则会报错-cannot-enable-tty-mode-on-non-tty-input">注意：这里需要将参数 -it 更换为 -i ，否则会报错：&rdquo;cannot enable tty mode on non tty input&rdquo;</h2>
+<h2 id="注意-这里需要将参数-it-更换为-i-否则会报错-cannot-enable-tty-mode-on-non-tty-input">注意：这里需要将参数 -it 更换为 -i ，否则会报错：&quot;cannot enable tty mode on non tty input&quot;</h2>
 
 <h2 id="查询用户">查询用户</h2>
 
@@ -1411,24 +1362,24 @@ create database test_db_copy;
 <p>show grants;</p>
 
 <ol>
-<li>show tables或show tables from database_name; &ndash; 显示当前数据库中所有表的名称。<br /></li>
-<li>show databases; &ndash; 显示mysql中所有数据库的名称。<br /></li>
-<li>show columns from table_name from database_name; 或show columns from database_name.table_name; &ndash; 显示表中列名称。<br /></li>
-<li>show grants for user_name; &ndash; 显示一个用户的权限，显示结果类似于grant 命令。<br /></li>
-<li>show index from table_name; &ndash; 显示表的索引。<br /></li>
-<li>show status; &ndash; 显示一些系统特定资源的信息，例如，正在运行的线程数量。<br /></li>
-<li>show variables; &ndash; 显示系统变量的名称和值。<br /></li>
-<li>show processlist; &ndash; 显示系统中正在运行的所有进程，也就是当前正在执行的查询。大多数用户可以查看他们自己的进程，但是如果他们拥有process权限，就可以查看所有人的进程，包括密码。<br /></li>
-<li>show table status; &ndash; 显示当前使用或者指定的database中的每个表的信息。信息包括表类型和表的最新更新时间。<br /></li>
-<li>show privileges; &ndash; 显示服务器所支持的不同权限。<br /></li>
-<li>show create database database_name; &ndash; 显示create database 语句是否能够创建指定的数据库。<br /></li>
-<li>show create table table_name; &ndash; 显示create database 语句是否能够创建指定的数据库。<br /></li>
-<li>show engines; &ndash; 显示安装以后可用的存储引擎和默认引擎。<br /></li>
-<li>show innodb status; &ndash; 显示innoDB存储引擎的状态。<br /></li>
-<li>show logs; &ndash; 显示BDB存储引擎的日志。<br /></li>
-<li>show warnings; &ndash; 显示最后一个执行的语句所产生的错误、警告和通知。<br /></li>
-<li>show errors; &ndash; 只显示最后一个执行语句所产生的错误。<br /></li>
-<li>show [storage] engines; &ndash;显示安装后的可用存储引擎和默认引擎。<br />
+<li>show tables或show tables from database_name; -- 显示当前数据库中所有表的名称。<br /></li>
+<li>show databases; -- 显示mysql中所有数据库的名称。<br /></li>
+<li>show columns from table_name from database_name; 或show columns from database_name.table_name; -- 显示表中列名称。<br /></li>
+<li>show grants for user_name; -- 显示一个用户的权限，显示结果类似于grant 命令。<br /></li>
+<li>show index from table_name; -- 显示表的索引。<br /></li>
+<li>show status; -- 显示一些系统特定资源的信息，例如，正在运行的线程数量。<br /></li>
+<li>show variables; -- 显示系统变量的名称和值。<br /></li>
+<li>show processlist; -- 显示系统中正在运行的所有进程，也就是当前正在执行的查询。大多数用户可以查看他们自己的进程，但是如果他们拥有process权限，就可以查看所有人的进程，包括密码。<br /></li>
+<li>show table status; -- 显示当前使用或者指定的database中的每个表的信息。信息包括表类型和表的最新更新时间。<br /></li>
+<li>show privileges; -- 显示服务器所支持的不同权限。<br /></li>
+<li>show create database database_name; -- 显示create database 语句是否能够创建指定的数据库。<br /></li>
+<li>show create table table_name; -- 显示create database 语句是否能够创建指定的数据库。<br /></li>
+<li>show engines; -- 显示安装以后可用的存储引擎和默认引擎。<br /></li>
+<li>show innodb status; -- 显示innoDB存储引擎的状态。<br /></li>
+<li>show logs; -- 显示BDB存储引擎的日志。<br /></li>
+<li>show warnings; -- 显示最后一个执行的语句所产生的错误、警告和通知。<br /></li>
+<li>show errors; -- 只显示最后一个执行语句所产生的错误。<br /></li>
+<li>show [storage] engines; --显示安装后的可用存储引擎和默认引擎。<br />
 <br /></li>
 </ol>
 
@@ -1438,17 +1389,17 @@ create database test_db_copy;
 <ol>
 <li><p>MySQL忘记管理员密码的解决办法<br />
 /etc/init.d/mysql stop<br />
-mysqld_safe &ndash;user=mysql &ndash;skip-grant-tables &ndash;skip-networking &amp;<br />
-mysqld &ndash;skip-grant-tables &amp;<br />
+mysqld_safe --user=mysql --skip-grant-tables --skip-networking &amp;<br />
+mysqld --skip-grant-tables &amp;<br />
 mysql -u root mysql<br />
 mysql&gt;use mysql<br />
-mysql&gt;update user set password=password(&ldquo;toor&rdquo;) where user=&ldquo;root&rdquo;;<br />
+mysql&gt;update user set password=password(&quot;toor&quot;) where user=&quot;root&quot;;<br />
 mysql&gt;flush privileges;</p></li>
 
 <li><p>用SET PASSWORD命令<br />
 首先登录MySQL。<br />
-格式：mysql&gt; set password for 用户名@localhost = password(&lsquo;新密码&rsquo;);<br />
-例子：mysql&gt; set password for root@localhost = password(&lsquo;123&rsquo;);</p></li>
+格式：mysql&gt; set password for 用户名@localhost = password('新密码');<br />
+例子：mysql&gt; set password for root@localhost = password('123');</p></li>
 
 <li><p>用mysqladmin<br />
 格式：mysqladmin -u用户名 -p旧密码 password 新密码<br />
@@ -1459,7 +1410,7 @@ mysql&gt;flush privileges;</p></li>
 <li><p>用UPDATE直接编辑user表<br />
 首先登录MySQL。<br />
 mysql&gt; use mysql;<br />
-mysql&gt; update user set password=password(&lsquo;123&rsquo;) where user=&lsquo;root&rsquo; and host=&lsquo;localhost&rsquo;;<br />
+mysql&gt; update user set password=password('123') where user='root' and host='localhost';<br />
 mysql&gt; flush privileges;</p></li>
 </ol>
 
@@ -1468,26 +1419,26 @@ mysql -uroot -p<br />
 ###############################################################################<br />
 创建用户<br />
 CREATE USER foo;<br />
-INSERT INTO user(User, Host, Password) VALUES(&lsquo;foo&rsquo;, &lsquo;%&rsquo;, Password(&lsquo;hello&rsquo;));<br />
-SELECT User, Host, Password FROM user WHERE User = &lsquo;foo&rsquo;;</p>
+INSERT INTO user(User, Host, Password) VALUES('foo', '%', Password('hello'));<br />
+SELECT User, Host, Password FROM user WHERE User = 'foo';</p>
 
 <p>删除用户<br />
 DROP USER A;<br />
-drop user &lsquo;kyxx&rsquo;@&lsquo;123.132.226.%&rsquo;;<br />
-DELETE FROM user WHERE User = &lsquo;FOO&rsquo;;</p>
+drop user 'kyxx'@'123.132.226.%';<br />
+DELETE FROM user WHERE User = 'FOO';</p>
 
 <p>创建备份用户<br />
-CREATE USER &lsquo;backupuser&rsquo;@&lsquo;localhost&rsquo; IDENTIFIED BY &lsquo;password&rsquo;;<br />
-GRANT SELECT,SHOW VIEW,LOCK TABLES,RELOAD,REPLICATION CLIENT ON <em>.</em> TO &lsquo;backupuser&rsquo;@&lsquo;localhost&rsquo;;<br />
+CREATE USER 'backupuser'@'localhost' IDENTIFIED BY 'password';<br />
+GRANT SELECT,SHOW VIEW,LOCK TABLES,RELOAD,REPLICATION CLIENT ON <em>.</em> TO 'backupuser'@'localhost';<br />
 FLUSH PRIVILEGES;</p>
 
 <p>用户设置密码<br />
-SET PASSWORD FOR A = Password(&lsquo;hello&rsquo;);</p>
+SET PASSWORD FOR A = Password('hello');</p>
 
 <p>重命名用户<br />
 RENAME USER a TO A;<br />
-UPDATE user SET User = &lsquo;FOO&rsquo; WHERE User = &lsquo;foo&rsquo;;<br />
-SELECT User, Host, Password FROM user WHERE User = &lsquo;FOO&rsquo;;</p>
+UPDATE user SET User = 'FOO' WHERE User = 'foo';<br />
+SELECT User, Host, Password FROM user WHERE User = 'FOO';</p>
 
 <p>查看用户权限<br />
 SHOW GRANTS FOR A;</p>
@@ -1504,32 +1455,32 @@ REVOKE SELECT ON crashcourse.* FROM A;</p>
 //使用password关键字的话，可以加密密码<br />
 <code>mysql&gt;create user username@'hostname' [identified by [password]'your_passwd']</code></p>
 
-<p>命令:CREATE USER &lsquo;username&rsquo;@&lsquo;host&rsquo; IDENTIFIED BY &lsquo;password&rsquo;;<br />
+<p>命令:CREATE USER 'username'@'host' IDENTIFIED BY 'password';<br />
 说明:<br />
 username - 你将创建的用户名, host - 指定该用户在哪个主机上可以登陆,如果是本地用户可用localhost, 如果想让该用户可以从任意远程主机登陆,可以使用通配符%.<br />
 password - 该用户的登陆密码,密码可以为空,如果为空则该用户可以不需要密码登陆服务器.<br />
 例子:<br />
-CREATE USER &lsquo;root&rsquo;@&lsquo;localhost&rsquo; IDENTIFIED BY &lsquo;123456&rsquo;;<br />
-CREATE USER &lsquo;username&rsquo;@&lsquo;192.168.1.10_&rsquo; IDENDIFIED BY &lsquo;123456&rsquo;;<br />
-CREATE USER &lsquo;username&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &lsquo;123456&rsquo;;<br />
-CREATE USER &lsquo;username&rsquo;@&lsquo;%&rsquo; IDENTIFIED BY &ldquo;;<br />
-CREATE USER &lsquo;username&rsquo;@&lsquo;%&rsquo;;</p>
+CREATE USER 'root'@'localhost' IDENTIFIED BY '123456';<br />
+CREATE USER 'username'@'192.168.1.10_' IDENDIFIED BY '123456';<br />
+CREATE USER 'username'@'%' IDENTIFIED BY '123456';<br />
+CREATE USER 'username'@'%' IDENTIFIED BY '';<br />
+CREATE USER 'username'@'%';</p>
 
 <p>2、也可以在授权的时候创建用户帐户：<br />
-//把所有用户的权限授予username@&lsquo;hostname&rsquo;,密码是your_passwd<br />
+//把所有用户的权限授予username@'hostname',密码是your_passwd<br />
 <code>mysql&gt;grant all on *.* to username@'hostname' indentified by [password]'your_passwd'</code></p>
 
-<p>命令:GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo;<br />
+<p>命令:GRANT privileges ON databasename.tablename TO 'username'@'host'<br />
 privileges - 用户的操作权限,如 SELECT INSERT UPDATE DELETE 等.如果要授予所的权限则使用ALL.;<br />
 databasename - 数据库名,<br />
 tablename-表名,如果要授予该用户对所有数据库和表的相应操作权限则可用<em>表示, 如</em>.*</p>
 
 <p>例子:<br />
-GRANT SELECT, INSERT ON test.user TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;<br />
-GRANT ALL ON <em>.</em> TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;</p>
+GRANT SELECT, INSERT ON test.user TO 'username'@'%';<br />
+GRANT ALL ON <em>.</em> TO 'username'@'%';</p>
 
 <p>注意:用以上命令授权的用户不能给其它用户授权,如果想让该用户可以授权,用以下命令:<br />
-GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host&rsquo; WITH GRANT OPTION;</p>
+GRANT privileges ON databasename.tablename TO 'username'@'host' WITH GRANT OPTION;</p>
 
 <p>3、如果需要更改用户名和密码的话：<br />
 //更改用户名<br />
@@ -1538,19 +1489,19 @@ GRANT privileges ON databasename.tablename TO &lsquo;username&rsquo;@&lsquo;host
 <code>mysql&gt;set password for user_name@'host'=password（'new_passwd'）</code></p>
 
 <p>命令:<br />
-SET PASSWORD FOR &lsquo;username&rsquo;@&lsquo;host&rsquo; = PASSWORD(&lsquo;newpassword&rsquo;);<br />
-如果是当前登陆用户用SET PASSWORD = PASSWORD(&ldquo;newpassword&rdquo;);<br />
-例子: SET PASSWORD FOR &lsquo;username&rsquo;@&lsquo;%&rsquo; = PASSWORD(&ldquo;123456&rdquo;);</p>
+SET PASSWORD FOR 'username'@'host' = PASSWORD('newpassword');<br />
+如果是当前登陆用户用SET PASSWORD = PASSWORD(&quot;newpassword&quot;);<br />
+例子: SET PASSWORD FOR 'username'@'%' = PASSWORD(&quot;123456&quot;);</p>
 
 <p>4.撤销用户权限<br />
-命令: REVOKE privilege ON databasename.tablename FROM &lsquo;username&rsquo;@&lsquo;host&rsquo;;<br />
+命令: REVOKE privilege ON databasename.tablename FROM 'username'@'host';<br />
 说明: privilege, databasename, tablename - 同授权部分.<br />
-例子: REVOKE SELECT ON <em>.</em> FROM &lsquo;username&rsquo;@&lsquo;%&rsquo;;<br />
-注意: 假如你在给用户&rsquo;username&rsquo;@&lsquo;%&lsquo;授权的时候是这样的(或类似的):GRANT SELECT ON test.user TO &lsquo;username&rsquo;@&lsquo;%&rsquo;, 则在使用REVOKE SELECT ON <em>.</em> FROM &lsquo;username&rsquo;@&lsquo;%&rsquo;;命令并不能撤销该用户对test数据库中user表的SELECT 操作.相反,如果授权使用的是GRANT SELECT ON <em>.</em> TO &lsquo;username&rsquo;@&lsquo;%&rsquo;;则REVOKE SELECT ON test.user FROM &lsquo;username&rsquo;@&lsquo;%&rsquo;;命令也不能撤销该用户对test数据库中user表的Select 权限.<br />
-具体信息可以用命令SHOW GRANTS FOR &lsquo;username&rsquo;@&lsquo;%&rsquo;; 查看.</p>
+例子: REVOKE SELECT ON <em>.</em> FROM 'username'@'%';<br />
+注意: 假如你在给用户'username'@'%'授权的时候是这样的(或类似的):GRANT SELECT ON test.user TO 'username'@'%', 则在使用REVOKE SELECT ON <em>.</em> FROM 'username'@'%';命令并不能撤销该用户对test数据库中user表的SELECT 操作.相反,如果授权使用的是GRANT SELECT ON <em>.</em> TO 'username'@'%';则REVOKE SELECT ON test.user FROM 'username'@'%';命令也不能撤销该用户对test数据库中user表的Select 权限.<br />
+具体信息可以用命令SHOW GRANTS FOR 'username'@'%'; 查看.</p>
 
 <p>五.删除用户<br />
-命令: DROP USER &lsquo;username&rsquo;@&lsquo;host&rsquo;;</p>
+命令: DROP USER 'username'@'host';</p>
 
 <p>##SQL测试</p>
 
@@ -1611,38 +1562,38 @@ mysql&gt;drop database 数据库名;
 
 <hr />
 
-<p>&ndash; 查看MySQL的状态<br />
+<p>-- 查看MySQL的状态<br />
 status;<br />
-&ndash; 显示支持的引擎<br />
+-- 显示支持的引擎<br />
 show engines;<br />
-&ndash; 显示所有数据库<br />
+-- 显示所有数据库<br />
 show databases;<br />
-&ndash; 切换数据库上下文,即设置当前会话的默认数据库<br />
+-- 切换数据库上下文,即设置当前会话的默认数据库<br />
 use mysql;<br />
-&ndash; 显示本数据库所有的表<br />
+-- 显示本数据库所有的表<br />
 show tables;<br />
-&ndash; 显示表中列名称<br />
+-- 显示表中列名称<br />
 show columns from table_name from database_name;<br />
 show columns from database_name.table_name;<br />
-&ndash; 显示一个用户的权限，显示结果类似于grant 命令<br />
+-- 显示一个用户的权限，显示结果类似于grant 命令<br />
 show grants for user_name;<br />
-&ndash; 显示表的索引<br />
+-- 显示表的索引<br />
 show index from table_name;<br />
-&ndash; 显示变量<br />
+-- 显示变量<br />
 show variables;<br />
-&ndash; 显示插件<br />
+-- 显示插件<br />
 show plugins;</p>
 
-<p>&ndash; 查第一条<br />
+<p>-- 查第一条<br />
 select * from table_name limit 1;<br />
-&ndash; 查询最后一条<br />
+-- 查询最后一条<br />
 select day from table_name order by id desc limit 1;<br />
-&ndash; 查询前30条记录<br />
+-- 查询前30条记录<br />
 select * from table_name limit 0,30</p>
 
-<p>&ndash; 简单查询<br />
-select id,userId from t_test  where userId=&lsquo;admin&rsquo; ;<br />
-&ndash; 创建一个表<br />
+<p>-- 简单查询<br />
+select id,userId from t_test  where userId='admin' ;<br />
+-- 创建一个表<br />
 CREATE TABLE t_test (<br />
   id int(11) UNSIGNED NOT NULL AUTO_INCREMENT,<br />
   userId char(36),<br />
@@ -1650,14 +1601,14 @@ CREATE TABLE t_test (<br />
   PRIMARY KEY (id)<br />
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;</p>
 
-<p>&ndash; 插入测试数据<br />
+<p>-- 插入测试数据<br />
 insert into t_test(userId)</p>
 
 <pre><code>values
 </code></pre>
 
-<p>(&lsquo;admin&rsquo;)<br />
-,(&lsquo;haha&rsquo;)<br />
+<p>('admin')<br />
+,('haha')<br />
 ;</p>
 
 <p>##修改数据存放目录</p>
@@ -1739,9 +1690,9 @@ create database drupal;<br />
 mysql -u drupal -h 192.168.33.63 -p<br />
 这里我们用 -h 选择，指定了一下要登录到的服务器的 IP 地址。这个 IP 地址就是数据库服务器的 IP 地址。<br />
 如果你发看到类似下面这样的错误：<br />
-ERROR 2003 (HY000): Can&rsquo;t connect to MySQL server on &lsquo;192.168.33.63&rsquo; (113 &ldquo;No route to host&rdquo;)<br />
+ERROR 2003 (HY000): Can't connect to MySQL server on '192.168.33.63' (113 &quot;No route to host&quot;)<br />
 很有可能是在数据库服务器上的防火墙的配置原因，配置一下 CentOS 7 自带的防火墙 Firewalld ：<br />
-firewall-cmd &ndash;zone=public &ndash;add-port=3306/tcp<br />
+firewall-cmd --zone=public --add-port=3306/tcp<br />
 完成以后，重新再到 Web 服务器上尝试连接数据库服务器。<br />
 补充:## mariaDB 创建用户</p>
 
@@ -1776,10 +1727,10 @@ firewall-cmd &ndash;zone=public &ndash;add-port=3306/tcp<br />
 </code></pre>
 
 <p>能用二进制格式安装,配置文件查找次序：<br />
-/etc/my.cnf &ndash;&gt; /etc/mysql/my.cnf &ndash;&gt; &ndash;default-extra-file=/PATH/TO/CONF_FILE &ndash;&gt; ~/.my.cnf</p>
+/etc/my.cnf --&gt; /etc/mysql/my.cnf --&gt; --default-extra-file=/PATH/TO/CONF_FILE --&gt; ~/.my.cnf</p>
 
 <p>OS提供的mariadb rpm包安装的配置文件查找次序:<br />
-/etc/mysql/my.cnf &ndash;&gt; /etc/my.cnf &ndash;&gt; &ndash;default-extra=/PATH/TO/conf_file &ndash;&gt; ~/my.cnf</p>
+/etc/mysql/my.cnf --&gt; /etc/my.cnf --&gt; --default-extra=/PATH/TO/conf_file --&gt; ~/my.cnf</p>
 
 <p>以上两者越靠后就是最后生效的.</p>
 
@@ -1826,7 +1777,7 @@ mysql_upgrade : 升级工具
                   监听在sock文件上(/tmp/mysql.sock, /var/lib/mysql/mysql.sock),仅支持本地通信,通信主机为localhost,127.0.0.1都基于unix socket文件通信
 </code></pre>
 
-<h2 id="命令行交互式客户端程序-mysql工具">命令行交互式客户端程序&mdash;mysql工具</h2>
+<h2 id="命令行交互式客户端程序-mysql工具">命令行交互式客户端程序---mysql工具</h2>
 
 <p><code>mysql -h127.0.0.1 -uroot  -proot1234569 -e 'show databases;'</code></p>
 
@@ -1837,7 +1788,7 @@ mysql_upgrade : 升级工具
 -e 'SCRIPT' : 连接至MYSQL运行某命令后,直接退出,并返回结果
 </code></pre>
 
-<p>注意: mysql的用户帐号由两部分组成,&lsquo;username&rsquo;@&lsquo;hostname&rsquo;,其中host用于限制此用户可通过哪些主机连接当前的MSYQL服务器</p>
+<p>注意: mysql的用户帐号由两部分组成,'username'@'hostname',其中host用于限制此用户可通过哪些主机连接当前的MSYQL服务器</p>
 
 <pre><code>  支持通配符:
       % : 匹配任意长度的任意字符
@@ -1853,7 +1804,7 @@ mysql_upgrade : 升级工具
       \c : 取消命令运行
 </code></pre>
 
-<p>通过mysql协议发往服务器执行并取回结果,每个命令都必须有结束符,默认为&rdquo;;&ldquo;,示例如下:</p>
+<p>通过mysql协议发往服务器执行并取回结果,每个命令都必须有结束符,默认为&quot;;&quot;,示例如下:</p>
 
 <p>for i in {1..100};</p>
 
@@ -1862,131 +1813,6 @@ mysql -uroot -pM8T9cw -e &quot;insert mydb.student(id,name,age) value ($i,\&quot
 </code></pre>
 
 <p>done</p>
-
-<p>获取命令帮助</p>
-
-<pre><code>help
-
-
-
-grant 普通数据用户，查询、插入、更新、删除 数据库中所有表数据的权利。
-
-grant select on testdb.* to common_user@’%’
-
-grant insert on testdb.* to common_user@’%’
-
-grant update on testdb.* to common_user@’%’
-
-grant delete on testdb.* to common_user@’%’
-
-或者，用一条 MySQL 命令来替代：
-
-grant select, insert, update, delete on testdb.* to common_user@’%’
-
-9&gt;.grant 数据库开发人员，创建表、索引、视图、存储过程、函数。。。等权限。
-
-grant 创建、修改、删除 MySQL 数据表结构权限。
-
-grant create on testdb.* to developer@’192.168.0.%’;
-
-grant alter on testdb.* to developer@’192.168.0.%’;
-
-grant drop on testdb.* to developer@’192.168.0.%’;
-
-grant 操作 MySQL 外键权限。
-
-grant references on testdb.* to developer@’192.168.0.%’;
-
-grant 操作 MySQL 临时表权限。
-
-grant create temporary tables on testdb.* to developer@’192.168.0.%’;
-
-grant 操作 MySQL 索引权限。
-
-grant index on testdb.* to developer@’192.168.0.%’;
-
-grant 操作 MySQL 视图、查看视图源代码 权限。
-
-grant create view on testdb.* to developer@’192.168.0.%’;
-
-grant show view on testdb.* to developer@’192.168.0.%’;
-
-grant 操作 MySQL 存储过程、函数 权限。
-
-grant create routine on testdb.* to developer@’192.168.0.%’; -- now, can show procedure status
-
-grant alter routine on testdb.* to developer@’192.168.0.%’; -- now, you can drop a procedure
-
-grant execute on testdb.* to developer@’192.168.0.%’;
-
-10&gt;.grant 普通 DBA 管理某个 MySQL 数据库的权限。
-
-grant all privileges on testdb to dba@’localhost’
-
-其中，关键字 “privileges” 可以省略。
-
-11&gt;.grant 高级 DBA 管理 MySQL 中所有数据库的权限。
-
-grant all on *.* to dba@’localhost’
-
-12&gt;.MySQL grant 权限，分别可以作用在多个层次上。
-
-1. grant 作用在整个 MySQL 服务器上：
-
-grant select on *.* to dba@localhost; -- dba 可以查询 MySQL 中所有数据库中的表。
-
-grant all on *.* to dba@localhost; -- dba 可以管理 MySQL 中的所有数据库
-
-2. grant 作用在单个数据库上：
-
-grant select on testdb.* to dba@localhost; -- dba 可以查询 testdb 中的表。
-
-3. grant 作用在单个数据表上：
-
-grant select, insert, update, delete on testdb.orders to dba@localhost;
-
-4. grant 作用在表中的列上：
-
-grant select(id, se, rank) on testdb.apache_log to dba@localhost;
-
-5. grant 作用在存储过程、函数上：
-
-grant execute on procedure testdb.pr_add to ’dba’@’localhost’
-
-grant execute on function testdb.fn_add to ’dba’@’localhost’
-注意：修改完权限以后 一定要刷新服务，或者重启服务，刷新服务用：FLUSH PRIVILEGES。
-
-
-权限表
-权限  说明
-all
-alter
-alter routine   使用alter procedure 和drop procedure
-create
-create routine  使用create  procedure
-create temporary tables     使用create temporary table
-create  user
-create view
-delete
-drop
-execute     使用call和存储过程
-file    使用select into outfile  和load data infile
-grant option    可以使用grant和revoke
-index   可以使用create index 和drop index
-insert
-lock tables     锁表
-process     使用show full processlist
-reload     使用flush
-replication client  服务器位置访问
-replocation slave   由复制从属使用
-select
-show databases
-show view
-shutdown    使用mysqladmin shutdown 来关闭mysql
-super
-update
-usage   无访问权限
-</code></pre>
 
                         </div>                      
                         <div class="clear"></div>
@@ -2198,7 +2024,7 @@ usage   无访问权限
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -2242,6 +2068,8 @@ usage   无访问权限
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -2467,7 +2295,7 @@ usage   无访问权限
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -2585,7 +2413,7 @@ usage   无访问权限
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2737,7 +2565,7 @@ usage   无访问权限
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -3018,6 +2846,32 @@ usage   无访问权限
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

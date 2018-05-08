@@ -9,17 +9,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   
-  <meta name="description" content="65536 2^16 = 65536 端口号在TCP协议字段里，一共两个字节，二进制的16位，意味着有2^16= 65536个端口号可用，但0-1023系统通常保留为知名服">
+  <meta name="description" content="2^16 = 65536 一、 文件数限制修改 1、用户级别 查看Linux系统用户最大打开文件限制： ulimit -n 1024 (1) vi /etc/security/limits.conf mysql soft nofile 10240 mysql hard nofile 10240 其中mysql指定了要修改哪个用户的">
   <meta name="author" content=rinetd>
   <meta name="publisher" content=rinetd@163.com>
 
   <meta itemprop="name" content="百万并发连接、65536和Linux TCP/IP 性能优化 - 时光小栈">
-  <meta itemprop="description" content="65536 2^16 = 65536 端口号在TCP协议字段里，一共两个字节，二进制的16位，意味着有2^16= 65536个端口号可用，但0-1023系统通常保留为知名服">
+  <meta itemprop="description" content="2^16 = 65536 一、 文件数限制修改 1、用户级别 查看Linux系统用户最大打开文件限制： ulimit -n 1024 (1) vi /etc/security/limits.conf mysql soft nofile 10240 mysql hard nofile 10240 其中mysql指定了要修改哪个用户的">
   <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
   
   <meta property="og:type" content="article" />
   <meta property="og:title" content="百万并发连接、65536和Linux TCP/IP 性能优化 - 时光小栈" />
-  <meta property="og:description" content="65536 2^16 = 65536 端口号在TCP协议字段里，一共两个字节，二进制的16位，意味着有2^16= 65536个端口号可用，但0-1023系统通常保留为知名服">
+  <meta property="og:description" content="2^16 = 65536 一、 文件数限制修改 1、用户级别 查看Linux系统用户最大打开文件限制： ulimit -n 1024 (1) vi /etc/security/limits.conf mysql soft nofile 10240 mysql hard nofile 10240 其中mysql指定了要修改哪个用户的">
   <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
   <meta property="og:url" content="http://blog.pytool.com/linux/linux-sysctl-net/" />
   
@@ -1035,8 +1035,8 @@
                         <h1 class="post-title">百万并发连接、65536和Linux TCP/IP 性能优化</h1>
 
                         <p class="post-byline">
-                          by  · 2016年01月06日 · 2278 Words ·
-                          ~5min reading time |
+                          by  · 2016年01月06日 · 3461 Words ·
+                          ~7min reading time |
                           
                           
                           <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/Linux-sysctl-net.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
@@ -1050,9 +1050,69 @@
                             </p>
                             
 
-<p>65536</p>
-
 <p>2^16 = 65536</p>
+
+<p>一、 文件数限制修改<br />
+1、用户级别<br />
+查看Linux系统用户最大打开文件限制：<br />
+ ulimit -n<br />
+1024</p>
+
+<p>(1) vi /etc/security/limits.conf<br />
+mysql soft nofile 10240<br />
+mysql hard nofile 10240<br />
+其中mysql指定了要修改哪个用户的打开文件数限制。<br />
+可用'*'号表示修改所有用户的限制；soft或hard指定要修改软限制还是硬限制；10240则指定了想要修改的新的限制值，即最大打开文件数(请注意软限制值要小于或等于硬限制)。</p>
+
+<p>(2) vi /etc/pam.d/login<br />
+session required /lib/security/pam_limits.so<br />
+这是告诉Linux在用户完成系统登录后，应该调用pam_limits.so模块来设置系统对该用户可使用的各种资源数量的最大限制(包括用户可打开的最大文件数限制)。<br />
+而pam_limits.so模块就会从/etc/security/limits.conf文件中读取配置来设置这些限制值。</p>
+
+<p>2、Linux系统级别<br />
+查看Linux系统对同时打开文件数的硬限制：<br />
+ sysctl -a|grep file-max<br />
+fs.file-max = 65535<br />
+这表明这台Linux系统最多允许同时打开(即包含所有用户打开文件数总和)65535个文件，是Linux系统级硬限制，所有用户级的打开文件数限制都不会超过这个数值。<br />
+通常这个系统级硬限制是Linux系统在启动时根据系统硬件资源状况计算出来的最佳的最大同时打开文件数限制。</p>
+
+<p>(1) vi /etc/sysctl.conf<br />
+fs.file-max = 1000000<br />
+立即生效：<br />
+ sysctl -p</p>
+
+<p>二、 网络端口限制修改<br />
+查看Linux系统最大追踪TCP连接数量：<br />
+ sysctl -a | grep ipv4.ip_conntrack_max<br />
+net.ipv4.ip_conntrack_max = 20000<br />
+这表明系统将对最大跟踪的TCP连接数限制默认为20000。</p>
+
+<p>查看Linux系统端口范围：<br />
+ sysctl -a | grep ipv4.ip_local_port_range<br />
+net.ipv4.ip_local_port_range = 1024 30000<br />
+注意：<br />
+每个TCP客户端连接都要占用一个唯一的本地端口号(此端口号在系统的本地端口号范围限制中)，如果现有的TCP客户端连接已将所有的本地端口号占满。将不能创建新的TCP连接。</p>
+
+<p>(1) vi /etc/sysctl.conf<br />
+net.ipv4.ip_local_port_range = 1024 65535<br />
+net.ipv4.ip_conntrack_max = 20000<br />
+如果按上述端口范围进行设置，则理论上单独一个进程最多可以同时建立60000多个TCP客户端连接。<br />
+如果按上述参数进行设置，则理论上单独一个进程最多可以同时建立20000多个TCP客户端连接。</p>
+
+<p>备注：<br />
+对mysql用户可同时打开文件数设置为10240个；<br />
+将Linux系统可同时打开文件数设置为1000000个（一定要大于对用户的同时打开文件数限制）；<br />
+将Linux系统对最大追踪的TCP连接数限制为20000个（但是，建议设置为10240；因为对mysql用户的同时打开文件数已经限制在10240个；且较小的值可以节省内存）；<br />
+将linux系统端口范围配置为1024～30000（可以支持60000个以上连接，不建议修改；默认已经支持20000个以上连接）；</p>
+
+<p>综合上述四点，TCP连接数限制在10140个。<br />
+这10240个文件中还得除去每个进程必然打开的标准输入，标准输出，标准错误，服务器监听 socket，进程间通讯的unix域socket等文件。</p>
+
+<p>因此，当需要对TCP连接数进行调整时只需要调整ulimit参数。</p>
+
+<p>Linux下查看tcp连接数及状态命令：</p>
+
+<p>netstat -n | awk '/^tcp/ {++S[$NF]} END {for(a in S) print a, S[a]}'</p>
 
 <p>端口号在TCP协议字段里，一共两个字节，二进制的16位，意味着有2^16= 65536个端口号可用，但0-1023系统通常保留为知名服务端口，所以最多有64512个端口做为端口池资源。</p>
 
@@ -1068,144 +1128,142 @@
 
 <p>一个TCP连接唯一性确定：</p>
 
-<p>ServerIP =&gt; ServerPort &lt;= TCP =&gt; ClientIP =&gt; ClientPort<br />
-百万并发连接</p>
+<p>ServerIP =&gt; ServerPort &lt;= TCP =&gt; ClientIP =&gt; ClientPort</p>
 
-<p>/etc/sysctl.conf<br />
-sysctl -w fs.file-max=10485760 #系统允许的文件描述符数量10m<br />
-sysctl -w net.ipv4.tcp_rmem=1024 #每个tcp连接的读取缓冲区1k，一个连接1k<br />
-sysctl -w net.ipv4.tcp_wmem=1024 #每个tcp连接的写入缓冲区1k<br />
-#修改默认的本地端口范围<br />
-sysctl -w net.ipv4.ip_local_port_range=&lsquo;1024 65535&rsquo;<br />
-sysctl -w net.ipv4.tcp_tw_recycle=1  #快速回收time_wait的连接<br />
-sysctl -w net.ipv4.tcp_tw_reuse=1<br />
-sysctl -w net.ipv4.tcp_timestamps=1<br />
-#用户单进程的最大文件数，用户登录时生效<br />
-echo &lsquo;* soft nofile 1048576&rsquo; &gt;&gt; /etc/security/limits.conf<br />
-echo &lsquo;* hard nofile 1048576&rsquo; &gt;&gt; /etc/security/limits.conf<br />
-ulimit -n 1048576 #用户单进程的最大文件描述符数 当前会话生效</p>
+<h2 id="百万并发连接">百万并发连接</h2>
 
-<p>瓶颈主要是在系统的内存和网卡IO<br />
-#</p>
+<pre><code class="language-sh">/etc/sysctl.conf
+sysctl -w fs.file-max=10485760 #系统允许的文件描述符数量10m
+sysctl -w net.ipv4.tcp_rmem=1024 #每个tcp连接的读取缓冲区1k，一个连接1k
+sysctl -w net.ipv4.tcp_wmem=1024 #每个tcp连接的写入缓冲区1k
+#修改默认的本地端口范围
+sysctl -w net.ipv4.ip_local_port_range='1024 65535'
+sysctl -w net.ipv4.tcp_tw_recycle=1  #快速回收time_wait的连接
+sysctl -w net.ipv4.tcp_tw_reuse=1
+sysctl -w net.ipv4.tcp_timestamps=1
+#用户单进程的最大文件数，用户登录时生效
+echo '* soft nofile 1048576' &gt;&gt; /etc/security/limits.conf
+echo '* hard nofile 1048576' &gt;&gt; /etc/security/limits.conf
+ulimit -n 1048576 #用户单进程的最大文件描述符数 当前会话生效
 
-<p>net.core.netdev_max_backlog = 400000<br />
-#该参数决定了，网络设备接收数据包的速率比内核处理这些包的速率快时，允许送到队列的数据包的最大数目。</p>
+瓶颈主要是在系统的内存和网卡IO
+#
 
-<p>net.core.optmem_max = 10000000<br />
-#该参数指定了每个套接字所允许的最大缓冲区的大小</p>
+net.core.netdev_max_backlog = 400000
+#该参数决定了，网络设备接收数据包的速率比内核处理这些包的速率快时，允许送到队列的数据包的最大数目。
 
-<p>net.core.rmem_default = 10000000<br />
-#指定了接收套接字缓冲区大小的缺省值（以字节为单位）。</p>
+net.core.optmem_max = 10000000
+#该参数指定了每个套接字所允许的最大缓冲区的大小
 
-<p>net.core.rmem_max = 10000000<br />
-#指定了接收套接字缓冲区大小的最大值（以字节为单位）。</p>
+net.core.rmem_default = 10000000
+#指定了接收套接字缓冲区大小的缺省值（以字节为单位）。
 
-<p>net.core.somaxconn = 100000<br />
-#Linux kernel参数，表示socket监听的backlog(监听队列)上限</p>
+net.core.rmem_max = 10000000
+#指定了接收套接字缓冲区大小的最大值（以字节为单位）。
 
-<p>net.core.wmem_default = 11059200<br />
-#定义默认的发送窗口大小；对于更大的 BDP 来说，这个大小也应该更大。</p>
+net.core.somaxconn = 100000
+#Linux kernel参数，表示socket监听的backlog(监听队列)上限
 
-<p>net.core.wmem_max = 11059200<br />
-#定义发送窗口的最大大小；对于更大的 BDP 来说，这个大小也应该更大。</p>
+net.core.wmem_default = 11059200
+#定义默认的发送窗口大小；对于更大的 BDP 来说，这个大小也应该更大。
 
-<p>net.ipv4.conf.all.rp_filter = 1<br />
-net.ipv4.conf.default.rp_filter = 1<br />
-#严谨模式 1 (推荐)<br />
-#松散模式 0</p>
+net.core.wmem_max = 11059200
+#定义发送窗口的最大大小；对于更大的 BDP 来说，这个大小也应该更大。
 
-<p>net.ipv4.tcp_congestion_control = bic<br />
-#默认推荐设置是 htcp</p>
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+#严谨模式 1 (推荐)
+#松散模式 0
 
-<p>net.ipv4.tcp_window_scaling = 0<br />
-#关闭tcp_window_scaling<br />
-#启用 RFC 1323 定义的 window scaling；要支持超过 64KB 的窗口，必须启用该值。</p>
+net.ipv4.tcp_congestion_control = bic
+#默认推荐设置是 htcp
 
-<p>net.ipv4.tcp_ecn = 0<br />
-#把TCP的直接拥塞通告(tcp_ecn)关掉</p>
+net.ipv4.tcp_window_scaling = 0
+#关闭tcp_window_scaling
+#启用 RFC 1323 定义的 window scaling；要支持超过 64KB 的窗口，必须启用该值。
 
-<p>net.ipv4.tcp_sack = 1<br />
-#关闭tcp_sack<br />
-#启用有选择的应答（Selective Acknowledgment），<br />
-#这可以通过有选择地应答乱序接收到的报文来提高性能（这样可以让发送者只发送丢失的报文段）；<br />
-#（对于广域网通信来说）这个选项应该启用，但是这会增加对 CPU 的占用。</p>
+net.ipv4.tcp_ecn = 0
+#把TCP的直接拥塞通告(tcp_ecn)关掉
 
-<p>net.ipv4.tcp_max_tw_buckets = 10000<br />
-#表示系统同时保持TIME_WAIT套接字的最大数量</p>
+net.ipv4.tcp_sack = 1
+#关闭tcp_sack
+#启用有选择的应答（Selective Acknowledgment），
+#这可以通过有选择地应答乱序接收到的报文来提高性能（这样可以让发送者只发送丢失的报文段）；
+#（对于广域网通信来说）这个选项应该启用，但是这会增加对 CPU 的占用。
 
-<p>net.ipv4.tcp_max_syn_backlog = 8192<br />
-#表示SYN队列长度，默认1024，改成8192，可以容纳更多等待连接的网络连接数。</p>
+net.ipv4.tcp_max_tw_buckets = 10000
+#表示系统同时保持TIME_WAIT套接字的最大数量
 
-<p>net.ipv4.tcp_syncookies = 1<br />
-#表示开启SYN Cookies。当出现SYN等待队列溢出时，启用cookies来处理，可防范少量SYN攻击，默认为0，表示关闭；</p>
+net.ipv4.tcp_max_syn_backlog = 8192
+#表示SYN队列长度，默认1024，改成8192，可以容纳更多等待连接的网络连接数。
 
-<p>net.ipv4.tcp_timestamps = 1<br />
-#开启TCP时间戳<br />
-#以一种比重发超时更精确的方法（请参阅 RFC 1323）来启用对 RTT 的计算；为了实现更好的性能应该启用这个选项。</p>
+net.ipv4.tcp_syncookies = 1
+#表示开启SYN Cookies。当出现SYN等待队列溢出时，启用cookies来处理，可防范少量SYN攻击，默认为0，表示关闭；
 
-<p>net.ipv4.tcp_tw_reuse = 1<br />
-#表示开启重用。允许将TIME-WAIT sockets重新用于新的TCP连接，默认为0，表示关闭；</p>
+net.ipv4.tcp_timestamps = 1
+#开启TCP时间戳
+#以一种比重发超时更精确的方法（请参阅 RFC 1323）来启用对 RTT 的计算；为了实现更好的性能应该启用这个选项。
 
-<p>net.ipv4.tcp_tw_recycle = 1<br />
-#表示开启TCP连接中TIME-WAIT sockets的快速回收，默认为0，表示关闭。</p>
+net.ipv4.tcp_tw_reuse = 1
+#表示开启重用。允许将TIME-WAIT sockets重新用于新的TCP连接，默认为0，表示关闭；
 
-<p>net.ipv4.tcp_fin_timeout = 10<br />
-#表示如果套接字由本端要求关闭，这个参数决定了它保持在FIN-WAIT-2状态的时间。</p>
+net.ipv4.tcp_tw_recycle = 1
+#表示开启TCP连接中TIME-WAIT sockets的快速回收，默认为0，表示关闭。
 
-<p>net.ipv4.tcp_keepalive_time = 1800<br />
-#表示当keepalive起用的时候，TCP发送keepalive消息的频度。缺省是2小时，改为30分钟。</p>
+net.ipv4.tcp_fin_timeout = 10
+#表示如果套接字由本端要求关闭，这个参数决定了它保持在FIN-WAIT-2状态的时间。
 
-<p>net.ipv4.tcp_keepalive_probes = 3<br />
-#如果对方不予应答，探测包的发送次数</p>
+net.ipv4.tcp_keepalive_time = 1800
+#表示当keepalive起用的时候，TCP发送keepalive消息的频度。缺省是2小时，改为30分钟。
+net.ipv4.tcp_keepalive_probes = 3
+#如果对方不予应答，探测包的发送次数
+net.ipv4.tcp_keepalive_intvl = 15
+#keepalive探测包的发送间隔
 
-<p>net.ipv4.tcp_keepalive_intvl = 15<br />
-#keepalive探测包的发送间隔</p>
+net.ipv4.tcp_mem
+#确定 TCP 栈应该如何反映内存使用；每个值的单位都是内存页（通常是 4KB）。
+#第一个值是内存使用的下限。
+#第二个值是内存压力模式开始对缓冲区使用应用压力的上限。
+#第三个值是内存上限。在这个层次上可以将报文丢弃，从而减少对内存的使用。对于较大的 BDP 可以增大这些值（但是要记住，其单位是内存页，而不是字节）。
 
-<p>net.ipv4.tcp_mem<br />
-#确定 TCP 栈应该如何反映内存使用；每个值的单位都是内存页（通常是 4KB）。<br />
-#第一个值是内存使用的下限。<br />
-#第二个值是内存压力模式开始对缓冲区使用应用压力的上限。<br />
-#第三个值是内存上限。在这个层次上可以将报文丢弃，从而减少对内存的使用。对于较大的 BDP 可以增大这些值（但是要记住，其单位是内存页，而不是字节）。</p>
+net.ipv4.tcp_rmem
+#与 tcp_wmem 类似，不过它表示的是为自动调优所使用的接收缓冲区的值。
 
-<p>net.ipv4.tcp_rmem<br />
-#与 tcp_wmem 类似，不过它表示的是为自动调优所使用的接收缓冲区的值。</p>
+net.ipv4.tcp_wmem = 30000000 30000000 30000000
+#为自动调优定义每个 socket 使用的内存。
+#第一个值是为 socket 的发送缓冲区分配的最少字节数。
+#第二个值是默认值（该值会被 wmem_default 覆盖），缓冲区在系统负载不重的情况下可以增长到这个值。
+#第三个值是发送缓冲区空间的最大字节数（该值会被 wmem_max 覆盖）。
 
-<p>net.ipv4.tcp_wmem = 30000000 30000000 30000000<br />
-#为自动调优定义每个 socket 使用的内存。<br />
-#第一个值是为 socket 的发送缓冲区分配的最少字节数。<br />
-#第二个值是默认值（该值会被 wmem_default 覆盖），缓冲区在系统负载不重的情况下可以增长到这个值。<br />
-#第三个值是发送缓冲区空间的最大字节数（该值会被 wmem_max 覆盖）。</p>
+net.ipv4.ip_local_port_range = 1024 65000
+#表示用于向外连接的端口范围。缺省情况下很小：32768到61000，改为1024到65000。
 
-<p>net.ipv4.ip_local_port_range = 1024 65000<br />
-#表示用于向外连接的端口范围。缺省情况下很小：32768到61000，改为1024到65000。</p>
+net.ipv4.netfilter.ip_conntrack_max=204800
+#设置系统对最大跟踪的TCP连接数的限制
 
-<p>net.ipv4.netfilter.ip_conntrack_max=204800<br />
-#设置系统对最大跟踪的TCP连接数的限制</p>
+net.ipv4.tcp_slow_start_after_idle = 0
+#关闭tcp的连接传输的慢启动，即先休止一段时间，再初始化拥塞窗口。
 
-<p>net.ipv4.tcp_slow_start_after_idle = 0<br />
-#关闭tcp的连接传输的慢启动，即先休止一段时间，再初始化拥塞窗口。</p>
+net.ipv4.route.gc_timeout = 100
+#路由缓存刷新频率，当一个路由失败后多长时间跳到另一个路由，默认是300。
 
-<p>net.ipv4.route.gc_timeout = 100<br />
-#路由缓存刷新频率，当一个路由失败后多长时间跳到另一个路由，默认是300。</p>
+net.ipv4.tcp_syn_retries = 1
+#在内核放弃建立连接之前发送SYN包的数量。
 
-<p>net.ipv4.tcp_syn_retries = 1<br />
-#在内核放弃建立连接之前发送SYN包的数量。</p>
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+# 避免放大攻击
 
-<p>net.ipv4.icmp_echo_ignore_broadcasts = 1</p>
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+# 开启恶意icmp错误消息保护
 
-<h1 id="避免放大攻击">避免放大攻击</h1>
+net.inet.udp.checksum=1
+#防止不正确的udp包的攻击
 
-<p>net.ipv4.icmp_ignore_bogus_error_responses = 1</p>
-
-<h1 id="开启恶意icmp错误消息保护">开启恶意icmp错误消息保护</h1>
-
-<p>net.inet.udp.checksum=1<br />
-#防止不正确的udp包的攻击</p>
-
-<p>net.ipv4.conf.default.accept_source_route = 0<br />
-#是否接受含有源路由信息的ip包。参数值为布尔值，1表示接受，0表示不接受。<br />
-#在充当网关的linux主机上缺省值为1，在一般的linux主机上缺省值为0。<br />
-#从安全性角度出发，建议你关闭该功能</p>
+net.ipv4.conf.default.accept_source_route = 0
+#是否接受含有源路由信息的ip包。参数值为布尔值，1表示接受，0表示不接受。
+#在充当网关的linux主机上缺省值为1，在一般的linux主机上缺省值为0。
+#从安全性角度出发，建议你关闭该功能
+</code></pre>
 
 <p>修改了系统默认的配置，一定要进行严格的压测。并监控线上的业务影响波动。不一定别人给的配置就是适合你的系统的配置。如果有异常情况，宁可使用默认配置。</p>
 
@@ -1433,7 +1491,7 @@ net.ipv4.conf.default.rp_filter = 1<br />
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1477,6 +1535,8 @@ net.ipv4.conf.default.rp_filter = 1<br />
       
         
           <a rel="nofollow" rel="tag" href="../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1702,7 +1762,7 @@ net.ipv4.conf.default.rp_filter = 1<br />
         
       
         
-          <a rel="nofollow" rel="tag" href="../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1820,7 +1880,7 @@ net.ipv4.conf.default.rp_filter = 1<br />
         
       
         
-          <a rel="nofollow" rel="tag" href="../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -1972,7 +2032,7 @@ net.ipv4.conf.default.rp_filter = 1<br />
         
       
         
-          <a rel="nofollow" rel="tag" href="../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2253,6 +2313,32 @@ net.ipv4.conf.default.rp_filter = 1<br />
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

@@ -1035,7 +1035,7 @@
                         <h1 class="post-title">Linux之MariaDB集群</h1>
 
                         <p class="post-byline">
-                          by  · 2016年02月26日 · 2179 Words ·
+                          by  · 2016年02月26日 · 2174 Words ·
                           ~5min reading time |
                           
                           
@@ -1112,20 +1112,20 @@ sudo apt install xtrabackup
 <p>[galera]<br />
 wsrep_on=ON<br />
 wsrep_provider=/usr/lib64/galera/libgalera_smm.so<br />
-wsrep_cluster_address=&ldquo;gcomm://192.168.1.112,192.168.1.113 &ldquo;<br />
+wsrep_cluster_address=&quot;gcomm://192.168.1.112,192.168.1.113 &quot;<br />
 binlog_format=row<br />
 default_storage_engine=InnoDB<br />
 innodb_autoinc_lock_mode=2<br />
 bind-address=0.0.0.0<br />
-wsrep_cluster_name=&ldquo;GaleraCluster&rdquo;<br />
-wsrep_node_address=&ldquo;192.168.1.112&rdquo;<br />
-wsrep_node_name=&ldquo;node1&rdquo;<br />
+wsrep_cluster_name=&quot;GaleraCluster&quot;<br />
+wsrep_node_address=&quot;192.168.1.112&quot;<br />
+wsrep_node_name=&quot;node1&quot;<br />
 wsrep_sst_method=xtrabackup<br />
 wsrep_sst_auth=root:command</p>
 
 <p>[galera]<br />
 wsrep_causal_reads=ON                   #节点应用完事务才返回查询请求<br />
-wsrep_provider_options=&ldquo;gcache.size=4G&rdquo; #同步复制缓冲池<br />
+wsrep_provider_options=&quot;gcache.size=4G&quot; #同步复制缓冲池<br />
 wsrep_certify_nonPK=ON                  #为没有显式申明主键的表生成一个用于certificationtest的主键，默认为ON<br />
 #log-bin=/app/galera/mysql-bin          #如果不接从库，注释掉<br />
 #log_slave_updates=1                    #如果不接从库，注释掉<br />
@@ -1133,7 +1133,7 @@ query_cache_size=0                      #关闭查询缓存<br />
 wsrep_on=ON                             #开启全同步复制模式<br />
 wsrep_provider=/usr/lib64/galera/libgalera_smm.so<br />
 wsrep_cluster_name=MariaDB-Galera-Cluster<br />
-wsrep_cluster_address=&ldquo;gcomm://192.168.1.104,192.168.1.105,192.168.1.106&rdquo;<br />
+wsrep_cluster_address=&quot;gcomm://192.168.1.104,192.168.1.105,192.168.1.106&quot;<br />
 wsrep_node_name=mariadb-a03<br />
 wsrep_node_address=192.168.1.104<br />
 binlog_format=row<br />
@@ -1171,14 +1171,14 @@ SST有三种全量拷贝方式：mysqldump、rsync和xtrabackup。SST的方法�
 [root@Node1]# <code>systemctl start mariadb</code><br />
 在Node1上用systemd启动mariadb，此时Node1节点接入到Node2节点所在集群。</p>
 
-<h2 id="grant-all-on-to-galera-localhost-identified-by-123456">grant all on <em>.</em> to &lsquo;galera&rsquo;@&lsquo;localhost&rsquo; identified by &lsquo;123456&rsquo;;</h2>
+<h2 id="grant-all-on-to-galera-localhost-identified-by-123456">grant all on <em>.</em> to 'galera'@'localhost' identified by '123456';</h2>
 
 <p>MariaDB一个节点初始化安装（galera-node1）：</p>
 
 <pre><code># mysql_install_db --defaults-file=/etc/my.cnf.d/server.cnf --user=mysql
 </code></pre>
 
-<p>在 galera-node1 节点上通过bootstrap启动集群（第一次启动一定要使用&ndash;wsrep-new-cluster，再次启动就不需要）</p>
+<p>在 galera-node1 节点上通过bootstrap启动集群（第一次启动一定要使用--wsrep-new-cluster，再次启动就不需要）</p>
 
 <pre><code>mysqld_safe --defaults-file=/etc/my.cnf.d/server.cnf --user=mysql  --wsrep-new-cluster &amp;
 </code></pre>
@@ -1197,8 +1197,8 @@ mysql_secure_installation
 
 <h2 id="验证">验证</h2>
 
-<p>SHOW STATUS LIKE &lsquo;wsrep_cluster_size&rsquo;;<br />
-show global status like &lsquo;ws%&rsquo;;<br />
+<p>SHOW STATUS LIKE 'wsrep_cluster_size';<br />
+show global status like 'ws%';<br />
 注释：</p>
 
 <p>wsrep_cluster_status为Primary，表示节点为主节点，正常读写。</p>
@@ -1211,9 +1211,9 @@ show global status like &lsquo;ws%&rsquo;;<br />
 
 <p>下面模拟在网络抖动发生丢包的情况下，两个节点失联导致脑裂。首先，在192.168.1.105和192.168.1.106两个节点上分别执行：</p>
 
-<p>iptables -A INPUT -p tcp &ndash;sport 4567 -j DROP</p>
+<p>iptables -A INPUT -p tcp --sport 4567 -j DROP</p>
 
-<p>iptables -A INPUT -p tcp &ndash;dport 4567 -j DROP</p>
+<p>iptables -A INPUT -p tcp --dport 4567 -j DROP</p>
 
 <p>以上命令用来禁止wsrep全同步复制4567端口通信。</p>
 
@@ -1236,7 +1236,7 @@ ERROR 1205 (HY000): Lock wait timeoutexceeded; try restarting transaction
 
 <p>为了解决这个问题，可以执行：</p>
 
-<p>set global wsrep_provider_options=&ldquo;pc.bootstrap=true&rdquo;;</p>
+<p>set global wsrep_provider_options=&quot;pc.bootstrap=true&quot;;</p>
 
 <p>通过这个命令来强制恢复出现脑裂的节点。</p>
 
@@ -1287,7 +1287,7 @@ EOF</p>
 
 <p>mkdir /mariadb_data  &amp;&amp; mount /dev/mapper/VG_SYSTEM-lv_mysql_data /mariadb_data/</p>
 
-<p>echo &ldquo;/dev/mapper/VG_SYSTEM-lv_mysql_data    /mariadb_data        ext4    defaults   0 0&rdquo; &gt;&gt;/etc/fstab</p>
+<p>echo &quot;/dev/mapper/VG_SYSTEM-lv_mysql_data    /mariadb_data        ext4    defaults   0 0&quot; &gt;&gt;/etc/fstab</p>
 
 <p>mysql -uroot -p</p>
 
@@ -1308,10 +1308,10 @@ quit
 [mysqld]<br />
 datadir=/mariadb_data/data<br />
 character_set_server=utf8<br />
-wsrep-cluster-name = &ldquo;szqs_d3_2_cluster&rdquo;<br />
+wsrep-cluster-name = &quot;szqs_d3_2_cluster&quot;<br />
 wsrep-provider = /usr/lib64/galera/libgalera_smm.so<br />
-wsrep-provider-options = &ldquo;gcache.size=256M;gcache.page_size=128M&rdquo;<br />
-wsrep-sst-auth = &ldquo;sst_user:password&rdquo;<br />
+wsrep-provider-options = &quot;gcache.size=256M;gcache.page_size=128M&quot;<br />
+wsrep-sst-auth = &quot;sst_user:password&quot;<br />
 binlog-format = row<br />
 default-storage-engine = InnoDB<br />
 innodb-doublewrite = 1<br />
@@ -1324,7 +1324,7 @@ HERE</p>
 
 <p>cat &gt;/etc/my.cnf.d/galera_db00.cnf &lt;&lt;HERE<br />
 [mysqld]<br />
-wsrep-node-name = &ldquo;db1&rdquo;<br />
+wsrep-node-name = &quot;db1&quot;<br />
 wsrep-sst-receive-address = 192.168.80.111<br />
 wsrep-node-incoming-address = 192.168.80.111<br />
 bind-address = 192.168.80.111<br />
@@ -1333,13 +1333,13 @@ wsrep_sst_method = rsync</p>
 <p>wsrep-cluster-address = gcomm://192.168.80.111,192.168.80.101,192.168.80.110<br />
 HERE</p>
 
-<p>/etc/init.d/mysql start &ndash;wsrep-new-cluster</p>
+<p>/etc/init.d/mysql start --wsrep-new-cluster</p>
 
 <p>db2</p>
 
 <p>cat &gt;/etc/my.cnf.d/galera_db00.cnf &lt;&lt;HERE<br />
 [mysqld]<br />
-wsrep-node-name = &ldquo;db2&rdquo;<br />
+wsrep-node-name = &quot;db2&quot;<br />
 wsrep-sst-receive-address = 192.168.80.110<br />
 wsrep-node-incoming-address = 192.168.80.110<br />
 bind-address = 192.168.80.110<br />
@@ -1353,7 +1353,7 @@ HERE</p>
 
 <p>cat &gt;/etc/my.cnf.d/galera_db00.cnf &lt;&lt;HERE<br />
 [mysqld]<br />
-wsrep-node-name = &ldquo;db3&rdquo;<br />
+wsrep-node-name = &quot;db3&quot;<br />
 wsrep-sst-receive-address = 192.168.80.101<br />
 wsrep-node-incoming-address = 192.168.80.101<br />
 bind-address = 192.168.80.101<br />
@@ -1365,7 +1365,7 @@ HERE</p>
 
 <p>检测集群</p>
 
-<p>show status like &lsquo;wsrep%&rsquo;;</p>
+<p>show status like 'wsrep%';</p>
 
 <p>配置NGINX转发</p>
 
@@ -1605,7 +1605,7 @@ server {
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1649,6 +1649,8 @@ server {
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1874,7 +1876,7 @@ server {
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1992,7 +1994,7 @@ server {
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2144,7 +2146,7 @@ server {
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2425,6 +2427,32 @@ server {
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

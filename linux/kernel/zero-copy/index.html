@@ -1031,7 +1031,7 @@
                         <h1 class="post-title">linux零拷贝原理</h1>
 
                         <p class="post-byline">
-                          by  · 2018年04月14日 · 5810 Words ·
+                          by  · 2018年04月14日 · 5808 Words ·
                           ~12min reading time |
                           
                           
@@ -1056,7 +1056,7 @@
 正因为如此，我决定写一些文章，深入探讨这件事，希望揭开这个有用的功能。<br />
 在本文中，我们从用户应用程序的角度看待零拷贝，因此故意省略了gory内核级别的详细信息。</p>
 
-<p>&mdash;more</p>
+<p>---more</p>
 
 <h3 id="什么是零拷贝">什么是零拷贝</h3>
 
@@ -1064,10 +1064,10 @@
 让我们看看一个网络服务器通过网络将存储在文件中的数据提供给客户端这个简单过程中涉及的内容，。<br />
 以下是一些示例代码：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     read(file, tmp_buf, len);     |<br />
 |     2                             |     write(socket, tmp_buf, len);  |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>看起来很简单, 你会认为只有两个系统调用并不会有太多的开销。<br />
 而然现实中这可能远离真相。<br />
@@ -1101,10 +1101,10 @@
 
 <p>消除复制的一种方法是调用mmap来替代read。 例如：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     tmp_buf = mmap(file, len);    |<br />
 |     2                             |     write(socket, tmp_buf, len);  |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>为了更好的理解处理过程，请看下图：上下文切换是一样的。</p>
 
@@ -1123,7 +1123,7 @@
 <p>第一种方法是为SIGBUS信号安装一个信号处理程序，然后在处理程序中调用return。通过这样做，写系统调用返回其中断之前写入的字节数，并将errno设置为success。让我指出，这将是一个坏的解决方案，一个解决问题表象而不是问题根本发送原因的方案。因为<code>SIGBUS</code>表明已经发生了非常严重的错误，我不鼓励使用这个解决方案。</p>
 
 <p>第二个解决方案涉及内核中的文件租赁（在Microsoft<br />
-Windows中称为&rdquo;机会锁定&rdquo;）。 这是解决这个问题的正确方法。<br />
+Windows中称为&quot;机会锁定&quot;）。 这是解决这个问题的正确方法。<br />
 通过对文件描述符使用租赁，您可以在特定文件上使用内核租用。<br />
 然后，您可以从内核请求读/写租赁。<br />
 当另一个进程尝试截断要发送的文件时，内核会向您发送一个实时信号RT_SIGNAL_LEASE信号。<br />
@@ -1132,34 +1132,34 @@ Windows中称为&rdquo;机会锁定&rdquo;）。 这是解决这个问题的正�
 写调用的返回值是在中断之前写入的字节数，并且errno将设置为success。<br />
 这里是一些示例代码，显示如何从内核获取租约：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     if(fcntl(fd, F_SETSIG, RT_SIG |<br />
 |     2                             | NAL_LEASE) == -1) {               |<br />
-|     3                             |         perror(&ldquo;kernel lease set  |<br />
-|     4                             | signal&rdquo;);                         |<br />
+|     3                             |         perror(&quot;kernel lease set  |<br />
+|     4                             | signal&quot;);                         |<br />
 |     5                             |         return -1;                |<br />
 |     6                             |     }                             |<br />
 |     7                             |     /* l_type can be F_RDLCK F_WR |<br />
 |     8                             | LCK */                            |<br />
 |     9                             |     if(fcntl(fd, F_SETLEASE, l_ty |<br />
 |                                   | pe)){                             |<br />
-|                                   |         perror(&ldquo;kernel lease set  |<br />
-|                                   | type&rdquo;);                           |<br />
+|                                   |         perror(&quot;kernel lease set  |<br />
+|                                   | type&quot;);                           |<br />
 |                                   |         return -1;                |<br />
 |                                   |     }                             |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>你应该在mmapping文件之前得到你的租赁，并在你完成后打破租约。<br />
 这通过调用具有租用类型F_UNLCK的fcntl F_SETLEASE实现。</p>
 
-<h3 id="Sendfile">[](#Sendfile &ldquo;Sendfile&rdquo;){.headerlink}Sendfile</h3>
+<h3 id="Sendfile">[](#Sendfile &quot;Sendfile&quot;){.headerlink}Sendfile</h3>
 
 <p>在内核版本2.1中，引入了<code>sendfile</code>系统调用，以简化网络上和两个本地文件之间的数据传输。<br />
 sendfile的引入不仅减少了数据复制，还减少了上下文切换。 使用如下：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     sendfile(socket, file, len);  |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>为了更好的理解<code>sendfile</code>调用的处理过程请看图3:</p>
 
@@ -1207,14 +1207,14 @@ DMA引擎将数据直接从内核缓冲区传递到协议引擎，从而消除�
 
 <p>请看下面的代码：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     /* sfl.c sendfile example pro |<br />
 |     2                             | gram                              |<br />
 |     3                             |     Dragan Stancevic &lt;            |<br />
 |     4                             |     header name                 f |<br />
 |     5                             | unction / variable                |<br />
-|     6                             |     &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash; |<br />
-|     7                             | &mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;*/            |<br />
+|     6                             |     ----------------------------- |<br />
+|     7                             | --------------------*/            |<br />
 |     8                             |     #include <stdio.h>          / |<br />
 |     9                             | * printf, perror */               |<br />
 |     10                            |     #include <fcntl.h>          / |<br />
@@ -1235,22 +1235,22 @@ DMA引擎将数据直接从内核缓冲区传递到协议引擎，从而消除�
 |                                   | * inet_addr */                    |<br />
 |                                   |     #define BUFF_SIZE (10*1024) / |<br />
 |                                   | * size of the tmp buffer */       |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>除了基本套接字操作所需的常规头文件<code>&lt;sys / socket.h&gt;</code>和<code>&lt;netinet / in.&gt;</code>，我们需要一个<code>sendfile</code>系统调用的原型定义。<br />
 这可以在<code>&lt;sys / sendfile.h&gt;</code>服务器标志中找到：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     /* are we sending or receivin |<br />
 |     2                             | g <em>/                              |<br />
-|     3                             |     if(argv[1][0] == &rsquo;s&rsquo;) is_serv |<br />
+|     3                             |     if(argv[1][0] == 's') is_serv |<br />
 |     4                             | er++;                             |<br />
 |     5                             |     /</em> open descriptors */        |<br />
 |                                   |     sd = socket(PF_INET, SOCK_STR |<br />
 |                                   | EAM, 0);                          |<br />
-|                                   |     if(is_server) fd = open(&ldquo;data |<br />
-|                                   | .bin&rdquo;, O_RDONLY);                 |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
+|                                   |     if(is_server) fd = open(&quot;data |<br />
+|                                   | .bin&quot;, O_RDONLY);                 |<br />
++-----------------------------------+-----------------------------------+</p>
 
 <p>相同的程序既可以作为服务器/发送器也可以作为客户端/接收器。<br />
 我们需要检查命令行参数数，然后将标志is_server设置为在发送方模式下运行。<br />
@@ -1258,7 +1258,7 @@ DMA引擎将数据直接从内核缓冲区传递到协议引擎，从而消除�
 作为以服务器模式运行的一部分，我们还需要某种传输到客户端的数据，因此我们打开我们的数据文件。<br />
 我们使用系统调用<code>sendfile</code>来传输数据，因此我们不需要读取文件的实际内容并将其存储在我们的程序缓冲区中。</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     /* clear the memory <em>/        |<br />
 |     2                             |     memset(&amp;sa, 0, sizeof(struct  |<br />
 |     3                             | sockaddr_in));                    |<br />
@@ -1267,36 +1267,36 @@ DMA引擎将数据直接从内核缓冲区传递到协议引擎，从而消除�
 |     6                             |     sa.sin_port = htons(1033);    |<br />
 |                                   |     sa.sin_addr.s_addr = inet_add |<br />
 |                                   | r(argv[2]);                       |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>我们清除服务器的地址结构信息，并重新分配协议族，服务器的端口和IP地址。<br />
 服务器的地址作为命令行参数传递。<br />
 端口号被硬编码为未分配的端口1033.选择此端口号是因为它高于需要对系统进行根访问的端口范围。<br />
 这里是服务器代码的执行分支：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     if(is_server){                |<br />
 |     2                             |         int client; /* new client |<br />
 |     3                             |  socket */                        |<br />
-|     4                             |         printf(&ldquo;Server binding to |<br />
-|     5                             |  [%s]\n&rdquo;, argv[2]);               |<br />
+|     4                             |         printf(&quot;Server binding to |<br />
+|     5                             |  [%s]\n&quot;, argv[2]);               |<br />
 |     6                             |         if(bind(sd, (struct socka |<br />
 |     7                             | ddr *)&amp;sa, sizeof(sa)) &lt; 0){      |<br />
-|     8                             |             perror(&ldquo;bind&rdquo;);       |<br />
+|     8                             |             perror(&quot;bind&quot;);       |<br />
 |                                   |             exit(errno);          |<br />
 |                                   |         }                         |<br />
 |                                   |     }                             |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>作为服务器，我们需要为我们的套接字描述符分配一个地址。<br />
 这是通过系统调用<code>bind</code>来实现的，它为套接字描述符（sd）分配服务器地址（sa）：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     if(listen(sd,1) &lt; 0){         |<br />
-|     2                             |         perror(&ldquo;listen&rdquo;);         |<br />
+|     2                             |         perror(&quot;listen&quot;);         |<br />
 |     3                             |         exit(errno);              |<br />
 |     4                             |     }                             |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>因为我们使用流式套接字，因此必须指定该套接字的连接队列大小。<br />
 我已经将积压队列设置为1，但是常见的是为已建立连接并等待被<code>accept</code>的连接队列设置更高的阈值。<br />
@@ -1304,39 +1304,39 @@ DMA引擎将数据直接从内核缓冲区传递到协议引擎，从而消除�
 由于系统调用<code>listen</code>已更改为仅为已建立的连接队列设置长度参数，因此此调用已弃用积压队列功能。<br />
 内核参数<code>tcp_max_syn_backlog</code>接管了保护系统免受同步洪水攻击的作用：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     if((client = accept(sd, NULL, |<br />
 |     2                             |  NULL)) &lt; 0){                     |<br />
-|     3                             |         perror(&ldquo;accept&rdquo;);         |<br />
+|     3                             |         perror(&quot;accept&quot;);         |<br />
 |     4                             |         exit(errno);              |<br />
 |                                   |     }                             |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>系统调用<code>accept</code>从等待连接队列上获取第一个请求建立连接的连接对象创建一个新的已经建立连接的套接字。<br />
 调用的返回值是新创建的连接的描述符;<br />
 该套接字现在已准备好进行<code>read</code>,<code>write</code>或<code>poll/select</code>系统调用：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     if((cnt = sendfile(client,fd, |<br />
 |     2                             | &amp;off, BUFF_SIZE)) &lt; 0){           |<br />
-|     3                             |         perror(&ldquo;sendfile&rdquo;);       |<br />
+|     3                             |         perror(&quot;sendfile&quot;);       |<br />
 |     4                             |         exit(errno);              |<br />
 |     5                             |     }                             |<br />
-|     6                             |     printf(&ldquo;Server sent %d bytes. |<br />
-|                                   | \n&rdquo;, cnt);                        |<br />
+|     6                             |     printf(&quot;Server sent %d bytes. |<br />
+|                                   | \n&quot;, cnt);                        |<br />
 |                                   |     close(client);                |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>一个连接是建立在客户端套接字描述符上的，因此我们可以开始向远程系统传输数据。<br />
 我们是通过<code>sendfile</code>系统调用来实现的，这是在Linux下函数原型：</p>
 
-<p>+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+<br />
+<p>+-----------------------------------+-----------------------------------+<br />
 |     1                             |     extern ssize_t                |<br />
 |     2                             |     sendfile (int __out_fd, int _ |<br />
 |     3                             | _in_fd, off_t *offset,            |<br />
 |                                   |               size_t __count) __T |<br />
 |                                   | HROW;                             |<br />
-+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&mdash;&ndash;+</p>
++-----------------------------------+-----------------------------------+</p>
 
 <p>前两个参数是文件描述符。<br />
 第三个参数指向<code>sendfile</code>应该开始发送数据的偏移量。<br />
@@ -1587,7 +1587,7 @@ II：Kernel Perspective]()，其中我将进一步挖掘零拷贝的内核内部
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1631,6 +1631,8 @@ II：Kernel Perspective]()，其中我将进一步挖掘零拷贝的内核内部
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1856,7 +1858,7 @@ II：Kernel Perspective]()，其中我将进一步挖掘零拷贝的内核内部
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1974,7 +1976,7 @@ II：Kernel Perspective]()，其中我将进一步挖掘零拷贝的内核内部
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2126,7 +2128,7 @@ II：Kernel Perspective]()，其中我将进一步挖掘零拷贝的内核内部
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2407,6 +2409,32 @@ II：Kernel Perspective]()，其中我将进一步挖掘零拷贝的内核内部
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

@@ -9,17 +9,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   
-  <meta name="description" content="title: Prometheus以及如果实现跨环境监控 date: 2017-05-13 23:28:14 categories: Prometheus tags: [DevOps, Monitor, Prometheus] &mdash; 笔者创建的一个实验性的项目项目prometheus-pusher用于实现垮网">
+  <meta name="description" content="git@github.com:roman-vynar/pmm.docker.git prometheus中文文档 采用prometheus取代传统的zabbix监控方案,虽不完善,但麻雀虽小,五脏俱全,胜在简单 此套架构中所涉">
   <meta name="author" content=rinetd>
   <meta name="publisher" content=rinetd@163.com>
 
   <meta itemprop="name" content="Prometheus 详解 - 时光小栈">
-  <meta itemprop="description" content="title: Prometheus以及如果实现跨环境监控 date: 2017-05-13 23:28:14 categories: Prometheus tags: [DevOps, Monitor, Prometheus] &mdash; 笔者创建的一个实验性的项目项目prometheus-pusher用于实现垮网">
+  <meta itemprop="description" content="git@github.com:roman-vynar/pmm.docker.git prometheus中文文档 采用prometheus取代传统的zabbix监控方案,虽不完善,但麻雀虽小,五脏俱全,胜在简单 此套架构中所涉">
   <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
   
   <meta property="og:type" content="article" />
   <meta property="og:title" content="Prometheus 详解 - 时光小栈" />
-  <meta property="og:description" content="title: Prometheus以及如果实现跨环境监控 date: 2017-05-13 23:28:14 categories: Prometheus tags: [DevOps, Monitor, Prometheus] &mdash; 笔者创建的一个实验性的项目项目prometheus-pusher用于实现垮网">
+  <meta property="og:description" content="git@github.com:roman-vynar/pmm.docker.git prometheus中文文档 采用prometheus取代传统的zabbix监控方案,虽不完善,但麻雀虽小,五脏俱全,胜在简单 此套架构中所涉">
   <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
   <meta property="og:url" content="http://blog.pytool.com/post/prometheus/prometheus/" />
   
@@ -1035,11 +1035,11 @@
                         <h1 class="post-title">Prometheus 详解</h1>
 
                         <p class="post-byline">
-                          by  · 2018年01月03日 · 3358 Words ·
-                          ~7min reading time |
+                          by  · 2018年01月03日 · 1422 Words ·
+                          ~3min reading time |
                           
                           
-                          <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/devops/prometheus/prometheus-sql.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                          <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/devops/prometheus/prometheus.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
                         </p>
                     <div class="clear"></div>
                     <div class="entry themeform">
@@ -1050,439 +1050,134 @@
                             </p>
                             
 
-<p>title: Prometheus以及如果实现跨环境监控<br />
-date: 2017-05-13 23:28:14<br />
-categories:</p>
+<p>git@github.com:roman-vynar/pmm.docker.git<br />
+<a href="https://github.com/1046102779/prometheus" target="_blank">prometheus中文文档</a></p>
 
-<ul>
-<li>Prometheus<br />
-tags: [DevOps, Monitor, Prometheus]<br />
-&mdash;<br />
+<h1 id="采用prometheus取代传统的zabbix监控方案-虽不完善-但麻雀虽小-五脏俱全-胜在简单">采用prometheus取代传统的zabbix监控方案,虽不完善,但麻雀虽小,五脏俱全,胜在简单</h1>
+
+<h1 id="此套架构中所涉及的服务如下">此套架构中所涉及的服务如下:</h1>
+
+<p>prometheus:监控工具,本质是一个时序数据库,以http方式输出数据指标<br />
+cadvisor:google出品,监控容器内部指标的工具<br />
+node-exporter:获取主机自身指标,如cpu,men,disk,net,filesystem等,有替代方案,镜像需重构<br />
+mysqld-exporter:探测mysql数据库内部指标的工具,数据库授权用户方法,docker hub搜寻相应镜像即可<br />
+blackbox-exporter:探测网络协议,如http,icmp,dns等,本文实现简单的web检测,复杂的可以自行研究<br />
+grafana:监控方案,前端ui工具使界面更加直接美观<br />
+alert-manager:实现监控方案报警的工具,可以集成email,webhooks,钉钉等工具<br />
+其他内的监控插件,如监控redis,rabbitmq,mongodb,haproxy等,可以自行到dockerhub上获取<br />
+注:所需镜像采用企业内部私服镜像,可以到docker hub上找到所需镜像,docker search 关键字<br />
+config/prometheus/rules目录下为prometheus报警规则文件</p>
+
+<p>prometheus缺点</p>
+
+<ol>
+<li>单机缺点，单机下存储量有限，根据你的监控量局限你的存储时间。<br /></li>
+<li>内存占用率大，prometheus集成了leveldb，一个能高效插入数据的数据库，在ssd盘下io占用比较高。同时可能会有大量数据堆积内<br />
 <br /></li>
-</ul>
+</ol>
 
-<p>笔者创建的一个实验性的项目项目prometheus-pusher用于实现垮网络环境下的监控数据采集</p>
+<h2 id="docker运行prometheus">docker运行prometheus</h2>
 
-<!-- more -->
+<p>uid=65534(nobody) gid=65534(nogroup)<br />
+chown -R 65534:65534 /docker/prometheus/data</p>
 
-<h2 id="part1-prometheus">Part1: Prometheus</h2>
+<p>docker run --restart=always -d --name prometheus -p 9090:9090  -v /etc/localtime:/etc/localtime -v /docker/prometheus/etc/:/etc/prometheus/ -v /docker/prometheus/data/:/prometheus/  prom/prometheus</p>
 
-<p>Prometheus是SoundCloud开源的监控与告警平台，由于其从推出就提供了完整的基于容器的部署方式，开发者可以快速的基于容器搭建自己的监控平台。因此在Docker社区迅速聚集了大量的人气。</p>
-
-<p>Prometheus与其他主流的监控系统都采用了时序的方式对数据进行存储。其他典型的时序数据库诸如(OpenTsdb, Influxdb等等)。相比于其他的时序数据库，Prometheus的时间序列标示包含一个度量名称以及一些列的键值对进行表示（例如api_http_requests_total{method=&ldquo;POST&rdquo;, handler=&ldquo;/messages&rdquo;}）。</p>
-
-<p>Prometheus主要的组件包括：</p>
-
-<p>Prometheus Server: * 主要提供了监控数据数据采集(Pull模式)，监控数据存储以及查询接口。同时支持用户定义告警规则(Rule)实现对特定指标数据的告警。</p>
-
-<ul>
-<li>Jobs/Exporters: 监控数据采集Agent，Exporter以Web API的形式对外暴露数据采集接口（&rdquo;/metrics&rdquo;）。通过将exporter的信息注册到Prometheus Server,实现监控数据的定时采集。<br /></li>
-<li>Pushgateway: 对于某些场景Prometheus无法直接拉取监控数据，Pushgateway的作用就在于提供了中间代理，例如我们可以在应用程序中定时将监控metrics数据提交到Pushgateway。而Prometheus Server定时从Pushgateway的/metrics接口采集数据。<br /></li>
-<li>Altermanager: 对Prometheus进行告警功能补充，可以实现告警通知。<br /></li>
-<li>以及其它的第三方工具集成，如Grafana等。<br />
+<ol>
+<li>访问web界面 <a href="http://192.168.99.100:9090/graph" target="_blank">http://192.168.99.100:9090/graph</a><br />
+计算实例，指标可以从 <a href="http://192.168.99.100:9090/metrics" target="_blank">http://192.168.99.100:9090/metrics</a> 中找<br />
+prometheus_target_interval_length_seconds{quantile=&quot;0.99&quot;}<br />
+或者<br />
+count(prometheus_target_interval_length_seconds)<br />
+<br />
 <br /></li>
-</ul>
+</ol>
 
-<p><img src="https://prometheus.io/assets/architecture.svg" alt="" /></p>
+<p>怎么使用prometheus监控容器</p>
 
-<h2 id="part2-prometheus数据查询">Part2: Prometheus数据查询</h2>
+<p>prometheus监控不同的目标服务需要实现不同的exporter插件,早期的时候，官方出了container-exporter项目，但是现在项目已经停止。推荐使用谷歌的cAdvisor项目作为prometheus的exporter。cAdvisor作为一个监控单机容器的项目，数据较为全面，但是也有很大的问题，例如io等数据没有等等。结合prometheus后就能在整个集群监控查询容器。举个例子，你有一个项目有3个容器分布在三台机器，你怎么监控整个项目的流量，内存量，负载量的实时数据。这就是prometheus的多维度查询解决的问题，数据从3台机器的cadvisor得到每个容器的数据，它的多维度查询语法就能让你得到你想要的数据。</p>
 
-<p>Prometheus中的存储的数据包括：时间序列标识符，数值以及timestamp三部分组成。</p>
+<p>这里假设你有10台机器部署了容器需要监控，你在10台机器上分别部署cAdvisor容器</p>
 
-<p>基于Prometheus的高纬度数据模型我们可以很方便的通过表达式对采集到的监控数据进行查询，聚合同时Prometheus还提供了大量的函数，用于时序向量数据的操作。</p>
+<p>sudo docker run </p>
 
-<p>这里我们以主机负载监控为例介绍Promethus的数据查询功能：</p>
-
-<pre><code>node_load1{agentIP=~&quot;127.0.0.1|127.0.0.2&quot;}
+<pre><code>--volume=/:/rootfs:ro \
+--volume=/var/run:/var/run:rw \
+--volume=/sys:/sys:ro \
+--volume=/var/lib/docker/:/var/lib/docker:ro \
+--publish=8080:8080 \
+--detach=true \
+--name=cadvisor \
+google/cadvisor:latest
 </code></pre>
 
-<p>通过~=匹配查询我们可以从监控数据中通过维度agentIP获取特定主机或者特定多个主机的负载数据</p>
+<p>找一台机器部署prometheus服务，这里依然使用容器部署：</p>
 
-<p>查询API</p>
+<p>docker run --name prometheus -p 9090:9090 --log-driver none -v /docker/prometheus/etc/:/etc/prometheus/ -v /docker/prometheus/data/:/prometheus/ -v /etc/localtime:/etc/localtime  prom/prometheus</p>
 
-<pre><code>/api/v1/query?query=&lt;express&gt;
+<p>创建/hdd1/prometheus/etc/prometheus.yml配置文件</p>
+
+<p>my global config</p>
+
+<pre><code class="language-yaml">  global:
+    scrape_interval:     15s # By default, scrape targets every 15 seconds.
+    evaluation_interval: 15s # By default, scrape targets every 15 seconds.
+    # scrape_timeout is set to the global default (10s).
+    # Attach these labels to any time series or alerts when communicating with
+    # external systems (federation, remote storage, Alertmanager).
+    external_labels:
+        monitor: 'container-monitor'
+  # Load and evaluate rules in this file every 'evaluation_interval' seconds.
+  rule_files:
+     - &quot;/etc/prometheus/rules/common.rules&quot;
+  # A scrape configuration containing exactly one endpoint to scrape:
+  # Here it's Prometheus itself.
+  scrape_configs:
+    # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.
+    - job_name: 'container'
+      static_configs:
+      - targets: ['10.12.1.129:9090','10.12.1.130:9090','10.50.1.92:9090','10.50.1.93:9090','10.50.1.119:9090']
+
 </code></pre>
 
-<p>以主机负载信息为例，API查询将会返回一下结构数据，data为查询到的数据结果，resultType表明当前expression查询结果为向量，metrics为所有可用的维度。value数组包含了以timestamp为key的键值对。</p>
+<p>配置文件中 -targets中的端点填写你的实际cadvisor所在的ip和暴露的端口.正确启动后访问ip:9090就能查询数据了哦</p>
 
-<pre><code>{
-  &quot;status&quot;: &quot;success&quot;,
-  &quot;data&quot;: {
-    &quot;resultType&quot;: &quot;vector&quot;,
-    &quot;result&quot;: [
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_load1&quot;,
-          &quot;agentIP&quot;: &quot;127.0.0.1&quot;,
-          &quot;environmentUUID&quot;: &quot;7d908325-1014-4544-9429-a663d7d308a2&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-54-216-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;hostName&quot;: &quot;Server217&quot;,
-          &quot;instance&quot;: &quot;127.0.0.1:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494682460.069,
-          &quot;0.42&quot;
-        ]
-      },
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_load1&quot;,
-          &quot;agentIP&quot;: &quot;127.0.0.2&quot;,
-          &quot;environmentUUID&quot;: &quot;ae9ce424-0f49-4c01-b027-ab25678a64c4&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-40-225-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;hostName&quot;: &quot;hfbank-1&quot;,
-          &quot;instance&quot;: &quot;127.0.0.2:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494682460.069,
-          &quot;0.14&quot;
-        ]
-      }
-    ]
-  }
-}
-</code></pre>
+<p>##<br />
+global:<br />
+  scrape_interval:     60s<br />
+  evaluation_interval: 60s</p>
 
-<p>查询一定时间范围内的监控数据,与/api/query相比返回值中value将会包含时间范围内的所有监控数据，通过控制step我们可以按需减少返回的数据量。</p>
-
-<pre><code>/api/v1/query_range?query=&lt;express&gt;&amp;start=&lt;timestamp&gt;&amp;end=&lt;timestamp&gt;&amp;step=&lt;step&gt;
-</code></pre>
-
-<p>其中我们需要注意的是metrics的返回数据中包含<strong>name</strong>，该属性为对于metrics的名称，通过<strong>name</strong>我们可以查询多个监控项的数据，并且进行聚合。</p>
-
-<p>例如我们可以通过一个表达式查询出特定主机的网络revice和transmit的数据。其中$machine为查询的主机ip地址</p>
-
-<pre><code>{__name__=~&quot;node_network_receive_bytes|node_network_transmit_bytes&quot;, agentIP=~&quot;$machine&quot;}
-</code></pre>
-
-<p>我们将得到如下返回结果，每一个Host主机的不同device的网络transmit以及receive字节大小数据。</p>
-
-<pre><code>{
-  &quot;status&quot;: &quot;success&quot;,
-  &quot;data&quot;: {
-    &quot;resultType&quot;: &quot;vector&quot;,
-    &quot;result&quot;: [
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_transmit_bytes&quot;,
-          &quot;agentIP&quot;: &quot;182.140.210.217&quot;,
-          &quot;device&quot;: &quot;lo&quot;,
-          &quot;environmentUUID&quot;: &quot;7d908325-1014-4544-9429-a663d7d308a2&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-54-216-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;hostName&quot;: &quot;Server217&quot;,
-          &quot;instance&quot;: &quot;10.42.107.66:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494683375.216,
-          &quot;0&quot;
-        ]
-      },
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_receive_bytes&quot;,
-          &quot;agentIP&quot;: &quot;101.37.38.115&quot;,
-          &quot;device&quot;: &quot;eth0&quot;,
-          &quot;environmentUUID&quot;: &quot;ae9ce424-0f49-4c01-b027-ab25678a64c4&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-40-225-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;hostName&quot;: &quot;hfbank-1&quot;,
-          &quot;instance&quot;: &quot;10.42.107.66:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494683375.216,
-          &quot;33115808&quot;
-        ]
-      },
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_transmit_bytes&quot;,
-          &quot;agentIP&quot;: &quot;182.140.210.217&quot;,
-          &quot;device&quot;: &quot;eth0&quot;,
-          &quot;environmentUUID&quot;: &quot;7d908325-1014-4544-9429-a663d7d308a2&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-54-216-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;hostName&quot;: &quot;Server217&quot;,
-          &quot;instance&quot;: &quot;10.42.107.66:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494683375.216,
-          &quot;832809663&quot;
-        ]
-      },
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_receive_bytes&quot;,
-          &quot;agentIP&quot;: &quot;127.0.0.1&quot;,
-          &quot;device&quot;: &quot;lo&quot;,
-          &quot;environmentUUID&quot;: &quot;7d908325-1014-4544-9429-a663d7d308a2&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-54-216-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;hostName&quot;: &quot;Server217&quot;,
-          &quot;instance&quot;: &quot;127.0.0.1:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494683375.216,
-          &quot;0&quot;
-        ]
-      },
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_transmit_bytes&quot;,
-          &quot;agentIP&quot;: &quot;127.0.0.2&quot;,
-          &quot;device&quot;: &quot;lo&quot;,
-          &quot;environmentUUID&quot;: &quot;ae9ce424-0f49-4c01-b027-ab25678a64c4&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-40-225-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;instance&quot;: &quot;127.0.0.2:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494683375.216,
-          &quot;0&quot;
-        ]
-      },
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_receive_bytes&quot;,
-          &quot;agentIP&quot;: &quot;127.0.0.2&quot;,
-          &quot;device&quot;: &quot;lo&quot;,
-          &quot;environmentUUID&quot;: &quot;ae9ce424-0f49-4c01-b027-ab25678a64c4&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-40-225-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;instance&quot;: &quot;127.0.0.2:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494683375.216,
-          &quot;0&quot;
-        ]
-      },
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_receive_bytes&quot;,
-          &quot;agentIP&quot;: &quot;127.0.0.1&quot;,
-          &quot;device&quot;: &quot;eth0&quot;,
-          &quot;environmentUUID&quot;: &quot;7d908325-1014-4544-9429-a663d7d308a2&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-54-216-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;instance&quot;: &quot;127.0.0.1:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494683375.216,
-          &quot;29353588&quot;
-        ]
-      },
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_transmit_bytes&quot;,
-          &quot;agentIP&quot;: &quot;127.0.0.2&quot;,
-          &quot;device&quot;: &quot;eth0&quot;,
-          &quot;environmentUUID&quot;: &quot;ae9ce424-0f49-4c01-b027-ab25678a64c4&quot;,
-          &quot;exported_instance&quot;: &quot;10-42-40-225-9100-metrics&quot;,
-          &quot;exported_job&quot;: &quot;HostsMetrics&quot;,
-          &quot;hostName&quot;: &quot;hfbank-1&quot;,
-          &quot;instance&quot;: &quot;10.42.107.66:9091&quot;,
-          &quot;job&quot;: &quot;push-metrics&quot;
-        },
-        &quot;value&quot;: [
-          1494683375.216,
-          &quot;1154982857&quot;
-        ]
-      }
-    ]
-  }
-}
-</code></pre>
-
-<p>当然我们希望得到的结果是每台主机网络receieve和transmit字节的总量而不关心所示的设备是多少。这时候我们可以通过Prometheus提供的聚合操作完成对向量数据的计算</p>
-
-<pre><code>sum({__name__=~&quot;node_network_receive_bytes|node_network_transmit_bytes&quot;, agentIP=&quot;$machine&quot;})
-</code></pre>
-
-<p>sum操作符会将表达式查询的向量进行汇总，最终结果如下：</p>
-
-<pre><code>{&quot;status&quot;:&quot;success&quot;,&quot;data&quot;:{&quot;resultType&quot;:&quot;vector&quot;,&quot;result&quot;:[{&quot;metric&quot;:{},&quot;value&quot;:[1494683856.658,&quot;2052998868&quot;]}]}}
-</code></pre>
-
-<p>当然我们实际需要的是按照主机IP以及网络receieve/transmit进行聚合，因此表达式可以修改为：</p>
-
-<pre><code>sum({__name__=~&quot;node_network_receive_bytes|node_network_transmit_bytes&quot;, agentIP=&quot;$machine&quot;}) by (__name__, agentIP)
-</code></pre>
-
-<p>返回结果如下，时序数据按照监控指标<strong>name</strong>以及主机IP进行了聚合：</p>
-
-<pre><code>{
-  &quot;status&quot;: &quot;success&quot;,
-  &quot;data&quot;: {
-    &quot;resultType&quot;: &quot;vector&quot;,
-    &quot;result&quot;: [
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_transmit_bytes&quot;,
-          &quot;agentIP&quot;: &quot;127.0.0.1&quot;
-        },
-        &quot;value&quot;: [
-          1494684112.084,
-          &quot;834504138&quot;
-        ]
-      },
-      {
-        &quot;metric&quot;: {
-          &quot;__name__&quot;: &quot;node_network_receive_bytes&quot;,
-          &quot;agentIP&quot;: &quot;127.0.0.1&quot;
-        },
-        &quot;value&quot;: [
-          1494684112.084,
-          &quot;29412883&quot;
-        ]
-      }
-    ]
-  }
-}
-</code></pre>
-
-<p>这里提供一些其他常用的表示式：</p>
-
-<p>查询主机使用率</p>
-
-<pre><code>1 - avg by (agentIP) (irate(node_cpu{agentIP=~&quot;$machine&quot;, mode=&quot;idle&quot;}[5m]))
-</code></pre>
-
-<p>查询主机磁盘IO</p>
-
-<pre><code>irate(node_disk_io_time_ms{agentIP=~'$machine',device!~'^(md\\d+$|dm-)'}[5m])
-</code></pre>
-
-<p>查询主机内存使用量</p>
-
-<pre><code>(node_memory_MemTotal{agentIP=&quot;101.37.26.244&quot;} - node_memory_MemAvailable{agentIP=&quot;101.37.26.244&quot;}) / node_memory_MemTotal{agentIP=&quot;101.37.26.244&quot;}
-</code></pre>
-
-<p>除了本文中示例的表达式功能以外，Prometheus还提供了其它丰富的查询，操作符以及表达式。包括：<a href="https://prometheus.io/docs/querying/operators/#binary-operators" target="_blank">运算符</a>，<a href="https://prometheus.io/docs/querying/operators/#aggregation-operators" target="_blank">聚合</a>,<a href="https://prometheus.io/docs/querying/functions/#functions" target="_blank">函数</a>等等。</p>
-
-<h2 id="part3-pull模式所带来的问题">Part3: Pull模式所带来的问题</h2>
-
-<p>在上部分我们介绍了Prometheus的基础架构以及Prometheus所提供的丰富的查询功能。</p>
+<p>scrape_configs:</p>
 
 <ul>
-<li>问题一：跨网络环境问题<br />
+<li><p>job_name: prometheus<br />
+static_configs:</p>
+
+<ul>
+<li>targets: ['localhost:9090']<br />
+labels:<br />
+  instance: prometheus<br />
 <br /></li>
-</ul>
+</ul></li>
 
-<p>基于Prometheus的Pull模式对于网络环境的基本要求就是Prometheus Server可以访问Exporter所提供的metrics接口，这就要求Prometheus Server与Exporter的网络是能够联通的。</p>
-
-<p>但是在实际企业环境中，网络环境往往是复杂的。</p>
+<li><p>job_name: linux<br />
+static_configs:</p>
 
 <ul>
-<li>问题二：Pushgateway<br />
+<li>targets: ['47.93.26.124:9100']<br />
+labels:<br />
+  instance: db1<br />
 <br /></li>
-</ul>
+</ul></li>
 
-<p>在架构部分我们简单介绍过，通过Pushgateway组件，我们可以通过Pushgatway作为中间代理，实现跨网络环境的数据采集，通过一些周期性的任务定时向Pushgateway上报数据，Prometheus依然通过Pull模式定时获取数据。</p>
-
-<p>在官方文档中介绍了三种使用Pushgateway的问题：</p>
-
-<ul>
-<li>当采用Pushgateway获取监控数据时，Pushway即会成为单点以及潜在的性能瓶颈<br /></li>
-<li>丧失了Prometheus的实例健康检查功能<br /></li>
-<li>除非手动删除Pushgateway的数据，否则Pushgateway会一直保留所有采集到的数据并且提供给Prometheus。<br />
-<br /></li>
-</ul>
-
-<p>当然对于程序员最重要的是：</p>
+<li><p>job_name: mysql<br />
+static_configs:</p>
 
 <ul>
-<li>我们需要对所有需要监控的实现与Pushgateway的集成，定时Push数据到Pushgateway。<br /></li>
-<li>同时无法直接使用社区已经提供的大量exporter实现<br />
-<br /></li>
-</ul>
-
-<h2 id="part4-扩展prometheus-prometheus-pusher">Part4: 扩展Prometheus: Prometheus Pusher</h2>
-
-<p><a href="https://github.com/yunlzheng/prometheus-pusher" target="_blank">Prometheus Pusher</a>是为了解决跨网络环境下监控数据采集的问题。扩展的原有的Prometheus功能，实现对exporters的数据采集并且推送到pushgateway</p>
-
-<p><img src="https://camo.githubusercontent.com/cf42bd41b01f47ed55e00de8e91a336433922d57/687474703a2f2f37706e3564332e636f6d312e7a302e676c622e636c6f7564646e2e636f6d2f70726f6d6574686575735f7075736865722e706e67" alt="" /></p>
-
-<p>由于<a href="https://github.com/yunlzheng/prometheus-pusher" target="_blank">Prometheus Pusher</a>直接在Prometheus基础上进行扩展，因此原生支持Prometheus的配置方式，以及所有的服务发现方式诸如static,DNS,consul,k8s等等。</p>
-
-<pre><code>global:                       
-  scrape_interval:     15s
-  evaluation_interval: 15s
-  external_labels:
-    monitor: 'exporter-metrics'                 
-
-scrape_configs:
-
-- job_name: 'HostsMetrics'
-  dns_sd_configs:
-  - names:
-    - node-exporter
-    refresh_interval: 15s
-    type: A
-    port: 9100
-
-- job_name: 'ContainerMetrics'
-  static_configs:
-    - targets:
-      - 'rancher-server:9108'
-- job_name: 'RancherServerMetrics'
-  dns_sd_configs:
-  - names:
-    - cadvisor
-    refresh_interval: 15s
-    type: A
-    port: 8080
-
-- job_name: 'RancherApi'
-  dns_sd_configs:
-  - names:
-    - 'prometheus-rancher-exporter'
-    refresh_interval: 15s
-    type: A
-    port: 9173
-
-- job_name: 'Prometheus'
-  static_configs:
-    - targets:
-      - '127.0.0.1:9090'
-</code></pre>
-
-<p>在命令行中进行使用，设置PUSH_GATEWAY环境变量即可。</p>
-
-<pre><code>export PUSH_GATEWAY=http://pushgateway.example.org:9091
-./prometheus_pusher -config.file=prometheus.yml
-</code></pre>
-
-<p>同时Prometheus Pusher支持在采集的metrics数据基础上添加额外的维度Label</p>
-
-<pre><code>./prometheus_pusher -config.file=prometheus.yml -config.customLabels=label1,label2 -config.customLabelValues=value1,value2
-</code></pre>
-
-<p>在多环境的监控数据采集中我们通过添加环境唯一标示，可以避免跨环境数据查询错误的问题。</p>
-
-<h2 id="part5-小结">Part5: 小结</h2>
-
-<p>这边文章在上层角度向读者感性介绍了Promtheus监控平台的架构，Prometheus提供的查询功能，以及在现有模式下在企业实践方面存在的不足。最后介绍了跨环境数据采集方案Prometheus Pusher等信息。后续将在本文的基础上结合官方文档继续完成Prometheus的入门系列教程。</p>
-
-<ul>
-<li>Prometheus以及其它监控平台的生态系统（ING）<br /></li>
-<li>在Rancher下快速搭建Prometheus监控平台<br /></li>
-<li>Prometheus查询表达式实践<br /></li>
-<li>exporter详解以及自定义exporter<br /></li>
-<li>Grafana与可视化<br /></li>
-<li>AlterManager告警实践<br /></li>
-<li>Pushgateway以及如何与Spring进行集成<br /></li>
-<li>使用<a href="https://github.com/yunlzheng/prometheus-pusher" target="_blank">Prometheus Pusher</a>实现多环境数据采集<br /></li>
+<li>targets: ['47.93.26.124:9104']<br />
+labels:<br />
+  instance: db1<br /></li>
+</ul></li>
 </ul>
 
                         </div>                      
@@ -1592,10 +1287,10 @@ scrape_configs:
             <ul class="post-nav group">
     <li class="previous">
       
-      <a href="http://blog.pytool.com/post/prometheus/grafana/" rel="prev">
+      <a href="http://blog.pytool.com/post/prometheus/prometheus/" rel="prev">
         <i class="fa fa-chevron-left"></i>
         <strong>Previous Post</strong>
-        <span>Prometheus 可视化 grafana</span>
+        <span>Prometheus 详解</span>
       </a>
       
   </li>
@@ -1697,7 +1392,7 @@ scrape_configs:
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1718,10 +1413,10 @@ scrape_configs:
             <ul class="post-nav group">
     <li class="next">
       
-      <a href="http://blog.pytool.com/post/prometheus/prometheus/" rel="next">
+      <a href="http://blog.pytool.com/post/go/infuxdb-telegraf/" rel="next">
         <i class="fa fa-chevron-right"></i>
         <strong>Next post</strong>
-        <span>Prometheus 详解</span>
+        <span>golang多协程精确控制</span>
       </a>
       
   </li>
@@ -1741,6 +1436,8 @@ scrape_configs:
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1966,7 +1663,7 @@ scrape_configs:
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -2084,7 +1781,7 @@ scrape_configs:
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2236,7 +1933,7 @@ scrape_configs:
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2517,6 +2214,32 @@ scrape_configs:
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

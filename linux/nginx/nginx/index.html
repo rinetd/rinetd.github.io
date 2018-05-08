@@ -1035,8 +1035,8 @@
                         <h1 class="post-title">Linux命令 Nginx</h1>
 
                         <p class="post-byline">
-                          by  · 2016年02月26日 · 10850 Words ·
-                          ~22min reading time |
+                          by  · 2016年02月26日 · 13520 Words ·
+                          ~27min reading time |
                           
                           
                           <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/nginx/nginx.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
@@ -1062,8 +1062,8 @@
 <a href="http://www.nginx.cn/install" target="_blank">Nginx安装</a><br />
 <a href="http://www.linuxidc.com/Linux/2013-10/92147.htm" target="_blank">root与alias的区别</a><br />
 <a href="https://segmentfault.com/a/1190000002797606" target="_blank">nginx配置location总结及rewrite规则写法</a><br />
-<a href="http://www.cnblogs.com/kevingrace/p/6095027.html" target="_blank">nginx应用总结（1）&ndash;基础认识和应用配置 - 散尽浮华 - 博客园</a><br />
-<a href="https://segmentfault.com/a/1190000002797601" target="_blank">nginx服务器安装及配置文件详解 - Sean&rsquo;s Notes - SegmentFault</a><br />
+<a href="http://www.cnblogs.com/kevingrace/p/6095027.html" target="_blank">nginx应用总结（1）--基础认识和应用配置 - 散尽浮华 - 博客园</a><br />
+<a href="https://segmentfault.com/a/1190000002797601" target="_blank">nginx服务器安装及配置文件详解 - Sean's Notes - SegmentFault</a><br />
 <a href="http://www.jianshu.com/nb/3981534" target="_blank">Nginx.org 文档 - 文集 - 简书</a><br />
 <a href="http://www.jianshu.com/p/1430e4046fd9" target="_blank">翻译 nginx 的 server names </a></p>
 
@@ -1136,7 +1136,7 @@ $ ： 匹配字符串的介绍<br />
 ~*    不区分大小写的正则匹配<br />
 !~    区分大小写不匹配的正则<br />
 !~*   不区分大小写不匹配的正则<br />
-&rsquo; &lsquo;   普通匹配<br />
+' '   普通匹配<br />
 @     命名的 location，使用在内部定向时，例如 error_page, try_files<br />
 /  通用匹配，任何请求都会匹配到。</p></li>
 </ol>
@@ -1184,11 +1184,11 @@ $ ： 匹配字符串的介绍<br />
 小括号()之间匹配的内容，可以在后面通过$1来引用，$2表示的是前面第二个()里的内容。正则里面容易让人困惑的是\转义特殊字符。</p>
 
 <p>如果我们将类似URL/photo/123456 重定向到/path/to/photo/12/1234/123456.png<br />
-rewrite &ldquo;/photo/([0-9]{2})([0-9]{2})([0-9]{2})&ldquo;/path/to/photo/$1/$1$2/$1$2$3.png ;</p>
+rewrite &quot;/photo/([0-9]{2})([0-9]{2})([0-9]{2})&quot;/path/to/photo/$1/$1$2/$1$2$3.png ;</p>
 
 <p>如果一个URI匹配指定的正则表达式regex，URI就按照replacement重写。<br />
 rewrite按配置文件中出现的顺序执行。flags标志可以停止继续处理。<br />
-如果replacement以&rdquo;http://&ldquo;或&rdquo;https://&ldquo;开始，将不再继续处理，这个重定向将返回给客户端。<br />
+如果replacement以&quot;http://&quot;或&quot;https://&quot;开始，将不再继续处理，这个重定向将返回给客户端。<br />
 flag可以是如下参数<br />
 last 停止处理后续rewrite指令集，然后对当前重写的新URI在rewrite指令集上重新查找。<br />
 break 停止处理后续rewrite指令集，并不在重新查找,但是当前location内剩余非rewrite语句和location外的的非rewrite语句可以执行。<br />
@@ -1269,40 +1269,271 @@ $server_port 表示服务器端口
 $server_protocol 表示服务器向客户端发送响应的协议，如 HTTP/1.1或 HTTP/1.0
 </code></pre>
 
-<p>upstram 模块</p>
+<pre><code class="language-sh">
+user www-data;
+# worker_processes auto;
+#启动进程，通常设置成和cpu的数量相等或者2倍于cpu的个数(具体结合cpu和内存)。默认为1
+# 物理个数： grep &quot;physical id&quot; /proc/cpuinfo |sort|uniq|wc -l
+# CPU核数： grep &quot;cpu cores&quot; /proc/cpuinfo|sort|uniq
+# 逻辑CPU核数：grep &quot;processor&quot; /proc/cpuinfo|wc -l
+worker_processes auto;
+worker_cpu_affinity auto;
 
-<p>upstream 模块负债负载均衡模块，通过一个简单的调度算法来实现客户端IP到后端服务器的负载均衡。我先学习怎么用，具体的使用实例以后再说。</p>
 
-<pre><code>upstream iyangyi.com{
-    ip_hash;
-    server 192.168.12.1:80;
-    server 192.168.12.2:80 down;
-    server 192.168.12.3:8080  max_fails=3  fail_timeout=20s;
-    server 192.168.12.4:8080;
+#工作模式以及连接数上限
+events {
+
+  # use [ kqueue | rtsig | epoll | /dev/poll | select | poll ];
+  use epoll;
+  worker_connections 65535; ## default: 1024 max_clients=worker_processes * worker_connections
+
+  #在设置了反向代理的情况下，max_clients=worker_processes * worker_connections / 4
+  #worker_connections 值的设置跟物理内存大小有关
+  #因为并发受IO约束，max_clients的值须小于系统可以打开的最大文件数
+  #而系统可以打开的最大文件数和内存大小成正比，一般1GB内存的机器上可以打开的文件数大约是10万左右
+  #我们来看看360M内存的VPS可以打开的文件句柄数是多少：
+  #$ cat /proc/sys/fs/file-max
+  #输出 34336
+  #32000 &lt; 34336，即并发连接总数小于系统可以打开的文件句柄总数，这样就在操作系统可以承受的范围之内
+  #所以，worker_connections 的值需根据 worker_processes 进程数目和系统可以打开的最大文件总数进行适当地进行设置
+  #使得并发总数小于操作系统可以打开的最大文件数目
+  #其实质也就是根据主机的物理CPU和内存进行配置
+  #当然，理论上的并发总数可能会和实际有所偏差，因为主机还有其他的工作进程需要消耗系统资源。
+  #ulimit -SHn 65535
 }
+worker_rlimit_nofile 65535;
+#nginx进程打开的最多文件描述符数目，理论值应该是最多打开文件数（系统的值ulimit -n）与nginx进程数相除，但是nginx分配请求并不均匀，所以建议与ulimit -n的值保持一致。
+# sudo vi /etc/security/limits.conf
+# root soft nofile 65535
+# root hard nofile 65535
+# * soft nofile 65535
+# * hard nofile 65535
+
+#全局的错误日志和日志级别[ debug | info | notice | warn | error | crit ]
+#默认为/etc/nginx/logs/error.log
+# error_log  logs/error.log;         默认:warn
+# error_log  logs/error.log  notice;
+error_log logs/error.log crit;
+# pid        logs/nginx.pid;
+
+# Load dynamic modules. See /usr/share/nginx/README.dynamic.
+include /usr/share/nginx/modules/*.conf;
+
+# backlog=8192;       # 默认为511
+# 2. 设定http服务器 http://nginx.org/en/docs/http/ngx_http_core_module.html
+http {
+
+  include mime.types; #文件扩展名与文件类型映射表
+  default_type application/octet-stream; #默认文件类型
+  #charset utf-8;                         #默认编码
+  server_names_hash_bucket_size 128; #服务器名字的hash表大小
+  server_tokens on; #隐藏nginx的版本号
+  #autoindex on;                          #开启目录列表访问，合适下载服务器，默认关闭。
+
+  ## 1. log
+  #设定日志格式
+  # log_format  main  '$remote_addr - $remote_user [$time_local] &quot;$request&quot; '
+  #                  '$status $body_bytes_sent &quot;$http_referer&quot; '
+  #                  '&quot;$http_user_agent&quot; &quot;$http_x_forwarded_for&quot;';
+  ## aliyun
+    log_format  main  '$remote_addr - $remote_user [$time_local] &quot;$request&quot; $http_host '
+                      '$status $request_length $body_bytes_sent &quot;$http_referer&quot; '
+                      '&quot;$http_user_agent&quot;  $request_time $upstream_response_time';
+ 
+  #access_log  logs/access.log  main;
+  #access日志文件的路径,采用上面定义的main 格式记录
+
+  # access_log  off;
+  access_log logs/access.log ;
+
+  ## 2. file
+  sendfile on; #开启高效文件传输模式 默认开启状态on;
+  #sendfile指令指定nginx是否调用sendfile函数来输出文件，减少用户空间到内核空间的上下文切换。对于普通应用设为 on，
+  #如果用来进行下载等应用磁盘IO重负载应用，可设置为 off ，以平衡磁盘与网络I/O处理速度，降低系统的负载。
+  #注意：如果图片显示不正常把这个改成off。默认开启状态
+
+  # 默认就是tcp_nopush,不需要特别指定 等效linux下的 tcp_cork
+  tcp_nopush on; #多个小块数据包合并发送，这样有助于解决网络堵塞;
+  # tcp_nodelay on;                         #立即发送小块数据
+  #注意:当使用sendfile函数时，tcp_nopush才起作用，它和指令tcp_nodelay是互斥的。
+
+
+  ## 3. cache
+  open_file_cache max=100000 inactive=30s; #开文件缓存，默认值 off 可以避免重新打开同一文件带来的系统开销，节省响应时间。如需开启必须后接参数 max=数字，设置缓存元素的最大数量。当缓存溢出时，使用LRU(最近最少使用)算法删除缓存中的元素；可选参数 inactive=时间 设置超时，在这段时间内缓存元素如果没有被访问，将从缓存中删除
+  open_file_cache_valid 30s; #检测正确信息的间隔时间
+  open_file_cache_min_uses 2; #设置在由open_file_cache指令的inactive参数配置的超时时间内， 文件应该被访问的最小次数。如果访问次数大于等于此值，文件描述符会保留在缓存中，否则从缓存中删除。
+  open_file_cache_errors on; #指定了当搜索一个文件时是否缓存错误信息，也包括再次给配置中添加文件。我们也包括了服务器模块，这些是在不同文件中定义的。如果你的服务器模块不在这些位置，你就得修改这一行来指定正确的位置。
+
+  ## 4. Buffers
+  # 当遇到超长的post请求或者get请求时，nginx会返回413、400、414等状态码，这是因为请求串长度超过了nginx默认的缓存大小或者请求串大小
+  #Buffers：另一个很重要的参数为buffer，如果buffer太小，Nginx会不停的写一些临时文件，这样会导致磁盘不停的去读写.
+  client_body_buffer_size 10m; #允许客户端请求的最大单个文件字节数
+  client_max_body_size 100m; #设置客户端能够上传的文件大小，默认为1m
+  client_header_buffer_size 4k; #用于设置客户端请求的Header头缓冲区大小，大部分情况1KB大小足够
+  large_client_header_buffers 32 64k; #该指令用于设置客户端请求的Header头缓冲区大小
+
+  ## 5. Timeouts
+  #如果没有发送请求头和请求体，Nginx服务器会返回408错误或者request time out。
+  client_header_timeout 12; #置请求头超时时间，单位是秒
+  client_body_timeout 12; #请求体超时时间，单位是秒
+  send_timeout 3600; #指定客户端的响应超时时间。这个设置不会用于整个转发器，而是在两次客户端读取操作之间。如果在这段时间内，客户端没有读取任何数据，Nginx就会关闭连接。
+  reset_timedout_connection on; # 告诉nginx关闭不响应的客户端连接。这将会释放那个客户端所占有的内存空间。
+
+  # keepalive_timeout参数很敏感，服务器将在这个超时时间过后关闭链接。长连接请求大量小文件的时候，可以减少重建连接的开销，但假如有大文件上传，120s内没上传完成会导致失败。如果设置时间过长，用户又多，长时间保持连接会占用大量资源。
+  keepalive_requests 100; #一个客户端可以通过一个keepalive连接的请求次数
+  keepalive_timeout 1800; #长连接超时时间，单位是秒 [太小的话大文件无法上传，太大nginx的错误日志（socket() failed (24: Too many open files) while connecting to upstream）]
+
+  proxy_connect_timeout 3600;
+  proxy_send_timeout 3600;
+  proxy_read_timeout 3600;
+
+  
+  ## 6. FastCGI
+  #FastCGI相关参数是为了改善网站的性能：减少资源占用，提高访问速度。下面参数看字面意思都能理解。
+  #fastcgi_connect_timeout 300;
+  #fastcgi_send_timeout 300;
+  #fastcgi_read_timeout 300;
+  #fastcgi_buffer_size 64k;
+  #fastcgi_buffers 4 64k;
+  #fastcgi_busy_buffers_size 128k;
+  #fastcgi_temp_file_write_size 128k;
+
+  ## 7. gzip
+  #开启Gzip，gzip可以帮助Nginx减少大量的网络传输工作，另外要注意gzip_comp_level的设置，太高的话，Nginx服务会浪费CPU的执行周期。
+  gzip on; #开启Gzip，gzip可以帮助Nginx减少大量的网络传输工作
+  gzip_disable &quot;MSIE [1-6].(?!.*SV1)&quot;; #为指定的客户端禁用gzip功能。我们设置成IE6或者更低版本以使我们的方案能够广泛兼容。
+  gzip_min_length 1k; #小于1K的文件不进行压缩
+  gzip_buffers 4 16k; #4 16k 代表以16k为单位，按照原始数据大小以16k为单位的4倍申请内存
+  gzip_static on; #告诉nginx在压缩资源之前，先查找是否有预先gzip处理过的资源。这样nginx就不用再压缩这些文件了
+  #gzip_http_version 1.0;                 #压缩版本（默认1.1，前端如果是squid2.5请使用1.0）
+  gzip_comp_level 4; #压缩等级 是1-9之间的任意数值，9是最慢但是压缩比最大的。太高的话，Nginx服务会浪费CPU的执行周期。
+  gzip_proxied any; #允许或者禁止压缩基于请求和响应的响应流。我们设置为any，意味着将会压缩所有的请求。
+  #gzip_vary on;
+  #压缩类型，默认就已经包含text/html，所以下面就不用再写了，写上去也不会有问题，但是会有一个warn。
+  gzip_types text/plain text/css text/x-component
+  text/xml application/xml application/xhtml+xml application/json
+  image/x-icon image/bmp image/svg+xml application/atom+xml
+  text/javascript application/javascript application/x-javascript
+  application/pdf application/postscript
+  application/rtf application/msword
+  application/vnd.ms-powerpoint application/vnd.ms-excel
+  application/vnd.ms-fontobject application/vnd.wap.wml
+  application/x-font-ttf application/x-font-opentype;
+
+
+  ## 8. 开启限制IP连接数的时候需要使用
+  #limit_zone crawler $binary_remote_addr 10m;
+  limit_conn_zone $binary_remote_addr zone=addr:10m;
+  # 要限制连接，必须先有一个容器对连接进行计数，zone=addr这个名字要跟后面的 limit_conn 一致，$binary_remote_addr， 用二进制来储存客户端的地址，10m可以存放16万个ip 一旦用完，server就一直是503
+  limit_conn addr 100;      # 一个IP 最多同时开100连接
+
+
+  # limit_conn_zone $binary_remote_addr zone=conn_ip:10m;
+  # limit_conn_zone $server_name zone=conn_server:10m;
+  # limit_conn conn_ip 50;  #限制某个IP来源的连接并发数，此处为5个
+  # limit_conn conn_server 600; #限制某个虚拟服务器的总连接数，此处为600个
+
+  # limit_req_zone $binary_remote_addr $request_uri zone=thre:3m rate=1r/s; #支持多个变量，比如限制同一 IP 访问同一 Url 的频率
+  # limit_req zone=req_ip burst=5; #小为5的缓冲区, 当有大量请求过来时，超过了访问频次限制的请求可以先放到这个缓冲区内
+  # limit_req_zone $binary_remote_addr zone=req_ip:10m rate=40r/s; #每个IP平均处理的请求频率为每秒40次
+
+  # limit_conn_zone 设置用于保存各种key（比如当前连接数）的共享内存的参数。5m就是5兆字节，这个值应该被设置的足够大以存储（32K5）32byte状态或者（16K5）64byte状态。
+  # limit_conn 为给定的key设置最大连接数。这里key是addr，我们设置的值是100，也就是说我们允许每一个IP地址最多同时打开有100个连接。
+  # limit_rate：限制单个连接的带宽量。能够防止系统因一些客户端而超载，能确保所有用户都享用质量的服务
+  # limit_req/limit_req_zone：这些指令用于限制正在被Nginx 处理的请求的比率。使用 limit_rate 能防止系统某几个客户端超载并且能确保所有客户获取高质量的服务。这些指令同样能提高安全性，尤其是登录页，通过限制请求率来做更适合人类用户的请求，减慢试图访问你应用的程序用户。
+
+  ## 9. errors
+  recursive_error_pages off;
+  error_page 400 402 403 405 406 410 411 413 416 /40x.html;
+  error_page 404 =410 /40x.html;
+  error_page 443 =200 /test.png;
+  open_log_file_cache max=1024 inactive=30s min_uses=3 valid=5m;
+  #定义50x错误提示页面
+  error_page 500 501 502 503 504 /50x.html;
+  # location = /50x.html {
+  #     #定义服务器的默认网站错误页面位置
+  #     root   html;
+  # }
+
+
+  ### acl ###
+  allow 10.0.0.0/8;
+  allow 172.16.0.0/12;
+  allow 192.168.0.0/16;
+  # deny                    all;
+
+  # Load modular configuration files from the /etc/nginx/conf.d directory.
+  # See http://nginx.org/en/docs/ngx_core_module.html#include
+  # for more information.
+  include conf.d/*.conf;
+  include sites-enabled/*.conf;
+
+
+  server {
+
+    listen 80 default_server;
+    listen [::]:80 ipv6only=on default_server;
+    server_name _;
+    root /usr/share/nginx/html;
+
+    # Load configuration files for the default server block.
+    include default.d/*.conf;
+
+    location / {
+
+    }
+
+    error_page 404 /404.html;
+    location = /40x.html {
+
+    }
+
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+
+    }
+  }
+
+  # Settings for a TLS enabled server.
+
+  # server {
+  #
+  #   listen 443 ssl http2 default_server;
+  #   listen [::]:443 ssl http2 default_server;
+  #   server_name _;
+  #   root /usr/share/nginx/html;
+  #
+  #
+  #   ssl on;
+  #   ssl_certificate cert/server.crt;
+  #   ssl_certificate_key cert/server.key;
+  #   ssl_session_timeout 10m;
+  #   ssl_prefer_server_ciphers on;
+  #   ssl_session_cache shared:SSL:10m;
+  #   ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+  #   ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+  #
+  #   # Load configuration files for the default server block.
+  #   include default.d/*.conf;
+  #
+  #   location / {
+  #
+  #     rewrite ^(.*)$	http://$host$1	permanent; #强制跳转到http
+  #   }
+  #
+  #   error_page 404 /404.html;
+  #   location = /40x.html {
+  #
+  #   }
+  #
+  #   error_page 500 502 503 504 /50x.html;
+  #   location = /50x.html {
+  #
+  #   }
+  # }
+}
+
 </code></pre>
-
-<p>在上面的例子中，通过upstream指令指定了一个负载均衡器的名称iyangyi.com。这个名称可以任意指定，在后面需要的地方直接调用即可。</p>
-
-<p>里面是ip_hash这是其中的一种负载均衡调度算法，下面会着重介绍。紧接着就是各种服务器了。用server关键字表识，后面接ip。</p>
-
-<p>Nginx的负载均衡模块目前支持4种调度算法:</p>
-
-<pre><code>weight 轮询（默认）。每个请求按时间顺序逐一分配到不同的后端服务器，如果后端某台服务器宕机，故障系统被自动剔除，使用户访问不受影响。weight。指定轮询权值，weight值越大，分配到的访问机率越高，主要用于后端每个服务器性能不均的情况下。
-ip_hash。每个请求按访问IP的hash结果分配，这样来自同一个IP的访客固定访问一个后端服务器，有效解决了动态网页存在的session共享问题。
-fair。比上面两个更加智能的负载均衡算法。此种算法可以依据页面大小和加载时间长短智能地进行负载均衡，也就是根据后端服务器的响应时间来分配请求，响应时间短的优先分配。Nginx本身是不支持fair的，如果需要使用这种调度算法，必须下载Nginx的upstream_fair模块。
-url_hash。按访问url的hash结果来分配请求，使每个url定向到同一个后端服务器，可以进一步提高后端缓存服务器的效率。Nginx本身是不支持url_hash的，如果需要使用这种调度算法，必须安装Nginx 的hash软件包。
-</code></pre>
-
-<p>在HTTP Upstream模块中，可以通过server指令指定后端服务器的IP地址和端口，同时还可以设定每个后端服务器在负载均衡调度中的状态。常用的状态有：</p>
-
-<pre><code>down，表示当前的server暂时不参与负载均衡。
-backup，预留的备份机器。当其他所有的非backup机器出现故障或者忙的时候，才会请求backup机器，因此这台机器的压力最轻。
-max_fails，允许请求失败的次数，默认为1。当超过最大次数时，返回proxy_next_upstream 模块定义的错误。
-fail_timeout，在经历了max_fails次失败后，暂停服务的时间。max_fails可以和fail_timeout一起使用。
-</code></pre>
-
-<p>注意 当负载调度算法为ip_hash时，后端服务器在负载均衡调度中的状态不能是weight和backup。</p>
 
 <p>################################################################################<br />
 1.卸载Nginx<br />
@@ -1350,7 +1581,7 @@ pcre:支持地址重写rewrite功能</p>
 
 <h3 id="1-pcre-需要安装libpcre">1.pcre 需要安装libpcre</h3>
 
-<p>&ndash;with-pcre=/usr/local/src/pcre-8.34</p>
+<p>--with-pcre=/usr/local/src/pcre-8.34</p>
 
 <p>ubuntu/debian：<br />
 sudo apt-get install libpcre3 libpcre3-dev</p>
@@ -1368,8 +1599,8 @@ make install
 
 <h3 id="2-ssl-modules-require-the-openssl-library">2.SSL modules require the OpenSSL library</h3>
 
-<p>&ndash;with-http_ssl_module<br />
-&ndash;with-openssl=/usr/local/src/openssl-1.0.1c</p>
+<p>--with-http_ssl_module<br />
+--with-openssl=/usr/local/src/openssl-1.0.1c</p>
 
 <p>ubuntu/debian：<br />
 sudo apt-get install openssl<br />
@@ -1384,7 +1615,7 @@ tar -zxvf openssl-1.0.1c.tar.gz
 
 <h3 id="3-zlib">3.zlib</h3>
 
-<p>&ndash;with-zlib=/usr/local/src/zlib-1.2.8<br />
+<p>--with-zlib=/usr/local/src/zlib-1.2.8<br />
 安装zlib库<br />
 <a href="http://zlib.net/zlib-1.2.8.tar.gz" target="_blank">http://zlib.net/zlib-1.2.8.tar.gz</a> 下载最新的 zlib 源码包，使用下面命令下载编译和安装 zlib包：<br />
 cd /usr/local/src<br />
@@ -1404,29 +1635,29 @@ make install<br />
 <code>git clone git@github.com:FFmpeg/FFmpeg.git</code><br />
 <code>cd ffmpeg</code><br />
 #./configure<br />
-&ndash;prefix=/opt/ffmpeg/ <br />
-&ndash;enable-version3 <br />
-&ndash;enable-libvpx <br />
-&ndash;enable-libfaac <br />
-&ndash;enable-libmp3lame <br />
-&ndash;enable-libvorbis <br />
-&ndash;enable-libx264 <br />
-&ndash;enable-libxvid <br />
-&ndash;enable-shared <br />
-&ndash;enable-gpl <br />
-&ndash;enable-postproc <br />
-&ndash;enable-nonfree <br />
-&ndash;enable-avfilter <br />
-&ndash;enable-pthreads<br />
-&ndash;prefix=/usr &ndash;extra-version=0ubuntu0.15.10.1 &ndash;build-suffix=-ffmpeg &ndash;toolchain=hardened &ndash;libdir=/usr/lib/x86_64-linux-gnu &ndash;incdir=/usr/include/x86_64-linux-gnu &ndash;enable-gpl &ndash;enable-shared &ndash;disable-stripping &ndash;enable-avresample &ndash;enable-avisynth &ndash;enable-frei0r &ndash;enable-gnutls &ndash;enable-ladspa &ndash;enable-libass &ndash;enable-libbluray &ndash;enable-libbs2b &ndash;enable-libcaca &ndash;enable-libcdio &ndash;enable-libflite &ndash;enable-libfontconfig &ndash;enable-libfreetype &ndash;enable-libfribidi &ndash;enable-libgme &ndash;enable-libgsm &ndash;enable-libmodplug &ndash;enable-libmp3lame &ndash;enable-libopenjpeg &ndash;enable-openal &ndash;enable-libopus &ndash;enable-libpulse &ndash;enable-librtmp &ndash;enable-libschroedinger &ndash;enable-libshine &ndash;enable-libspeex &ndash;enable-libtheora &ndash;enable-libtwolame &ndash;enable-libvorbis &ndash;enable-libvpx &ndash;enable-libwavpack &ndash;enable-libwebp &ndash;enable-libxvid &ndash;enable-libzvbi &ndash;enable-opengl &ndash;enable-x11grab &ndash;enable-libdc1394 &ndash;enable-libiec61883 &ndash;enable-libzmq &ndash;enable-libssh &ndash;enable-libsoxr &ndash;enable-libx264 &ndash;enable-libopencv &ndash;enable-libx265<br />
+--prefix=/opt/ffmpeg/ <br />
+--enable-version3 <br />
+--enable-libvpx <br />
+--enable-libfaac <br />
+--enable-libmp3lame <br />
+--enable-libvorbis <br />
+--enable-libx264 <br />
+--enable-libxvid <br />
+--enable-shared <br />
+--enable-gpl <br />
+--enable-postproc <br />
+--enable-nonfree <br />
+--enable-avfilter <br />
+--enable-pthreads<br />
+--prefix=/usr --extra-version=0ubuntu0.15.10.1 --build-suffix=-ffmpeg --toolchain=hardened --libdir=/usr/lib/x86_64-linux-gnu --incdir=/usr/include/x86_64-linux-gnu --enable-gpl --enable-shared --disable-stripping --enable-avresample --enable-avisynth --enable-frei0r --enable-gnutls --enable-ladspa --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libgme --enable-libgsm --enable-libmodplug --enable-libmp3lame --enable-libopenjpeg --enable-openal --enable-libopus --enable-libpulse --enable-librtmp --enable-libschroedinger --enable-libshine --enable-libspeex --enable-libtheora --enable-libtwolame --enable-libvorbis --enable-libvpx --enable-libwavpack --enable-libwebp --enable-libxvid --enable-libzvbi --enable-opengl --enable-x11grab --enable-libdc1394 --enable-libiec61883 --enable-libzmq --enable-libssh --enable-libsoxr --enable-libx264 --enable-libopencv --enable-libx265<br />
 #make &amp;&amp; make install<br />
-vim objs/Makefile (修改objs/Makefile文件, 去掉其中的&rdquo;-Werror&rdquo;), 然后就能够正常编译了.</p>
+vim objs/Makefile (修改objs/Makefile文件, 去掉其中的&quot;-Werror&quot;), 然后就能够正常编译了.</p>
 
 <p><a href="https://github.com/arut/nginx-rtmp-module" target="_blank">nginx-rtmp-module</a><br />
   <code>git clone git@github.com:arut/nginx-rtmp-module.git</code><br />
-  ./configure &ndash;add-module=/path/to/nginx-rtmp-module<br />
-  ./configure &ndash;add-module=/path/to/nginx-rtmp-module &ndash;with-http_ssl_module<br />
-  ./configure &ndash;add-module=/path/to-nginx/rtmp-module &ndash;with-debug</p>
+  ./configure --add-module=/path/to/nginx-rtmp-module<br />
+  ./configure --add-module=/path/to/nginx-rtmp-module --with-http_ssl_module<br />
+  ./configure --add-module=/path/to-nginx/rtmp-module --with-debug</p>
 
 <p>#编译错误<br />
 ./nginx-rtmp-module/ngx_rtmp_core_module.c</p>
@@ -1463,7 +1694,7 @@ tar -zxvf nginx_mod_h264_streaming-2.2.7.tar.gz</p>
 
 <p><code>git clone git@github.com:vivus-ignis/nginx_mod_h264_streaming.git</code></p>
 
-<p>./configure &ndash;add-module=$HOME/nginx_mod_h264_streaming &ndash;sbin-path=/usr/local/sbin &ndash;with-debug</p>
+<p>./configure --add-module=$HOME/nginx_mod_h264_streaming --sbin-path=/usr/local/sbin --with-debug</p>
 
 <ol>
 <li>将 ./nginx_mod_h264_streaming/src/ngx_http_streaming_module.c 文件中以下代码删除或者是注释掉就可以了：<br />
@@ -1505,7 +1736,7 @@ cp auto/configure .
 1. mp4_reader.
 </code></pre>
 
-<h1 id="vim-objs-makefile-修改objs-makefile文件-去掉其中的-werror-然后就能够正常编译了">vim objs/Makefile (修改objs/Makefile文件, 去掉其中的&rdquo;-Werror&rdquo;), 然后就能够正常编译了.</h1>
+<h1 id="vim-objs-makefile-修改objs-makefile文件-去掉其中的-werror-然后就能够正常编译了">vim objs/Makefile (修改objs/Makefile文件, 去掉其中的&quot;-Werror&quot;), 然后就能够正常编译了.</h1>
 
 <pre><code>
 make -j4 &amp;&amp; sudo make install
@@ -1513,16 +1744,16 @@ make -j4 &amp;&amp; sudo make install
 make -f objs/Makefile install
 </code></pre>
 
-<p>mv &lsquo;/usr/sbin/nginx&rsquo; &lsquo;/usr/sbin/nginx.old&rsquo;<br />
-cp objs/nginx &lsquo;/usr/sbin/nginx&rsquo;</p>
+<p>mv '/usr/sbin/nginx' '/usr/sbin/nginx.old'<br />
+cp objs/nginx '/usr/sbin/nginx'</p>
 
-<p>mkdir -p &lsquo;/etc/nginx&rsquo;<br />
-cp conf/mime.types &lsquo;/etc/nginx/mime.types.default&rsquo;<br />
-cp conf/nginx.conf &lsquo;/etc/nginx/nginx.conf&rsquo;<br />
-cp conf/nginx.conf &lsquo;/etc/nginx/nginx.conf.default&rsquo;</p>
+<p>mkdir -p '/etc/nginx'<br />
+cp conf/mime.types '/etc/nginx/mime.types.default'<br />
+cp conf/nginx.conf '/etc/nginx/nginx.conf'<br />
+cp conf/nginx.conf '/etc/nginx/nginx.conf.default'</p>
 
-<p>mkdir -p &lsquo;/usr/local/nginx/logs&rsquo;<br />
-cp -R docs/html &lsquo;/usr/local/nginx&rsquo;</p>
+<p>mkdir -p '/usr/local/nginx/logs'<br />
+cp -R docs/html '/usr/local/nginx'</p>
 
 <pre><code>##添加类型支持
 vim /usr/local/nginx/conf/mime.types
@@ -1560,7 +1791,7 @@ kill -HUP 主进程号或进程号文件路径</p>
 　　快速停止   kill -TERM 主进程号<br />
 　　强制停止   kill -9 nginx<br />
 　　若nginx.conf配置了pid文件路径，如果没有，则在logs目录下<br />
-　　kill -信号类型 &lsquo;/usr/local/nginx/logs/nginx.pid&rsquo;</p>
+　　kill -信号类型 '/usr/local/nginx/logs/nginx.pid'</p>
 
 <p>403解决办法：chown -R nginx:nginx /htdocs</p>
 
@@ -1575,170 +1806,170 @@ cp auto/configure .</p>
 
 <h1 id="centos-默认配置">centos 默认配置</h1>
 
-<p>&ndash;prefix=/etc/nginx<br />
- &ndash;sbin-path=/usr/sbin/nginx<br />
- &ndash;conf-path=/etc/nginx/nginx.conf<br />
- &ndash;error-log-path=/var/log/nginx/error.log<br />
- &ndash;http-log-path=/var/log/nginx/access.log<br />
- &ndash;pid-path=/var/run/nginx.pid<br />
- &ndash;lock-path=/var/run/nginx.lock<br />
- &ndash;http-client-body-temp-path=/var/cache/nginx/client_temp<br />
- &ndash;http-proxy-temp-path=/var/cache/nginx/proxy_temp<br />
- &ndash;http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp<br />
- &ndash;http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp<br />
- &ndash;http-scgi-temp-path=/var/cache/nginx/scgi_temp<br />
- &ndash;user=nginx<br />
- &ndash;group=nginx<br />
- &ndash;with-http_ssl_module<br />
- &ndash;with-http_realip_module<br />
- &ndash;with-http_addition_module<br />
- &ndash;with-http_sub_module<br />
- &ndash;with-http_dav_module<br />
- &ndash;with-http_flv_module<br />
- &ndash;with-http_mp4_module<br />
- &ndash;with-http_gunzip_module<br />
- &ndash;with-http_gzip_static_module<br />
- &ndash;with-http_random_index_module<br />
- &ndash;with-http_secure_link_module<br />
- &ndash;with-http_stub_status_module<br />
- &ndash;with-http_auth_request_module<br />
- &ndash;with-mail<br />
- &ndash;with-mail_ssl_module<br />
- &ndash;with-file-aio<br />
- &ndash;with-ipv6<br />
- &ndash;with-http_spdy_module<br />
- &ndash;with-cc-opt=&lsquo;-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong &ndash;param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic&rsquo;</p>
+<p>--prefix=/etc/nginx<br />
+ --sbin-path=/usr/sbin/nginx<br />
+ --conf-path=/etc/nginx/nginx.conf<br />
+ --error-log-path=/var/log/nginx/error.log<br />
+ --http-log-path=/var/log/nginx/access.log<br />
+ --pid-path=/var/run/nginx.pid<br />
+ --lock-path=/var/run/nginx.lock<br />
+ --http-client-body-temp-path=/var/cache/nginx/client_temp<br />
+ --http-proxy-temp-path=/var/cache/nginx/proxy_temp<br />
+ --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp<br />
+ --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp<br />
+ --http-scgi-temp-path=/var/cache/nginx/scgi_temp<br />
+ --user=nginx<br />
+ --group=nginx<br />
+ --with-http_ssl_module<br />
+ --with-http_realip_module<br />
+ --with-http_addition_module<br />
+ --with-http_sub_module<br />
+ --with-http_dav_module<br />
+ --with-http_flv_module<br />
+ --with-http_mp4_module<br />
+ --with-http_gunzip_module<br />
+ --with-http_gzip_static_module<br />
+ --with-http_random_index_module<br />
+ --with-http_secure_link_module<br />
+ --with-http_stub_status_module<br />
+ --with-http_auth_request_module<br />
+ --with-mail<br />
+ --with-mail_ssl_module<br />
+ --with-file-aio<br />
+ --with-ipv6<br />
+ --with-http_spdy_module<br />
+ --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic'</p>
 
 <p>configure arguments: ubuntu 16<br />
- &ndash;with-cc-opt=&lsquo;-g -O2 -fPIE -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2&rsquo;<br />
- &ndash;with-ld-opt=&lsquo;-Wl,-Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now&rsquo;<br />
- &ndash;prefix=/usr/share/nginx<br />
- &ndash;conf-path=/etc/nginx/nginx.conf<br />
- &ndash;http-log-path=/var/log/nginx/access.log<br />
- &ndash;error-log-path=/var/log/nginx/error.log<br />
- &ndash;lock-path=/var/lock/nginx.lock<br />
- &ndash;pid-path=/run/nginx.pid<br />
- &ndash;http-client-body-temp-path=/var/lib/nginx/body<br />
- &ndash;http-fastcgi-temp-path=/var/lib/nginx/fastcgi<br />
- &ndash;http-proxy-temp-path=/var/lib/nginx/proxy<br />
- &ndash;http-scgi-temp-path=/var/lib/nginx/scgi<br />
- &ndash;http-uwsgi-temp-path=/var/lib/nginx/uwsgi<br />
- &ndash;with-debug<br />
- &ndash;with-pcre-jit<br />
- &ndash;with-ipv6<br />
- &ndash;with-http_ssl_module<br />
- &ndash;with-http_stub_status_module<br />
- &ndash;with-http_realip_module<br />
- &ndash;with-http_auth_request_module<br />
- &ndash;with-http_addition_module<br />
- &ndash;with-http_dav_module<br />
- &ndash;with-http_geoip_module<br />
- &ndash;with-http_gunzip_module<br />
- &ndash;with-http_gzip_static_module<br />
- &ndash;with-http_image_filter_module<br />
- &ndash;with-http_v2_module<br />
- &ndash;with-http_sub_module<br />
- &ndash;with-http_xslt_module<br />
- &ndash;with-stream<br />
- &ndash;with-stream_ssl_module<br />
- &ndash;with-mail<br />
- &ndash;with-mail_ssl_module<br />
- &ndash;with-threads</p>
+ --with-cc-opt='-g -O2 -fPIE -fstack-protector-strong -Wformat -Werror=format-security -Wdate-time -D_FORTIFY_SOURCE=2'<br />
+ --with-ld-opt='-Wl,-Bsymbolic-functions -fPIE -pie -Wl,-z,relro -Wl,-z,now'<br />
+ --prefix=/usr/share/nginx<br />
+ --conf-path=/etc/nginx/nginx.conf<br />
+ --http-log-path=/var/log/nginx/access.log<br />
+ --error-log-path=/var/log/nginx/error.log<br />
+ --lock-path=/var/lock/nginx.lock<br />
+ --pid-path=/run/nginx.pid<br />
+ --http-client-body-temp-path=/var/lib/nginx/body<br />
+ --http-fastcgi-temp-path=/var/lib/nginx/fastcgi<br />
+ --http-proxy-temp-path=/var/lib/nginx/proxy<br />
+ --http-scgi-temp-path=/var/lib/nginx/scgi<br />
+ --http-uwsgi-temp-path=/var/lib/nginx/uwsgi<br />
+ --with-debug<br />
+ --with-pcre-jit<br />
+ --with-ipv6<br />
+ --with-http_ssl_module<br />
+ --with-http_stub_status_module<br />
+ --with-http_realip_module<br />
+ --with-http_auth_request_module<br />
+ --with-http_addition_module<br />
+ --with-http_dav_module<br />
+ --with-http_geoip_module<br />
+ --with-http_gunzip_module<br />
+ --with-http_gzip_static_module<br />
+ --with-http_image_filter_module<br />
+ --with-http_v2_module<br />
+ --with-http_sub_module<br />
+ --with-http_xslt_module<br />
+ --with-stream<br />
+ --with-stream_ssl_module<br />
+ --with-mail<br />
+ --with-mail_ssl_module<br />
+ --with-threads</p>
 
 <p>////////////////////////////////////////////////////////////////////<br />
 <a href="http://blog.csdn.net/eric1012/article/details/6052154" target="_blank">Nginx编译参数详细介绍</a><br />
-&ndash;prefix= 指向安装目录<br />
-&ndash;sbin-path 指向（执行）程序文件（nginx）<br />
-&ndash;conf-path= 指向配置文件（nginx.conf）<br />
-&ndash;error-log-path= 指向错误日志目录<br />
-&ndash;pid-path= 指向pid文件（nginx.pid）<br />
-&ndash;lock-path= 指向lock文件（nginx.lock）（安装文件锁定，防止安装文件被别人利用，或自己误操作。）<br />
-&ndash;user= 指定程序运行时的非特权用户<br />
-&ndash;group= 指定程序运行时的非特权用户组<br />
-&ndash;builddir= 指向编译目录<br />
-&ndash;with-rtsig_module 启用rtsig模块支持（实时信号）<br />
-&ndash;with-select_module 启用select模块支持（一种轮询模式,不推荐在高载环境下使用）禁用：&ndash;without-select_module<br />
-&ndash;with-poll_module 启用poll模块支持（功能与select相同，与select特性相同，为一种轮询模式,不推荐在高载环境下使用）<br />
-&ndash;with-file-aio 启用file aio支持（一种APL文件传输格式）<br />
-&ndash;with-ipv6 启用ipv6支持<br />
-&ndash;with-http_ssl_module 启用ngx_http_ssl_module支持（使支持https请求，需已安装openssl）<br />
-&ndash;with-http_realip_module 启用ngx_http_realip_module支持（这个模块允许从请求标头更改客户端的IP地址值，默认为关）<br />
-&ndash;with-http_addition_module 启用ngx_http_addition_module支持（作为一个输出过滤器，支持不完全缓冲，分部分响应请求）<br />
-&ndash;with-http_xslt_module 启用ngx_http_xslt_module支持（过滤转换XML请求）<br />
-&ndash;with-http_image_filter_module 启用ngx_http_image_filter_module支持（传输JPEG/GIF/PNG 图片的一个过滤器）（默认为不启用。gd库要用到）<br />
-&ndash;with-http_geoip_module 启用ngx_http_geoip_module支持（该模块创建基于与MaxMind GeoIP二进制文件相配的客户端IP地址的ngx_http_geoip_module变量）<br />
-&ndash;with-http_sub_module 启用ngx_http_sub_module支持（允许用一些其他文本替换nginx响应中的一些文本）<br />
-&ndash;with-http_dav_module 启用ngx_http_dav_module支持（增加PUT,DELETE,MKCOL：创建集合,COPY和MOVE方法）默认情况下为关闭，需编译开启<br />
-&ndash;with-http_flv_module 启用ngx_http_flv_module支持（提供寻求内存使用基于时间的偏移量文件）<br />
-&ndash;with-http_gzip_static_module 启用ngx_http_gzip_static_module支持（在线实时压缩输出数据流）<br />
-&ndash;with-http_random_index_module 启用ngx_http_random_index_module支持（从目录中随机挑选一个目录索引）<br />
-&ndash;with-http_secure_link_module 启用ngx_http_secure_link_module支持（计算和检查要求所需的安全链接网址）<br />
-&ndash;with-http_degradation_module  启用ngx_http_degradation_module支持（允许在内存不足的情况下返回204或444码）<br />
-&ndash;with-http_stub_status_module 启用ngx_http_stub_status_module支持（获取nginx自上次启动以来的工作状态）<br />
-&ndash;without-http_charset_module 禁用ngx_http_charset_module支持（重新编码web页面，但只能是一个方向&ndash;服务器端到客户端，并且只有一个字节的编码可以被重新编码）<br />
-&ndash;without-http_gzip_module 禁用ngx_http_gzip_module支持（该模块同-with-http_gzip_static_module功能一样）<br />
-&ndash;without-http_ssi_module 禁用ngx_http_ssi_module支持（该模块提供了一个在输入端处理处理服务器包含文件（SSI）的过滤器，目前支持SSI命令的列表是不完整的）<br />
-&ndash;without-http_userid_module 禁用ngx_http_userid_module支持（该模块用来处理用来确定客户端后续请求的cookies）<br />
-&ndash;without-http_access_module 禁用ngx_http_access_module支持（该模块提供了一个简单的基于主机的访问控制。允许/拒绝基于ip地址）<br />
-&ndash;without-http_auth_basic_module禁用ngx_http_auth_basic_module（该模块是可以使用用户名和密码基于http基本认证方法来保护你的站点或其部分内容）<br />
-&ndash;without-http_autoindex_module 禁用disable ngx_http_autoindex_module支持（该模块用于自动生成目录列表，只在ngx_http_index_module模块未找到索引文件时发出请求。）<br />
-&ndash;without-http_geo_module 禁用ngx_http_geo_module支持（创建一些变量，其值依赖于客户端的IP地址）<br />
-&ndash;without-http_map_module 禁用ngx_http_map_module支持（使用任意的键/值对设置配置变量）<br />
-&ndash;without-http_split_clients_module 禁用ngx_http_split_clients_module支持（该模块用来基于某些条件划分用户。条件如：ip地址、报头、cookies等等）<br />
-&ndash;without-http_referer_module 禁用disable ngx_http_referer_module支持（该模块用来过滤请求，拒绝报头中Referer值不正确的请求）<br />
-&ndash;without-http_rewrite_module 禁用ngx_http_rewrite_module支持（该模块允许使用正则表达式改变URI，并且根据变量来转向以及选择配置。如果在server级别设置该选项，那么他们将在 location之前生效。如果在location还有更进一步的重写规则，location部分的规则依然会被执行。如果这个URI重写是因为location部分的规则造成的，那么 location部分会再次被执行作为新的URI。 这个循环会执行10次，然后Nginx会返回一个500错误。）<br />
-&ndash;without-http_proxy_module 禁用ngx_http_proxy_module支持（有关代理服务器）<br />
-&ndash;without-http_fastcgi_module 禁用ngx_http_fastcgi_module支持（该模块允许Nginx 与FastCGI 进程交互，并通过传递参数来控制FastCGI 进程工作。 ）FastCGI一个常驻型的公共网关接口。<br />
-&ndash;without-http_uwsgi_module 禁用ngx_http_uwsgi_module支持（该模块用来医用uwsgi协议，uWSGI服务器相关）<br />
-&ndash;without-http_scgi_module 禁用ngx_http_scgi_module支持（该模块用来启用SCGI协议支持，SCGI协议是CGI协议的替代。它是一种应用程序与HTTP服务接口标准。它有些像FastCGI但他的设计 更容易实现。）<br />
-&ndash;without-http_memcached_module 禁用ngx_http_memcached_module支持（该模块用来提供简单的缓存，以提高系统效率）<br />
+--prefix= 指向安装目录<br />
+--sbin-path 指向（执行）程序文件（nginx）<br />
+--conf-path= 指向配置文件（nginx.conf）<br />
+--error-log-path= 指向错误日志目录<br />
+--pid-path= 指向pid文件（nginx.pid）<br />
+--lock-path= 指向lock文件（nginx.lock）（安装文件锁定，防止安装文件被别人利用，或自己误操作。）<br />
+--user= 指定程序运行时的非特权用户<br />
+--group= 指定程序运行时的非特权用户组<br />
+--builddir= 指向编译目录<br />
+--with-rtsig_module 启用rtsig模块支持（实时信号）<br />
+--with-select_module 启用select模块支持（一种轮询模式,不推荐在高载环境下使用）禁用：--without-select_module<br />
+--with-poll_module 启用poll模块支持（功能与select相同，与select特性相同，为一种轮询模式,不推荐在高载环境下使用）<br />
+--with-file-aio 启用file aio支持（一种APL文件传输格式）<br />
+--with-ipv6 启用ipv6支持<br />
+--with-http_ssl_module 启用ngx_http_ssl_module支持（使支持https请求，需已安装openssl）<br />
+--with-http_realip_module 启用ngx_http_realip_module支持（这个模块允许从请求标头更改客户端的IP地址值，默认为关）<br />
+--with-http_addition_module 启用ngx_http_addition_module支持（作为一个输出过滤器，支持不完全缓冲，分部分响应请求）<br />
+--with-http_xslt_module 启用ngx_http_xslt_module支持（过滤转换XML请求）<br />
+--with-http_image_filter_module 启用ngx_http_image_filter_module支持（传输JPEG/GIF/PNG 图片的一个过滤器）（默认为不启用。gd库要用到）<br />
+--with-http_geoip_module 启用ngx_http_geoip_module支持（该模块创建基于与MaxMind GeoIP二进制文件相配的客户端IP地址的ngx_http_geoip_module变量）<br />
+--with-http_sub_module 启用ngx_http_sub_module支持（允许用一些其他文本替换nginx响应中的一些文本）<br />
+--with-http_dav_module 启用ngx_http_dav_module支持（增加PUT,DELETE,MKCOL：创建集合,COPY和MOVE方法）默认情况下为关闭，需编译开启<br />
+--with-http_flv_module 启用ngx_http_flv_module支持（提供寻求内存使用基于时间的偏移量文件）<br />
+--with-http_gzip_static_module 启用ngx_http_gzip_static_module支持（在线实时压缩输出数据流）<br />
+--with-http_random_index_module 启用ngx_http_random_index_module支持（从目录中随机挑选一个目录索引）<br />
+--with-http_secure_link_module 启用ngx_http_secure_link_module支持（计算和检查要求所需的安全链接网址）<br />
+--with-http_degradation_module  启用ngx_http_degradation_module支持（允许在内存不足的情况下返回204或444码）<br />
+--with-http_stub_status_module 启用ngx_http_stub_status_module支持（获取nginx自上次启动以来的工作状态）<br />
+--without-http_charset_module 禁用ngx_http_charset_module支持（重新编码web页面，但只能是一个方向--服务器端到客户端，并且只有一个字节的编码可以被重新编码）<br />
+--without-http_gzip_module 禁用ngx_http_gzip_module支持（该模块同-with-http_gzip_static_module功能一样）<br />
+--without-http_ssi_module 禁用ngx_http_ssi_module支持（该模块提供了一个在输入端处理处理服务器包含文件（SSI）的过滤器，目前支持SSI命令的列表是不完整的）<br />
+--without-http_userid_module 禁用ngx_http_userid_module支持（该模块用来处理用来确定客户端后续请求的cookies）<br />
+--without-http_access_module 禁用ngx_http_access_module支持（该模块提供了一个简单的基于主机的访问控制。允许/拒绝基于ip地址）<br />
+--without-http_auth_basic_module禁用ngx_http_auth_basic_module（该模块是可以使用用户名和密码基于http基本认证方法来保护你的站点或其部分内容）<br />
+--without-http_autoindex_module 禁用disable ngx_http_autoindex_module支持（该模块用于自动生成目录列表，只在ngx_http_index_module模块未找到索引文件时发出请求。）<br />
+--without-http_geo_module 禁用ngx_http_geo_module支持（创建一些变量，其值依赖于客户端的IP地址）<br />
+--without-http_map_module 禁用ngx_http_map_module支持（使用任意的键/值对设置配置变量）<br />
+--without-http_split_clients_module 禁用ngx_http_split_clients_module支持（该模块用来基于某些条件划分用户。条件如：ip地址、报头、cookies等等）<br />
+--without-http_referer_module 禁用disable ngx_http_referer_module支持（该模块用来过滤请求，拒绝报头中Referer值不正确的请求）<br />
+--without-http_rewrite_module 禁用ngx_http_rewrite_module支持（该模块允许使用正则表达式改变URI，并且根据变量来转向以及选择配置。如果在server级别设置该选项，那么他们将在 location之前生效。如果在location还有更进一步的重写规则，location部分的规则依然会被执行。如果这个URI重写是因为location部分的规则造成的，那么 location部分会再次被执行作为新的URI。 这个循环会执行10次，然后Nginx会返回一个500错误。）<br />
+--without-http_proxy_module 禁用ngx_http_proxy_module支持（有关代理服务器）<br />
+--without-http_fastcgi_module 禁用ngx_http_fastcgi_module支持（该模块允许Nginx 与FastCGI 进程交互，并通过传递参数来控制FastCGI 进程工作。 ）FastCGI一个常驻型的公共网关接口。<br />
+--without-http_uwsgi_module 禁用ngx_http_uwsgi_module支持（该模块用来医用uwsgi协议，uWSGI服务器相关）<br />
+--without-http_scgi_module 禁用ngx_http_scgi_module支持（该模块用来启用SCGI协议支持，SCGI协议是CGI协议的替代。它是一种应用程序与HTTP服务接口标准。它有些像FastCGI但他的设计 更容易实现。）<br />
+--without-http_memcached_module 禁用ngx_http_memcached_module支持（该模块用来提供简单的缓存，以提高系统效率）<br />
 -without-http_limit_zone_module 禁用ngx_http_limit_zone_module支持（该模块可以针对条件，进行会话的并发连接数控制）<br />
-&ndash;without-http_limit_req_module 禁用ngx_http_limit_req_module支持（该模块允许你对于一个地址进行请求数量的限制用一个给定的session或一个特定的事件）<br />
-&ndash;without-http_empty_gif_module 禁用ngx_http_empty_gif_module支持（该模块在内存中常驻了一个1*1的透明GIF图像，可以被非常快速的调用）<br />
-&ndash;without-http_browser_module 禁用ngx_http_browser_module支持（该模块用来创建依赖于请求报头的值。如果浏览器为modern ，则$modern_browser等于modern_browser_value指令分配的值；如 果浏览器为old，则$ancient_browser等于 ancient_browser_value指令分配的值；如果浏览器为 MSIE中的任意版本，则 $msie等于1）<br />
-&ndash;without-http_upstream_ip_hash_module 禁用ngx_http_upstream_ip_hash_module支持（该模块用于简单的负载均衡）<br />
-&ndash;with-http_perl_module 启用ngx_http_perl_module支持（该模块使nginx可以直接使用perl或通过ssi调用perl）<br />
-&ndash;with-perl_modules_path= 设定perl模块路径<br />
-&ndash;with-perl= 设定perl库文件路径<br />
-&ndash;http-log-path= 设定access log路径<br />
-&ndash;http-client-body-temp-path= 设定http客户端请求临时文件路径<br />
-&ndash;http-proxy-temp-path= 设定http代理临时文件路径<br />
-&ndash;http-fastcgi-temp-path= 设定http fastcgi临时文件路径<br />
-&ndash;http-uwsgi-temp-path= 设定http uwsgi临时文件路径<br />
-&ndash;http-scgi-temp-path= 设定http scgi临时文件路径<br />
+--without-http_limit_req_module 禁用ngx_http_limit_req_module支持（该模块允许你对于一个地址进行请求数量的限制用一个给定的session或一个特定的事件）<br />
+--without-http_empty_gif_module 禁用ngx_http_empty_gif_module支持（该模块在内存中常驻了一个1*1的透明GIF图像，可以被非常快速的调用）<br />
+--without-http_browser_module 禁用ngx_http_browser_module支持（该模块用来创建依赖于请求报头的值。如果浏览器为modern ，则$modern_browser等于modern_browser_value指令分配的值；如 果浏览器为old，则$ancient_browser等于 ancient_browser_value指令分配的值；如果浏览器为 MSIE中的任意版本，则 $msie等于1）<br />
+--without-http_upstream_ip_hash_module 禁用ngx_http_upstream_ip_hash_module支持（该模块用于简单的负载均衡）<br />
+--with-http_perl_module 启用ngx_http_perl_module支持（该模块使nginx可以直接使用perl或通过ssi调用perl）<br />
+--with-perl_modules_path= 设定perl模块路径<br />
+--with-perl= 设定perl库文件路径<br />
+--http-log-path= 设定access log路径<br />
+--http-client-body-temp-path= 设定http客户端请求临时文件路径<br />
+--http-proxy-temp-path= 设定http代理临时文件路径<br />
+--http-fastcgi-temp-path= 设定http fastcgi临时文件路径<br />
+--http-uwsgi-temp-path= 设定http uwsgi临时文件路径<br />
+--http-scgi-temp-path= 设定http scgi临时文件路径<br />
 -without-http 禁用http server功能<br />
-&ndash;without-http-cache 禁用http cache功能<br />
-&ndash;with-mail 启用POP3/IMAP4/SMTP代理模块支持<br />
-&ndash;with-mail_ssl_module 启用ngx_mail_ssl_module支持<br />
-&ndash;without-mail_pop3_module 禁用pop3协议（POP3即邮局协议的第3个版本,它是规定个人计算机如何连接到互联网上的邮件服务器进行收发邮件的协议。是因特网电子邮件的第一个离线协议标 准,POP3协议允许用户从服务器上把邮件存储到本地主机上,同时根据客户端的操作删除或保存在邮件服务器上的邮件。POP3协议是TCP/IP协议族中的一员，主要用于 支持使用客户端远程管理在服务器上的电子邮件）<br />
-&ndash;without-mail_imap_module 禁用imap协议（一种邮件获取协议。它的主要作用是邮件客户端可以通过这种协议从邮件服务器上获取邮件的信息，下载邮件等。IMAP协议运行在TCP/IP协议之上， 使用的端口是143。它与POP3协议的主要区别是用户可以不用把所有的邮件全部下载，可以通过客户端直接对服务器上的邮件进行操作。）<br />
-&ndash;without-mail_smtp_module 禁用smtp协议（SMTP即简单邮件传输协议,它是一组用于由源地址到目的地址传送邮件的规则，由它来控制信件的中转方式。SMTP协议属于TCP/IP协议族，它帮助每台计算机在发送或中转信件时找到下一个目的地。）<br />
-&ndash;with-google_perftools_module 启用ngx_google_perftools_module支持（调试用，剖析程序性能瓶颈）<br />
-&ndash;with-cpp_test_module 启用ngx_cpp_test_module支持<br />
-&ndash;add-module= 启用外部模块支持<br />
-&ndash;with-cc= 指向C编译器路径<br />
-&ndash;with-cpp= 指向C预处理路径<br />
-&ndash;with-cc-opt= 设置C编译器参数（PCRE库，需要指定&ndash;with-cc-opt=”-I /usr/local/include”，如果使用select()函数则需要同时增加文件描述符数量，可以通过&ndash;with-cc- opt=”-D FD_SETSIZE=2048”指定。）<br />
-&ndash;with-ld-opt= 设置连接文件参数。（PCRE库，需要指定&ndash;with-ld-opt=”-L /usr/local/lib”。）<br />
-&ndash;with-cpu-opt= 指定编译的CPU，可用的值为: pentium, pentiumpro, pentium3, pentium4, athlon, opteron, amd64, sparc32, sparc64, ppc64<br />
-&ndash;without-pcre 禁用pcre库<br />
-&ndash;with-pcre 启用pcre库<br />
-&ndash;with-pcre= 指向pcre库文件目录<br />
-&ndash;with-pcre-opt= 在编译时为pcre库设置附加参数<br />
-&ndash;with-md5= 指向md5库文件目录（消息摘要算法第五版，用以提供消息的完整性保护）<br />
-&ndash;with-md5-opt= 在编译时为md5库设置附加参数<br />
-&ndash;with-md5-asm 使用md5汇编源<br />
-&ndash;with-sha1= 指向sha1库目录（数字签名算法，主要用于数字签名）<br />
-&ndash;with-sha1-opt= 在编译时为sha1库设置附加参数<br />
-&ndash;with-sha1-asm 使用sha1汇编源<br />
-&ndash;with-zlib= 指向zlib库目录<br />
-&ndash;with-zlib-opt= 在编译时为zlib设置附加参数<br />
-&ndash;with-zlib-asm= 为指定的CPU使用zlib汇编源进行优化，CPU类型为pentium, pentiumpro<br />
-&ndash;with-libatomic 为原子内存的更新操作的实现提供一个架构<br />
-&ndash;with-libatomic= 指向libatomic_ops安装目录<br />
-&ndash;with-openssl= 指向openssl安装目录<br />
-&ndash;with-openssl-opt 在编译时为openssl设置附加参数<br />
-&ndash;with-debug 启用debug日志</p>
+--without-http-cache 禁用http cache功能<br />
+--with-mail 启用POP3/IMAP4/SMTP代理模块支持<br />
+--with-mail_ssl_module 启用ngx_mail_ssl_module支持<br />
+--without-mail_pop3_module 禁用pop3协议（POP3即邮局协议的第3个版本,它是规定个人计算机如何连接到互联网上的邮件服务器进行收发邮件的协议。是因特网电子邮件的第一个离线协议标 准,POP3协议允许用户从服务器上把邮件存储到本地主机上,同时根据客户端的操作删除或保存在邮件服务器上的邮件。POP3协议是TCP/IP协议族中的一员，主要用于 支持使用客户端远程管理在服务器上的电子邮件）<br />
+--without-mail_imap_module 禁用imap协议（一种邮件获取协议。它的主要作用是邮件客户端可以通过这种协议从邮件服务器上获取邮件的信息，下载邮件等。IMAP协议运行在TCP/IP协议之上， 使用的端口是143。它与POP3协议的主要区别是用户可以不用把所有的邮件全部下载，可以通过客户端直接对服务器上的邮件进行操作。）<br />
+--without-mail_smtp_module 禁用smtp协议（SMTP即简单邮件传输协议,它是一组用于由源地址到目的地址传送邮件的规则，由它来控制信件的中转方式。SMTP协议属于TCP/IP协议族，它帮助每台计算机在发送或中转信件时找到下一个目的地。）<br />
+--with-google_perftools_module 启用ngx_google_perftools_module支持（调试用，剖析程序性能瓶颈）<br />
+--with-cpp_test_module 启用ngx_cpp_test_module支持<br />
+--add-module= 启用外部模块支持<br />
+--with-cc= 指向C编译器路径<br />
+--with-cpp= 指向C预处理路径<br />
+--with-cc-opt= 设置C编译器参数（PCRE库，需要指定--with-cc-opt=”-I /usr/local/include”，如果使用select()函数则需要同时增加文件描述符数量，可以通过--with-cc- opt=”-D FD_SETSIZE=2048”指定。）<br />
+--with-ld-opt= 设置连接文件参数。（PCRE库，需要指定--with-ld-opt=”-L /usr/local/lib”。）<br />
+--with-cpu-opt= 指定编译的CPU，可用的值为: pentium, pentiumpro, pentium3, pentium4, athlon, opteron, amd64, sparc32, sparc64, ppc64<br />
+--without-pcre 禁用pcre库<br />
+--with-pcre 启用pcre库<br />
+--with-pcre= 指向pcre库文件目录<br />
+--with-pcre-opt= 在编译时为pcre库设置附加参数<br />
+--with-md5= 指向md5库文件目录（消息摘要算法第五版，用以提供消息的完整性保护）<br />
+--with-md5-opt= 在编译时为md5库设置附加参数<br />
+--with-md5-asm 使用md5汇编源<br />
+--with-sha1= 指向sha1库目录（数字签名算法，主要用于数字签名）<br />
+--with-sha1-opt= 在编译时为sha1库设置附加参数<br />
+--with-sha1-asm 使用sha1汇编源<br />
+--with-zlib= 指向zlib库目录<br />
+--with-zlib-opt= 在编译时为zlib设置附加参数<br />
+--with-zlib-asm= 为指定的CPU使用zlib汇编源进行优化，CPU类型为pentium, pentiumpro<br />
+--with-libatomic 为原子内存的更新操作的实现提供一个架构<br />
+--with-libatomic= 指向libatomic_ops安装目录<br />
+--with-openssl= 指向openssl安装目录<br />
+--with-openssl-opt 在编译时为openssl设置附加参数<br />
+--with-debug 启用debug日志</p>
 
                         </div>                      
                         <div class="clear"></div>
@@ -1950,7 +2181,7 @@ cp auto/configure .</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1994,6 +2225,8 @@ cp auto/configure .</p>
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -2219,7 +2452,7 @@ cp auto/configure .</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -2337,7 +2570,7 @@ cp auto/configure .</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2489,7 +2722,7 @@ cp auto/configure .</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2770,6 +3003,32 @@ cp auto/configure .</p>
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

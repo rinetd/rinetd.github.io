@@ -1082,7 +1082,7 @@ JENKINS_URL/job/JOBNAME/build?token=TOKEN where TOKEN is set up in the job confi
 curl <a href="http://qubuluo.com:8080/job/yimeng/build?token=ae9ed2024d4a27d066b3c8009e77857a" target="_blank">http://qubuluo.com:8080/job/yimeng/build?token=ae9ed2024d4a27d066b3c8009e77857a</a></p></li>
 </ol>
 
-<p>CRUMB=$(curl -s &lsquo;<a href="http://rinetd:ae9ed2024d4a27d066b3c8009e77857a@qubuluo.com:8080/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,&quot;:&quot;,//crumb)'" target="_blank">http://rinetd:ae9ed2024d4a27d066b3c8009e77857a@qubuluo.com:8080/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,&quot;:&quot;,//crumb)'</a>)<br />
+<p>CRUMB=$(curl -s '<a href="http://rinetd:ae9ed2024d4a27d066b3c8009e77857a@qubuluo.com:8080/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,&quot;:&quot;,//crumb)'" target="_blank">http://rinetd:ae9ed2024d4a27d066b3c8009e77857a@qubuluo.com:8080/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,&quot;:&quot;,//crumb)'</a>)<br />
 curl -H $CRUMB <a href="http://USER:TOKEN@localhost:8080/" target="_blank">http://USER:TOKEN@localhost:8080/</a><jobname>/disable<br />
 curl -H $CRUMB <a href="http://localhost:8080/" target="_blank">http://localhost:8080/</a><jobname>/disable -u USER:TOKEN</p>
 
@@ -1095,7 +1095,7 @@ $ docker run -p 8080:8080 index.csphere.cn/microimages/jenkins</p>
 <p>这样启动将会把所有workspace存储到 /var/jenkins_home 目录，包括所有数据、插件以及配置，你也许希望运行在一个持久化的数据卷里:</p>
 
 <p>console<br />
-$ docker run &ndash;name myjenkins -p 8080:8080 -v /var/jenkins_home index.csphere.cn/microimages/jenkins</p>
+$ docker run --name myjenkins -p 8080:8080 -v /var/jenkins_home index.csphere.cn/microimages/jenkins</p>
 
 <p>myjenkins这个容器里的卷将会得到持久化，你也可以映射一个主机目录:</p>
 
@@ -1116,9 +1116,9 @@ docker最大的优势在于部署，jenkins最强大的在于作业调度和插�
 
 <p>然后我们就可以在自己的jenkins项目中，添加一个执行shell脚本，示例如下：</p>
 
-<p>TAG=$(echo $GIT_COMMIT | awk  &lsquo;{ string=substr($0, 1, 7); print string; }&rsquo; )<br />
+<p>TAG=$(echo $GIT_COMMIT | awk  '{ string=substr($0, 1, 7); print string; }' )<br />
 docker build -t demo:$TAG .<br />
-docker run &ndash;rm demo:$TAG run_test<br />
+docker run --rm demo:$TAG run_test<br />
 docker tag -f demo:$TAG your_registry/demo:$TAG<br />
 docker push your_registry/demo:$TAG</p>
 
@@ -1145,7 +1145,7 @@ COPY executors.groovy /usr/share/jenkins/ref/init.groovy.d/executors.groovy</p>
 传递JVM参数<br />
 你也许想修改JVM的运行参数，比如heap memory:</p>
 
-<p>$ docker run &ndash;name myjenkins -p 8080:8080 -p 50000:50000 &ndash;env JAVA_OPTS=-Dhudson.footerURL=<a href="http://mycompany.com" target="_blank">http://mycompany.com</a> index.csphere.cn/microimages/jenkins</p>
+<p>$ docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=-Dhudson.footerURL=<a href="http://mycompany.com" target="_blank">http://mycompany.com</a> index.csphere.cn/microimages/jenkins</p>
 
 <p>配置日志<br />
 Jenkins的日志可以通过 java.util.logging.config.file Java property来配置</p>
@@ -1157,12 +1157,12 @@ handlers=java.util.logging.ConsoleHandler<br />
 jenkins.level=FINEST<br />
 java.util.logging.ConsoleHandler.level=FINEST<br />
 EOF<br />
-$ docker run &ndash;name myjenkins -p 8080:8080 -p 50000:50000 &ndash;env JAVA_OPTS=&ldquo;-Djava.util.logging.config.file=/var/jenkins_home/log.properties&rdquo; -v <code>pwd</code>/data:/var/jenkins_home index.csphere.cn/microimages/jenkins</p>
+$ docker run --name myjenkins -p 8080:8080 -p 50000:50000 --env JAVA_OPTS=&quot;-Djava.util.logging.config.file=/var/jenkins_home/log.properties&quot; -v <code>pwd</code>/data:/var/jenkins_home index.csphere.cn/microimages/jenkins</p>
 
 <p>传递Jenkins的启动参数<br />
 你也可以传递jenkins的运行参数：</p>
 
-<p>docker run jenkins &ndash;version</p>
+<p>docker run jenkins --version</p>
 
 <p>你还可以在环境变量 JENKINS_OPTS 中定义jenkins的运行参数，比如：</p>
 
@@ -1170,7 +1170,7 @@ $ docker run &ndash;name myjenkins -p 8080:8080 -p 50000:50000 &ndash;env JAVA_O
 
 <p>COPY https.pem /var/lib/jenkins/cert<br />
 COPY https.key /var/lib/jenkins/pk<br />
-ENV JENKINS_OPTS &ndash;httpPort=-1 &ndash;httpsPort=8083 &ndash;httpsCertificate=/var/lib/jenkins/cert &ndash;httpsPrivateKey=/var/lib/jenkins/pk<br />
+ENV JENKINS_OPTS --httpPort=-1 --httpsPort=8083 --httpsCertificate=/var/lib/jenkins/cert --httpsPrivateKey=/var/lib/jenkins/pk<br />
 EXPOSE 8083</p>
 
 <p>你还可以通过定义环境变量 JENKINS_SLAVE_AGENT_PORT 来改变默认的slave端口</p>
@@ -1180,7 +1180,7 @@ ENV JENKINS_SLAVE_AGENT_PORT 50001</p>
 
 <p>或者直接通过-e环境变量提供：</p>
 
-<p>docker run &ndash;name myjenkins -p 8080:8080 -p 50001:50001 -e JENKINS_SLAVE_AGENT_PORT=50001 index.csphere.cn/microimages/jenkins</p>
+<p>docker run --name myjenkins -p 8080:8080 -p 50001:50001 -e JENKINS_SLAVE_AGENT_PORT=50001 index.csphere.cn/microimages/jenkins</p>
 
 <p>安装更多工具<br />
 我们可以继承此镜像，来定义我们自己的jenkins的hook脚本或插件。比如我们希望加入更多的插件：</p>
@@ -1415,7 +1415,7 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1459,6 +1459,8 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt</p>
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1684,7 +1686,7 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1802,7 +1804,7 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -1954,7 +1956,7 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2235,6 +2237,32 @@ RUN /usr/local/bin/plugins.sh /usr/share/jenkins/plugins.txt</p>
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

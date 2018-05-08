@@ -1035,7 +1035,7 @@
                         <h1 class="post-title">Linux命令 iptables RAW模块</h1>
 
                         <p class="post-byline">
-                          by  · 2016年01月06日 · 2707 Words ·
+                          by  · 2016年01月06日 · 2692 Words ·
                           ~6min reading time |
                           
                           
@@ -1051,7 +1051,7 @@
                             <p>什么是raw表？做什么用的？</p>
 
 <p>iptables有5个链:PREROUTING,INPUT,FORWARD,OUTPUT,POSTROUTING,4个表:filter,nat,mangle,raw.<br />
-4个表的优先级由高到低的顺序为:raw&ndash;&gt;mangle&ndash;&gt;nat&ndash;&gt;filter<br />
+4个表的优先级由高到低的顺序为:raw--&gt;mangle--&gt;nat--&gt;filter<br />
 举例来说:如果PRROUTING链上,即有mangle表,也有nat表,那么先由mangle处理,然后由nat表处理<br />
 RAW表只使用在PREROUTING链和OUTPUT链上,因为优先级最高，从而可以对收到的数据包在连接跟踪前进行处理。一但用户使用了RAW表,在某个链上,RAW表处理完后,将跳过NAT表和 ip_conntrack处理,即不再做地址转换和数据包的链接跟踪处理了.<br />
 RAW表可以应用在那些不需要做nat的情况下，以提高性能。如大量访问的web服务器，可以让80端口不再让iptables做数据包的链接跟踪处理，以提高用户的访问速度。<br />
@@ -1093,9 +1093,9 @@ RAW表可以应用在那些不需要做nat的情况下，以提高性能。如�
 状态除了以前的四个还增加了一个UNTRACKED<br />
 例如：<br />
 可以使用 “NOTRACK” target 允许规则指定80端口的包不进入链接跟踪/NAT子系统<br />
-iptables -t raw -A PREROUTING -d 1.2.3.4 -p tcp &ndash;dport 80 -j NOTRACK<br />
-iptables -t raw -A PREROUTING -s 1.2.3.4 -p tcp &ndash;sport 80 -j NOTRACK<br />
-iptables -A FORWARD -m state &ndash;state UNTRACKED -j ACCEPT<br />
+iptables -t raw -A PREROUTING -d 1.2.3.4 -p tcp --dport 80 -j NOTRACK<br />
+iptables -t raw -A PREROUTING -s 1.2.3.4 -p tcp --sport 80 -j NOTRACK<br />
+iptables -A FORWARD -m state --state UNTRACKED -j ACCEPT<br />
 <span style="font-family: Arial; line-height: 26px; text-align: left; background-color: rgb(255, 255, 255); font-size: 16px; color: rgb(153, 0, 0); ">4) 解决ip_conntrack: table full, dropping packet<span style="font-family: Arial; line-height: 26px; text-align: left; background-color: rgb(255, 255, 255); font-size: 16px; color: rgb(153, 0, 0); ">的问题<br />
 <br /></li>
 </ol>
@@ -1118,8 +1118,8 @@ net.ipv4.netfilter.ip_conntrack_tcp_timeout_fin_wait = 120<br />
 上面两种方法打个比喻就是烧水水开的时候，换一个大锅。一般情况下都可以解决问题，但是在极端情况下，还是不够用，怎么办？<br />
 这样就得反其道而行，用釜底抽薪的办法。iptables的raw表是不做数据包的链接跟踪处理的，我们就把那些连接量非常大的链接加入到iptables raw表。<br />
 如一台web服务器可以这样：<br />
-iptables -t raw -A PREROUTING -d 1.2.3.4 -p tcp &ndash;dport 80 -j NOTRACK<br />
-iptables -A FORWARD -m state &ndash;state UNTRACKED -j ACCEPT<br />
+iptables -t raw -A PREROUTING -d 1.2.3.4 -p tcp --dport 80 -j NOTRACK<br />
+iptables -A FORWARD -m state --state UNTRACKED -j ACCEPT<br />
 <span style="font-family: Arial; line-height: 26px; text-align: left; background-color: rgb(255, 255, 255); font-size: 16px; color: rgb(153, 0, 0); ">5)  iptables raw表的效果测试<br />
 我们在一台web server上做测试，先不使用raw表，观察链接跟踪表(/proc/net/ip_conntrack)的大小：<br />
 先看下iptables配置：<br />
@@ -1133,16 +1133,16 @@ cat /etc/sysconfig/iptables<br />
 -A INPUT -j RH-Firewall-1-INPUT<br />
 -A FORWARD -j RH-Firewall-1-INPUT<br />
 -A RH-Firewall-1-INPUT -i lo -j ACCEPT<br />
--A RH-Firewall-1-INPUT -p icmp -m icmp &ndash;icmp-type any -j ACCEPT<br />
+-A RH-Firewall-1-INPUT -p icmp -m icmp --icmp-type any -j ACCEPT<br />
 -A RH-Firewall-1-INPUT -p esp -j ACCEPT<br />
 -A RH-Firewall-1-INPUT -p ah -j ACCEPT<br />
--A RH-Firewall-1-INPUT -d 224.0.0.251 -p udp -m udp &ndash;dport 5353 -j ACCEPT<br />
--A RH-Firewall-1-INPUT -p udp -m udp &ndash;dport 631 -j ACCEPT<br />
--A RH-Firewall-1-INPUT -p tcp -m tcp &ndash;dport 631 -j ACCEPT<br />
--A RH-Firewall-1-INPUT -m state &ndash;state RELATED,ESTABLISHED -j ACCEPT<br />
--A RH-Firewall-1-INPUT -p tcp -m state &ndash;state NEW -m tcp &ndash;dport 22 -j ACCEPT<br />
--A RH-Firewall-1-INPUT -p tcp -m state &ndash;state NEW -m tcp &ndash;dport 80 -j ACCEPT<br />
--A RH-Firewall-1-INPUT -j REJECT &ndash;reject-with icmp-host-prohibited<br />
+-A RH-Firewall-1-INPUT -d 224.0.0.251 -p udp -m udp --dport 5353 -j ACCEPT<br />
+-A RH-Firewall-1-INPUT -p udp -m udp --dport 631 -j ACCEPT<br />
+-A RH-Firewall-1-INPUT -p tcp -m tcp --dport 631 -j ACCEPT<br />
+-A RH-Firewall-1-INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT<br />
+-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT<br />
+-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT<br />
+-A RH-Firewall-1-INPUT -j REJECT --reject-with icmp-host-prohibited<br />
 COMMIT<br />
 # Completed on Wed Aug 18 10:10:52 2010<br />
 在另一台机器上用ab测试：<br />
@@ -1163,24 +1163,24 @@ ab -c 1000 -n 5000 <a href="http://192.168.20.26/index.html" target="_blank">htt
 -A INPUT -j RH-Firewall-1-INPUT <br />
 -A FORWARD -j RH-Firewall-1-INPUT <br />
 -A RH-Firewall-1-INPUT -i lo -j ACCEPT <br />
--A RH-Firewall-1-INPUT -p icmp -m icmp &ndash;icmp-type any -j ACCEPT <br />
+-A RH-Firewall-1-INPUT -p icmp -m icmp --icmp-type any -j ACCEPT <br />
 -A RH-Firewall-1-INPUT -p esp -j ACCEPT <br />
 -A RH-Firewall-1-INPUT -p ah -j ACCEPT <br />
--A RH-Firewall-1-INPUT -d 224.0.0.251 -p udp -m udp &ndash;dport 5353 -j ACCEPT <br />
--A RH-Firewall-1-INPUT -p udp -m udp &ndash;dport 631 -j ACCEPT <br />
--A RH-Firewall-1-INPUT -p tcp -m tcp &ndash;dport 631 -j ACCEPT <br />
--A RH-Firewall-1-INPUT -m state &ndash;state RELATED,ESTABLISHED,UNTRACKED -j ACCEPT<br />
--A RH-Firewall-1-INPUT -p tcp -m state &ndash;state NEW -m tcp &ndash;dport 22 -j ACCEPT <br />
--A RH-Firewall-1-INPUT -p tcp -m state &ndash;state NEW -m tcp &ndash;dport 80 -j ACCEPT <br />
--A RH-Firewall-1-INPUT -j REJECT &ndash;reject-with icmp-host-prohibited <br />
+-A RH-Firewall-1-INPUT -d 224.0.0.251 -p udp -m udp --dport 5353 -j ACCEPT <br />
+-A RH-Firewall-1-INPUT -p udp -m udp --dport 631 -j ACCEPT <br />
+-A RH-Firewall-1-INPUT -p tcp -m tcp --dport 631 -j ACCEPT <br />
+-A RH-Firewall-1-INPUT -m state --state RELATED,ESTABLISHED,UNTRACKED -j ACCEPT<br />
+-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT <br />
+-A RH-Firewall-1-INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT <br />
+-A RH-Firewall-1-INPUT -j REJECT --reject-with icmp-host-prohibited <br />
 COMMIT<br />
 # Completed on Wed Aug 18 10:10:52 2010<br />
 # Generated by iptables-save v1.3.5 on Wed Aug 18 10:10:52 2010<br />
 *raw<br />
 :PREROUTING ACCEPT [116163:9327716]<br />
 :OUTPUT ACCEPT [104076:12500201]<br />
--A PREROUTING -p tcp -m tcp &ndash;dport 80 -j NOTRACK <br />
--A OUTPUT -p tcp -m tcp &ndash;sport 80 -j NOTRACK <br />
+-A PREROUTING -p tcp -m tcp --dport 80 -j NOTRACK <br />
+-A OUTPUT -p tcp -m tcp --sport 80 -j NOTRACK <br />
 COMMIT<br />
 # Completed on Wed Aug 18 10:10:52 2010<br />
 红色部分是新增的。<br />
@@ -1190,10 +1190,10 @@ service iptables restart<br />
 [root@mongo html]# iptables -t raw -L -n<br />
 Chain PREROUTING (policy ACCEPT)<br />
 target     prot opt source               destination         <br />
-NOTRACK    tcp  &ndash;  0.0.0.0/0            0.0.0.0/0           tcp dpt:80 <br />
+NOTRACK    tcp  --  0.0.0.0/0            0.0.0.0/0           tcp dpt:80 <br />
 Chain OUTPUT (policy ACCEPT)<br />
 target     prot opt source               destination         <br />
-NOTRACK    tcp  &ndash;  0.0.0.0/0            0.0.0.0/0           tcp spt:80 <br />
+NOTRACK    tcp  --  0.0.0.0/0            0.0.0.0/0           tcp spt:80 <br />
 然后再用ab测试：<br />
 ab -c 1000 -n 5000 <a href="http://192.168.20.26/index.html" target="_blank">http://192.168.20.26/index.html</a><br />
 查看链接跟踪表(/proc/net/ip_conntrack)的大小：<br />
@@ -1414,7 +1414,7 @@ tcp      6 431999 ESTABLISHED src=192.168.20.26 dst=192.168.20.10 sport=22 
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1458,6 +1458,8 @@ tcp      6 431999 ESTABLISHED src=192.168.20.26 dst=192.168.20.10 sport=22 
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1683,7 +1685,7 @@ tcp      6 431999 ESTABLISHED src=192.168.20.26 dst=192.168.20.10 sport=22 
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1801,7 +1803,7 @@ tcp      6 431999 ESTABLISHED src=192.168.20.26 dst=192.168.20.10 sport=22 
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -1953,7 +1955,7 @@ tcp      6 431999 ESTABLISHED src=192.168.20.26 dst=192.168.20.10 sport=22 
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2234,6 +2236,32 @@ tcp      6 431999 ESTABLISHED src=192.168.20.26 dst=192.168.20.10 sport=22 
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

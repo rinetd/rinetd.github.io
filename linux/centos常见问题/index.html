@@ -9,17 +9,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   
-  <meta name="description" content="镜像 https://mirrors.tuna.tsinghua.edu.cn/help/centos/ 文件同步 ansible all -m copy -a &ldquo;src=~/.ssh/id_rsa dest=~/.ssh/id_rsa mode=600&rdquo; ansible all -m copy -a &ldquo;src=/etc/hosts dest=/etc/hosts &ldquo; 设置系统时间 ansible all -a &ldquo;timedatectl set-ntp true &rdquo; # 开启时间同步 ansible all -a &ldquo;timedatectl set-timezone Asia/Shanghai&rdquo; ansible all -a &ldquo;hwclock &ndash;systohc &ndash;utc&rdquo; cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime ntpdate time.pool.aliyun.com Centos配置时间">
+  <meta name="description" content="配置本地ISO源 挂载cdrom mkdir /mnt/cdrom mount -t auto /dev/cdrom /mnt/cdrom 或者过载 iso文件 mount -o loop ~/CentOS-7-x86_64-DVD-1708.iso /mnt/cdrom 移除线上仓库 mkdir /etc/yum.repos.d/bak mv *.repo /etc/yum.repos.d/bak 创建本地仓库配置 vi /etc/yum.repos.d/cdrom.repo [base] name=RedHat #注：这里的baseu">
   <meta name="author" content=rinetd>
   <meta name="publisher" content=rinetd@163.com>
 
   <meta itemprop="name" content="CentOS7常见问题 - 时光小栈">
-  <meta itemprop="description" content="镜像 https://mirrors.tuna.tsinghua.edu.cn/help/centos/ 文件同步 ansible all -m copy -a &ldquo;src=~/.ssh/id_rsa dest=~/.ssh/id_rsa mode=600&rdquo; ansible all -m copy -a &ldquo;src=/etc/hosts dest=/etc/hosts &ldquo; 设置系统时间 ansible all -a &ldquo;timedatectl set-ntp true &rdquo; # 开启时间同步 ansible all -a &ldquo;timedatectl set-timezone Asia/Shanghai&rdquo; ansible all -a &ldquo;hwclock &ndash;systohc &ndash;utc&rdquo; cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime ntpdate time.pool.aliyun.com Centos配置时间">
+  <meta itemprop="description" content="配置本地ISO源 挂载cdrom mkdir /mnt/cdrom mount -t auto /dev/cdrom /mnt/cdrom 或者过载 iso文件 mount -o loop ~/CentOS-7-x86_64-DVD-1708.iso /mnt/cdrom 移除线上仓库 mkdir /etc/yum.repos.d/bak mv *.repo /etc/yum.repos.d/bak 创建本地仓库配置 vi /etc/yum.repos.d/cdrom.repo [base] name=RedHat #注：这里的baseu">
   <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
   
   <meta property="og:type" content="article" />
   <meta property="og:title" content="CentOS7常见问题 - 时光小栈" />
-  <meta property="og:description" content="镜像 https://mirrors.tuna.tsinghua.edu.cn/help/centos/ 文件同步 ansible all -m copy -a &ldquo;src=~/.ssh/id_rsa dest=~/.ssh/id_rsa mode=600&rdquo; ansible all -m copy -a &ldquo;src=/etc/hosts dest=/etc/hosts &ldquo; 设置系统时间 ansible all -a &ldquo;timedatectl set-ntp true &rdquo; # 开启时间同步 ansible all -a &ldquo;timedatectl set-timezone Asia/Shanghai&rdquo; ansible all -a &ldquo;hwclock &ndash;systohc &ndash;utc&rdquo; cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime ntpdate time.pool.aliyun.com Centos配置时间">
+  <meta property="og:description" content="配置本地ISO源 挂载cdrom mkdir /mnt/cdrom mount -t auto /dev/cdrom /mnt/cdrom 或者过载 iso文件 mount -o loop ~/CentOS-7-x86_64-DVD-1708.iso /mnt/cdrom 移除线上仓库 mkdir /etc/yum.repos.d/bak mv *.repo /etc/yum.repos.d/bak 创建本地仓库配置 vi /etc/yum.repos.d/cdrom.repo [base] name=RedHat #注：这里的baseu">
   <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
   <meta property="og:url" content="http://blog.pytool.com/linux/centos%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/" />
   
@@ -1035,7 +1035,7 @@
                         <h1 class="post-title">CentOS7常见问题</h1>
 
                         <p class="post-byline">
-                          by  · 2016年09月27日 · 4081 Words ·
+                          by  · 2016年09月27日 · 4233 Words ·
                           ~9min reading time |
                           
                           
@@ -1050,20 +1050,50 @@
                             </p>
                             
 
+<h2 id="配置本地iso源">配置本地ISO源</h2>
+
+<ol>
+<li>挂载cdrom<br />
+mkdir /mnt/cdrom<br />
+mount -t auto /dev/cdrom /mnt/cdrom<br /></li>
+<li>或者过载 iso文件<br />
+mount -o loop ~/CentOS-7-x86_64-DVD-1708.iso /mnt/cdrom<br /></li>
+<li>移除线上仓库<br />
+mkdir /etc/yum.repos.d/bak<br />
+mv *.repo /etc/yum.repos.d/bak<br /></li>
+<li>创建本地仓库配置 <code>vi /etc/yum.repos.d/cdrom.repo</code><br />
+<br /></li>
+</ol>
+
+<pre><code class="language-ini">[base]
+name=RedHat
+#注：这里的baseurl就是你挂载的目录，在这里是/mnt/cdrom
+baseurl=file:///mnt/cdrom    
+#注：这里的值enabled一定要为1  
+enabled=1                    
+# gpgckeck的值无所谓
+gpgckeck=0
+#注：这个你cd /mnt/cdrom/可以看到这个key，这里仅仅是个例子
+gpgkey=file:///mnt/cdrom/RPM-GPG-KEY-CentOS-7
+</code></pre>
+
+<p>yum clean all<br />
+yum install vim*</p>
+
 <h1 id="镜像">镜像</h1>
 
 <p><a href="https://mirrors.tuna.tsinghua.edu.cn/help/centos/" target="_blank">https://mirrors.tuna.tsinghua.edu.cn/help/centos/</a></p>
 
 <h2 id="文件同步">文件同步</h2>
 
-<p>ansible all -m copy -a &ldquo;src=~/.ssh/id_rsa dest=~/.ssh/id_rsa mode=600&rdquo;<br />
-ansible all -m copy -a &ldquo;src=/etc/hosts dest=/etc/hosts &ldquo;</p>
+<p>ansible all -m copy -a &quot;src=~/.ssh/id_rsa dest=~/.ssh/id_rsa mode=600&quot;<br />
+ansible all -m copy -a &quot;src=/etc/hosts dest=/etc/hosts &quot;</p>
 
 <h2 id="设置系统时间">设置系统时间</h2>
 
-<p>ansible all -a &ldquo;timedatectl set-ntp true &rdquo; # 开启时间同步<br />
-ansible all -a &ldquo;timedatectl set-timezone Asia/Shanghai&rdquo;<br />
-ansible all -a &ldquo;hwclock &ndash;systohc &ndash;utc&rdquo;</p>
+<p>ansible all -a &quot;timedatectl set-ntp true &quot; # 开启时间同步<br />
+ansible all -a &quot;timedatectl set-timezone Asia/Shanghai&quot;<br />
+ansible all -a &quot;hwclock --systohc --utc&quot;</p>
 
 <p>cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime<br />
 ntpdate time.pool.aliyun.com</p>
@@ -1073,7 +1103,7 @@ ntpdate time.pool.aliyun.com</p>
 <p>yum install -y ntp<br />
 ntpdate ntp1.aliyun.com<br />
 ntpdate -u cn.ntp.org.cn ntp.ubuntu.com<br />
-ansible all -a &ldquo;ntpdate -u cn.ntp.org.cn&rdquo;</p>
+ansible all -a &quot;ntpdate -u cn.ntp.org.cn&quot;</p>
 
 <h2 id="centos-docker-无法删除docker容器-device-or-resource-busy">Centos docker 无法删除docker容器 device or resource busy</h2>
 
@@ -1085,10 +1115,10 @@ ansible all -a &ldquo;ntpdate -u cn.ntp.org.cn&rdquo;</p>
 
 <h2 id="更新系统内核">更新系统内核</h2>
 
-<p>ansible all -a &ldquo;grub2-editenv list&rdquo;<br />
-ansible all -a &ldquo;grub2-set-default &lsquo;CentOS Linux (3.10.0-327.el7.x86_64) 7 (Core)&lsquo;&rdquo;</p>
+<p>ansible all -a &quot;grub2-editenv list&quot;<br />
+ansible all -a &quot;grub2-set-default 'CentOS Linux (3.10.0-327.el7.x86_64) 7 (Core)'&quot;</p>
 
-<p>ansible all -m copy -a &ldquo;src=/etc/yum.repos.d/MariaDB.repo  dest=/etc/yum.repos.d/MariaDB.repo  mode=0644&rdquo;</p>
+<p>ansible all -m copy -a &quot;src=/etc/yum.repos.d/MariaDB.repo  dest=/etc/yum.repos.d/MariaDB.repo  mode=0644&quot;</p>
 
 <h2 id="centos配置阿里源">Centos配置阿里源</h2>
 
@@ -1103,19 +1133,22 @@ yum makecache</p>
 
 <h2 id="centos-配置清华源">Centos 配置清华源</h2>
 
-<pre><code class="language-sh">mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.back
-wget http://mirrors.aliyun.com/repo/Centos-7.repo  -P /etc/yum.repos.d/
-mv /etc/yum.repos.d/Centos-7.repo /etc/yum.repos.d/CentOS-Base.repo
-yum install -y epel-release
-yum install -y centos-release-openstack-mitaka
-sed -i &quot;s@#baseurl@baseurl@g&quot; /etc/yum.repos.d/epel.repo
-sed -i &quot;s@mirrorlist@#mirrorlist@g&quot;  /etc/yum.repos.d/epel.repo
-sed -i &quot;s#http://download.fedoraproject.org/pub#https://mirrors.tuna.tsinghua.edu.cn#g&quot; /etc/yum.repos.d/epel.repo
-sed -i &quot;s#http://elrepo.org/linux#https://mirror.tuna.tsinghua.edu.cn/elrepo#g&quot; /etc/yum.repos.d/elrepo.repo
-sed -i &quot;s#mirror.centos.org#mirrors.163.com#g&quot; /etc/yum.repos.d/CentOS-OpenStack-mitaka.repo
-yum clean all
-yum makecache
-</code></pre>
+<ol>
+<li>mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.back<br /></li>
+<li>wget <a href="http://mirrors.aliyun.com/repo/Centos-7.repo" target="_blank">http://mirrors.aliyun.com/repo/Centos-7.repo</a>  -P /etc/yum.repos.d/<br /></li>
+<li>mv /etc/yum.repos.d/Centos-7.repo /etc/yum.repos.d/CentOS-Base.repo<br /></li>
+<li>yum install -y epel-release<br /></li>
+<li>yum install -y centos-release-openstack-mitaka<br />
+<br /></li>
+</ol>
+
+<p>sed -i &quot;s/#baseurl/baseurl/g&quot; /etc/yum.repos.d/epel.repo<br />
+sed -i &quot;s/mirrorlist/#mirrorlist/g&quot;  /etc/yum.repos.d/epel.repo<br />
+sed -i &quot;s#<a href="http://download.fedoraproject.org/pub#https://mirrors.tuna.tsinghua.edu.cn#g&quot;" target="_blank">http://download.fedoraproject.org/pub#https://mirrors.tuna.tsinghua.edu.cn#g&quot;</a> /etc/yum.repos.d/epel.repo<br />
+sed -i &quot;s#<a href="http://elrepo.org/linux#https://mirror.tuna.tsinghua.edu.cn/elrepo#g&quot;" target="_blank">http://elrepo.org/linux#https://mirror.tuna.tsinghua.edu.cn/elrepo#g&quot;</a> /etc/yum.repos.d/elrepo.repo<br />
+sed -i &quot;s#mirror.centos.org#mirrors.163.com#g&quot; /etc/yum.repos.d/CentOS-OpenStack-mitaka.repo<br />
+yum clean all<br />
+yum makecache</p>
 
 <h2 id="centos-mongo">Centos mongo</h2>
 
@@ -1195,7 +1228,7 @@ yum install -y lvm2</p>
 vgcreate VolGroup /dev/vdb1<br />
 lvcreate -l +100%FREE -n lv_data VolGroup<br />
 mkfs.ext4 /dev/VolGroup/lv_data<br />
-echo &ldquo;/dev/VolGroup/lv_data /docker/ ext4 defaults 0 0&rdquo;|sudo tee -a /etc/fstab<br />
+echo &quot;/dev/VolGroup/lv_data /docker/ ext4 defaults 0 0&quot;|sudo tee -a /etc/fstab<br />
 e2fsck -y /dev/VolGroup/lv_data<br />
 mkdir /docker<br />
 mount -a</p>
@@ -1571,7 +1604,7 @@ rsyslog日志文件权限配置<br />
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1615,6 +1648,8 @@ rsyslog日志文件权限配置<br />
       
         
           <a rel="nofollow" rel="tag" href="../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1840,7 +1875,7 @@ rsyslog日志文件权限配置<br />
         
       
         
-          <a rel="nofollow" rel="tag" href="../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1958,7 +1993,7 @@ rsyslog日志文件权限配置<br />
         
       
         
-          <a rel="nofollow" rel="tag" href="../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2110,7 +2145,7 @@ rsyslog日志文件权限配置<br />
         
       
         
-          <a rel="nofollow" rel="tag" href="../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2391,6 +2426,32 @@ rsyslog日志文件权限配置<br />
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

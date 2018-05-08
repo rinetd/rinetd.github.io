@@ -9,17 +9,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   
-  <meta name="description" content="如何忽略一个加入到索引的文件修改 已经维护起来的文件，即使加上了gitignore，也无济于事。 用下面这个命令： git update-index &ndash;assume-unchanged logs/*.log 这样每次提交就不会出现">
+  <meta name="description" content="如何忽略一个加入到索引的文件修改 已经维护起来的文件，即使加上了gitignore，也无济于事。 用下面这个命令： git update-index --assume-unchanged logs/*.log 这样每次提交就不会出现">
   <meta name="author" content=rinetd>
   <meta name="publisher" content=rinetd@163.com>
 
   <meta itemprop="name" content="gitignore 忽略文件和目录 - 时光小栈">
-  <meta itemprop="description" content="如何忽略一个加入到索引的文件修改 已经维护起来的文件，即使加上了gitignore，也无济于事。 用下面这个命令： git update-index &ndash;assume-unchanged logs/*.log 这样每次提交就不会出现">
+  <meta itemprop="description" content="如何忽略一个加入到索引的文件修改 已经维护起来的文件，即使加上了gitignore，也无济于事。 用下面这个命令： git update-index --assume-unchanged logs/*.log 这样每次提交就不会出现">
   <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
   
   <meta property="og:type" content="article" />
   <meta property="og:title" content="gitignore 忽略文件和目录 - 时光小栈" />
-  <meta property="og:description" content="如何忽略一个加入到索引的文件修改 已经维护起来的文件，即使加上了gitignore，也无济于事。 用下面这个命令： git update-index &ndash;assume-unchanged logs/*.log 这样每次提交就不会出现">
+  <meta property="og:description" content="如何忽略一个加入到索引的文件修改 已经维护起来的文件，即使加上了gitignore，也无济于事。 用下面这个命令： git update-index --assume-unchanged logs/*.log 这样每次提交就不会出现">
   <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
   <meta property="og:url" content="http://blog.pytool.com/linux/git/linux-gitignore/" />
   
@@ -1054,15 +1054,15 @@
 
 <p>已经维护起来的文件，即使加上了gitignore，也无济于事。<br />
 用下面这个命令：<br />
-git update-index &ndash;assume-unchanged logs/*.log<br />
+git update-index --assume-unchanged logs/*.log<br />
 这样每次提交就不会出现logs下面的文件了</p>
 
 <p>答案虽然能达到（暂时的）目的，但并非最正确的做法，这样做是误解了 git update-index 的含义，而且这样做带来的最直接（不良）后果是这样的：</p>
 
 <ol>
-<li><p>所有的团队成员都必须对目标文件执行：git update-index &ndash;assume-unchanged <PATH>。这是因为即使你让 Git 假装看不见目标文件的改变，但文件本身还是在 Git 的历史记录里的，所以团队的每个人在 fetch 的时候都会拉到目标文件的变更。（但实际上目标文件是根本不想被 Git 记录的，而不是假装看不见它发生了改变）</p></li>
+<li><p>所有的团队成员都必须对目标文件执行：git update-index --assume-unchanged <PATH>。这是因为即使你让 Git 假装看不见目标文件的改变，但文件本身还是在 Git 的历史记录里的，所以团队的每个人在 fetch 的时候都会拉到目标文件的变更。（但实际上目标文件是根本不想被 Git 记录的，而不是假装看不见它发生了改变）</p></li>
 
-<li><p>一旦有人改变目标文件之后没有 git update-index &ndash;assume-unchanged <PATH> 就直接 push 了，那么接下来所有拉取了最新代码的成员必须重新执行 update-index，否则 Git 又会开始记录目标文件的变化。这一点实际上很常见的，比如说某成员换了机器或者硬盘，重新 clone 了一份代码库，由于目标文件还在 Git 的历史记录里，所以他／她很可能会忘记 update-index。</p></li>
+<li><p>一旦有人改变目标文件之后没有 git update-index --assume-unchanged <PATH> 就直接 push 了，那么接下来所有拉取了最新代码的成员必须重新执行 update-index，否则 Git 又会开始记录目标文件的变化。这一点实际上很常见的，比如说某成员换了机器或者硬盘，重新 clone 了一份代码库，由于目标文件还在 Git 的历史记录里，所以他／她很可能会忘记 update-index。</p></li>
 </ol>
 
 <p>git update-index 的定义是：</p>
@@ -1072,12 +1072,12 @@ git update-index &ndash;assume-unchanged logs/*.log<br />
 
 <p>这句话暗含的意思是：update-index 针对的是 Git 数据库里被记录的文件，而不是那些需要忽略的文件</p>
 
-<p>接着看关于 &ndash;assume-unchanged 的几句相关的描述：</p>
+<p>接着看关于 --assume-unchanged 的几句相关的描述：</p>
 
 <pre><code>应用了 --assume-unchanged 之后，Git 停止查看工作区文件可能发生的改变，所以你必须 *手动* 重置该标识以便 Git 知道你想要恢复对文件改变的追踪。当你工作在一个大型项目中，这在文件系统的 lstat 系统调用非常迟钝的时候会很有用。
 </code></pre>
 
-<p>git update-index &ndash;assume-unchanged 的真正用法是这样的：</p>
+<p>git update-index --assume-unchanged 的真正用法是这样的：</p>
 
 <pre><code>有一种使用场景是对一些体积庞大的文件进行修改，但是每一次保存 Git 都要计算文件的变化并更新工作区，这在硬盘慢的时候延迟卡顿非常明显
 
@@ -1086,7 +1086,7 @@ git update-index &ndash;assume-unchanged logs/*.log<br />
 commit＋push。
 </code></pre>
 
-<p>有时不想删除本地的文件, 只是想让git不再track, 这时可以使用 git rm &ndash;cached logs/xx.log</p>
+<p>有时不想删除本地的文件, 只是想让git不再track, 这时可以使用 git rm --cached logs/xx.log</p>
 
 <h3 id="本地忽略">本地忽略</h3>
 
@@ -1097,7 +1097,7 @@ commit＋push。
 <p>另外 git 提供了一个全局的 .gitignore<br />
 你可以在你的用户目录下创建 ~/.gitignoreglobal 文件，以同样的规则来划定哪些文件是不需要版本控制的。<br />
 需要执行<br />
-git config &ndash;global core.excludesfile ~/.gitignoreglobal</p>
+git config --global core.excludesfile ~/.gitignoreglobal</p>
 
 <h2 id="为什么我增加了-gitignore-里的规则却没有效果">为什么我增加了 .gitignore 里的规则却没有效果？</h2>
 
@@ -1110,9 +1110,9 @@ git config &ndash;global core.excludesfile ~/.gitignoreglobal</p>
 提交＋推送。
 </code></pre>
 
-<p>git rm -r &ndash;cached . #删除所有缓存<br />
-git checkout &ndash;track origin/develop   #<br />
-git submodule update &ndash;init &ndash;recursive  #ycmd</p>
+<p>git rm -r --cached . #删除所有缓存<br />
+git checkout --track origin/develop   #<br />
+git submodule update --init --recursive  #ycmd</p>
 
 <h2 id="禁止-drone-yml-文件从其他分之合并过来">禁止 .drone.yml 文件从其他分之合并过来</h2>
 
@@ -1350,7 +1350,7 @@ dir/ #忽略根目录下的dir/目录下的所有文件<br />
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1394,6 +1394,8 @@ dir/ #忽略根目录下的dir/目录下的所有文件<br />
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1619,7 +1621,7 @@ dir/ #忽略根目录下的dir/目录下的所有文件<br />
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1737,7 +1739,7 @@ dir/ #忽略根目录下的dir/目录下的所有文件<br />
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -1889,7 +1891,7 @@ dir/ #忽略根目录下的dir/目录下的所有文件<br />
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2170,6 +2172,32 @@ dir/ #忽略根目录下的dir/目录下的所有文件<br />
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

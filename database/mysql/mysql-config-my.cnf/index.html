@@ -9,17 +9,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   
-  <meta name="description" content="# docker run -it --rm --name mariadb -p 3306:3306 -v /docker/mysql:/var/lib/mysql -v $PWD/my.cnf:/etc/my.cnf mariadb # sudo groupadd -r -g 999 mysql &amp;&amp; sudo useradd -r -u 999 -g mysql -c mysql -d /var/lib/mysql -s /sbin/nologin mysql # /usr/local/mysql/scripts/mysql_install_db --user=ubuntu --basedir=/usr/local/mysql --datadir=/var/lib/mysql/data --ldata=/var/lib/mysql # 1.导入数据之前执行set unique_checks=0 来禁止对唯一索引的检查，数">
+  <meta name="description" content="# $ sudo gpasswd -a ${USER} mysql # 将用户加入该 mysql 组内 # docker run -it --rm --name mariadb -p 3306:3306 -v /docker/mysql:/var/lib/mysql -v $PWD/my.cnf:/etc/my.cnf mariadb # sudo groupadd -r -g 999 mysql &amp;&amp; sudo useradd -r -u 999 -g mysql -c mysql -d /var/lib/mysql -s /sbin/nologin mysql # /usr/local/mysql/scripts/mysql_install_db --user=ubuntu --basedir=/usr/local/mysql --datadir=/var/lib/mysql/data --ldata=/var/lib/mysql # mysql_install_db --user=mysql --basedir=/usr/share/mysql --datadir=/docker/var/lib/mysql # mysql_upgrade # mysql_secure_installation ## 加">
   <meta name="author" content=rinetd>
   <meta name="publisher" content=rinetd@163.com>
 
   <meta itemprop="name" content="my.cnf详解 - 时光小栈">
-  <meta itemprop="description" content="# docker run -it --rm --name mariadb -p 3306:3306 -v /docker/mysql:/var/lib/mysql -v $PWD/my.cnf:/etc/my.cnf mariadb # sudo groupadd -r -g 999 mysql &amp;&amp; sudo useradd -r -u 999 -g mysql -c mysql -d /var/lib/mysql -s /sbin/nologin mysql # /usr/local/mysql/scripts/mysql_install_db --user=ubuntu --basedir=/usr/local/mysql --datadir=/var/lib/mysql/data --ldata=/var/lib/mysql # 1.导入数据之前执行set unique_checks=0 来禁止对唯一索引的检查，数">
+  <meta itemprop="description" content="# $ sudo gpasswd -a ${USER} mysql # 将用户加入该 mysql 组内 # docker run -it --rm --name mariadb -p 3306:3306 -v /docker/mysql:/var/lib/mysql -v $PWD/my.cnf:/etc/my.cnf mariadb # sudo groupadd -r -g 999 mysql &amp;&amp; sudo useradd -r -u 999 -g mysql -c mysql -d /var/lib/mysql -s /sbin/nologin mysql # /usr/local/mysql/scripts/mysql_install_db --user=ubuntu --basedir=/usr/local/mysql --datadir=/var/lib/mysql/data --ldata=/var/lib/mysql # mysql_install_db --user=mysql --basedir=/usr/share/mysql --datadir=/docker/var/lib/mysql # mysql_upgrade # mysql_secure_installation ## 加">
   <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
   
   <meta property="og:type" content="article" />
   <meta property="og:title" content="my.cnf详解 - 时光小栈" />
-  <meta property="og:description" content="# docker run -it --rm --name mariadb -p 3306:3306 -v /docker/mysql:/var/lib/mysql -v $PWD/my.cnf:/etc/my.cnf mariadb # sudo groupadd -r -g 999 mysql &amp;&amp; sudo useradd -r -u 999 -g mysql -c mysql -d /var/lib/mysql -s /sbin/nologin mysql # /usr/local/mysql/scripts/mysql_install_db --user=ubuntu --basedir=/usr/local/mysql --datadir=/var/lib/mysql/data --ldata=/var/lib/mysql # 1.导入数据之前执行set unique_checks=0 来禁止对唯一索引的检查，数">
+  <meta property="og:description" content="# $ sudo gpasswd -a ${USER} mysql # 将用户加入该 mysql 组内 # docker run -it --rm --name mariadb -p 3306:3306 -v /docker/mysql:/var/lib/mysql -v $PWD/my.cnf:/etc/my.cnf mariadb # sudo groupadd -r -g 999 mysql &amp;&amp; sudo useradd -r -u 999 -g mysql -c mysql -d /var/lib/mysql -s /sbin/nologin mysql # /usr/local/mysql/scripts/mysql_install_db --user=ubuntu --basedir=/usr/local/mysql --datadir=/var/lib/mysql/data --ldata=/var/lib/mysql # mysql_install_db --user=mysql --basedir=/usr/share/mysql --datadir=/docker/var/lib/mysql # mysql_upgrade # mysql_secure_installation ## 加">
   <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
   <meta property="og:url" content="http://blog.pytool.com/database/mysql/mysql-config-my.cnf/" />
   
@@ -1035,7 +1035,7 @@
                         <h1 class="post-title">my.cnf详解</h1>
 
                         <p class="post-byline">
-                          by  · 2016年02月26日 · 15147 Words ·
+                          by  · 2016年02月26日 · 15251 Words ·
                           ~31min reading time |
                           
                           
@@ -1050,35 +1050,50 @@
                             </p>
                             
 
-<pre><code class="language-yaml"># docker run -it --rm --name mariadb -p 3306:3306 -v /docker/mysql:/var/lib/mysql -v $PWD/my.cnf:/etc/my.cnf mariadb
+<pre><code class="language-yaml"># $ sudo gpasswd -a ${USER} mysql         # 将用户加入该 mysql 组内
+# docker run -it --rm --name mariadb -p 3306:3306 -v /docker/mysql:/var/lib/mysql -v $PWD/my.cnf:/etc/my.cnf mariadb
 # sudo groupadd -r -g 999 mysql &amp;&amp; sudo useradd -r -u 999 -g mysql -c mysql -d /var/lib/mysql -s /sbin/nologin mysql
 # /usr/local/mysql/scripts/mysql_install_db --user=ubuntu --basedir=/usr/local/mysql --datadir=/var/lib/mysql/data --ldata=/var/lib/mysql
-# 1.导入数据之前执行set unique_checks=0 来禁止对唯一索引的检查，数据导入完成之后再运行set unique_checks=1.
+# mysql_install_db --user=mysql --basedir=/usr/share/mysql --datadir=/docker/var/lib/mysql
+# mysql_upgrade  
+# mysql_secure_installation
+
+## 加快数据的导入
+# 1. 导入数据之前执行set unique_checks=0 来禁止对唯一索引的检查，数据导入完成之后再运行set unique_checks=1.
 # 2. 导入数据之前执行set foreign_key_checks=0 来禁止对外键的检查，数据导入完成之后再执行set foreign_key_checks=1.
-# 3.导入数据之前执行set autocommit=0 禁止自动事务的自动提交，数据导入完成之后，执行set autocommit=1 恢复自动提交操作。 
-[mysqldump]
-quick
-quote-names
-max_allowed_packet = 256M 
+# 3. 导入数据之前执行set autocommit=0 禁止自动事务的自动提交，数据导入完成之后，执行set autocommit=1 恢复自动提交操作。
+# 4. 禁用 binlog 
+# 5. INSERT INTO 改为 INSERT DELAYED INTO
+!includedir /etc/mysql/conf.d/
 
 [client]
-no-auto-rehash
+# no-auto-rehash
 #auto-rehash           # 开启自动补全
 default-character-set = utf8
-socket = /var/lib/mysql/mysql.sock
-
-# CREATE USER 'repl'@'%' IDENTIFIED BY 'repl123457';GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';flush privileges;
+socket = /var/run/mysqld/mysqld.sock
+[mysqld]
+#basedir = /usr/share/mysql
+datadir = /docker/var/lib/mysql
+socket   = /tmp/mysql.sock
+pid-file = /tmp/mysqld.pid
+socket   = /var/run/mysqld/mysqld.sock
+pid-file = /var/run/mysqld/mysqld.pid
+# CREATE USER 'repl'@'%' IDENTIFIED BY 'repl123457';GRANT REPLICATION SLAVE ON *.* TO 'repl'@'10.%';flush privileges;
 # mysqldump -uroot -p --master-data -b test &gt; backup_test.sql
 ##############MASTER###################
 [server]
 #server_id=1
+
 log_bin=master-binlog              # master开启binlog
 binlog_format = ROW                # default:MIXED
-log-slave-updates = ON             # slave从库也写入binlog开启从库级联(A-&gt;B-&gt;C) 
 log-bin-trust-function-creators=1  # view reqiure super privileged
 max_binlog_size = 256M             # max size for binlog before rolling
 expire_logs_days = 7               # binlog files older than this will be purged
+innodb_flush_log_at_trx_commit = 0 # 0 = perf, 默认: 1 = ACID
 sync_binlog = 0                    # 0 性能好,由操作系统控制写入磁盘 ；0～100 多少次事物写入磁盘
+#[实时写入 可选] 每一次事务提交或事务外的指令都需要把日志写入（flush）硬盘,最大限度保证可靠性和一致性
+# innodb_flush_log_at_trx_comit = 1 
+# sync_binlog = 1 
 
 #binlog-do-db = lybb,lzkp
 binlog-ignore-db = test
@@ -1091,21 +1106,18 @@ binlog-ignore-db = performance_schema
 #auto-increment-offset = 2
 #auto-increment-increment = 2
 
-#CHANGE MASTER TO MASTER_HOST='192.168.12.109', MASTER_USER='rep1', MASTER_PASSWORD='repl123457', MASTER_LOG_FILE='mysql-bin.000003', MASTER_LOG_POS=120;
+#CHANGE MASTER TO MASTER_HOST='10.114.0.5', MASTER_USER='repl', MASTER_PASSWORD='repl123457', MASTER_LOG_FILE='mysql-bin.000006', MASTER_LOG_POS=728, master_delay = 60;
 ##############SLAVE#################
 [server]
-server-id = 14
-read_only=ON                 # slave从库只读
+#server-id = 2
+#read_only=ON                 # slave从库只读
+log-slave-updates = ON        # slave从库也写入binlog开启从库级联(A-&gt;B-&gt;C) 
+
 slave-skip-errors = ALL      #
 slave-skip-errors = 1007,1008,1053,1062,1213,1158,1159    # slave解决从库插入数据引起的主键冲突
 #skip-slave-start   
 #relay_log=relay-log         #relay-log缓冲，这样master不必等待slave执行完成就可以发送下一个事件
 relay_log_recovery=ON        #relay-log损坏,重新从master上获取日志
-
-#master-host = 10.114.0.14
-#master-user = repl
-#master-password = repl123457
-#master-port = 3306
 
 #replicate_do_db =lzkp #不支持 db1,db2 多库,如果多库写多条即可
 #replicate_do_table =
@@ -1122,10 +1134,6 @@ user = mysql
 port = 3306
 bind-address= 0.0.0.0
 #bind-address= 127.0.0.1
-basedir = /usr/local/mysql
-datadir = /var/lib/mysql
-socket   = /var/lib/mysql/mysql.sock
-pid-file = /var/lib/mysql/mysqld.pid
 
 lower_case_table_names = 1      # 1.不区分大小写
 default_storage_engine = InnoDB # `show engines`
@@ -1134,7 +1142,7 @@ innodb_buffer_pool_size = 6G    #总内存80%
 innodb_force_recovery=1
 
 performance_schema = OFF     # 开启性能测试，默认:关
-skip-name-resolve            # 不解析域名，只能通过IP连接
+#skip-name-resolve            # 不解析域名，只能通过IP连接
 skip-external-locking        # 避免外部锁定
 #skip-grant-tables
 
@@ -1184,16 +1192,15 @@ query_cache_limit= 2M         #指定单个查询能够使用的缓冲区大小�
 ## [临时表的大小]
 tmp_table_size = 1G        #recommend 1G min
 max_heap_table_size = 1G
-bulk_insert_buffer_size  = 1G
+bulk_insert_buffer_size  = 256M # 设置写入缓存大小。提高mysql导入速度。(和磁盘io差不多就行)
 max_allowed_packet = 256M 
 
 ## InnoDB  
 innodb_thread_concurrency = 0     #recommend 2x core quantity
 innodb_commit_concurrency = 16    #recommend 4x num disks
 innodb_log_files_in_group = 3     #循环方式将日志文件写到多个文件
-innodb_log_file_size = 512M       # 重做日志的总大小是否够写入1-2小时即可,太大崩溃恢复速度更慢，但性能好
-innodb_log_buffer_size = 128M  #内存缓冲区大小，1S写一次磁盘
-innodb_flush_log_at_trx_commit = 0 #0 = perf, 1 = ACID
+innodb_log_file_size = 512M       #重做日志的总大小是否够写入1-2小时即可,太大崩溃恢复速度更慢，但性能好
+innodb_log_buffer_size = 128M     #内存缓冲区大小，1S写一次磁盘
 
 ## Per-Thread Buffer memory utilization equation:
 #(read_buffer_size + read_rnd_buffer_size + sort_buffer_size + thread_stack + join_buffer_size + binlog_cache_size) * max_connections
@@ -1208,7 +1215,12 @@ innodb_flush_log_at_trx_commit = 0 #0 = perf, 1 = ACID
 # ssl-ca=/etc/mysql/cacert.pem
 # ssl-cert=/etc/mysql/server-cert.pem
 # ssl-key=/etc/mysql/server-key.pem
-!includedir /etc/mysql/conf.d/
+[mysqldump]
+quick
+quote-names
+max_allowed_packet = 256M 
+
+
 </code></pre>
 
 <p><a href="http://blog.csdn.net/AlbertFly/article/details/51491651" target="_blank">my.cnf最详细解释</a><br />
@@ -1244,7 +1256,7 @@ unauthenticated user | xxx.xxx.xxx.xxx | NULL | Connect | NULL | login | NULL �
 
 <p>max_connections = 1000</p>
 
-<h1 id="mysql的最大连接数-如果服务器的并发连接请求量比较大-建议调高此值-以增加并行连接数量-当然这建立在机器能支撑的情况下-因为如果连接数越多-介于mysql会为每个连接提供连接缓冲区-就会开销越多的内存-所以要适当调整该值-不能盲目提高设值-可以过-conn-通配符查看当前状态的连接数量-以定夺该值的大小">MySQL的最大连接数，如果服务器的并发连接请求量比较大，建议调高此值，以增加并行连接数量，当然这建立在机器能支撑的情况下，因为如果连接数越多，介于MySQL会为每个连接提供连接缓冲区，就会开销越多的内存，所以要适当调整该值，不能盲目提高设值。可以过&rsquo;conn%&lsquo;通配符查看当前状态的连接数量，以定夺该值的大小。</h1>
+<h1 id="mysql的最大连接数-如果服务器的并发连接请求量比较大-建议调高此值-以增加并行连接数量-当然这建立在机器能支撑的情况下-因为如果连接数越多-介于mysql会为每个连接提供连接缓冲区-就会开销越多的内存-所以要适当调整该值-不能盲目提高设值-可以过-conn-通配符查看当前状态的连接数量-以定夺该值的大小">MySQL的最大连接数，如果服务器的并发连接请求量比较大，建议调高此值，以增加并行连接数量，当然这建立在机器能支撑的情况下，因为如果连接数越多，介于MySQL会为每个连接提供连接缓冲区，就会开销越多的内存，所以要适当调整该值，不能盲目提高设值。可以过'conn%'通配符查看当前状态的连接数量，以定夺该值的大小。</h1>
 
 <p>max_connect_errors = 6000</p>
 
@@ -1331,7 +1343,7 @@ unauthenticated user | xxx.xxx.xxx.xxx | NULL | Connect | NULL | login | NULL �
 
 <h1 id="今后对于同样的select语句-区分大小写-将直接从缓冲区中读取结果-根据mysql用户手册-使用查询缓冲最多可以达到238-的效率">今后对于同样的SELECT语句（区分大小写），将直接从缓冲区中读取结果。根据MySQL用户手册，使用查询缓冲最多可以达到238%的效率。</h1>
 
-<h1 id="通过检查状态值-qcache-可以知道query-cache-size设置是否合理-如果qcache-lowmem-prunes的值非常大-则表明经常出现缓冲不够的情况">通过检查状态值&rsquo;Qcache_%&lsquo;，可以知道query_cache_size设置是否合理：如果Qcache_lowmem_prunes的值非常大，则表明经常出现缓冲不够的情况，</h1>
+<h1 id="通过检查状态值-qcache-可以知道query-cache-size设置是否合理-如果qcache-lowmem-prunes的值非常大-则表明经常出现缓冲不够的情况">通过检查状态值'Qcache_%'，可以知道query_cache_size设置是否合理：如果Qcache_lowmem_prunes的值非常大，则表明经常出现缓冲不够的情况，</h1>
 
 <h1 id="如果qcache-hits的值也非常大-则表明查询缓冲使用非常频繁-此时需要增加缓冲大小-如果qcache-hits的值不大-则表明你的查询重复率很低">如果Qcache_hits的值也非常大，则表明查询缓冲使用非常频繁，此时需要增加缓冲大小；如果Qcache_hits的值不大，则表明你的查询重复率很低，</h1>
 
@@ -1347,7 +1359,7 @@ unauthenticated user | xxx.xxx.xxx.xxx | NULL | Connect | NULL | login | NULL �
 
 <h1 id="可以知道key-buffer-size设置是否合理-比例key-reads-key-read-requests应该尽可能的低">可以知道key_buffer_size设置是否合理。比例key_reads/key_read_requests应该尽可能的低，</h1>
 
-<h1 id="至少是1-100-1-1000更好-上述状态值可以使用show-status-like-key-read-获得-注意-该参数值设置的过大反而会是服务器整体效率降低">至少是1:100，1:1000更好(上述状态值可以使用SHOW STATUS LIKE &lsquo;key_read%&lsquo;获得)。注意：该参数值设置的过大反而会是服务器整体效率降低</h1>
+<h1 id="至少是1-100-1-1000更好-上述状态值可以使用show-status-like-key-read-获得-注意-该参数值设置的过大反而会是服务器整体效率降低">至少是1:100，1:1000更好(上述状态值可以使用SHOW STATUS LIKE 'key_read%'获得)。注意：该参数值设置的过大反而会是服务器整体效率降低</h1>
 
 <p>ft_min_word_len = 4</p>
 
@@ -1508,7 +1520,7 @@ innodb_read_io_threads = 4</p>
 
 <h1 id="应该断开连接并释放占用的内存-如果你的mysql-server有大量的闲置连接-他们不仅会白白消耗内存-而且如果连接一直在累加而不断开">应该断开连接并释放占用的内存。如果你的MySQL Server有大量的闲置连接，他们不仅会白白消耗内存，而且如果连接一直在累加而不断开，</h1>
 
-<h1 id="最终肯定会达到mysql-server的连接上限数-这会报-too-many-connections-的错误-对于wait-timeout的值设定-应该根据系统的运行情况来判断">最终肯定会达到MySQL Server的连接上限数，这会报&rsquo;too many connections&rsquo;的错误。对于wait_timeout的值设定，应该根据系统的运行情况来判断。</h1>
+<h1 id="最终肯定会达到mysql-server的连接上限数-这会报-too-many-connections-的错误-对于wait-timeout的值设定-应该根据系统的运行情况来判断">最终肯定会达到MySQL Server的连接上限数，这会报'too many connections'的错误。对于wait_timeout的值设定，应该根据系统的运行情况来判断。</h1>
 
 <h1 id="在系统运行一段时间后-可以通过show-processlist命令查看当前系统的连接状态-如果发现有大量的sleep状态的连接进程-则说明该参数设置的过大">在系统运行一段时间后，可以通过show processlist命令查看当前系统的连接状态，如果发现有大量的sleep状态的连接进程，则说明该参数设置的过大，</h1>
 
@@ -2155,7 +2167,7 @@ interactive-timeout
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -2199,6 +2211,8 @@ interactive-timeout
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -2424,7 +2438,7 @@ interactive-timeout
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -2542,7 +2556,7 @@ interactive-timeout
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2694,7 +2708,7 @@ interactive-timeout
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2975,6 +2989,32 @@ interactive-timeout
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

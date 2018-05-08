@@ -1035,7 +1035,7 @@
                         <h1 class="post-title">Linux命令 expr命令全解</h1>
 
                         <p class="post-byline">
-                          by  · 2016年01月06日 · 4307 Words ·
+                          by  · 2016年01月06日 · 4172 Words ·
                           ~9min reading time |
                           
                           
@@ -1052,13 +1052,13 @@
 
 <p>expr命令可以实现数值运算、数值或字符串比较、字符串匹配、字符串提取、字符串长度计算等功能。它还具有几个特殊功能，判断变量或参数是否为整数、是否为空、是否为0等。</p>
 
-<p>先看expr命令的info文档info coreutils &lsquo;expr invocation&rsquo;的翻译。</p>
+<p>先看expr命令的info文档info coreutils 'expr invocation'的翻译。</p>
 
 <h2 id="16-4-1-字符串表达式">16.4.1 字符串表达式</h2>
 
-<p>&lsquo;expr&rsquo;支持模式匹配和字符串操作。字符串表达式的优先级高于数值表达式和逻辑关系表达式。</p>
+<p>'expr'支持模式匹配和字符串操作。字符串表达式的优先级高于数值表达式和逻辑关系表达式。</p>
 
-<p>&lsquo;STRING : REGEX&rsquo;</p>
+<p>'STRING : REGEX'</p>
 
 <pre><code> 执行模式匹配。两端参数会转换为字符格式，且第二个参数被视为正则表达式(GUN基本正则)，它默认会隐含前缀&quot;^&quot;。随后将第一个参数和正则模式做匹配。
 
@@ -1071,27 +1071,27 @@
  在正则表达式中，'\+'，'\?'和'\|'分表代表匹配一个或多个，0个或1个以及两端任选其一的意思。
 </code></pre>
 
-<p>&lsquo;match STRING REGEX&rsquo;</p>
+<p>'match STRING REGEX'</p>
 
 <pre><code> 等价于'STRING : REGEX'。
 </code></pre>
 
-<p>&lsquo;substr STRING POSITION LENGTH&rsquo;</p>
+<p>'substr STRING POSITION LENGTH'</p>
 
 <pre><code> 返回STRING字符串中从POSITION开始，长度最大为LENGTH的子串。如果POSITION或LENGTH为负数，0或非数值，则返回空字符串。
 </code></pre>
 
-<p>&lsquo;index STRING CHARSET&rsquo;</p>
+<p>'index STRING CHARSET'</p>
 
 <pre><code> CHARSET中任意单个字符在STRING中最前面的字符位置。如果在STRING中完全不存在CHARSET中的字符，则返回0。见后文示例。
 </code></pre>
 
-<p>&lsquo;length STRING&rsquo;</p>
+<p>'length STRING'</p>
 
 <pre><code> 返回STRING的字符长度。
 </code></pre>
 
-<p>&rsquo;+ TOKEN&rsquo;</p>
+<p>'+ TOKEN'</p>
 
 <pre><code> 将TOKEN解析为普通字符串，即使TOKEN是像MATCH或操作符&quot;/&quot;一样的关键字。这使得'expr length + &quot;$x&quot;'或'expr + &quot;$x&quot; : '.*/\(.\)''可以正常被测试，即使&quot;$x&quot;的值可能是'/'或'index'关键字。这个操作符是一个GUN扩展。
  通用可移植版的应该使用'&quot; $token&quot; : ' \(.*\)''来代替'+ &quot;$token&quot;'。
@@ -1101,60 +1101,60 @@
 
 <h2 id="16-4-2-算术表达式">16.4.2 算术表达式</h2>
 
-<p>&lsquo;expr&rsquo;支持普通的算术操作，算术表达式优先级低于字符串表达式，高于逻辑关系表达式。</p>
+<p>'expr'支持普通的算术操作，算术表达式优先级低于字符串表达式，高于逻辑关系表达式。</p>
 
-<p>&rsquo;+ -&rsquo;</p>
+<p>'+ -'</p>
 
 <pre><code> 加减运算。两端参数会转换为整数，如果转换失败则报错。
 </code></pre>
 
-<p>&lsquo;* / %&rsquo;</p>
+<p>'* / %'</p>
 
 <pre><code> 乘，除，取模运算。两端参数会转换为整数，如果转换失败则报错。
 </code></pre>
 
 <h2 id="16-4-3-逻辑关系表达式">16.4.3 逻辑关系表达式</h2>
 
-<p>&lsquo;expr&rsquo;支持普通的逻辑连接和逻辑关系。它的优先级最低。</p>
+<p>'expr'支持普通的逻辑连接和逻辑关系。它的优先级最低。</p>
 
-<p>&rsquo;|&rsquo;</p>
+<p>'|'</p>
 
 <pre><code> 如果第一个参数非空且非0，则返回第一个参数的值，否则返回第二个参数的值，但要求第二个参数的值也是非空或非0，否则返回0。如果第一个参数是非空或非0时，不会计算第二个参数。
 
  经过测试，以上手册内容是错误的。正确的应该是：如果第一个参数非0，则返回第一个参数的值，否则返回第二个参数。但如果任意一个参数为空，则报错。除非空字符串使用引号包围，此时将和0的处理方式一样。
 </code></pre>
 
-<p>&lsquo;&amp;&rsquo;</p>
+<p>'&amp;'</p>
 
 <pre><code> 如果两个参数都非空且非0，则返回第一个参数，否则返回0。如果第一个参为0或为空，则不会计算第二个参数。
 
  经过测试，以上手册内容是错误的。正确的应该是：如果两个参数都非0，则返回第一个参数，否则返回0。但任意一个参数为空，则报错。除非空字符串使用引号包围，此时将和0的处理方式一样。
 </code></pre>
 
-<p>&lsquo;&lt; &lt;= = == != &gt;= &gt;&rsquo;</p>
+<p>'&lt; &lt;= = == != &gt;= &gt;'</p>
 
 <pre><code> 比较两端的参数，如果为true，则返回1，否则返回0。&quot;==&quot;是&quot;=&quot;的同义词。&quot;expr&quot;首先尝试将两端参数转换为整数，并做算术比较，如果转换失败，则按字符集排序规则做字符比较。
 </code></pre>
 
-<p>括号&rsquo;()&lsquo;可以改变优先级，但使用时需要使用反斜线对括号进行转义。</p>
+<p>括号'()'可以改变优先级，但使用时需要使用反斜线对括号进行转义。</p>
 
-<h2 id="16-4-4-expr-使用示例">16.4.4 &lsquo;expr&rsquo;使用示例</h2>
+<h2 id="16-4-4-expr-使用示例">16.4.4 'expr'使用示例</h2>
 
 <p>以下为expr的一些示例，其中有将shell的元字符使用引号包围的示例。</p>
 
-<p>将shell中变量&rsquo;foo&rsquo;的值增加1：</p>
+<p>将shell中变量'foo'的值增加1：</p>
 
 <pre><code> foo=$(expr $foo + 1)
 </code></pre>
 
-<p>输出变量路径变量&rsquo;$fname&rsquo;中不包含&rsquo;/&lsquo;的文件名部分：</p>
+<p>输出变量路径变量'$fname'中不包含'/'的文件名部分：</p>
 
 <pre><code> expr $fname : '.*/\(.*\)' '|' $fname
 
  解释：其中的'|'是expr中的连接符，只不过是被引号包围防止被shell解析。例如$fname=/etc/hosts，则此表达式返回hosts，如果$fname=/usr/share/，则此表达式'|'的左边为空，所以返回'|'右边的值，即$fname，即返回/usr/share/。
 </code></pre>
 
-<p>An example showing that &lsquo;+&rsquo; is an operator:</p>
+<p>An example showing that '+' is an operator:</p>
 
 <pre><code> expr aaa : 'a\+'    # 解释：因为REGEX部分没有使用\(\)，所以返回匹配的字符数
  =&gt; 3
@@ -1180,40 +1180,40 @@
 
 <p>以下是expr示例。</p>
 
-<p>(1).&ldquo;string : REGEX&rdquo;字符串匹配示例。要输出匹配到的字符串结果，需要使用&rdquo;(&ldquo;和&rdquo;)&ldquo;，否则返回的将是匹配到的字符串数量。</p>
+<p>(1).&quot;string : REGEX&quot;字符串匹配示例。要输出匹配到的字符串结果，需要使用&quot;(&quot;和&quot;)&quot;，否则返回的将是匹配到的字符串数量。</p>
 
-<p>[root@xuexi ~]# expr abcde : &lsquo;ab(.*)&lsquo;<br />
+<p>[root@xuexi ~]# expr abcde : 'ab(.*)'<br />
 cde</p>
 
-<p>[root@xuexi ~]# expr abcde : &lsquo;ab(.)&lsquo;<br />
+<p>[root@xuexi ~]# expr abcde : 'ab(.)'<br />
 c</p>
 
-<p>[root@xuexi ~]# expr abcde : &lsquo;ab.*&rsquo;<br />
+<p>[root@xuexi ~]# expr abcde : 'ab.*'<br />
 5</p>
 
-<p>[root@xuexi ~]# expr abcde : &lsquo;ab.&rsquo;<br />
+<p>[root@xuexi ~]# expr abcde : 'ab.'<br />
 3</p>
 
-<p>[root@xuexi ~]# expr abcde : &lsquo;.<em>cd</em>&lsquo;<br />
+<p>[root@xuexi ~]# expr abcde : '.<em>cd</em>'<br />
 4</p>
 
-<p>注意，由于REGEX中隐含了&rdquo;^&ldquo;，所以使得匹配时都是从string首字符开始的。</p>
+<p>注意，由于REGEX中隐含了&quot;^&quot;，所以使得匹配时都是从string首字符开始的。</p>
 
-<p>[root@xuexi ~]# expr abcde : &lsquo;cd.*&rsquo;<br />
+<p>[root@xuexi ~]# expr abcde : 'cd.*'<br />
 0</p>
 
-<p>之所以为0，是因为真正的正则表达式是&rdquo;^cd.*&ldquo;，而abcde不是c开头而是a开头的，所以无法匹配到任何结果。因此，任何字符串匹配时，都应该从首字符开始。</p>
+<p>之所以为0，是因为真正的正则表达式是&quot;^cd.*&quot;，而abcde不是c开头而是a开头的，所以无法匹配到任何结果。因此，任何字符串匹配时，都应该从首字符开始。</p>
 
 <p>字符串匹配时，会先将两端参数转换为字符格式。</p>
 
-<p>(2).&ldquo;index string chars&rdquo;用法示例。</p>
+<p>(2).&quot;index string chars&quot;用法示例。</p>
 
 <p>该表达式是从string中搜索chars中某个字符的位置，这个字符是string中最靠前的字符。例如：</p>
 
 <p>[root@xuexi ~]# expr index abcde dec<br />
 3</p>
 
-<p>该命令将对字符串&rdquo;dec&rdquo;逐字符分解，首先分解得到第一个字符d，从abcde中搜索到d的位置为4，再分解得到第二个字符e，该字符在abcde中的位置为5，最后得到的字符是c，该字符在abcde中的位置为3。其中3是最靠前的字符，所以命令返回的结果为3。</p>
+<p>该命令将对字符串&quot;dec&quot;逐字符分解，首先分解得到第一个字符d，从abcde中搜索到d的位置为4，再分解得到第二个字符e，该字符在abcde中的位置为5，最后得到的字符是c，该字符在abcde中的位置为3。其中3是最靠前的字符，所以命令返回的结果为3。</p>
 
 <p>[root@xuexi ~]# expr index abcde xdc<br />
 3</p>
@@ -1226,7 +1226,7 @@ c</p>
 <p>[root@xuexi ~]# expr index abcde 1x<br />
 0</p>
 
-<p>(3).&ldquo;substr string pos len&rdquo;用法示例。</p>
+<p>(3).&quot;substr string pos len&quot;用法示例。</p>
 
 <p>该表达式是从string中取出从pos位置开始长度为len的子字符串。如果pos或len为非正整数时，将返回空字符串。</p>
 
@@ -1243,7 +1243,7 @@ bcde</p>
 
 <p>[root@xuexi ~]# expr substr abcde 2 -1</p>
 
-<p>(4).&ldquo;length string&rdquo;用法示例。该表达式是返回string的长度，其中string不允许为空，否则将报错，所以可以用来判断变量是否为空。</p>
+<p>(4).&quot;length string&quot;用法示例。该表达式是返回string的长度，其中string不允许为空，否则将报错，所以可以用来判断变量是否为空。</p>
 
 <p>[root@xuexi ~]# expr length abcde<br />
 5</p>
@@ -1254,12 +1254,12 @@ bcde</p>
 <p>[root@xuexi ~]# expr length $xxx<br />
 expr: syntax error</p>
 
-<p>[root@xuexi ~]# if [ $? -ne 0 ];then echo &lsquo;$xxx is null&rsquo;;fi<br />
+<p>[root@xuexi ~]# if [ $? -ne 0 ];then echo '$xxx is null';fi<br />
 $xxx is null</p>
 
-<p>(5).&ldquo;+ token&rdquo;用法示例。</p>
+<p>(5).&quot;+ token&quot;用法示例。</p>
 
-<p>expr中有些符号和关键字有特殊意义，如&rdquo;match&rdquo;、&rdquo;index&rdquo;、&rdquo;length&rdquo;，如果要让其成为字符，使用该表达式将任意token强制解析为普通字符串。</p>
+<p>expr中有些符号和关键字有特殊意义，如&quot;match&quot;、&quot;index&quot;、&quot;length&quot;，如果要让其成为字符，使用该表达式将任意token强制解析为普通字符串。</p>
 
 <p>[root@xuexi ~]# expr index index d<br />
 expr: syntax error</p>
@@ -1272,7 +1272,7 @@ expr: syntax error</p>
 
 <p>其实可以通过字符串匹配的方式，将关键字转换为字符串。例如：</p>
 
-<p>[root@xuexi ~]# expr index &lsquo;length : &ldquo;(length)&rdquo;&rsquo; g<br />
+<p>[root@xuexi ~]# expr index 'length : &quot;(length)&quot;' g<br />
 4</p>
 
 <p>对值为关键字的变量来说，则无所谓。</p>
@@ -1299,12 +1299,12 @@ expr: syntax error</p>
 <p>[root@xuexi ~]# expr $a - $b<br />
 -1</p>
 
-<p>算术乘法符号&rdquo;*&ldquo;因为是shell的元字符，所以要转义，可以使用引号包围，或者使用反斜线。</p>
+<p>算术乘法符号&quot;*&quot;因为是shell的元字符，所以要转义，可以使用引号包围，或者使用反斜线。</p>
 
 <p>[root@xuexi ~]# expr $a * $b<br />
 expr: syntax error</p>
 
-<p>[root@xuexi ~]# expr $a &lsquo;*&rsquo; $b<br />
+<p>[root@xuexi ~]# expr $a '*' $b<br />
 12</p>
 
 <p>[root@xuexi ~]# expr $a * $b<br />
@@ -1329,10 +1329,10 @@ expr: syntax error</p>
 <p>[root@xuexi ~]# expr $a + $c<br />
 expr: non-integer argument</p>
 
-<p>[root@xuexi ~]# if [ $? != 0 ];then echo &lsquo;$a or $c is non-integer&rsquo;;fi<br />
+<p>[root@xuexi ~]# if [ $? != 0 ];then echo '$a or $c is non-integer';fi<br />
 $a or $c is non-integer</p>
 
-<p>(7).比较操作符&lt; &lt;= = == != &gt;= &gt;用法示例。其中&rdquo;&lt;&ldquo;和&rdquo;&gt;&ldquo;是正则表达式正的锚定元字符，且&rdquo;&lt;&ldquo;会被shell解析为重定向符号，所以需要转义或用引号包围。</p>
+<p>(7).比较操作符&lt; &lt;= = == != &gt;= &gt;用法示例。其中&quot;&lt;&quot;和&quot;&gt;&quot;是正则表达式正的锚定元字符，且&quot;&lt;&quot;会被shell解析为重定向符号，所以需要转义或用引号包围。</p>
 
 <p>这些操作符会首先会将两端的参数转换为数值，如果转换成功，则采用数值比较，如果转换失败，则按照字符集的排序规则进行字符大小比较。比较的结果若为true，则expr返回1，否则返回0。</p>
 
@@ -1353,7 +1353,7 @@ $a or $c is non-integer</p>
 <p>[root@xuexi ~]# expr akc &gt; ackd<br />
 1</p>
 
-<p>(8).逻辑连接符号&rdquo;&amp;&ldquo;和&rdquo;|&ldquo;用法示例。这两个符号都需要转义，或使用引号包围。</p>
+<p>(8).逻辑连接符号&quot;&amp;&quot;和&quot;|&quot;用法示例。这两个符号都需要转义，或使用引号包围。</p>
 
 <p>以下是官方文档中给出的解释，但实际使用过程中是不完全正确的。</p>
 
@@ -1369,34 +1369,34 @@ $a or $c is non-integer</p>
 &quot;|&quot;表示如果第一个参数非0，则返回第一个参数的值，否则返回第二个参数。但如果任意一个参数为空，则expr报错。除非空字符串使用引号包围，则处理方法和0一样。
 </code></pre>
 
-<p>[root@xuexi ~]# expr $abc &lsquo;|&rsquo; 1<br />
+<p>[root@xuexi ~]# expr $abc '|' 1<br />
 expr: syntax error</p>
 
-<p>[root@xuexi ~]# expr &ldquo;$abc&rdquo; &lsquo;|&rsquo; 1<br />
+<p>[root@xuexi ~]# expr &quot;$abc&quot; '|' 1<br />
 1</p>
 
-<p>[root@xuexi ~]# expr &ldquo;$abc&rdquo; &lsquo;&amp;&rsquo; 1<br />
+<p>[root@xuexi ~]# expr &quot;$abc&quot; '&amp;' 1<br />
 0</p>
 
-<p>[root@xuexi ~]# expr $abc &lsquo;&amp;&rsquo; 1<br />
+<p>[root@xuexi ~]# expr $abc '&amp;' 1<br />
 expr: syntax error</p>
 
-<p>[root@xuexi ~]# expr 0 &lsquo;&amp;&rsquo; abc<br />
+<p>[root@xuexi ~]# expr 0 '&amp;' abc<br />
 0</p>
 
-<p>[root@xuexi ~]# expr abc &lsquo;&amp;&rsquo; 0<br />
+<p>[root@xuexi ~]# expr abc '&amp;' 0<br />
 0</p>
 
-<p>[root@xuexi ~]# expr abc &lsquo;|&rsquo; 0<br />
+<p>[root@xuexi ~]# expr abc '|' 0<br />
 abc</p>
 
-<p>[root@xuexi ~]# expr 0 &lsquo;|&rsquo; abc<br />
+<p>[root@xuexi ~]# expr 0 '|' abc<br />
 abc</p>
 
-<p>[root@xuexi ~]# expr abc &lsquo;&amp;&rsquo; cde<br />
+<p>[root@xuexi ~]# expr abc '&amp;' cde<br />
 abc</p>
 
-<p>[root@xuexi ~]# expr abc &lsquo;|&rsquo; cde<br />
+<p>[root@xuexi ~]# expr abc '|' cde<br />
 abc</p>
 
 <p>回到系列文章大纲：<a href="http://www.cnblogs.com/f-ck-need-u/p/7048359.html" target="_blank">http://www.cnblogs.com/f-ck-need-u/p/7048359.html</a></p>
@@ -1611,7 +1611,7 @@ abc</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1655,6 +1655,8 @@ abc</p>
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1880,7 +1882,7 @@ abc</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1998,7 +2000,7 @@ abc</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2150,7 +2152,7 @@ abc</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2431,6 +2433,32 @@ abc</p>
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

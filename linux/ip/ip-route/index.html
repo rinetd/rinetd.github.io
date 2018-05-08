@@ -9,17 +9,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   
-  <meta name="description" content="Linux中增加软路由的两种方法 第一种: route add -net 172.16.6.0 netmask 255.255.255.0 gw 172.16.2.254 dev eth0 /* 增加一条网络172.16.6.0/24 经过172.16.2.254 eth0 / / -ne">
+  <meta name="description" content="Linux中增加软路由的两种方法 第一种: route route add -net 172.16.6.0 netmask 255.255.255.0 gw 172.16.2.254 dev eth0 /* 增加一条网络172.16.6.0/24 经过172.16.2.254 eth0 / / -n">
   <meta name="author" content=rinetd>
   <meta name="publisher" content=rinetd@163.com>
 
   <meta itemprop="name" content="Linux命令 ip route - 时光小栈">
-  <meta itemprop="description" content="Linux中增加软路由的两种方法 第一种: route add -net 172.16.6.0 netmask 255.255.255.0 gw 172.16.2.254 dev eth0 /* 增加一条网络172.16.6.0/24 经过172.16.2.254 eth0 / / -ne">
+  <meta itemprop="description" content="Linux中增加软路由的两种方法 第一种: route route add -net 172.16.6.0 netmask 255.255.255.0 gw 172.16.2.254 dev eth0 /* 增加一条网络172.16.6.0/24 经过172.16.2.254 eth0 / / -n">
   <meta itemprop="image" content="http://blog.pytool.com/public/avatar.png">
   
   <meta property="og:type" content="article" />
   <meta property="og:title" content="Linux命令 ip route - 时光小栈" />
-  <meta property="og:description" content="Linux中增加软路由的两种方法 第一种: route add -net 172.16.6.0 netmask 255.255.255.0 gw 172.16.2.254 dev eth0 /* 增加一条网络172.16.6.0/24 经过172.16.2.254 eth0 / / -ne">
+  <meta property="og:description" content="Linux中增加软路由的两种方法 第一种: route route add -net 172.16.6.0 netmask 255.255.255.0 gw 172.16.2.254 dev eth0 /* 增加一条网络172.16.6.0/24 经过172.16.2.254 eth0 / / -n">
   <meta property="og:image" content="http://blog.pytool.com/public/avatar.png" />
   <meta property="og:url" content="http://blog.pytool.com/linux/ip/ip-route/" />
   
@@ -1031,8 +1031,8 @@
                         <h1 class="post-title">Linux命令 ip route</h1>
 
                         <p class="post-byline">
-                          by  · 2018年03月08日 · 588 Words ·
-                          ~2min reading time |
+                          by  · 2018年03月08日 · 1560 Words ·
+                          ~4min reading time |
                           
                           
                           <a rel="nofollow" href="https://gitlab.com/rinetd/blog/edit/master/linux/ip/ip-route.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
@@ -1048,7 +1048,7 @@
 
 <p>Linux中增加软路由的两种方法</p>
 
-<h2 id="第一种">第一种:</h2>
+<h2 id="第一种-route">第一种: route</h2>
 
 <p>route add -net 172.16.6.0 netmask 255.255.255.0 gw 172.16.2.254 dev eth0<br />
 /* 增加一条网络172.16.6.0/24 经过172.16.2.254 eth0 <em>/<br />
@@ -1058,17 +1058,8 @@ route del -net 172.16.86.0/24 /</em> 删除默认网络172.16.86.0 <em>/<br />
 route /</em> 显示当前路由表 */<br />
 常用的是这种方式,但有时你在删除或一条软路由时会不起作用,会有什么提示:<br />
 SIOCADDRT: 無法接觸網路<br />
-所以这时用如下的这种方法就可以了</p>
-
-<h2 id="第二种">第二种:</h2>
-
-<p>实现的功能和上面的一样<br />
-ip route add 172.16.6.0/24 via 172.16.2.254 dev eth0<br />
-ip route del gw 172.16.2.254<br />
-ip route del 172.16.6.0/24 dev eth0<br />
-ip route</p>
-
-<p>删除的方法：<br />
+所以这时用如下的这种方法就可以了<br />
+删除的方法：<br />
 添加路由:<br />
 route add -net 10.0.0.0 netmask 255.0.0.0 dev eth0<br />
 删除路由：<br />
@@ -1079,6 +1070,95 @@ route add default gw 10.0.0.1<br />
 route del default gw 10.0.0.1<br />
 或者<br />
 route del default</p>
+
+<h2 id="第二种-ip-route">第二种: ip route</h2>
+
+<p>更改默认路由</p>
+
+<pre><code>$ sudo ip route add default via 192.168.0.196
+</code></pre>
+
+<p>实现的功能和上面的一样<br />
+ip route get 10.42.0.47<br />
+ip route add 172.16.6.0/24 via 172.16.2.254 dev eth0<br />
+ip route del 172.16.6.0/24 dev eth0<br />
+ip route del gw 172.16.2.254<br />
+ip route</p>
+
+<p>关于 src 属性：<br />
+当一个主机有多个网卡配置了多个 IP 的时候，对于它产生的网络包，可以在路由选择时设置源 IP 地址。比如：<br />
+<code>ip route add 78.22.45.0/24 via 10.45.22.1 src 10.45.22.12 （发到 78.22.45.0/24 网段的网络包，下一跳的路由器 IP 是 10.45.22.1，包的源IP地址设为10.45.22.12）。</code></p>
+
+<p>要注意的是，src 选项只会影响该 host 上产生的网络包。如果是一个被路由的外来包，明显地它已经带有了一个源 IP 地址，这时候，src 参数的配置对它没有任何影响，除非你使用 NAT 来改变它。对 Neutron 来说，qrouter 和 qif namespace 中的路由表中的 src 都没有实际意义，因为它们只会处理外来的网络包。</p>
+
+<pre><code>关于路由的相关设定： ip route
+</code></pre>
+
+<p>这个项目当然就是路由的观察与设定啰！事实上， ip route 的功能几乎与 route 这个指令差不多，但是，他还可以进行额外的参数设计，例如 MTU 的规划等等，相当的强悍啊！</p>
+
+<p>[root@www ~]# ip route show  &lt;==单纯的显示出路由的设定而已<br />
+[root@www ~]# ip route [add|del] [IP或网域] [via gateway] [dev 装置]<br />
+选项与参数：<br />
+show ：单纯的显示出路由表，也可以使用 list ；<br />
+add|del ：增加 (add) 或删除 (del) 路由的意思。</p>
+
+<pre><code>IP或网域：可使用 192.168.50.0/24 之类的网域或者是单纯的 IP ；
+via     ：从那个 gateway 出去，不一定需要；
+dev     ：由那个装置连出去，这就需要了！
+mtu     ：可以额外的设定 MTU 的数值喔！
+</code></pre>
+
+<h1 id="范例一-显示出目前的路由资料">范例一：显示出目前的路由资料</h1>
+
+<p>[root@www ~]# ip route show<br />
+192.168.1.0/24 dev eth0  proto kernel  scope link  src 192.168.1.100<br />
+169.254.0.0/16 dev eth0  scope link  metric 1002<br />
+default via 192.168.1.254 dev eth0</p>
+
+<p>如上表所示，最简单的功能就是显示出目前的路由信息，其实跟 route 这个指令相同啦！ 指示必须要注意几个小东西：</p>
+
+<pre><code>proto：此路由的路由协议，主要有 redirect, kernel, boot, static, ra 等， 其中 kernel 指的是直接由核心判断自动设定。
+scope：路由的范围，主要是 link ，亦即是与本装置有关的直接联机。
+</code></pre>
+
+<p>再来看一下如何进行路由的增加与删除吧！</p>
+
+<h1 id="范例二-增加路由-主要是本机直接可沟通的网域">范例二：增加路由，主要是本机直接可沟通的网域</h1>
+
+<p>[root@www ~]# ip route add 192.168.5.0/24 dev eth0</p>
+
+<h1 id="针对本机直接沟通的网域设定好路由-不需要透过外部的路由器">针对本机直接沟通的网域设定好路由，不需要透过外部的路由器</h1>
+
+<p>[root@www ~]# ip route show<br />
+192.168.5.0/24 dev eth0  scope link<br />
+....(以下省略)....</p>
+
+<h1 id="范例三-增加可以通往外部的路由-需透过-router-喔">范例三：增加可以通往外部的路由，需透过 router 喔！</h1>
+
+<p>[root@www ~]# ip route add 192.168.10.0/24 via 192.168.5.100 dev eth0<br />
+[root@www ~]# ip route show<br />
+192.168.5.0/24 dev eth0  scope link<br />
+....(其他省略)....<br />
+192.168.10.0/24 via 192.168.5.100 dev eth0</p>
+
+<h1 id="仔细看喔-因为我有-192-168-5-0-24-的路由存在-我的网卡直接联系">仔细看喔，因为我有 192.168.5.0/24 的路由存在 (我的网卡直接联系)，</h1>
+
+<h1 id="所以才可以将-192-168-10-0-24-的路由丢给-192-168-5-100">所以才可以将 192.168.10.0/24 的路由丢给 192.168.5.100</h1>
+
+<h1 id="那部主机来帮忙传递喔-与之前提到的-route-指令是一样的限制">那部主机来帮忙传递喔！与之前提到的 route 指令是一样的限制！</h1>
+
+<h1 id="范例四-增加预设路由">范例四：增加预设路由</h1>
+
+<p>[root@www ~]# ip route add default via 192.168.1.254 dev eth0</p>
+
+<h1 id="那个-192-168-1-254-就是我的预设路由器-gateway-的意思啊">那个 192.168.1.254 就是我的预设路由器 (gateway) 的意思啊！ ^_^</h1>
+
+<h1 id="真的记得-只要一个预设路由就-ok">真的记得，只要一个预设路由就 OK ！</h1>
+
+<h1 id="范例五-删除路由">范例五：删除路由</h1>
+
+<p>[root@www ~]# ip route del 192.168.10.0/24<br />
+[root@www ~]# ip route del 192.168.5.0/24</p>
 
 <hr />
 
@@ -1314,7 +1394,7 @@ route del default</p>
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1358,6 +1438,8 @@ route del default</p>
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1583,7 +1665,7 @@ route del default</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1701,7 +1783,7 @@ route del default</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -1853,7 +1935,7 @@ route del default</p>
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2134,6 +2216,32 @@ route del default</p>
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

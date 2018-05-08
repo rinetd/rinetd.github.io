@@ -1055,7 +1055,7 @@ xmllint + xpath = 命令行网页信息提取</p>
 
 <p>昨天看到一个玩意儿叫 XPath ，就是 @Anho 同学他们搞的那个，用来提取网页信息的，我觉得 xpath 是个好东西！</p>
 
-<p>然后我想到 libxml2 提供了一个命令行工具叫 xmllint 。我发现它有个 &ndash;xpath 的选项可以执行 xpath ，还有个 &ndash;html 选项可以解析 html 。经过一些实验，我得到了下面的命令：</p>
+<p>然后我想到 libxml2 提供了一个命令行工具叫 xmllint 。我发现它有个 --xpath 的选项可以执行 xpath ，还有个 --html 选项可以解析 html 。经过一些实验，我得到了下面的命令：</p>
 
 <p>在 123cha 上查询 8.8.8.8 ，并提取结果（ul#csstb）：</p>
 
@@ -1078,85 +1078,85 @@ xmllint + xpath = 命令行网页信息提取</p>
 
 <p>Print all urls found by a google search.</p>
 
-<p>xidel <a href="http://www.google.de/search?q=test" target="_blank">http://www.google.de/search?q=test</a> &ndash;extract &ldquo;//a/extract(@href, &lsquo;url[?]q=([^&amp;]+)&amp;&lsquo;, 1)[. != &ldquo;]&rdquo;<br />
+<p>xidel <a href="http://www.google.de/search?q=test" target="_blank">http://www.google.de/search?q=test</a> --extract &quot;//a/extract(@href, 'url[?]q=([^&amp;]+)&amp;', 1)[. != '']&quot;<br />
 Print the title of all pages found by a google search and download them:</p>
 
-<p>xidel <a href="http://www.google.de/search?q=test" target="_blank">http://www.google.de/search?q=test</a> &ndash;follow &ldquo;//a/extract(@href, &lsquo;url[?]q=([^&amp;]+)&amp;&lsquo;, 1)[. != &ldquo;]&rdquo; &ndash;extract //title &ndash;download &lsquo;{$host}/&rsquo;<br />
+<p>xidel <a href="http://www.google.de/search?q=test" target="_blank">http://www.google.de/search?q=test</a> --follow &quot;//a/extract(@href, 'url[?]q=([^&amp;]+)&amp;', 1)[. != '']&quot; --extract //title --download '{$host}/'<br />
 Generally follow all links on a page and print the titles of the linked pages:<br />
 With XPath: xidel <a href="http://example.org" target="_blank">http://example.org</a> -f //a -e //title<br />
-With CSS: xidel <a href="http://example.org" target="_blank">http://example.org</a> -f &ldquo;css(&lsquo;a&rsquo;)&rdquo; &ndash;css title<br />
-With Templates: xidel <a href="http://example.org" target="_blank">http://example.org</a> -f &ldquo;<a>{.}</a>*&rdquo; -e &ldquo;<title>{.}</title>&ldquo;<br />
+With CSS: xidel <a href="http://example.org" target="_blank">http://example.org</a> -f &quot;css('a')&quot; --css title<br />
+With Templates: xidel <a href="http://example.org" target="_blank">http://example.org</a> -f &quot;<a>{.}</a>*&quot; -e &quot;<title>{.}</title>&quot;<br />
 Another template example:</p>
 
 <p>If you have an example.xml file like <x><foo>ood</foo><bar>IMPORTANT!</bar></x><br />
-You can read the imporant part like: xidel example.xml -e &ldquo;<x><foo>ood</foo><bar>{.}</bar></x>&ldquo;<br />
-(and this will also check, if the element containing &ldquo;ood&rdquo; is there, and fail otherwise)<br />
+You can read the imporant part like: xidel example.xml -e &quot;<x><foo>ood</foo><bar>{.}</bar></x>&quot;<br />
+(and this will also check, if the element containing &quot;ood&quot; is there, and fail otherwise)<br />
 Calculate something with XPath using arbitrary precision arithmetics:</p>
 
-<p>xidel -e &ldquo;(1 + 2 + 3) * 1000000000000 + 4 + 5 + 6 + 7.000000008&rdquo;<br />
+<p>xidel -e &quot;(1 + 2 + 3) * 1000000000000 + 4 + 5 + 6 + 7.000000008&quot;<br />
 Print all newest Stackoverflow questions with title and url:</p>
 
-<p>xidel <a href="http://stackoverflow.com" target="_blank">http://stackoverflow.com</a> -e &ldquo;<A class='question-hyperlink'>{title:=text(), url:=@href}</A>*&rdquo;<br />
+<p>xidel <a href="http://stackoverflow.com" target="_blank">http://stackoverflow.com</a> -e &quot;<A class='question-hyperlink'>{title:=text(), url:=@href}</A>*&quot;<br />
 Print all reddit comments of an user, with HTML and URL:</p>
 
-<p>xidel &ldquo;<a href="http://www.reddit.com/user/username/&quot;" target="_blank">http://www.reddit.com/user/username/&quot;</a> &ndash;extract &ldquo;<t:loop><div class='usertext-body'><div>{outer-xml(.)}</div></div><ul class='flat-list buttons'><a><t:s>link:=@href<a href="../../../t:s">/t:s</a>permalink</a></ul></div></div><a href="../../../t:loop">/t:loop</a>&rdquo; &ndash;follow &ldquo;<a rel='nofollow next'>{.}</a>?&rdquo;<br />
+<p>xidel &quot;<a href="http://www.reddit.com/user/username/&quot;" target="_blank">http://www.reddit.com/user/username/&quot;</a> --extract &quot;<t:loop><div class='usertext-body'><div>{outer-xml(.)}</div></div><ul class='flat-list buttons'><a><t:s>link:=@href<a href="../../../t:s">/t:s</a>permalink</a></ul></div></div><a href="../../../t:loop">/t:loop</a>&quot; --follow &quot;<a rel='nofollow next'>{.}</a>?&quot;<br />
 Check if your reddit letter is red:<br />
 Webscraping, combining CSS, XPath, JSONiq and automatically form evaluation:</p>
 
-<p>xidel <a href="http://reddit.com" target="_blank">http://reddit.com</a> -f &ldquo;form(css(&lsquo;form.login-form&rsquo;)[1], {&lsquo;user&rsquo;: &lsquo;$your_username&rsquo;, &lsquo;passwd&rsquo;: &lsquo;$your_password&rsquo;})&rdquo; -e &ldquo;css(&lsquo;#mail&rsquo;)/@title&rdquo;<br />
+<p>xidel <a href="http://reddit.com" target="_blank">http://reddit.com</a> -f &quot;form(css('form.login-form')[1], {'user': '$your_username', 'passwd': '$your_password'})&quot; -e &quot;css('#mail')/@title&quot;<br />
 Using the Reddit API:</p>
 
-<p>xidel -d &ldquo;user=$your_username&amp;passwd=$your_password&amp;api_type=json&rdquo; <a href="https://ssl.reddit.com/api/login" target="_blank">https://ssl.reddit.com/api/login</a> &ndash;method GET &lsquo;<a href="http://www.reddit.com/api/me.json'" target="_blank">http://www.reddit.com/api/me.json'</a> -e &lsquo;($json).data.has_mail&rsquo;<br />
+<p>xidel -d &quot;user=$your_username&amp;passwd=$your_password&amp;api_type=json&quot; <a href="https://ssl.reddit.com/api/login" target="_blank">https://ssl.reddit.com/api/login</a> --method GET '<a href="http://www.reddit.com/api/me.json'" target="_blank">http://www.reddit.com/api/me.json'</a> -e '($json).data.has_mail'<br />
 Use XQuery, to create a HTML table of odd and even numbers:</p>
 
-<p>Windows cmd: xidel &ndash;xquery &ldquo;<table>{for $i in 1 to 1000 return <tr><td>{$i}</td><td>{if ($i mod 2 = 0) then &lsquo;even&rsquo; else &lsquo;odd&rsquo;}</td></tr>}</table>&rdquo; &ndash;output-format xml<br />
-Linux/Powershell: xidel &ndash;xquery &lsquo;<table>{for $i in 1 to 1000 return <tr><td>{$i}</td><td>{if ($i mod 2 = 0) then &ldquo;even&rdquo; else &ldquo;odd&rdquo;}</td></tr>}</table>&rsquo; &ndash;output-format xml<br />
-(Xidel itself supports &lsquo; and &ldquo;-quotes on all platforms, but &rsquo; does not escape &lt;&gt; in Windows&rsquo; cmd, and &ldquo; does not escape $ in the Linux shells)<br />
+<p>Windows cmd: xidel --xquery &quot;<table>{for $i in 1 to 1000 return <tr><td>{$i}</td><td>{if ($i mod 2 = 0) then 'even' else 'odd'}</td></tr>}</table>&quot; --output-format xml<br />
+Linux/Powershell: xidel --xquery '<table>{for $i in 1 to 1000 return <tr><td>{$i}</td><td>{if ($i mod 2 = 0) then &quot;even&quot; else &quot;odd&quot;}</td></tr>}</table>' --output-format xml<br />
+(Xidel itself supports ' and &quot;-quotes on all platforms, but ' does not escape &lt;&gt; in Windows' cmd, and &quot; does not escape $ in the Linux shells)<br />
 Export variables to bash</p>
 
-<p>eval &ldquo;$(xidel <a href="http://site" target="_blank">http://site</a> -e &lsquo;title:=//title&rsquo; -e &lsquo;links:=//a/@href&rsquo; &ndash;output-format bash)&rdquo;</p>
+<p>eval &quot;$(xidel <a href="http://site" target="_blank">http://site</a> -e 'title:=//title' -e 'links:=//a/@href' --output-format bash)&quot;</p>
 
 <p>This sets the bash variable $title to the title of the page and $links becomes an array of all links there.<br />
 Reading JSON:</p>
 
-<p>Read the 10th array element: xidel file.json -e &lsquo;$json(10)&rsquo;<br />
-Read all array elements: xidel file.json -e &lsquo;$json()&rsquo;<br />
-Read property &ldquo;foo&rdquo; and then &ldquo;bar&rdquo; with JSONiq notation: xidel file.json -e &lsquo;$json(&ldquo;foo&rdquo;)(&ldquo;bar&rdquo;)&rsquo;<br />
-Read property &ldquo;foo&rdquo; and then &ldquo;bar&rdquo; with dot notation: xidel file.json -e &lsquo;($json).foo.bar&rsquo;<br />
-Read property &ldquo;foo&rdquo; and then &ldquo;bar&rdquo; with XPath-like notation: xidel file.json -e &lsquo;$json/foo/bar&rsquo;<br />
-Mixed example: xidel file.json -e &lsquo;$json(&ldquo;abc&rdquo;)()().xyz/(u,v)&rsquo;<br />
-This would read all the numbers from e.g. {&ldquo;abc&rdquo;: [[{&ldquo;xyz&rdquo;: {&ldquo;u&rdquo;: 1, &ldquo;v&rdquo;: 2}}], [{&ldquo;xyz&rdquo;: {&ldquo;u&rdquo;: 3}}, {&ldquo;xyz&rdquo;: {&ldquo;u&rdquo;: 4}} ]]}.<br />
+<p>Read the 10th array element: xidel file.json -e '$json(10)'<br />
+Read all array elements: xidel file.json -e '$json()'<br />
+Read property &quot;foo&quot; and then &quot;bar&quot; with JSONiq notation: xidel file.json -e '$json(&quot;foo&quot;)(&quot;bar&quot;)'<br />
+Read property &quot;foo&quot; and then &quot;bar&quot; with dot notation: xidel file.json -e '($json).foo.bar'<br />
+Read property &quot;foo&quot; and then &quot;bar&quot; with XPath-like notation: xidel file.json -e '$json/foo/bar'<br />
+Mixed example: xidel file.json -e '$json(&quot;abc&quot;)()().xyz/(u,v)'<br />
+This would read all the numbers from e.g. {&quot;abc&quot;: [[{&quot;xyz&quot;: {&quot;u&quot;: 1, &quot;v&quot;: 2}}], [{&quot;xyz&quot;: {&quot;u&quot;: 3}}, {&quot;xyz&quot;: {&quot;u&quot;: 4}} ]]}.<br />
 All selectors are sequence-transparent, i.e. you can use the same selector to read something from one value as to read it from several values. Arrays are converted to sequences with ()<br />
 Convert table rows and columns to a CSV-like format:</p>
 
-<p>xidel <a href="http://site" target="_blank">http://site</a> -e &lsquo;//tr / join(td, &ldquo;,&rdquo;)&rsquo;</p>
+<p>xidel <a href="http://site" target="_blank">http://site</a> -e '//tr / join(td, &quot;,&quot;)'</p>
 
-<p>join((&hellip;)) can generally be used to output some values in a single line. The function name is an abbreviation for the XPath function string-join. In the example tr / join calls join for every row.<br />
+<p>join((...)) can generally be used to output some values in a single line. The function name is an abbreviation for the XPath function string-join. In the example tr / join calls join for every row.<br />
 Modify/Transform an HTML file, e.g. to mark all links as bold:</p>
 
 <p>Windows cmd:<br />
-xidel &ndash;html your-file.html &ndash;xquery &ldquo;transform(/, function($e) {<br />
-   $e / if (name() = &lsquo;a&rsquo;) then</p>
+xidel --html your-file.html --xquery &quot;transform(/, function($e) {<br />
+   $e / if (name() = 'a') then</p>
 
 <pre><code>       &lt;a style='{join((@style, 'font-weight: bold'), '; ')}'&gt;{@* except @style, node()}&lt;/a&gt;
     else .
 </code></pre>
 
-<p>})&rdquo; &gt; your-output-file.html<br />
+<p>})&quot; &gt; your-output-file.html<br />
 Linux/Powershell:<br />
-xidel &ndash;html your-file.html &ndash;xquery &lsquo;transform(/, function($e) {<br />
-   $e / if (name() = &ldquo;a&rdquo;) then</p>
+xidel --html your-file.html --xquery 'transform(/, function($e) {<br />
+   $e / if (name() = &quot;a&quot;) then</p>
 
 <pre><code>       &lt;a style=&quot;{join((@style, &quot;font-weight: bold&quot;), &quot;; &quot;)}&quot;&gt;{@* except @style, node()}&lt;/a&gt;
     else .
 </code></pre>
 
-<p>})&rsquo; &gt; your-output-file.html</p>
+<p>})' &gt; your-output-file.html</p>
 
 <p>This example combines three important syntaxes:<br />
 transform(/, function($e) { .. }: This applies an anonymous function to every element in the HTML document, whereby that element is stored in variable $e and is replaced by the return value of the function.<br />
 <a>{@* except @style, node()}</a> : This creates a new a-element that has the same children, descendants and attributes as the current element, but removes the style-attribute.<br />
-style=&ldquo;{join((@style, &ldquo;font-weight: bold&rdquo;), &ldquo;; &ldquo;)}&rdquo;: This creates a new style-attribute by appending &ldquo;font-weight: bold&rdquo; to the old value of the attribute. A separating &ldquo;; &rdquo; is inserted, if (and only if) that attribute already existed.</p>
+style=&quot;{join((@style, &quot;font-weight: bold&quot;), &quot;; &quot;)}&quot;: This creates a new style-attribute by appending &quot;font-weight: bold&quot; to the old value of the attribute. A separating &quot;; &quot; is inserted, if (and only if) that attribute already existed.</p>
 
 <p>You may also want to read the readme file of Xidel, the complete list of available functions, the documentation of my template language and XPath/XQuery 3.0 library. Or look at its results on the XQuery Testsuite.<br />
 Downloads</p>
@@ -1184,7 +1184,7 @@ However, for https connections on Linux openssl (including openssl-dev) and libc
 To compile it on the command line, call fpc xidel.pas and pass the paths to all directories using the -Fu option.<br />
 Alternatively, it can be compiled using Lazarus. For this install components/pascal/internettools.lpk and components/pascal/internettools_utf8.lpk in Lazarus, then open programs/internet/xidel/xidel.lpi and click on Run\Compile.</p>
 
-<p>Pronounciation: To say the name &ldquo;Xidel&rdquo; in English, you say &ldquo;excited&rdquo; with a silent &ldquo;C&rdquo; and &ldquo;D&rdquo;, followed by an &ldquo;L&rdquo;. In German, you just say it as it is written.</p>
+<p>Pronounciation: To say the name &quot;Xidel&quot; in English, you say &quot;excited&quot; with a silent &quot;C&quot; and &quot;D&quot;, followed by an &quot;L&quot;. In German, you just say it as it is written.</p>
 
                         </div>                      
                         <div class="clear"></div>
@@ -1400,7 +1400,7 @@ Alternatively, it can be compiled using Lazarus. For this install components/pas
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -1444,6 +1444,8 @@ Alternatively, it can be compiled using Lazarus. For this install components/pas
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -1669,7 +1671,7 @@ Alternatively, it can be compiled using Lazarus. For this install components/pas
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -1787,7 +1789,7 @@ Alternatively, it can be compiled using Lazarus. For this install components/pas
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -1939,7 +1941,7 @@ Alternatively, it can be compiled using Lazarus. For this install components/pas
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -2220,6 +2222,32 @@ Alternatively, it can be compiled using Lazarus. For this install components/pas
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 

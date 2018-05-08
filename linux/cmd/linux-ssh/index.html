@@ -1035,7 +1035,7 @@
                         <h1 class="post-title">Linux命令 ssh</h1>
 
                         <p class="post-byline">
-                          by  · 2016年01月06日 · 13440 Words ·
+                          by  · 2016年01月06日 · 13436 Words ·
                           ~27min reading time |
                           
                           
@@ -1172,7 +1172,7 @@ target == Rhost==remote 目标机</p>
 
 <h2 id="用于内网穿透防火墙限制-执行点在-rhost-肉鸡target-rhost">用于内网穿透防火墙限制;执行点在[RHOST]肉鸡target (RHOST)</h2>
 
-<p>LHOST&lt;&mdash;&gt;proxy&lt;&mdash;firewall&mdash;&gt;Rhost</p>
+<p>LHOST&lt;---&gt;proxy&lt;---firewall---&gt;Rhost</p>
 
 <p><code>ssh -CfNg -R port2:127.0.0.1:port1 user@host</code>    #远程转发<br />
 访问host:port2就是访问127.0.0.1:port1</p>
@@ -1267,7 +1267,7 @@ done
 
 <p>ssh-keygen<br />
   -b <bits>       密钥长度，默认为2048<br />
-  -t <type>       密钥类型, rsa|des&hellip; （默认类型为rsa)<br />
+  -t <type>       密钥类型, rsa|des... （默认类型为rsa)<br />
   SSH1：   RSA<br />
   SSH2：   RSA, DSA,  ECDSA<br />
   -N <password>   新密码<br />
@@ -1311,7 +1311,7 @@ useDNS no</p></li>
 
 <p>找到#PubkeyAuthentication yes并把注释去掉<br />
 找到#AuthorizedKeysFile     ~/.ssh/authorized_keys，去掉注释<br />
-找到useDNS yes &ndash;&gt; 改为useDNS no  #关闭DNS查找加速客户端连接 不改的话ssh客户端连接的时候会很慢。<br />
+找到useDNS yes --&gt; 改为useDNS no  #关闭DNS查找加速客户端连接 不改的话ssh客户端连接的时候会很慢。<br />
 这两行的意思是打开Pubkey认证方式，把pubkey放在~/.ssh/authorized_keys ,在我的机器上对应的是/root/.ssh/authorized_keys</p>
 
 <h1 id="远程执行命令">远程执行命令</h1>
@@ -1320,7 +1320,7 @@ useDNS no</p></li>
 
 <p>通过SSH连接屏幕<br />
 <code>ssh -t root@keyicloud.com tmux a</code><br />
-ssh user@host -t &lsquo;tmux list-session; if [[ $? -eq  0 ]]; then tmux attach; else tmux;fi&rsquo;</p>
+ssh user@host -t 'tmux list-session; if [[ $? -eq  0 ]]; then tmux attach; else tmux;fi'</p>
 
 <h1 id="通过中间主机建立ssh连接">通过中间主机建立SSH连接</h1>
 
@@ -1329,7 +1329,7 @@ ssh user@host -t &lsquo;tmux list-session; if [[ $? -eq  0 ]]; then tmux attach;
 
 <h1 id="通过ssh运行复杂的远程shell命令">通过SSH运行复杂的远程shell命令</h1>
 
-<p>ssh host -l user &lsquo;<code>cat cmd.txt</code>&lsquo;</p>
+<p>ssh host -l user '<code>cat cmd.txt</code>'</p>
 
 <h2 id="ssh-安全与后门">ssh 安全与后门</h2>
 
@@ -1358,12 +1358,12 @@ AllowUsers test<br />
 <p>2) ssh客户端:<br />
   此时我们使用用户test1登录系统,发现无法登录,如下:<br />
   ssh  test1@192.168.27.142<br />
-  test1@192.168.27.142&rsquo;s password:<br />
+  test1@192.168.27.142's password:<br />
   Permission denied, please try again.</p>
 
 <p>转为使用test用户,登录成功,说明AllowUsers是起作用的,如下:<br />
   ssh  test@192.168.27.142<br />
-  test@192.168.27.142&rsquo;s password:<br />
+  test@192.168.27.142's password:<br />
   Last login: Sat Jun  4 18:50:52 2011 from 192.168.27.143</p>
 
 <p>AllowGroups/DenyUsers/DenyGroups的用法都比较简单,我们在此不一一举例.</p>
@@ -1385,18 +1385,18 @@ sshd: 192.168.1 193.180.177.13</p>
 ssh_exchange_identification: Connection closed by remote host</p>
 
 <p>7、使用iptables允许特定的主机连接<br />
- iptables -A INPUT -p tcp -m state &ndash;state NEW &ndash;source 193.180.177.13 &ndash;dport 22 -j ACCEPT<br />
+ iptables -A INPUT -p tcp -m state --state NEW --source 193.180.177.13 --dport 22 -j ACCEPT<br />
  并确保没有其他的主机可以访问SSH服务：<br />
- iptables -A INPUT -p tcp &ndash;dport 22 -j DROP</p>
+ iptables -A INPUT -p tcp --dport 22 -j DROP</p>
 
 <p>8、SSH时间锁定技巧<br />
 你可以使用不同的iptables参数来限制到SSH服务的连接，让其在一个特定的时间范围内可以连接，其他时间不能连接。你可以在下面的任何例子中使用/second、/minute、/hour或/day开关。<br />
 第一个例子，如果一个用户输入了错误的密码，锁定一分钟内不允许在访问SSH服务，这样每个用户在一分钟内只能尝试一次登陆：<br />
-~# iptables -A INPUT -p tcp -m state &ndash;syn &ndash;state NEW &ndash;dport 22 -m limit &ndash;limit 1/minute &ndash;limit-burst 1 -j ACCEPT<br />
-~# iptables -A INPUT -p tcp -m state &ndash;syn &ndash;state NEW &ndash;dport 22 -j DROP<br />
+~# iptables -A INPUT -p tcp -m state --syn --state NEW --dport 22 -m limit --limit 1/minute --limit-burst 1 -j ACCEPT<br />
+~# iptables -A INPUT -p tcp -m state --syn --state NEW --dport 22 -j DROP<br />
 第二个例子，设置iptables只允许主机193.180.177.13连接到SSH服务，在尝试三次失败登陆后，iptables允许该主机每分钟尝试一次登陆：<br />
-~# iptables -A INPUT -p tcp -s 193.180.177.13 -m state &ndash;syn &ndash;state NEW &ndash;dport 22 -m limit &ndash;limit 1/minute &ndash;limit-burst 1 -j ACCEPT<br />
-~# iptables -A INPUT -p tcp -s 193.180.177.13 -m state &ndash;syn &ndash;state NEW &ndash;dport 22 -j DROP</p>
+~# iptables -A INPUT -p tcp -s 193.180.177.13 -m state --syn --state NEW --dport 22 -m limit --limit 1/minute --limit-burst 1 -j ACCEPT<br />
+~# iptables -A INPUT -p tcp -s 193.180.177.13 -m state --syn --state NEW --dport 22 -j DROP</p>
 
 <hr />
 
@@ -1455,7 +1455,7 @@ chmod 700 ~/.ssh</p>
 
 <p>Test the new SSH server</p>
 
-<p>Please note: DON&rsquo;t close the terminal, create a new terminal window to test the new ssh_config, we need to change settings if we are unable log in using the rsa key</p>
+<p>Please note: DON't close the terminal, create a new terminal window to test the new ssh_config, we need to change settings if we are unable log in using the rsa key</p>
 
 <p>#log in using the rsa key on local machine<br />
 ssh -i path_to_id_rsa -p 420 sona@1.0.9.8<br />
@@ -1716,8 +1716,8 @@ Ciphers arcfour</p>
 <li><p>ssh_config<br />
 ** man<br />
 *** PATTERNS<br />
-模式(patterns)包含零个或多个非空字符, &lsquo;*&rsquo; (匹配零个或多个字符), &lsquo;?&rsquo; (匹配至少一个字符).<br />
-例如, 对 &ldquo;.co.uk&rdquo; 这组域名下的所有主机指定一组说明, 下面的模式(pattern)能够被使用:</p>
+模式(patterns)包含零个或多个非空字符, '*' (匹配零个或多个字符), '?' (匹配至少一个字符).<br />
+例如, 对 &quot;.co.uk&quot; 这组域名下的所有主机指定一组说明, 下面的模式(pattern)能够被使用:</p>
 
 <pre><code>Host *.co.uk
 </code></pre>
@@ -1728,7 +1728,7 @@ Ciphers arcfour</p>
 </code></pre>
 
 <p>模式列表(pattern-list)是逗号分隔的模式(pattern)的列表. 模式列表中的模式可能需要在它们前面<br />
-使用感叹号来进行排除. 例如, 允许在一个组织内, 来自任何地方的密钥被使用, 除了来自 &ldquo;dialup&rdquo;<br />
+使用感叹号来进行排除. 例如, 允许在一个组织内, 来自任何地方的密钥被使用, 除了来自 &quot;dialup&quot;<br />
 部分, 下面的条目可以被使用(在 authorized_keys):</p>
 
 <pre><code>from=&quot;!*.dialup.example.com,*.example.com&quot;
@@ -1744,7 +1744,7 @@ Ciphers arcfour</p>
        默认参数为 any<br /></li>
 <li>AllowAgentForwarding :: 指定 ssh-agent(1) 转发是否被认可. 默认为 yes . 需要指出的是<br />
 仅用此选项并不能提高安全性, 除非用户被仅用 shell 访问, 否则用户总是可以安装自己的转发工具<br /></li>
-<li>AllowGroups :: 此关键词能够接受以空格分隔 group &ldquo;名字&rdquo; 组成的列表. 如果指定的话将只允许<br />
+<li>AllowGroups :: 此关键词能够接受以空格分隔 group &quot;名字&quot; 组成的列表. 如果指定的话将只允许<br />
      列表中的主组及所属组中的用户登录. 仅可以使用用户组的名字, 用户组 ID 是<br />
      不允许使用的. 默认情况下所有用户组均可登录.(允许列出的用户组成员登录而拒绝<br />
              其余的所有用户组成员)<br /></li>
@@ -1760,12 +1760,12 @@ remote. 默认为 yes. 需要指出仅用此选项并不能提高安全性, 除�
 <li><p>Match :: 引入了一个条件块. 如果在 Match 行的所有条件都满足, 那么下一行的关键字会覆盖配置<br />
    文件中的全局设置, 直到另外一个 Match , 或者文件结尾.</p>
 
-<p>Match 使用的参数是一个或者多个 &ldquo;条件-模式(criteria-pattern)&rdquo; 对. 可使用的条件<br />
+<p>Match 使用的参数是一个或者多个 &quot;条件-模式(criteria-pattern)&quot; 对. 可使用的条件<br />
    是 User, Group, Host, LocalAddress, LocalPort, Address. 可匹配的模式包括<br />
-   单一条目或者用逗号分隔的列表或者可用的通配符或者是 &ldquo;!&rdquo; 进行否定.</p>
+   单一条目或者用逗号分隔的列表或者可用的通配符或者是 &quot;!&quot; 进行否定.</p>
 
 <p>在 Address 条件的模式中, 可额外包含如下形式 <code>192.0.2.0/24''
-</code>3ffe:ffff::/32&rdquo;</p>
+</code>3ffe:ffff::/32''</p>
 
 <p>只有部分关键字可以被用于 Match . 这些关键字包括:</p>
 
@@ -1798,12 +1798,12 @@ AUTHORIZED_KEYS FILE FORMAT 一节描述. AuthorizedKeysFile 可以包含形如 
 如下一些标记被定义为:</p>
 
 <ul>
-<li>%% :: 指代字面意义上的 &lsquo;%&rsquo;<br /></li>
+<li>%% :: 指代字面意义上的 '%'<br /></li>
 <li>%h :: 指代已经验证通过的用户的家目录<br /></li>
 <li>%u :: 指代已经验证通过的用户名<br /></li>
 </ul></li>
 
-<li><p>Banner :: 指定文件包含的内容将在验证前展示给远程用户. 如果参数为 &lsquo;none&rsquo; 则不会展示任何<br />
+<li><p>Banner :: 指定文件包含的内容将在验证前展示给远程用户. 如果参数为 'none' 则不会展示任何<br />
 内容, 这个选项只在协议 2 中有效. 默认情况, 无任何显示.</p></li>
 
 <li><p>ChallengeResponseAuthentication :: (没有看懂)</p></li>
@@ -1824,7 +1824,7 @@ client 连接并终止会话. 这个选项与 <em>TCPKeepAlive</em> 是不同的
 默认值是 3. 如果 <em>ClientAliveInterval</em> 设置 15, 并且 <em>ClientAliveCountMax</em> 为预设<br />
 值, 那么 cliant 端在 45 秒内无响应的话会断开连接. 仅用在协议 2.</p></li>
 
-<li><p>Compression :: 指定是否压缩被允许或者延迟到用户成功验证后. 参数必须是 &ldquo;yes&rdquo;, &ldquo;delayed&rdquo;,</p>
+<li><p>Compression :: 指定是否压缩被允许或者延迟到用户成功验证后. 参数必须是 &quot;yes&quot;, &quot;delayed&quot;,</p>
 
 <pre><code> &quot;no&quot;. 默认是 &quot;delayed&quot;
 </code></pre></li>
@@ -1889,7 +1889,7 @@ client 连接并终止会话. 这个选项与 <em>TCPKeepAlive</em> 是不同的
 <li><p>PasswordAuthentication :: 指定密码验证是否允许. 默认是不允许的</p></li>
 
 <li><p>PermitEmptyPasswords :: 当密码验证被允许时, 此选项指定是否服务器接受账号的空密码. 默认是<br />
-&ldquo;no&rdquo;</p></li>
+&quot;no&quot;</p></li>
 
 <li><p>PermitOpen :: 指定一个目标, 说明哪些 tcp 端口转发是被允许的. 转发规范必须是下列形式:</p>
 
@@ -1900,13 +1900,13 @@ client 连接并终止会话. 这个选项与 <em>TCPKeepAlive</em> 是不同的
 多个转发可以通过使用空格分隔来指定. &quot;any&quot; 允许所有转发, &quot;none&quot; 禁止所有转发
 </code></pre></li>
 
-<li><p>PermitRootLogin :: 指定 root 是否可以使用 ssh(1) 登录. 接受的参数必须是 &ldquo;yes&rdquo;,<br />
-&ldquo;without-password&rdquo;, &ldquo;forced-commands-only&rdquo;, or &ldquo;no&rdquo;.<br />
-如果选项被设置为 &ldquo;without-password&rdquo;, 那么密码验证将会被禁止.<br />
-如果选项被设置为 &ldquo;forced-commands-only&rdquo;, root 使用公钥登录被允许, 但是只有当 command<br />
+<li><p>PermitRootLogin :: 指定 root 是否可以使用 ssh(1) 登录. 接受的参数必须是 &quot;yes&quot;,<br />
+&quot;without-password&quot;, &quot;forced-commands-only&quot;, or &quot;no&quot;.<br />
+如果选项被设置为 &quot;without-password&quot;, 那么密码验证将会被禁止.<br />
+如果选项被设置为 &quot;forced-commands-only&quot;, root 使用公钥登录被允许, 但是只有当 command<br />
 许昂想被指定时才生效果. 其他的任何验证方式都是不被允许的.</p></li>
 
-<li><p>PermitTunnel :: 指定 tun(4) 设备转发是否被允许. 参数必须为 &ldquo;yes&rdquo;, &ldquo;point-to-point&rdquo;,</p>
+<li><p>PermitTunnel :: 指定 tun(4) 设备转发是否被允许. 参数必须为 &quot;yes&quot;, &quot;point-to-point&quot;,</p>
 
 <pre><code>  &quot;ethernet&quot;, &quot;no&quot;
 </code></pre></li>
@@ -1917,9 +1917,9 @@ client 连接并终止会话. 这个选项与 <em>TCPKeepAlive</em> 是不同的
 
 <li><p>PrintLastLog :: 指定 sshd(8) 是否应该打印出上次用户登录的日期时间.</p></li>
 
-<li><p>PrintMotd :: 指定 sshd(8) 当用户登录交互界面时是否打印 /etc/motd 中的提示内容. 默认是 &ldquo;yes&rdquo;</p></li>
+<li><p>PrintMotd :: 指定 sshd(8) 当用户登录交互界面时是否打印 /etc/motd 中的提示内容. 默认是 &quot;yes&quot;</p></li>
 
-<li><p>Protocol :: 指定 sshd(8) 支持的协议版本. 可能的值为 &ldquo;1&rdquo; 或 &ldquo;2&rdquo;</p></li>
+<li><p>Protocol :: 指定 sshd(8) 支持的协议版本. 可能的值为 &quot;1&quot; 或 &quot;2&quot;</p></li>
 
 <li><p>PubkeyAuthentication :: 指定公钥验证是否被允许.</p></li>
 
@@ -1966,7 +1966,7 @@ DAEMON, USER, AUTH, LOCAL0, LOCAL1, LOCAL2, LOCAL3,
 
 <li><p>ssh command<br />
 ** -D [bind_address:]port<br />
-Specifies a local ``dynamic&rdquo; application-level port forwarding.<br />
+Specifies a local ``dynamic'' application-level port forwarding.<br />
 This works by allocating a socket to listen to port on the local<br />
 side, optionally bound to the specified bind_address.  Whenever a<br />
 connection is made to this port, the connection is forwarded over<br />
@@ -1984,7 +1984,7 @@ configuration file.</p></li>
    the GatewayPorts setting.  However, an explicit bind_address may<br />
    be used to bind the connection to a specific address.  The<br />
    bind_address of `<code>localhost'' indicates that the listening port
-   be bound for local use only, while an empty address or</code>*&rsquo;<br />
+   be bound for local use only, while an empty address or</code>*'<br />
    indicates that the port should be available from all interfaces.</p>
 
 <p>** -L [bind_address:]port:host:hostport<br />
@@ -2002,7 +2002,7 @@ configuration file.</p></li>
    However, an explicit bind_address may be used to bind the<br />
    connection to a specific address.  The bind_address of<br />
    `<code>localhost'' indicates that the listening port be bound for
-   local use only, while an empty address or</code>*&rsquo; indicates that the<br />
+   local use only, while an empty address or</code>*' indicates that the<br />
    port should be available from all interfaces.</p>
 
 <p>** -R [bind_address:]port:host:hostport<br />
@@ -2021,12 +2021,12 @@ configuration file.</p></li>
 <p>By default, the listening socket on the server will be bound to<br />
    the loopback interface only.  This may be overridden by<br />
    specifying a bind_address.  An empty bind_address, or the address<br />
-   `*&lsquo;, indicates that the remote socket should listen on all<br />
+   `*', indicates that the remote socket should listen on all<br />
    interfaces.  Specifying a remote bind_address will only succeed<br />
-   if the server&rsquo;s GatewayPorts option is enabled (see<br />
+   if the server's GatewayPorts option is enabled (see<br />
    sshd_config(5)).</p>
 
-<p>If the port argument is `0&rsquo;, the listen port will be dynamically<br />
+<p>If the port argument is `0', the listen port will be dynamically<br />
    allocated on the server and reported to the client at run time.<br />
    When used together with -O forward the allocated port will be<br />
    printed to the standard output.</p>
@@ -2294,7 +2294,7 @@ openvpn 地址为默认网关即可.
     
       <li class="cat-item cat-item-1">
         <a rel="nofollow" href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(12)</small>
+        <small>(14)</small>
       </li>
     
   </ul>
@@ -2338,6 +2338,8 @@ openvpn 地址为默认网关即可.
       
         
           <a rel="nofollow" rel="tag" href="../../../tags/ansible/" class="tag-link-12" title="1 Posts">ansible<small>(12)</small></a>
+        
+      
         
       
         
@@ -2563,7 +2565,7 @@ openvpn 地址为默认网关即可.
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-11" title="1 Posts">hugo<small>(11)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/hugo/" class="tag-link-13" title="1 Posts">hugo<small>(13)</small></a>
         
       
         
@@ -2681,7 +2683,7 @@ openvpn 地址为默认网关即可.
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-49" title="1 Posts">mysql<small>(49)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/mysql/" class="tag-link-50" title="1 Posts">mysql<small>(50)</small></a>
         
       
         
@@ -2833,7 +2835,7 @@ openvpn 地址为默认网关即可.
         
       
         
-          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-7" title="1 Posts">shell<small>(7)</small></a>
+          <a rel="nofollow" rel="tag" href="../../../tags/shell/" class="tag-link-8" title="1 Posts">shell<small>(8)</small></a>
         
       
         
@@ -3114,6 +3116,32 @@ openvpn 地址为默认网关即可.
 
 
 
+
+
+
+<script async src="//cdn.bootcss.com/video.js/6.2.8/alt/video.novtt.min.js"></script>
+<script async src="//cdn.bootcss.com/mathjax/2.7.2/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [['$','$'], ['\\(','\\)']],
+      displayMath: [['$$','$$'], ['\[','\]']],
+      processEscapes: true,
+      processEnvironments: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+      TeX: { equationNumbers: { autoNumber: "AMS" },
+      extensions: ["AMSmath.js", "AMSsymbols.js"] }
+    }
+  });
+</script>
+<script type="text/x-mathjax-config">
+    // Fix <code> tags after MathJax finishes running. This is a
+    // hack to overcome a shortcoming of Markdown. Discussion at
+    // https://github.com/mojombo/jekyll/issues/199
+    MathJax.Hub.Queue(() => {
+      MathJax.Hub.getAllJax().map(v => v.SourceElement().parentNode.className += ' has-jax');
+    });
+  </script>
 
 
 
