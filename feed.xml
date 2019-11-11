@@ -1,0 +1,2805 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>时光小栈 on 时光小栈</title>
+        <link>/</link>
+        <language>zh-CN</language>
+        <author>rinetd</author>
+        <rights>Copyright (c) 2015, rinetd; all rights reserved.</rights>
+        <updated>Mon, 11 Nov 2019 14:35:36 CST</updated>
+        
+        <item>
+            <title>caffe install protobuf</title>
+            <link>/ai/caffe/caffe-install-protobuf/</link>
+            <pubDate>Mon, 11 Nov 2019 14:35:36 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/caffe/caffe-install-protobuf/</guid>
+            <description>&lt;p&gt;caffe 安装protobuf 常见的几个问题&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;版本过低&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;版本过高 protobuf 3.10 不兼容&lt;br /&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;python中安装 protobuf 和系统中的protobuf冲突&lt;/p&gt;
+
+&lt;p&gt;pip list&lt;br /&gt;
+pip uninstall protobuf 执行卸载&lt;br /&gt;
+pip install protobuf==3.9&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>yolo flask server</title>
+            <link>/ai/yolo/yolo-flask-server/</link>
+            <pubDate>Mon, 11 Nov 2019 10:57:24 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/yolo/yolo-flask-server/</guid>
+            <description>&lt;p&gt;&lt;a href=&#34;https://github.com/makefile/objdet_web&#34; target=&#34;_blank&#34;&gt;Image object detection demo(YOLO,SSD,etc.) running as a Flask web server&lt;/a&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>yolo macos</title>
+            <link>/ai/yolo/yolo-macos/</link>
+            <pubDate>Mon, 11 Nov 2019 09:06:19 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/yolo/yolo-macos/</guid>
+            <description>
+
+&lt;h3 id=&#34;voc-检测图像&#34;&gt;VOC 检测图像&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;./darknet detector test cfg/voc.data cfg/yolov3.cfg weights/yolov3.weights data/dog.jpg&lt;/code&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>yolo pretrain convert</title>
+            <link>/ai/yolo/yolo-pretrain-convert/</link>
+            <pubDate>Mon, 11 Nov 2019 08:51:20 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/yolo/yolo-pretrain-convert/</guid>
+            <description>
+
+&lt;p&gt;1.voc数据集转换&lt;/p&gt;
+
+&lt;h1 id=&#34;数据集目录结构&#34;&gt;数据集目录结构&lt;/h1&gt;
+
+&lt;p&gt;└── VOCdevkit&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;└── VOC2012
+    ├── Annotations
+    │   ├── 20190615163323424.xml
+    │   ├── .......还有很多xml
+    ├── ImageSets
+    │   └── Main #标签的训练和验证集文本
+    │       ├── biji_train.txt
+    │       ├── biji_val.txt
+    │       ├── dian _train.txt
+    │       ├── dian _val.txt
+    │       ├── henji_train.txt
+    │       ├── henji_val.txt
+    │       ├── yahen_train.txt
+    │       └── yahen_val.txt
+    └── JPEGImages
+        ├── 20190615163323424.bmp
+        ├── .......还有很多图片
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;转换脚本&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-py&#34;&gt;import xml.etree.ElementTree as ET
+import pickle
+import os
+from os import listdir, getcwd
+from os.path import join
+
+sets=[(&#39;2012&#39;, &#39;biji_train&#39;), (&#39;2012&#39;, &#39;biji_val&#39;), (&#39;2012&#39;, &#39;dian _train&#39;), (&#39;2012&#39;, &#39;dian _val&#39;), (&#39;2012&#39;, &#39;henji_train&#39;),(&#39;2012&#39;, &#39;henji_val&#39;), (&#39;2012&#39;, &#39;yahen_train&#39;), (&#39;2012&#39;, &#39;yahen_val&#39;)]
+
+classes = [&amp;quot;biji&amp;quot;, &amp;quot;dian &amp;quot;, &amp;quot;henji&amp;quot;, &amp;quot;yahen&amp;quot;]
+
+
+def convert(size, box):
+    dw = 1./(size[0])
+    dh = 1./(size[1])
+    x = (box[0] + box[1])/2.0 - 1
+    y = (box[2] + box[3])/2.0 - 1
+    w = box[1] - box[0]
+    h = box[3] - box[2]
+    x = x*dw
+    w = w*dw
+    y = y*dh
+    h = h*dh
+    return (x,y,w,h)
+
+def convert_annotation(year, image_id):
+    print(&#39;%s&#39;%(image_id))
+    in_file = open(&#39;VOCdevkit/VOC%s/Annotations/%s.xml&#39;%(year, image_id))
+    out_file = open(&#39;VOCdevkit/VOC%s/labels/%s.txt&#39;%(year, image_id), &#39;w&#39;)
+    tree=ET.parse(in_file)
+    root = tree.getroot()
+    size = root.find(&#39;size&#39;)
+    w = int(size.find(&#39;width&#39;).text)
+    h = int(size.find(&#39;height&#39;).text)
+
+    for obj in root.iter(&#39;object&#39;):
+        difficult = obj.find(&#39;difficult&#39;).text
+        cls = obj.find(&#39;name&#39;).text
+        if cls not in classes or int(difficult)==1:
+            continue
+        cls_id = classes.index(cls)
+        xmlbox = obj.find(&#39;bndbox&#39;)
+        b = (float(xmlbox.find(&#39;xmin&#39;).text), float(xmlbox.find(&#39;xmax&#39;).text), float(xmlbox.find(&#39;ymin&#39;).text), float(xmlbox.find(&#39;ymax&#39;).text))
+        bb = convert((w,h), b)
+        out_file.write(str(cls_id) + &amp;quot; &amp;quot; + &amp;quot; &amp;quot;.join([str(a) for a in bb]) + &#39;\n&#39;)
+
+if __name__ == &#39;__main__&#39;:
+    wd = getcwd()
+
+    for year, image_set in sets:
+        if not os.path.exists(&#39;VOCdevkit/VOC%s/labels/&#39;%(year)):
+            os.makedirs(&#39;VOCdevkit/VOC%s/labels/&#39;%(year))
+        image_ids = open(&#39;VOCdevkit/VOC%s/ImageSets/Main/%s.txt&#39;%(year, image_set)).read().strip().split()
+        list_file = open(&#39;%s_%s.txt&#39;%(year, image_set), &#39;w&#39;)
+        for image_id in image_ids:
+            filename = os.path.splitext(image_id)[0]
+            if filename == &#39;1&#39; or filename == &#39;-1&#39;:
+                continue
+            list_file.write(&#39;%s/VOCdevkit/VOC%s/JPEGImages/%s.bmp\n&#39;%(wd, year, filename))
+            convert_annotation(year, filename)
+        list_file.close()
+
+    os.system(&amp;quot;cat *_train.txt &amp;gt; train.txt&amp;quot;)
+    os.system(&amp;quot;cat *_val.txt &amp;gt; val.txt&amp;quot;)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;转换脚本执行后会生成train.txt 和val.txt 和数据集目录下会有lables文件夹，train.txt 和val.txt 需要再整合到voc.data&lt;br /&gt;
+classes= 4&lt;br /&gt;
+train  = /darknet/mupian-demo/data/train.txt&lt;br /&gt;
+valid  = /darknet/mupian-demo/data/val.txt&lt;br /&gt;
+names = /darknet/mupian-demo/data/voc.names&lt;br /&gt;
+backup = /darknet/mupian-demo/backup&lt;br /&gt;
+voc.names&lt;/p&gt;
+
+&lt;p&gt;biji&lt;br /&gt;
+dian&lt;br /&gt;
+henji&lt;br /&gt;
+yahen&lt;/p&gt;
+
+&lt;p&gt;lables文件夹需要放置在train.txt(val.txt)中图片所在的文件夹的同级目录，也就是train.txt(val.txt)中的图片的上级目录&lt;/p&gt;
+
+&lt;p&gt;作者：baymin_&lt;br /&gt;
+链接：&lt;a href=&#34;https://www.jianshu.com/p/af2d292da518&#34; target=&#34;_blank&#34;&gt;https://www.jianshu.com/p/af2d292da518&lt;/a&gt;&lt;br /&gt;
+来源：简书&lt;br /&gt;
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。&lt;/p&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>cmake</title>
+            <link>/language/cpp/cmake/</link>
+            <pubDate>Sat, 09 Nov 2019 13:52:50 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/language/cpp/cmake/</guid>
+            <description>&lt;p&gt;CMAKE_CURRENT_SOURCE_DIR&lt;br /&gt;
+这是当前处理的CMakeLists.txt所在的目录&lt;/p&gt;
+
+&lt;p&gt;CMAKE_CURRENT_LIST_DIR&lt;br /&gt;
+(自2.8.3开始)这是当前正在处理的列表文件的目录&lt;/p&gt;
+
+&lt;h1 id=&#34;前言&#34;&gt;前言&lt;/h1&gt;
+
+&lt;p&gt;前面的文章介绍了一个最简单的CMake工程，这篇文章将介绍一个稍微复杂一些的CMake工程，结合这个工程总结一下在组织一个C/C++工程时最为常用的一些CMake命令和变量。对于涉及到的命令和变量，介绍的原则是点到即止，先仅需掌握基本用法即可，让工程跑起来。&lt;/p&gt;
+
+&lt;p&gt;上一篇文章中那个最简单的CMake Hello World工程，在其CMake脚本文件CMakeLists.txt中，仅有一句话：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;```c
+add_executable(hello hello.cpp)
+```
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里面的&lt;code&gt;add_executable&lt;/code&gt;就是一个CMake命令，它的作用是添加一个可执行文件构建目标。&lt;/p&gt;
+
+&lt;p&gt;下面从一个C++应用程序的编译过程为脉络对涉及到的命令和变量进行说明。&lt;/p&gt;
+
+&lt;p&gt;为了让下面的说明举例更加容易理解，先给出本文的示例工程目录结构：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;```c
+➜  /Users/sunyongjian1/codes/local_codes/cmake_test tree
+.
+├── CMakeLists.txt
+├── include
+│   └── util.h
+├── lib
+│   └── libutil.a
+└── src
+    └── main.cpp
+```
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;三个文件夹: include, lib, src分别存放包含文件，库文件，源文件；一个CMakeLists.txt脚本。下面我的任务是编写这个脚本，使得工程包含util.h头文件，编译main.cpp, 链接libutil.a, 最终生成一个可执行文件hello.&lt;/p&gt;
+
+&lt;h1 id=&#34;给工程起个名字&#34;&gt;给工程起个名字&lt;/h1&gt;
+
+&lt;p&gt;加上这句：&lt;code&gt;project(hello)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;解释&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;p&gt;命令：&lt;code&gt;project(&amp;lt;PROJECT-NAME&amp;gt; [LANGUAGES] [&amp;lt;language-name&amp;gt;...])&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;作用：定义工程名称, 设置几个变量的名字: &lt;code&gt;PROJECT_NAME, PROJECT_SOURCE_DIR, &amp;lt;PROJECT-NAME&amp;gt;_SOURCE_DIR, PROJECT_BINARY_DIR, &amp;lt;PROJECT-NAME&amp;gt;_BINARY_DIR&lt;/code&gt;, 高级用法请见参考链接2：CMake命令&lt;/p&gt;
+
+&lt;h1 id=&#34;让cmake找到我的头文件&#34;&gt;让CMake找到我的头文件&lt;/h1&gt;
+
+&lt;p&gt;加上这句：&lt;code&gt;include_directories(./include)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;作用：把当前目录(CMakeLists.txt所在目录)下的include文件夹加入到包含路径&lt;/p&gt;
+
+&lt;p&gt;我习惯这样写：&lt;code&gt;include_directories(${CMAKE_CURRENT_LIST_DIR}/include)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;解释&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;p&gt;命令: &lt;code&gt;include_directories([AFTER|BEFORE] [SYSTEM] dir1 [dir2 ...])&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;作用：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;把dir1, [dir2 …]这（些）个路径添加到当前CMakeLists及其子CMakeLists的头文件包含路径中;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;AFTER 或者 BEFORE 指定了要添加的路径是添加到原有包含列表之前或之后&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;若指定 SYSTEM 参数，则把被包含的路径当做系统包含路径来处理&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;第二种写法里用到了&lt;code&gt;CMAKE_CURRENT_LIST_DIR&lt;/code&gt;这个变量，它表示当前CMakeLists所在的路径.&lt;/p&gt;
+
+&lt;h1 id=&#34;让cmake找到我的源文件&#34;&gt;让CMake找到我的源文件&lt;/h1&gt;
+
+&lt;p&gt;加上： &lt;code&gt;aux_source_directory(./src ${hello_src})&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;作用: 把当前路径下src目录下的所有源文件路径放到变量&lt;code&gt;hello_src&lt;/code&gt;中&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;解释&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;p&gt;命令：&lt;code&gt;aux_source_directory(&amp;lt;dir&amp;gt; &amp;lt;variable&amp;gt;)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;作用：查找dir路径下的所有源文件，保存到variable变量中.&lt;/p&gt;
+
+&lt;p&gt;上面的例子中，&lt;code&gt;hello_src&lt;/code&gt;是一个自定义变量，在执行了&lt;code&gt;aux_source_directory(./src ${hello_src})&lt;/code&gt;之后，我就可以像这样来添加一个可执行文件：&lt;code&gt;add_executable(hello ${hello_src})&lt;/code&gt;, 意思是用&lt;code&gt;hello_src&lt;/code&gt;里面的所有源文件来构建hello可执行程序, 不用手动列出src目录下的所有源文件了。&lt;/p&gt;
+
+&lt;p&gt;&lt;font color=&#34;red&#34;&gt;注意：&lt;/font&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;aux_source_directory 不会递归包含子目录，仅包含指定的dir目录&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;CMake官方不推荐使用aux_source_directory及其类似命令(file(GLOB_RECURSE …))来搜索源文件，原因是这样包含的话，如果我再在被搜索的路径下添加源文件，我不需要修改CMakeLists脚本，也就是说，源文件多了，而CMakeLists并不需要(没有)变化，也就使得构建系统不能察觉到新加的文件，除非手动重新运行cmake，否则新添加的文件就不会被编译到项目结果中。&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;类似&lt;code&gt;include_directories()&lt;/code&gt;中&lt;code&gt;CMAKE_CURRENT_LIST_DIR&lt;/code&gt;的用法，也可以写成：&lt;code&gt;aux_source_directory(${CMAKE_CURRENT_LIST_DIR}/src ${hello_src})&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;让cmake找到我的库文件&#34;&gt;让CMake找到我的库文件&lt;/h1&gt;
+
+&lt;p&gt;加上：&lt;code&gt;link_directories(${CMAKE_CURRENT_LIST_DIR}/lib)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;解释&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;p&gt;命令：&lt;code&gt;link_directories(directory1 directory2 ...)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;作用：不必细说，与&lt;code&gt;include_directories()&lt;/code&gt;类似，这个命令添加了库包含路径。&lt;/p&gt;
+
+&lt;h1 id=&#34;告诉cmake我的构建目标&#34;&gt;告诉CMake我的构建目标&lt;/h1&gt;
+
+&lt;p&gt;加上：&lt;code&gt;add_executable(${PROJECT_NAME} ${hello_src})&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;解释&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;p&gt;命令：&lt;code&gt;add_executable(&amp;lt;name&amp;gt; [WIN32] [MACOSX_BUNDLE] [EXCLUDE_FROM_ALL] source1 [source2 ...])&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;作用：目前仅需知道，其作用是使用&lt;code&gt;${hello_src}&lt;/code&gt;里面的源文件来生成一个可执行文件，起名叫&lt;code&gt;${PROJECT_NAME}&lt;/code&gt;, 即hello. 在一开始定义的那个project(hello)中的hello。&lt;/p&gt;
+
+&lt;h1 id=&#34;告诉cmake我要链接哪个库文件&#34;&gt;告诉CMake我要链接哪个库文件&lt;/h1&gt;
+
+&lt;p&gt;加上：&lt;code&gt;target_link_libraries(${PROJECT_NAME} util)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;解释&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;p&gt;命令：&lt;code&gt;target_link_libraries(&amp;lt;target&amp;gt; [item1 [item2 [...]]] [[debug|optimized|general] &amp;lt;item&amp;gt;] ...)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;作用：仅需知道，名字叫&lt;code&gt;${PROJECT_NAME}&lt;/code&gt;这个target需要链接util这个库，会优先搜索libutil.a(windows上就是util.lib), 如果没有就搜索libutil.so(util.dll, util.dylib)’&lt;/p&gt;
+
+&lt;p&gt;上面的例子意思是，让hello去链接util这个库。&lt;/p&gt;
+
+&lt;h1 id=&#34;传递flags给c-编译器&#34;&gt;传递FLAGS给C++编译器&lt;/h1&gt;
+
+&lt;p&gt;如果我的main.cpp里面用到了C++11，那么我需要告诉CMake在生成的Makefile里告诉编译器启用C++11。与此类似，我可能也要传递其他FLAGS给编译器，怎么办？&lt;/p&gt;
+
+&lt;p&gt;答案是：设置&lt;code&gt;CMAKE_CXX_FLAGS&lt;/code&gt;变量&lt;/p&gt;
+
+&lt;p&gt;加上：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;```c
+set(CMAKE_CXX_COMPILER      &amp;quot;clang++&amp;quot; )         # 显示指定使用的C++编译器
+
+set(CMAKE_CXX_FLAGS   &amp;quot;-std=c++11&amp;quot;)             # c++11
+set(CMAKE_CXX_FLAGS   &amp;quot;-g&amp;quot;)                     # 调试信息
+set(CMAKE_CXX_FLAGS   &amp;quot;-Wall&amp;quot;)                  # 开启所有警告
+
+set(CMAKE_CXX_FLAGS_DEBUG   &amp;quot;-O0&amp;quot; )             # 调试包不优化
+set(CMAKE_CXX_FLAGS_RELEASE &amp;quot;-O2 -DNDEBUG &amp;quot; )   # release包优化
+```
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;解释&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;code&gt;CMAKE_CXX_FLAGS&lt;/code&gt; 是CMake传给C++编译器的编译选项，通过设置这个值就好比 &lt;code&gt;g++ -std=c++11 -g -Wall&lt;/code&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;code&gt;CMAKE_CXX_FLAGS_DEBUG&lt;/code&gt; 是除了&lt;code&gt;CMAKE_CXX_FLAGS&lt;/code&gt;外，在Debug配置下，额外的参数&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;code&gt;CMAKE_CXX_FLAGS_RELEASE&lt;/code&gt; 同理，是除了&lt;code&gt;CMAKE_CXX_FLAGS&lt;/code&gt;外，在Release配置下，额外的参数&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;开始构建&#34;&gt;开始构建&lt;/h1&gt;
+
+&lt;p&gt;通过以上步骤， 最后，在文件头部添加CMake版本检查，以我的电脑上的环境为例，我的CMake版本是3.0，那么我在脚本最开始加上:&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;cmake_minimum_required ( VERSION 3.0)&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;完整的CMakeLists.txt如下所示：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;```c
+cmake_minimum_required ( VERSION 3.0)
+
+project(hello)
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+
+link_directories(${CMAKE_CURRENT_LIST_DIR}/lib)
+
+aux_source_directory(${CMAKE_CURRENT_LIST_DIR}/src ${hello_src})
+
+add_executable(${PROJECT_NAME} ${hello_src})
+
+target_link_libraries(${PROJECT_NAME} util)
+
+set(CMAKE_CXX_COMPILER      &amp;quot;clang++&amp;quot; )         # 显示指定使用的C++编译器
+
+set(CMAKE_CXX_FLAGS   &amp;quot;-std=c++11&amp;quot;)             # c++11
+set(CMAKE_CXX_FLAGS   &amp;quot;-g&amp;quot;)                     # 调试信息
+set(CMAKE_CXX_FLAGS   &amp;quot;-Wall&amp;quot;)                  # 开启所有警告
+
+set(CMAKE_CXX_FLAGS_DEBUG   &amp;quot;-O0&amp;quot; )             # 调试包不优化
+set(CMAKE_CXX_FLAGS_RELEASE &amp;quot;-O2 -DNDEBUG &amp;quot; )   # release包优化
+```
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;在CMakeLists.txt所在目录，新建build目录，并切换进build进行构建即可. 具体构建方法参见上一篇CMake Hello World的构建。&lt;/p&gt;
+
+&lt;p&gt;注意：生成的可执行文件路径会在build/src目录下，如需修改生成位置，请参考CMake变量&lt;code&gt;EXECUTABLE_OUTPUT_PATH&lt;/code&gt;。&lt;/p&gt;
+
+&lt;h1 id=&#34;总结&#34;&gt;总结&lt;/h1&gt;
+
+&lt;p&gt;本文通过一个C++工程实例，介绍了构建过程中用到的一些CMake命令和变量.&lt;/p&gt;
+
+&lt;p&gt;后面的文章将会讲解如何构建更加复杂的C++工程，会用到CMake里的function和其他命令和变量。&lt;/p&gt;
+
+&lt;h1 id=&#34;参考链接&#34;&gt;参考链接&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://cmake.org/cmake/help/v3.0/&#34; target=&#34;_blank&#34;&gt;CMake Documentation(V3.0为例)&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://cmake.org/cmake/help/v3.0/manual/cmake-commands.7.html&#34; target=&#34;_blank&#34;&gt;CMake 变量&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-m&#34;&gt;cmake_minimum_required(VERSION 2.8)
+project( DisplayImage )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( DisplayImage DisplayImage.cpp ) # 生成可执行文件
+target_link_libraries( DisplayImage ${OpenCV_LIBS} )
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;cmake-链接第三方的库-和-添加c-11的支持&#34;&gt;CMake 链接第三方的库 和 添加C++11的支持&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;# CMake 最低版本号要求
+cmake_minimum_required (VERSION 2.8)
+# 项目信息
+project (server)
+# 查找当前目录下的所有源文件
+# 并将名称保存到 DIR_SRCS 变量
+aux_source_directory(. DIR_SRCS)
+
+# 添加第三方的库
+set(INC_DIR /usr/local/include/)
+set(LINK_DIR /usr/local/lib)
+
+include_directories(${INC_DIR})
+link_directories(${LINK_DIR})
+link_libraries(ev)
+
+
+# 指定生成目标
+add_executable(server ${DIR_SRCS})
+
+# 将第三方的库链接到可执行文件
+target_link_libraries(server ev)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;那要怎么样, 才能支持C++11呢?&lt;/p&gt;
+
+&lt;p&gt;很简单, 在版本要求的下面, 加上这两句话, 就行了&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;SET(CMAKE_C_COMPILER g++)
+add_compile_options(-std=c++14)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;————————————————&lt;br /&gt;
+版权声明：本文为CSDN博主「奔跑的龙少」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。&lt;br /&gt;
+原文链接：&lt;a href=&#34;https://blog.csdn.net/shine_journey/article/details/78732809&#34; target=&#34;_blank&#34;&gt;https://blog.csdn.net/shine_journey/article/details/78732809&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;cmake是gnu工具链中构建项目的重要一环，而且在windows Linux OS X中都可以使用，是程序员（特别是linux程序员，因为windows上有无比强大的VS）必备的基本功。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;命名变量
+set(INC_DIR /usr/local/include)
+set(LINK_DIR /usr/local/lib)
+set(SOURCE_FILES main.cpp)
+
+去哪里找头文件 相当于gcc/clang 中的-I(i的大写字母)参数
+include_directories(${INC_DIR}) # 用${}引用变量
+
+去哪里找库文件 .so .dll .dylib 相当于gcc 中的-L参数
+link_directories(${LINK_DIR})
+
+要链接的库文件的名字 相当于gcc中的-l(小写的l)参数
+target_link_libraries(test_boost boost_filesystem boost_system)
+只写库名就可以，就是libxxx.so的中间xxx的部分
+
+也可以写成下面这样
+target_link_libraries(test_boost
+boost_filesystem
+boost_system)
+通过上面的这些关键词，我们就可以使用第三方库了。
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;作者：lcode&lt;br /&gt;
+链接：&lt;a href=&#34;https://www.jianshu.com/p/33126d6baa3c&#34; target=&#34;_blank&#34;&gt;https://www.jianshu.com/p/33126d6baa3c&lt;/a&gt;&lt;br /&gt;
+来源：简书&lt;br /&gt;
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。&lt;/p&gt;</description>
+        </item>
+        
+        <item>
+            <title>ncnn server mobilessd</title>
+            <link>/ai/ncnn/ncnn-server-mobilessd/</link>
+            <pubDate>Sat, 09 Nov 2019 11:05:15 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/ncnn/ncnn-server-mobilessd/</guid>
+            <description>
+
+&lt;h2 id=&#34;1-增加http服务&#34;&gt;1.  增加http服务&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
+#include &amp;lt;httplib.h&amp;gt;
+using namespace httplib;
+
+int main(void) {
+  Server svr;
+  std::string s;
+
+  s += &amp;quot;================================\n&amp;quot;;
+
+
+  svr.Get(&amp;quot;/&amp;quot;, [](const Request &amp;amp;req, Response &amp;amp;res) {
+
+    char buf[BUFSIZ];
+    snprintf(buf, sizeof(buf), &amp;quot;%s %s %s&amp;quot;, req.method.c_str(),
+           req.version.c_str(), req.path.c_str());
+           
+    res.set_content(buf, &amp;quot;text/plain&amp;quot;);
+  });
+
+  svr.listen(&amp;quot;localhost&amp;quot;, 80);
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;g++ -o hello hello.cc -pthread -I.. --std=c++14  -Wall -Wextra&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;2-检测服务&#34;&gt;2.  检测服务&lt;/h2&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Cmakefiles.txt 增加c++14 支持&lt;br /&gt;
+add_compile_options(-std=c++14 -fexceptions)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;添加httplib.h&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;#include &amp;quot;httplib.h&amp;quot;&lt;br /&gt;
+using namespace httplib;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;vector&amp;gt;
+#include &amp;lt;opencv2/core/core.hpp&amp;gt;
+#include &amp;lt;opencv2/highgui/highgui.hpp&amp;gt;
+#include &amp;lt;opencv2/imgproc/imgproc.hpp&amp;gt;
+
+#include &amp;quot;platform.h&amp;quot;
+#include &amp;quot;net.h&amp;quot;
+#if NCNN_VULKAN
+#include &amp;quot;gpu.h&amp;quot;
+#endif // NCNN_VULKAN
+
+struct Object
+{
+    cv::Rect_&amp;lt;float&amp;gt; rect;
+    int label;
+    float prob;
+};
+
+static int g_loop_count = 4;
+void benchmark(const char* comment, void (*init)(ncnn::Net&amp;amp;), void (*run)(const ncnn::Net&amp;amp;))
+{
+    ncnn::Net net;
+    init(net);
+    net.load_model();
+    run(net);
+
+    // double time_min = DBL_MAX;
+    // double time_max = -DBL_MAX;
+    // double time_avg = 0;
+
+    // // for (int i=0; i&amp;lt;g_loop_count; i++)
+    // // {
+    // //     // double start = ncnn::get_current_time();
+
+    // //     run(net);
+
+    // //     // double end = ncnn::get_current_time();
+
+    // //     // double time = end - start;
+
+    // //     time_min = std::min(time_min, time);
+    // //     time_max = std::max(time_max, time);
+    // //     time_avg += time;
+    // // }
+
+    // time_avg /= g_loop_count;
+
+    // fprintf(stderr, &amp;quot;%-20s  min = %7.2f  max = %7.2f  avg = %7.2f\n&amp;quot;, comment, time_min, time_max, time_avg);
+}
+
+
+void mobilenet_v2_init(ncnn::Net&amp;amp; mobilenet)
+{
+    // net.load_param(&amp;quot;mobilenet_v2.param&amp;quot;);
+    mobilenet.load_param(&amp;quot;mobilenet_ssd_voc_ncnn.param&amp;quot;);
+    mobilenet.load_model(&amp;quot;mobilenet_ssd_voc_ncnn.bin&amp;quot;);
+}
+
+void mobilenet_v2_run(const ncnn::Net&amp;amp; net)
+{
+    ncnn::Extractor ex = net.create_extractor();
+
+    ncnn::Mat in(224, 224, 3);
+    ex.input(&amp;quot;data&amp;quot;, in);
+
+    ncnn::Mat out;
+    ex.extract(&amp;quot;prob&amp;quot;, out);
+}
+
+
+static int detect_mobilenet(ncnn::Net&amp;amp; net,const cv::Mat&amp;amp; bgr, std::vector&amp;lt;Object&amp;gt;&amp;amp; objects)
+{
+    // ncnn::Net mobilenet;
+
+#if NCNN_VULKAN
+    mobilenet.opt.use_vulkan_compute = true;
+#endif // NCNN_VULKAN
+
+    // model is converted from https://github.com/chuanqi305/MobileNet-SSD
+    // and can be downloaded from https://drive.google.com/open?id=0ByaKLD9QaPtucWk0Y0dha1VVY0U
+    // net.load_param(&amp;quot;mobilenet_ssd_voc_ncnn.param&amp;quot;);
+    // net.load_model(&amp;quot;mobilenet_ssd_voc_ncnn.bin&amp;quot;);
+
+    const int target_size = 300;
+
+    int img_w = bgr.cols;
+    int img_h = bgr.rows;
+
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR, bgr.cols, bgr.rows, target_size, target_size);
+
+    const float mean_vals[3] = {127.5f, 127.5f, 127.5f};
+    const float norm_vals[3] = {1.0/127.5,1.0/127.5,1.0/127.5};
+    in.substract_mean_normalize(mean_vals, norm_vals);
+
+    ncnn::Extractor ex = net.create_extractor();
+//     ex.set_num_threads(4);
+
+    ex.input(&amp;quot;data&amp;quot;, in);
+
+    ncnn::Mat out;
+    ex.extract(&amp;quot;detection_out&amp;quot;,out);
+
+//     printf(&amp;quot;%d %d %d\n&amp;quot;, out.w, out.h, out.c);
+    objects.clear();
+    for (int i=0; i&amp;lt;out.h; i++)
+    {
+        const float* values = out.row(i);
+
+        Object object;
+        object.label = values[0];
+        object.prob = values[1];
+        object.rect.x = values[2] * img_w;
+        object.rect.y = values[3] * img_h;
+        object.rect.width = values[4] * img_w - object.rect.x;
+        object.rect.height = values[5] * img_h - object.rect.y;
+
+        objects.push_back(object);
+    }
+// 
+    // return 0;
+}
+
+static void draw_objects(const cv::Mat&amp;amp; bgr, const std::vector&amp;lt;Object&amp;gt;&amp;amp; objects)
+{
+    static const char* class_names[] = {&amp;quot;background&amp;quot;,
+        &amp;quot;aeroplane&amp;quot;, &amp;quot;bicycle&amp;quot;, &amp;quot;bird&amp;quot;, &amp;quot;boat&amp;quot;,
+        &amp;quot;bottle&amp;quot;, &amp;quot;bus&amp;quot;, &amp;quot;car&amp;quot;, &amp;quot;cat&amp;quot;, &amp;quot;chair&amp;quot;,
+        &amp;quot;cow&amp;quot;, &amp;quot;diningtable&amp;quot;, &amp;quot;dog&amp;quot;, &amp;quot;horse&amp;quot;,
+        &amp;quot;motorbike&amp;quot;, &amp;quot;person&amp;quot;, &amp;quot;pottedplant&amp;quot;,
+        &amp;quot;sheep&amp;quot;, &amp;quot;sofa&amp;quot;, &amp;quot;train&amp;quot;, &amp;quot;tvmonitor&amp;quot;};
+
+    cv::Mat image = bgr.clone();
+
+    for (size_t i = 0; i &amp;lt; objects.size(); i++)
+    {
+        const Object&amp;amp; obj = objects[i];
+
+        fprintf(stderr, &amp;quot;%d = %.5f at %.2f %.2f %.2f x %.2f\n&amp;quot;, obj.label, obj.prob,
+                obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
+
+        cv::rectangle(image, obj.rect, cv::Scalar(255, 0, 0));
+
+        char text[256];
+        sprintf(text, &amp;quot;%s %.1f%%&amp;quot;, class_names[obj.label], obj.prob * 100);
+
+        int baseLine = 0;
+        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &amp;amp;baseLine);
+
+        int x = obj.rect.x;
+        int y = obj.rect.y - label_size.height - baseLine;
+        if (y &amp;lt; 0)
+            y = 0;
+        if (x + label_size.width &amp;gt; image.cols)
+            x = image.cols - label_size.width;
+
+        cv::rectangle(image, cv::Rect(cv::Point(x, y),
+                                      cv::Size(label_size.width, label_size.height + baseLine)),
+                      cv::Scalar(255, 255, 255), -1);
+
+        cv::putText(image, text, cv::Point(x, y + label_size.height),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
+    }
+
+    cv::imshow(&amp;quot;image&amp;quot;, image);
+    cv::waitKey(0);
+}
+
+int main(int argc, char** argv)
+{
+    if (argc != 2)
+    {
+        fprintf(stderr, &amp;quot;Usage: %s [imagepath]\n&amp;quot;, argv[0]);
+        return -1;
+    }
+
+    const char* imagepath = argv[1];
+
+    cv::Mat m = cv::imread(imagepath, 1);
+    if (m.empty())
+    {
+        fprintf(stderr, &amp;quot;cv::imread %s failed\n&amp;quot;, imagepath);
+        return -1;
+    }
+
+#if NCNN_VULKAN
+    ncnn::create_gpu_instance();
+#endif // NCNN_VULKAN
+
+    // 初始化 
+    ncnn::Net mobilenet;
+    mobilenet_v2_init(mobilenet);
+    std::vector&amp;lt;Object&amp;gt; objects;
+    detect_mobilenet(mobilenet,m, objects);
+
+#if NCNN_VULKAN
+    ncnn::destroy_gpu_instance();
+#endif // NCNN_VULKAN
+
+    draw_objects(m, objects);
+
+    return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;// Tencent is pleased to support the open source community by making ncnn available.
+//
+// Copyright (C) 2017 THL A29 Limited, a Tencent company. All rights reserved.
+//
+// Licensed under the BSD 3-Clause License (the &amp;quot;License&amp;quot;); you may not use this file except
+// in compliance with the License. You may obtain a copy of the License at
+//
+// https://opensource.org/licenses/BSD-3-Clause
+//
+// Unless required by applicable law or agreed to in writing, software distributed
+// under the License is distributed on an &amp;quot;AS IS&amp;quot; BASIS, WITHOUT WARRANTIES OR
+// CONDITIONS OF ANY KIND, either express or implied. See the License for the
+// specific language governing permissions and limitations under the License.
+
+// #include &amp;lt;io.h&amp;gt;
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;vector&amp;gt;
+#include &amp;lt;opencv2/core/core.hpp&amp;gt;
+#include &amp;lt;opencv2/highgui/highgui.hpp&amp;gt;
+#include &amp;lt;opencv2/imgproc/imgproc.hpp&amp;gt;
+
+#include &amp;quot;platform.h&amp;quot;
+#include &amp;quot;net.h&amp;quot;
+#if NCNN_VULKAN
+#include &amp;quot;gpu.h&amp;quot;
+#endif // NCNN_VULKAN
+
+#include &amp;quot;httplib.h&amp;quot;
+using namespace httplib;
+
+struct Object
+{
+    cv::Rect_&amp;lt;float&amp;gt; rect;
+    int label;
+    float prob;
+};
+
+static int g_loop_count = 4;
+void benchmark(const char* comment, void (*init)(ncnn::Net&amp;amp;), void (*run)(const ncnn::Net&amp;amp;))
+{
+    // ncnn::Net net;
+    // init(net);
+    // net.load_model();
+    // run(net);
+
+    // double time_min = DBL_MAX;
+    // double time_max = -DBL_MAX;
+    // double time_avg = 0;
+
+    // // for (int i=0; i&amp;lt;g_loop_count; i++)
+    // // {
+    // //     // double start = ncnn::get_current_time();
+
+    // //     run(net);
+
+    // //     // double end = ncnn::get_current_time();
+
+    // //     // double time = end - start;
+
+    // //     time_min = std::min(time_min, time);
+    // //     time_max = std::max(time_max, time);
+    // //     time_avg += time;
+    // // }
+
+    // time_avg /= g_loop_count;
+
+    // fprintf(stderr, &amp;quot;%-20s  min = %7.2f  max = %7.2f  avg = %7.2f\n&amp;quot;, comment, time_min, time_max, time_avg);
+}
+
+
+void mobilenet_v2_init(ncnn::Net&amp;amp; mobilenet)
+{
+    // net.load_param(&amp;quot;mobilenet_v2.param&amp;quot;);
+    mobilenet.load_param(&amp;quot;mobilenet_ssd_voc_ncnn.param&amp;quot;);
+    mobilenet.load_model(&amp;quot;mobilenet_ssd_voc_ncnn.bin&amp;quot;);
+}
+
+void mobilenet_v2_run(const ncnn::Net&amp;amp; net)
+{
+    ncnn::Extractor ex = net.create_extractor();
+
+    ncnn::Mat in(224, 224, 3);
+    ex.input(&amp;quot;data&amp;quot;, in);
+
+    ncnn::Mat out;
+    ex.extract(&amp;quot;prob&amp;quot;, out);
+}
+
+
+static int detect_mobilenet(ncnn::Net&amp;amp; net,const cv::Mat&amp;amp; bgr, std::vector&amp;lt;Object&amp;gt;&amp;amp; objects)
+{
+    // ncnn::Net mobilenet;
+
+// #if NCNN_VULKAN
+//     mobilenet.opt.use_vulkan_compute = true;
+// #endif // NCNN_VULKAN
+
+    // model is converted from https://github.com/chuanqi305/MobileNet-SSD
+    // and can be downloaded from https://drive.google.com/open?id=0ByaKLD9QaPtucWk0Y0dha1VVY0U
+    // net.load_param(&amp;quot;mobilenet_ssd_voc_ncnn.param&amp;quot;);
+    // net.load_model(&amp;quot;mobilenet_ssd_voc_ncnn.bin&amp;quot;);
+
+     int target_size = 300;
+
+    int img_w = bgr.cols;
+    int img_h = bgr.rows;
+
+    fprintf(stdout, &amp;quot;1. img\n&amp;quot;);
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR, bgr.cols, bgr.rows, target_size, target_size);
+
+    fprintf(stdout, &amp;quot;2. Mat\n&amp;quot;);
+    const float mean_vals[3] = {127.5f, 127.5f, 127.5f};
+    const float norm_vals[3] = {1.0/127.5,1.0/127.5,1.0/127.5};
+    in.substract_mean_normalize(mean_vals, norm_vals);
+
+    fprintf(stdout, &amp;quot;3. Extractor\n&amp;quot;);
+    ncnn::Extractor ex = net.create_extractor();
+//     ex.set_num_threads(4);
+
+    ex.input(&amp;quot;data&amp;quot;, in);
+
+    ncnn::Mat out;
+    ex.extract(&amp;quot;detection_out&amp;quot;,out);
+    // pFrame=NULL
+//     printf(&amp;quot;%d %d %d\n&amp;quot;, out.w, out.h, out.c);
+    objects.clear();
+    for (int i=0; i&amp;lt;out.h; i++)
+    {
+        const float* values = out.row(i);
+
+        Object object;
+        object.label = values[0];
+        object.prob = values[1];
+        object.rect.x = values[2] * img_w;
+        object.rect.y = values[3] * img_h;
+        object.rect.width = values[4] * img_w - object.rect.x;
+        object.rect.height = values[5] * img_h - object.rect.y;
+
+        objects.push_back(object);
+    }
+// 
+    // return 0;
+}
+
+static void draw_objects(const cv::Mat&amp;amp; bgr, const std::vector&amp;lt;Object&amp;gt;&amp;amp; objects)
+{
+    static const char* class_names[] = {&amp;quot;background&amp;quot;,
+        &amp;quot;aeroplane&amp;quot;, &amp;quot;bicycle&amp;quot;, &amp;quot;bird&amp;quot;, &amp;quot;boat&amp;quot;,
+        &amp;quot;bottle&amp;quot;, &amp;quot;bus&amp;quot;, &amp;quot;car&amp;quot;, &amp;quot;cat&amp;quot;, &amp;quot;chair&amp;quot;,
+        &amp;quot;cow&amp;quot;, &amp;quot;diningtable&amp;quot;, &amp;quot;dog&amp;quot;, &amp;quot;horse&amp;quot;,
+        &amp;quot;motorbike&amp;quot;, &amp;quot;person&amp;quot;, &amp;quot;pottedplant&amp;quot;,
+        &amp;quot;sheep&amp;quot;, &amp;quot;sofa&amp;quot;, &amp;quot;train&amp;quot;, &amp;quot;tvmonitor&amp;quot;};
+
+    cv::Mat image = bgr.clone();
+
+    for (size_t i = 0; i &amp;lt; objects.size(); i++)
+    {
+        const Object&amp;amp; obj = objects[i];
+
+        fprintf(stderr, &amp;quot;%d = %.5f at %.2f %.2f %.2f x %.2f\n&amp;quot;, obj.label, obj.prob,
+                obj.rect.x, obj.rect.y, obj.rect.width, obj.rect.height);
+
+        cv::rectangle(image, obj.rect, cv::Scalar(255, 0, 0));
+
+        char text[256];
+        sprintf(text, &amp;quot;%s %.1f%%&amp;quot;, class_names[obj.label], obj.prob * 100);
+
+        int baseLine = 0;
+        cv::Size label_size = cv::getTextSize(text, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &amp;amp;baseLine);
+
+        int x = obj.rect.x;
+        int y = obj.rect.y - label_size.height - baseLine;
+        if (y &amp;lt; 0)
+            y = 0;
+        if (x + label_size.width &amp;gt; image.cols)
+            x = image.cols - label_size.width;
+
+        cv::rectangle(image, cv::Rect(cv::Point(x, y),
+                                      cv::Size(label_size.width, label_size.height + baseLine)),
+                      cv::Scalar(255, 255, 255), -1);
+
+        cv::putText(image, text, cv::Point(x, y + label_size.height),
+                    cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));
+    }
+
+    cv::imshow(&amp;quot;image&amp;quot;, image);
+    cv::waitKey(0);
+}
+
+int main(int argc, char** argv)
+{
+    // if (argc != 2)
+    // {
+    //     fprintf(stderr, &amp;quot;Usage: %s [imagepath]\n&amp;quot;, argv[0]);
+    //     return -1;
+    // }
+
+    // const char* imagepath = argv[1];
+
+    // cv::Mat m = cv::imread(imagepath, 1);
+    // if (m.empty())
+    // {
+    //     fprintf(stderr, &amp;quot;cv::imread %s failed\n&amp;quot;, imagepath);
+    //     return -1;
+    // }
+
+#if NCNN_VULKAN
+    ncnn::create_gpu_instance();
+#endif // NCNN_VULKAN
+
+    // 初始化 
+
+    Server svr;
+    ncnn::Net mobilenet;
+    mobilenet_v2_init(mobilenet);
+    cv::Mat m ;
+    char buf[BUFSIZ];
+   std::vector&amp;lt;Object&amp;gt; objects;
+  svr.Get(R&amp;quot;(.*)&amp;quot;, [&amp;amp;](const Request &amp;amp;req, Response &amp;amp;res) {
+
+    snprintf(buf, sizeof(buf), &amp;quot;%s %s %s&amp;quot;, req.method.c_str(),
+           req.version.c_str(), req.path.c_str());
+
+    const char *fname = req.path.c_str();
+    fprintf(stdout, &amp;quot;cv::imread %s \n&amp;quot;, fname);
+
+
+    m = cv::imread(&amp;quot;/Users/pytool/ncnn/MobileNet-SSD/a.jpg&amp;quot;, 1);
+    
+    fprintf(stdout, &amp;quot;1. img\n&amp;quot;);
+    if (m.empty())
+    {
+        fprintf(stdout, &amp;quot;cv::imread %s failed\n&amp;quot;, fname);
+        return -1;
+    }
+
+
+    detect_mobilenet(mobilenet,m, objects);
+    fprintf(stdout, &amp;quot;检测 %s \n&amp;quot;, fname);
+ 
+// #if NCNN_VULKAN
+//     ncnn::destroy_gpu_instance();
+// #endif // NCNN_VULKAN
+
+    draw_objects(m, objects);
+
+    res.set_content(buf, &amp;quot;text/plain&amp;quot;);
+
+  });
+
+  svr.listen(&amp;quot;localhost&amp;quot;, 8080);
+   
+    return 0;
+}
+
+void Loop(){
+
+  std::string s;
+
+  s += &amp;quot;================================\n&amp;quot;;
+
+
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;//refer to official demo,add load_labels to display classification
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;algorithm&amp;gt;
+#include &amp;lt;vector&amp;gt;
+#include &amp;lt;opencv2/core/core.hpp&amp;gt;
+#include &amp;lt;opencv2/highgui/highgui.hpp&amp;gt;
+#include &amp;lt;opencv2/imgproc/imgproc.hpp&amp;gt;
+
+#include &amp;quot;platform.h&amp;quot;
+#include &amp;quot;net.h&amp;quot;
+using namespace std;
+using namespace cv;
+
+static int detect_squeezenet(const cv::Mat&amp;amp; bgr, std::vector&amp;lt;float&amp;gt;&amp;amp; cls_scores)
+{
+    ncnn::Net squeezenet;
+
+#if NCNN_VULKAN
+    squeezenet.opt.use_vulkan_compute = true;
+#endif // NCNN_VULKAN
+
+    squeezenet.load_param(&amp;quot;mobilenetv2.param&amp;quot;);
+    squeezenet.load_model(&amp;quot;mobilenetv2.bin&amp;quot;);
+
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR, bgr.cols, bgr.rows, 227, 227);
+
+    const float mean_vals[3] = {104.f, 117.f, 123.f};
+    in.substract_mean_normalize(mean_vals, 0);
+
+    ncnn::Extractor ex = squeezenet.create_extractor();
+
+    ex.input(&amp;quot;data&amp;quot;, in);
+
+    ncnn::Mat out;
+    ex.extract(&amp;quot;prob&amp;quot;, out);
+
+    cls_scores.resize(out.w);
+    for (int j=0; j&amp;lt;out.w; j++)
+    {
+        cls_scores[j] = out[j];
+    }
+
+    return 0;
+}
+//添加load labels函数，读取synset_words.txt
+static int load_labels(string path, std::vector&amp;lt;string&amp;gt;&amp;amp; labels)
+{
+    FILE* fp = fopen(path.c_str(), &amp;quot;r&amp;quot;);
+
+    while (!feof(fp))
+    {
+        char str[1024];
+        fgets(str, 1024, fp);
+        string str_s(str);
+
+        if (str_s.length() &amp;gt; 0)
+        {
+            for (int i = 0; i &amp;lt; str_s.length(); i++)
+            {
+                if (str_s[i] == &#39; &#39;)
+                {
+                    string strr = str_s.substr(i, str_s.length() - i - 1);
+                    labels.push_back(strr);
+                    i = str_s.length();
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+static int print_topk(const cv::Mat&amp;amp; bgr,const std::vector&amp;lt;float&amp;gt;&amp;amp; cls_scores, int topk)
+{
+    //load labels
+    cv::Mat image = bgr.clone();
+    vector&amp;lt;string&amp;gt; labels;
+    vector&amp;lt;int&amp;gt; index_result;
+    load_labels(&amp;quot;synset.txt&amp;quot;, labels);
+    // partial sort topk with index
+    int size = cls_scores.size();
+    std::vector&amp;lt; std::pair&amp;lt;float, int&amp;gt; &amp;gt; vec;
+    vec.resize(size);
+    for (int i=0; i&amp;lt;size; i++)
+    {
+        vec[i] = std::make_pair(cls_scores[i], i);
+    }
+
+    std::partial_sort(vec.begin(), vec.begin() + topk, vec.end(),
+                      std::greater&amp;lt; std::pair&amp;lt;float, int&amp;gt; &amp;gt;());
+
+    // print topk and score
+    for (int i=0; i&amp;lt;topk; i++)
+    {
+        float score = vec[i].first;
+        int index = vec[i].second;
+        //fprintf(stderr, &amp;quot;%d = %f\n&amp;quot;, index, score);
+	index_result.push_back(index);
+	fprintf(stderr, &amp;quot;%d = %f (%s)\n&amp;quot;, index, score, labels[index].c_str());
+    }
+   //在图片上标注类别信息
+    for (int i = 0;i&amp;lt;index_result.size()-2;i++)
+    {
+       cv::putText(image, labels[index_result[i]], Point(50, 50 + 30 * i), CV_FONT_HERSHEY_SIMPLEX, 1.0, Scalar(0, 255,255), 2, 8);
+    }
+
+    // imshow(&amp;quot;image&amp;quot;, image);
+    imwrite(&amp;quot;squezenet_new.jpg&amp;quot;, image);
+    waitKey(0);
+    return 0;
+}
+
+int main(int argc, char** argv)
+{
+    if (argc != 2)
+    {
+        fprintf(stderr, &amp;quot;Usage: %s [imagepath]\n&amp;quot;, argv[0]);
+        return -1;
+    }
+
+    const char* imagepath = argv[1];
+
+    cv::Mat m = cv::imread(imagepath, 1);
+    if (m.empty())
+    {
+        fprintf(stderr, &amp;quot;cv::imread %s failed\n&amp;quot;, imagepath);
+        return -1;
+    }
+    std::vector&amp;lt;float&amp;gt; cls_scores;
+    detect_squeezenet(m, cls_scores);
+
+    print_topk(m,cls_scores, 3);
+
+
+    return 0;
+}
+
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>pyqt toolbar</title>
+            <link>/language/python/pyqt/pyqt-toolbar/</link>
+            <pubDate>Fri, 08 Nov 2019 15:33:34 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/language/python/pyqt/pyqt-toolbar/</guid>
+            <description>
+
+&lt;p&gt;super(QToolBar, self).setFixedHeight(value)&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/tpoveda/tpQtLib/blob/da4baa56b457061bcd17fd52a4a66b64d672c035/source/tpQtLib/widgets/toolbar.py&#34; target=&#34;_blank&#34;&gt;https://github.com/tpoveda/tpQtLib/blob/da4baa56b457061bcd17fd52a4a66b64d672c035/source/tpQtLib/widgets/toolbar.py&lt;/a&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;修改toolbar的显示区域&#34;&gt;修改toolbar的显示区域&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;self.addToolBar(Qt.TopToolBarArea, toolbar)&lt;/code&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;修改toolbar的大小&#34;&gt;修改toolbar的大小&lt;/h2&gt;
+
+&lt;p&gt;&lt;code&gt;toolBar.setFixedHeight(36)&lt;/code&gt;; - works well.&lt;/p&gt;
+
+&lt;p&gt;But if I set icon size after this:&lt;/p&gt;
+
+&lt;p&gt;toolBar-&amp;gt;setFixedHeight(36);&lt;br /&gt;
+toolBar-&amp;gt;setIconSize(QSize(10, 10));&lt;br /&gt;
+height breaks down. Also it happens if I set icon size via stylesheet.&lt;/p&gt;
+
+&lt;p&gt;Changing of calls order helps:&lt;/p&gt;
+
+&lt;p&gt;toolBar-&amp;gt;setIconSize(QSize(10, 10));&lt;br /&gt;
+toolBar-&amp;gt;setFixedHeight(36);&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;super(QToolBar, self).setFixedHeight(value)&lt;/code&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-py&#34;&gt;    def expand(self):
+        &amp;quot;&amp;quot;&amp;quot;
+        Expand the menu bar to the expand height
+        &amp;quot;&amp;quot;&amp;quot;
+
+        self._is_expanded = True
+        height = self.expand_height()
+        self.setFixedHeight(height)
+        self.set_children_hidden(False)
+        self.setIconSize(QSize(height, height))
+
+    def collapse(self):
+        &amp;quot;&amp;quot;&amp;quot;
+        Collapse the menu bar to the collapse height
+        &amp;quot;&amp;quot;&amp;quot;
+
+        self._is_expanded = False
+        height = self.collapse_height()
+        self.setFixedHeight(height)
+        self.set_children_height(0)
+        self.set_children_hidden(True)
+        self.setIconSize(QSize(0, 0))
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;设置图标大小&#34;&gt;设置图标大小&lt;/h3&gt;
+
+&lt;p&gt;```py&lt;/p&gt;
+
+&lt;p&gt;import sys&lt;br /&gt;
+from PyQt5 import QtCore, QtGui, QtWidgets&lt;/p&gt;
+
+&lt;p&gt;class Example(QtWidgets.QMainWindow):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;def __init__(self):
+    super().__init__()
+    self.initUI()
+
+def initUI(self):
+    exitActIcon = QtGui.QIcon(&amp;quot;./icons/outline-exit_to_app-24px.svg&amp;quot;)
+    exitAct = QtWidgets.QAction(exitActIcon, &amp;quot;Exit&amp;quot;, self)
+    exitAct.setShortcut(&amp;quot;Ctrl+Q&amp;quot;)
+    exitAct.triggered.connect(QtWidgets.qApp.quit)
+    self.toolbar = self.addToolBar(&amp;quot;Exit&amp;quot;)
+    self.toolbar.addAction(exitAct)
+    self.toolbar.setIconSize(QtCore.QSize(128, 128)) # &amp;lt;---
+
+    self.setWindowTitle(&amp;quot;Toolbar&amp;quot;)
+    self.show()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;if &lt;strong&gt;name&lt;/strong&gt; == &amp;quot;&lt;strong&gt;main&lt;/strong&gt;&amp;quot;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;app = QtWidgets.QApplication(sys.argv)
+w = Example()
+w.show()
+sys.exit(app.exec_())
+```
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>ncnn MobileNetv2 SSDLite</title>
+            <link>/ai/ncnn/ncnn-mobilenetv2-ssdlite/</link>
+            <pubDate>Fri, 08 Nov 2019 11:23:51 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/ncnn/ncnn-mobilenetv2-ssdlite/</guid>
+            <description>
+
+&lt;h3 id=&#34;运行错误-converting-mobilenetv2-ssdlite-model-for-voc-from-here-https-github-com-chuanqi305-mobilenetv2-ssdlite&#34;&gt;[运行错误] Converting mobilenetv2 ssdlite model for voc from here: &lt;a href=&#34;https://github.com/chuanqi305/MobileNetv2-SSDLite&#34; target=&#34;_blank&#34;&gt;https://github.com/chuanqi305/MobileNetv2-SSDLite&lt;/a&gt;&lt;/h3&gt;
+
+&lt;p&gt;it can runs on caffe and can successfully convert into nccn model, but run time error when using ncnn:&lt;/p&gt;
+
+&lt;p&gt;find_blob_index_by_name data_splitncnn_6 failed&lt;br /&gt;
+find_blob_index_by_name data_splitncnn_6 failed&lt;br /&gt;
+find_blob_index_by_name data_splitncnn_0 failed&lt;br /&gt;
+fopen ../models/ncnn/mb2_ssdlite_voc_voc.bin failed&lt;/p&gt;
+
+&lt;p&gt;解决方式&lt;/p&gt;
+
+&lt;p&gt;upgrade your prototxt to new version, which has dedicated &amp;quot;Input&amp;quot; layer&lt;/p&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>ncnn mobilenet ssd</title>
+            <link>/ai/ncnn/ncnn-mobilenet-ssd/</link>
+            <pubDate>Fri, 08 Nov 2019 10:02:25 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/ncnn/ncnn-mobilenet-ssd/</guid>
+            <description>&lt;p&gt;convert_mobilenet_v1_ssd.sh&lt;/p&gt;
+
+&lt;p&gt;convert_mobilenet_v1_ssd.sh&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!/usr/bin/sh
+
+rm -rf ../ncnn_models/mobilenet_v1_ssd
+mkdir -p ../ncnn_models/mobilenet_v1_ssd
+
+../../ncnn/build/tools/caffe/caffe2ncnn \
+  ../caffe_models/mobilenet_v1_ssd/deploy.prototxt \
+  ../caffe_models/mobilenet_v1_ssd/mobilenet_iter_73000.caffemodel \
+  ../ncnn_models/mobilenet_v1_ssd/mobilenet_v1_ssd.param \
+  ../ncnn_models/mobilenet_v1_ssd/mobilenet_v1_ssd.bin
+
+../../ncnn/build/tools/caffe/caffe2ncnn \
+  ../caffe_models/mobilenet_v1_ssd/deploy.prototxt \
+  ../caffe_models/mobilenet_v1_ssd/mobilenet_iter_73000.caffemodel \
+  ../ncnn_models/mobilenet_v1_ssd/mobilenet_v1_ssd_8bit.param \
+  ../ncnn_models/mobilenet_v1_ssd/mobilenet_v1_ssd_8bit.bin \
+  256 ../caffe_models/mobilenet_v1_ssd/mobilenet_ssd_quant.table
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;convert_caffe2ncnn/convert_mobilenet_v2.sh&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;#!/usr/bin/sh
+
+rm -rf ../ncnn_models/mobilenet_v2
+mkdir -p ../ncnn_models/mobilenet_v2
+
+# float
+../../ncnn/build/tools/caffe/caffe2ncnn \
+  ../caffe_models/mobilenet_v2/mobilenet_v2_deploy.prototxt \
+  ../caffe_models/mobilenet_v2/mobilenet_v2.caffemodel \
+  ../ncnn_models/mobilenet_v2/mobilenet_v2.param \
+  ../ncnn_models/mobilenet_v2/mobilenet_v2.bin
+
+# 8bit quant
+../../ncnn/build/tools/caffe/caffe2ncnn \
+  ../caffe_models/mobilenet_v2/mobilenet_v2_deploy.prototxt \
+  ../caffe_models/mobilenet_v2/mobilenet_v2.caffemodel \
+  ../ncnn_models/mobilenet_v2/mobilenet_v2_8bit.param \
+  ../ncnn_models/mobilenet_v2/mobilenet_v2_8bit.bin \
+  256 ../caffe_models/mobilenet_v2/mobilenet_v2_quant.table
+
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>caffe test</title>
+            <link>/ai/caffe/caffe-test/</link>
+            <pubDate>Thu, 07 Nov 2019 19:47:04 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/caffe/caffe-test/</guid>
+            <description></description>
+        </item>
+        
+        <item>
+            <title>caffe数据集LMDB的生成</title>
+            <link>/ai/caffe/caffe-prepare-lmdb/</link>
+            <pubDate>Thu, 07 Nov 2019 18:26:08 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/caffe/caffe-prepare-lmdb/</guid>
+            <description>
+
+&lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/m0_37357063/article/details/86295211&#34; target=&#34;_blank&#34;&gt;caffe 目标检测lmdb 数据集制作1 - m0_37357063的博客 - CSDN博客&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&#34;https://www.cnblogs.com/dengshunge/p/10841108.html&#34; target=&#34;_blank&#34;&gt;caffe数据集LMDB的生成 - 啊顺 - 博客园&lt;/a&gt;&lt;br /&gt;
+本文主要介绍如何在caffe框架下生成LMDB。其中包含了两个任务的LMDB生成方法，&lt;br /&gt;
+** 一种是分类任务     imagenet&lt;br /&gt;
+** 另一种是检测任务。  voc&lt;/p&gt;
+
+&lt;h1 id=&#34;voc目标检测任务&#34;&gt;voc目标检测任务&lt;/h1&gt;
+
+&lt;h3 id=&#34;第一步-准备image文件和xml文件&#34;&gt;第一步 准备image文件和xml文件&lt;/h3&gt;
+
+&lt;p&gt;对于检测任务，当然是少不了标注信息的，因此，需要准备以下几个文件：&lt;/p&gt;
+
+&lt;p&gt;图像文件&lt;br /&gt;
+标签文件，是按照pascal voc格式的 xml文件，一张图像对应一个xml文件，图片名与标签文件名相同&lt;br /&gt;
+如图所示，左边是图像文件，右图对应的xml文件&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;head  VOCdevkit/VOC2007/ImageSets/Main/trainval.txt&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;000005&lt;br /&gt;
+000007&lt;br /&gt;
+000009&lt;br /&gt;
+000012&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;head VOCdevkit/VOC2007/ImageSets/Main/train.txt&lt;/code&gt;&lt;br /&gt;
+000012&lt;br /&gt;
+000017&lt;br /&gt;
+000023&lt;br /&gt;
+000026&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;VOCdevkit/VOC2007/ImageSets/Main/val.txt&lt;/code&gt;&lt;br /&gt;
+000005&lt;br /&gt;
+000007&lt;br /&gt;
+000009&lt;br /&gt;
+000016&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;head VOCdevkit/VOC2007/ImageSets/Main/test.txt&lt;/code&gt;&lt;br /&gt;
+000001&lt;br /&gt;
+000002&lt;br /&gt;
+000003&lt;br /&gt;
+000004&lt;br /&gt;
+000006&lt;/p&gt;
+
+&lt;h4 id=&#34;第二步-生成lmdb使用的-train-txt和test-txt&#34;&gt;第二步 生成lmdb使用的 train.txt和test.txt&lt;/h4&gt;
+
+&lt;p&gt;执行 &lt;code&gt;./data/VOC0712/create_list.sh&lt;/code&gt;  生成lmdb所使用的trainval.txt格式&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;#!/bin/bash
+
+root_dir=$HOME/data/VOCdevkit ##  VOC 待训练图像文件路径
+sub_dir=ImageSets/Main        ##  VOC trainval.txt 路径
+bash_dir=&amp;quot;$(cd &amp;quot;$(dirname &amp;quot;${BASH_SOURCE[0]}&amp;quot;)&amp;quot; &amp;amp;&amp;amp; pwd)&amp;quot;  ## 生成文件路径
+for dataset in trainval test
+do
+  dst_file=$bash_dir/$dataset.txt
+ 
+done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;执行完脚本之后生成三个txt文件，如下：&lt;/p&gt;
+
+&lt;p&gt;1）test_name_size.txt每一行分为两个部分，第一部分是test图片的名字，第二部分是图像的size方便之后caffe训练的时候用作test；&lt;/p&gt;
+
+&lt;p&gt;2）test.txt每一行分为两个部分，第一部分是用作test的图片的路径信息和文件名，第二部分是用作test的图片的label信息文件（xml）；&lt;/p&gt;
+
+&lt;p&gt;3）trainval.txt每一行分为两个部分，第一部分是用作trainval的图片的路径信息和文件名，第二部分是用作trainval的图片的label信息文件（xml）；&lt;/p&gt;
+
+&lt;p&gt;首先，我们看一下tran.txt和test.txt的格式是怎样的。如图所示，每一行由2个部分组成，左边是图片的地址，右边是对应图片的xml地址，两者用空格相连。因此，知道了格式后，我们就可以生成了。那么地址是需要是怎样呢？下面我们会讲到，这个地址是一个相对地址，之后会与&amp;quot;create_data.sh&amp;quot;中的“data_root_dir”结合，生成绝对地址。&lt;/p&gt;
+
+&lt;p&gt;生成如下3个文件&lt;/p&gt;
+
+&lt;p&gt;test_name_size.txt  test.txt  trainval.txt&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;head data/VOC0712/trainval.txt&lt;/code&gt;&lt;br /&gt;
+VOC2012/JPEGImages/2010_001329.jpg VOC2012/Annotations/2010_001329.xml&lt;br /&gt;
+VOC2007/JPEGImages/009208.jpg VOC2007/Annotations/009208.xml&lt;br /&gt;
+VOC2012/JPEGImages/2009_002254.jpg VOC2012/Annotations/2009_002254.xml&lt;br /&gt;
+VOC2007/JPEGImages/001714.jpg VOC2007/Annotations/001714.xml&lt;br /&gt;
+VOC2007/JPEGImages/004584.jpg VOC2007/Annotations/004584.xml&lt;br /&gt;
+VOC2012/JPEGImages/2009_001635.jpg VOC2012/Annotations/2009_001635.xml&lt;br /&gt;
+VOC2012/JPEGImages/2010_002625.jpg VOC2012/Annotations/2010_002625.xml&lt;br /&gt;
+VOC2012/JPEGImages/2011_002881.jpg VOC2012/Annotations/2011_002881.xml&lt;br /&gt;
+VOC2007/JPEGImages/001211.jpg VOC2007/Annotations/001211.xml&lt;br /&gt;
+VOC2012/JPEGImages/2008_003519.jpg VOC2012/Annotations/2008_003519.xml&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;head data/VOC0712/test.txt&lt;/code&gt;&lt;br /&gt;
+VOC2007/JPEGImages/000001.jpg VOC2007/Annotations/000001.xml&lt;br /&gt;
+VOC2007/JPEGImages/000002.jpg VOC2007/Annotations/000002.xml&lt;br /&gt;
+VOC2007/JPEGImages/000003.jpg VOC2007/Annotations/000003.xml&lt;br /&gt;
+VOC2007/JPEGImages/000004.jpg VOC2007/Annotations/000004.xml&lt;br /&gt;
+VOC2007/JPEGImages/000006.jpg VOC2007/Annotations/000006.xml&lt;br /&gt;
+VOC2007/JPEGImages/000008.jpg VOC2007/Annotations/000008.xml&lt;br /&gt;
+VOC2007/JPEGImages/000010.jpg VOC2007/Annotations/000010.xml&lt;br /&gt;
+VOC2007/JPEGImages/000011.jpg VOC2007/Annotations/000011.xml&lt;br /&gt;
+VOC2007/JPEGImages/000013.jpg VOC2007/Annotations/000013.xml&lt;br /&gt;
+VOC2007/JPEGImages/000014.jpg VOC2007/Annotations/000014.xml&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;head data/VOC0712/test_name_size.txt&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;000001 500 353&lt;br /&gt;
+000002 500 335&lt;br /&gt;
+000003 375 500&lt;br /&gt;
+000004 406 500&lt;br /&gt;
+000006 375 500&lt;br /&gt;
+000008 375 500&lt;br /&gt;
+000010 480 354&lt;br /&gt;
+000011 324 500&lt;br /&gt;
+000013 375 500&lt;br /&gt;
+000014 333 500&lt;/p&gt;
+
+&lt;h3 id=&#34;第三步-生成labelmap-prototxt和test-name-size-txt&#34;&gt;第三步  生成labelmap.prototxt和test_name_size.txt&lt;/h3&gt;
+
+&lt;p&gt;首先，看一下labelmap.prototxt的格式是怎么样的。如下图所示，是有多个item组成的，label为0的item是背景，接下来就是你自己标注的label，label的编号最好连续，而且每个label对应的Name需要和xml里面的name一致。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-s&#34;&gt;item {
+  name: &amp;quot;none_of_the_above&amp;quot;
+  label: 0
+  display_name: &amp;quot;background&amp;quot;
+}
+item {
+  name: &amp;quot;aeroplane&amp;quot;
+  label: 1
+  display_name: &amp;quot;aeroplane&amp;quot;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后再看看test_name_size.txt，如下图所示。由3列组成，第一列是图片的名称，第二、三列分别是图片的高和宽。注意，这里图片的名称没有后缀名。这个文件不知道有什么用，下面函数调用中，并没有引入这个文件。&lt;/p&gt;
+
+&lt;h3 id=&#34;第四步-生成lmdb&#34;&gt;第四步 生成LMDB&lt;/h3&gt;
+
+&lt;p&gt;这里对Tiny-DSOD/data/VOC0712/create_data.sh进行了修改，如下所示。root_dir设置caffe的路径，这里主要是用于调用这个路径下的scripts/create_annoset.py；lmdbFile是生成LMDB的地址，而lmdbLink是这个lmdbFile的软连接。其他地方，都有注释了，应该能看懂。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;cur_dir=$(cd $( dirname ${BASH_SOURCE[0]} ) &amp;amp;&amp;amp; pwd )
+root_dir=$cur_dir/../..
+redo=1
+#data_root_dir=&amp;quot;$HOME/data/VOCdevkit&amp;quot;
+
+data_root_dir=&amp;quot;/data/opendata/VOCdevkit&amp;quot;
+dataset_name=&amp;quot;VOC0712&amp;quot;
+mapfile=&amp;quot;$root_dir/data/$dataset_name/labelmap_voc.prototxt&amp;quot;
+anno_type=&amp;quot;detection&amp;quot;
+db=&amp;quot;lmdb&amp;quot;
+min_dim=0
+max_dim=0
+width=300
+height=300
+
+extra_cmd=&amp;quot;--encode-type=jpg --encoded&amp;quot;
+if [ $redo ]
+then
+  extra_cmd=&amp;quot;$extra_cmd --redo&amp;quot;
+fi
+for subset in test trainval
+do
+  python $root_dir/scripts/create_annoset.py --anno-type=$anno_type --label-map-file=$mapfile --min-dim=$min_dim --max-dim=$max_dim --resize-width=$width --resize-height=$height --check-label $extra_cmd $data_root_dir $root_dir/data/$dataset_name/$subset.txt $data_root_dir/$dataset_name/$db/$dataset_name&amp;quot;_&amp;quot;$subset&amp;quot;_&amp;quot;$db examples/$dataset_name
+done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;cur_dir=$(cd $( dirname ${BASH_SOURCE[0]} ) &amp;amp;&amp;amp; pwd )
+# caffe的路径
+# root_dir=$cur_dir/../..
+root_dir=&amp;quot;/home/dengshunge/Tiny-DSOD-master&amp;quot;
+
+cd $root_dir
+
+redo=1
+# VOC图像数据的根目录，与txt的文件结合
+data_root_dir=&amp;quot;/data/opendata/VOCdevkit&amp;quot;
+# trainval.txt和test.txt的路径
+txtFileDir=&amp;quot;/home/dengshunge/Desktop/LMDB&amp;quot;
+# LMDB存储位置
+lmdbFile=&amp;quot;/home/dengshunge/Desktop/LMDB/lmdb&amp;quot;
+# LMDB存储位置的软连接
+lmdbLink=&amp;quot;/home/dengshunge/Desktop/LMDB/lmdbLink&amp;quot;
+# mapfile位置
+mapfile=&amp;quot;/home/dengshunge/Desktop/LMDB/labelmap.prototxt&amp;quot;
+# 任务类型
+anno_type=&amp;quot;detection&amp;quot;
+# 格式
+db=&amp;quot;lmdb&amp;quot;
+# 图片尺寸，若width,height=0,0，说明按原始图片输入尺寸，否则resize到(width,height)
+min_dim=0
+max_dim=0
+width=300
+height=300
+
+extra_cmd=&amp;quot;--encode-type=jpg --encoded&amp;quot;
+if [ $redo ]
+then
+  extra_cmd=&amp;quot;$extra_cmd --redo&amp;quot;
+fi
+for subset in test trainval
+do
+  python3 $root_dir/scripts/create_annoset.py --anno-type=$anno_type --label-map-file=$mapfile --min-dim=$min_dim --max-dim=$max_dim --resize-width=$width --resize-height=$height --check-label $extra_cmd $data_root_dir $txtFileDir/$subset.txt $lmdbFile/$subset&amp;quot;_&amp;quot;$db $lmdbLink
+done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;cur_dir=$(cd $( dirname ${BASH_SOURCE[0]} ) &amp;amp;&amp;amp; pwd )
+# bash的绝对路径
+root_dir=$cur_dir/../..
+# bash是存放在~cafferoot~/data/VOC0712下，所以向上两级就是cafferoot
+cd $root_dir
+# 进入cafferoot目录
+redo=1
+# 是否重新生成lmdb
+# data_root_dir=&amp;quot;$HOME/data/VOCdevkit&amp;quot;
+data_root_dir=&amp;quot;/data/datasets/VOCdevkit&amp;quot;
+dataset_name=&amp;quot;VOC0712&amp;quot;
+mapfile=&amp;quot;$root_dir/data/$dataset_name/labelmap_voc.prototxt&amp;quot;
+# 各种路径
+anno_type=&amp;quot;detection&amp;quot;
+# 如果标签type是detection的话，就要读入labelmap，并用caffe转成label_map = caffe_pb2.LabelMap()
+db=&amp;quot;lmdb&amp;quot;
+# 生成的子路径为“lmdb”
+min_dim=0
+max_dim=0
+width=300
+height=300
+# 传入参数
+extra_cmd=&amp;quot;--encode-type=jpg --encoded&amp;quot;
+if [ $redo ]
+then
+  extra_cmd=&amp;quot;$extra_cmd --redo&amp;quot;
+fi
+# 额外参数
+for subset in test trainval
+# 对trainval 和 test 分别运行create_annoset.py的脚本，该脚本对这里的参数进行解析，并调用build/tool/里的create_annoset的caffe程序，进行lmdb的生成
+do
+  python $root_dir/scripts/create_annoset.py --anno-type=$anno_type --label-map-file=$mapfile --min-dim=$min_dim --max-dim=$max_dim --resize-width=$width --resize-height=$height --check-label $extra_cmd $data_root_dir $root_dir/data/$dataset_name/$subset.txt $data_root_dir/$dataset_name/$db/$dataset_name&amp;quot;_&amp;quot;$subset&amp;quot;_&amp;quot;$db examples/$dataset_name
+done
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>caffe train mobilenet ssd</title>
+            <link>/ai/caffe/caffe-train-mobilenet-ssd/</link>
+            <pubDate>Thu, 07 Nov 2019 16:50:02 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/caffe/caffe-train-mobilenet-ssd/</guid>
+            <description>
+
+&lt;p&gt;&lt;a href=&#34;https://hey-yahei.cn/2018/08/21/mssd-try1/index.html&#34; target=&#34;_blank&#34;&gt;训练MobileNet-SSD&lt;/a&gt;&lt;br /&gt;
+&lt;a href=&#34;https://blog.csdn.net/qq_30011277/article/details/87557742&#34; target=&#34;_blank&#34;&gt;安装Caffe_ssd并用自己的数据训练MobileNetSSD模型 - 幽冥之花的博客 - CSDN博客&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;训练&#34;&gt;训练&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;下载MobileNet-SSD源码：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;直接用git克隆仓库到examples目录下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cd $CAFFE_ROOT/examples
+git clone https://github.com/chuanqi305/MobileNet-SSD.git
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;或者到我的网盘上下载并解压到caffe的examples目录下：&lt;a href=&#34;https://pan.baidu.com/s/1wR0iJcvTgT7c4vwJF1pVUQ#list/path=%2Fblog-share%2Fmobilenet_ssd&#34; target=&#34;_blank&#34;&gt;blog-share/mobilenet_ssd/MobileNet-SSD.zip | 百度网盘&lt;/a&gt;&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;创建数据集软链接：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;export TRAINVAL_LMDB=$HOME/data/VOCdevkit/VOC0712/lmdb/VOC0712_trainval_lmdb/
+export TEST_LMDB=$HOME/data/VOCdevkit/VOC0712/lmdb/VOC0712_test_lmdb/
+
+cd $CAFFE_ROOT/examples/MobileNet-SSD
+ln -s $TRAINVAL_LMDB ./trainval_lmdb
+ln -s $TEST_LMDB ./test_lmdb
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;把VOC的标签映射文件复制过来：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;cp $CAFFE_ROOT/data/VOC0712/labelmap_voc.prototxt $CAFFE_ROOT/examples/MobileNet-SSD/labelmap.prototxt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;strong&gt;生成模型文件：&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;./gen_model.sh 21
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这里21指的是VOC的21个类别（含负样本），生成的模型文件默认放置在&lt;code&gt;example&lt;/code&gt;目录下；&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;如果需要修改训练参数和测试参数&lt;/strong&gt;，可以分别修改目录下的&lt;code&gt;solver_train.protxt&lt;/code&gt;和&lt;code&gt;sovler_test.protxt&lt;/code&gt;文件，&lt;br /&gt;
+默认使用&lt;code&gt;example&lt;/code&gt;目录下的训练模型和测试模型；&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;如果需要指定GPU和初始化权重&lt;/strong&gt;，可以修改目录下的&lt;code&gt;train.sh&lt;/code&gt;或&lt;code&gt;test.sh&lt;/code&gt;文件，以&lt;code&gt;train.sh&lt;/code&gt;为例：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!/bin/sh
+if ! test -f example/MobileNetSSD_train.prototxt ;then
+    echo &amp;quot;error: example/MobileNetSSD_train.prototxt does not exist.&amp;quot;
+    echo &amp;quot;please use the gen_model.sh to generate your own model.&amp;quot;
+        exit 1
+fi
+mkdir -p snapshot
+../../build/tools/caffe train -solver=&amp;quot;solver_train.prototxt&amp;quot; \
+-weights=&amp;quot;mobilenet_iter_73000.caffemodel&amp;quot; \
+-gpu 0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;weights&lt;/code&gt;参数指定初始化的权重文件，这里用了chuanqi305预训练迭代了73000次的模型；&lt;br /&gt;
+&lt;code&gt;gpu&lt;/code&gt;参数指定使用的gpu，多个gpu可以用逗号隔开；&lt;br /&gt;
+除此之外，如果需要继续之前中断的训练，还可以指定&lt;code&gt;snapshot&lt;/code&gt;参数，&lt;br /&gt;
+比如我想从最近的快照继续训练，可以这样修改&lt;code&gt;train.sh&lt;/code&gt;——&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;#!/bin/sh
+latest=$(ls -t snapshot/*.caffemodel | head -n 1)
+if ! test -f example/MobileNetSSD_train.prototxt ;then
+    echo &amp;quot;error: example/MobileNetSSD_train.prototxt does not exist.&amp;quot;
+    echo &amp;quot;please use the gen_model.sh to generate your own model.&amp;quot;
+        exit 1
+fi
+mkdir -p snapshot
+../../build/tools/caffe train -solver=&amp;quot;solver_train.prototxt&amp;quot; \
+-snapshot=$latest \
+-gpu 0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;https-hey-yahei-cn-2018-08-21-mssd-try1-index-html-e9-83-a8-e7-bd-b2-部署-部署&#34;&gt;[](&lt;a href=&#34;https://hey-yahei.cn/2018/08/21/mssd-try1/index.html#%E9%83%A8%E7%BD%B2&#34; target=&#34;_blank&#34;&gt;https://hey-yahei.cn/2018/08/21/mssd-try1/index.html#%E9%83%A8%E7%BD%B2&lt;/a&gt; &amp;quot;部署&amp;quot;)部署&lt;/h4&gt;
+
+&lt;p&gt;&lt;strong&gt;合并BN层：&lt;/strong&gt;&lt;br /&gt;
+训练后会在&lt;code&gt;snapshot&lt;/code&gt;目录下产生一个相应的&lt;code&gt;caffemodel&lt;/code&gt;文件；&lt;br /&gt;
+按实际情况修改&lt;code&gt;merge_bn.py&lt;/code&gt;文件并执行：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-language-python&#34;&gt;[ 1] import numpy as np  
+[ 2] import sys,os  
+[ 3] caffe_root = &#39;/your/caffe/root/path/&#39;
+[ 4] sys.path.insert(0, caffe_root + &#39;python&#39;)  
+[ 5] import caffe  
+[ 6] 
+[ 7] train_proto = &#39;example/MobileNetSSD_train.prototxt&#39;       # 训练时所用的模型文件
+[ 8] train_model = &#39;mobilenet_iter_73000.caffemodel&#39;           # 训练后产生的caffemodel文件
+[ 9] 
+[10] deploy_proto = &#39;example/MobileNetSSD_deploy.prototxt&#39;     # 部署时所要用的模型文件（去掉BN层）
+[11] save_model = &#39;MobileNetSSD_deploy.caffemodel&#39;             # 最终生成的caffemodel文件（合并BN层参数）
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;生成的合并BN层后的caffemodel就在MobileNet-SSD项目的根目录下；&lt;br /&gt;
+编辑&lt;code&gt;example/MobileNetSSD_deploy.prototxt&lt;/code&gt;修改输入层，即把&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;input: &amp;quot;data&amp;quot;
+input_shape {
+    dim: 1
+    dim: 3
+    dim: 300
+    dim: 300
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;改为&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;layer {
+    name: &amp;quot;input&amp;quot;
+    type: &amp;quot;Input&amp;quot;
+    top: &amp;quot;data&amp;quot;
+    input_param {
+        shape {
+            dim: 1
+            dim: 3
+            dim: 300
+            dim: 300
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;把 &lt;code&gt;example/MobileNetSSD_deploy.prototxt&lt;/code&gt; 和 &lt;code&gt;MobileNetSSD_deploy.caffemodel&lt;/code&gt; 拷贝到&lt;strong&gt;Tengine&lt;/strong&gt;平台的&lt;code&gt;models&lt;/code&gt;目录下，此时运行&lt;code&gt;mobilenet_ssd/MSSD&lt;/code&gt;用的就是新训练好的模型啦！&lt;/p&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>caffe train error</title>
+            <link>/ai/caffe/caffe-train-error/</link>
+            <pubDate>Wed, 06 Nov 2019 18:11:57 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/caffe/caffe-train-error/</guid>
+            <description>
+
+&lt;h3 id=&#34;ssd训练出错解决-math-functions-cpp-250-check-failed-a-b-0-vs-1-19209e-007&#34;&gt;[] SSD训练出错解决：math_functions.cpp:250 Check failed： a (=b (0 vs -1.19209e-007)&lt;/h3&gt;
+
+&lt;p&gt;在进入Caffe-SSD的训练环节时，总是出现如下报错：&lt;/p&gt;
+
+&lt;p&gt;math_functions.cpp:250] Check failed: a &amp;lt;= b &lt;0 vs -1.19209e-007&gt;&lt;/p&gt;
+
+&lt;p&gt;在谷歌了很多方法后，才解决了问题，目前的最好办法只能规避这个问题，如下：&lt;/p&gt;
+
+&lt;p&gt;1.找到math_functions.cpp，并打开第一个路径为~/caffe/src/caffe/util的math_functions.cpp&lt;/p&gt;
+
+&lt;p&gt;2.找到第250行出错的地方，双斜杠屏蔽&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;template &amp;lt;typename Dtype&amp;gt;
+void caffe_rng_uniform(const int n, const Dtype a, const Dtype b, Dtype* r) {
+  CHECK_GE(n, 0);
+  CHECK(r);
+  // CHECK_LE(a, b);
+  boost::uniform_real&amp;lt;Dtype&amp;gt; random_distribution(a, caffe_nextafter&amp;lt;Dtype&amp;gt;(b));
+  boost::variate_generator&amp;lt;caffe::rng_t*, boost::uniform_real&amp;lt;Dtype&amp;gt; &amp;gt;
+      variate_generator(caffe_rng(), random_distribution);
+  for (int i = 0; i &amp;lt; n; ++i) {
+    r[i] = variate_generator();
+  }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;src/caffe/util/math_functions.cpp&lt;/p&gt;
+
+&lt;p&gt;3.重新在caffe路径下make py&lt;/p&gt;
+
+&lt;p&gt;这样之后，就可进行训练了。&lt;/p&gt;
+
+&lt;p&gt;另外，还有其他的方法，比如在math_functions.cpp的250行前：&lt;/p&gt;
+
+&lt;p&gt;我这样尝试没有成功&lt;br /&gt;
+————————————————&lt;br /&gt;
+版权声明：本文为CSDN博主「house_s」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。&lt;br /&gt;
+原文链接：&lt;a href=&#34;https://blog.csdn.net/house_s/article/details/82502938&#34; target=&#34;_blank&#34;&gt;https://blog.csdn.net/house_s/article/details/82502938&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;cudnn-conv-layer-cpp-53-check-failed-status-cudnn-status-success-4-vs-0-cudnn-status-internal-error&#34;&gt;cudnn_conv_layer.cpp:53] Check failed: status == CUDNN_STATUS_SUCCESS (4 vs. 0)  CUDNN_STATUS_INTERNAL_ERROR&lt;/h4&gt;
+
+&lt;p&gt;解决方式 ：修改 train.prototxt deploy.prototxt&lt;/p&gt;
+
+&lt;p&gt;取消 #engine: CAFFE  --》 engine: CAFFE&lt;br /&gt;
+&lt;code&gt;sed -i &#39;s/#engine:/engine:/g&#39; train.prototxt&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;sed -i &#39;s/#engine:/engine:/g&#39; deploy.prototxt&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;2、按照1修改后，训练，但读到conv5-3还是报同样的错&lt;/p&gt;
+
+&lt;p&gt;（1）搜索资料，发现这个错的原因，还有可能是内存溢出&lt;/p&gt;
+
+&lt;p&gt;因此，怀疑是否是内存溢出问题，将batch size从1000改成256，再改成128，再改成10都不行&lt;/p&gt;
+
+&lt;p&gt;（2）确定caffe编译时是支持cudnn的，因此，将1中的engine：caffe恢复，再将batch size修改下，训练成功。&lt;br /&gt;
+————————————————&lt;br /&gt;
+版权声明：本文为CSDN博主「有石为玉」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。&lt;br /&gt;
+原文链接：&lt;a href=&#34;https://blog.csdn.net/weixin_41770169/article/details/87113052&#34; target=&#34;_blank&#34;&gt;https://blog.csdn.net/weixin_41770169/article/details/87113052&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;问题描述-训练过程中出现blocking-queue-cpp-50-data-layer-prefetch-queue-empty&#34;&gt;问题描述：训练过程中出现blocking_queue.cpp:50] Data layer prefetch queue empty&lt;/h4&gt;
+
+&lt;p&gt;原因：SSD训练慢的原因是 在生成LMDB文件时没有将图片转化为300*300分辨率大小 所以在训练网络时需要转换图片分辨率 这样就造成了数据输入层预存队列为空 GPU一直在等待数据中 所以造成了训练异常缓慢。（图片resize是在CPU上运行的，CPU数据读入慢于GPU计算，导致GPU处于空闲，使得计算速度下降，迭代时间间隔扩大。）&lt;/p&gt;
+
+&lt;p&gt;解决办法：找到文件  /data/VOC0712/create_data.sh ，将width=0改为width=300，将height=0改为height=300.&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;ln -s /data/opendata/VOCdevkit/VOC0712/lmdb/VOC0712_trainval_lmdb trainval_lmdb&lt;/code&gt;&lt;br /&gt;
+&lt;code&gt;/home/ubuntu/caffe/models/weiliu89/build/tools/caffe train --solver=solver_train.prototxt&lt;/code&gt;&lt;br /&gt;
+————————————————&lt;br /&gt;
+版权声明：本文为CSDN博主「ready_xiao」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。&lt;br /&gt;
+原文链接：&lt;a href=&#34;https://blog.csdn.net/weixin_41057320/article/details/81080419&#34; target=&#34;_blank&#34;&gt;https://blog.csdn.net/weixin_41057320/article/details/81080419&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;training-error-data-layer-prefetch-queue-empty&#34;&gt;training error:  Data layer prefetch queue empty&lt;/h4&gt;
+
+&lt;p&gt;SSD 代码里面有bug, 参考 training error:  Data layer prefetch queue empty · Issue &lt;a href=&#34;https://github.com/weiliu89/caffe/issues/863&#34; target=&#34;_blank&#34;&gt;https://github.com/weiliu89/caffe/issues/863&lt;/a&gt; #863 ·&lt;/p&gt;
+
+&lt;p&gt;weiliu89/caffe如果注释掉 CHECK_LE(a, b) 会出现Data layer prefetch queue empty不注释CHECK_LE(a, b) 会出现错误 a可能大于b&lt;br /&gt;
+ template &lt;typename Dtype&gt;&lt;br /&gt;
+void caffe_rng_uniform(const int n, const Dtype a, const Dtype b, Dtype* r) {&lt;br /&gt;
+  CHECK_GE(n, 0);&lt;br /&gt;
+  CHECK(r);&lt;br /&gt;
+  CHECK_LE(a, b);&lt;br /&gt;
+  boost::uniform_real&lt;Dtype&gt; random_distribution(a, caffe_nextafter&lt;Dtype&gt;(b));&lt;br /&gt;
+  boost::variate_generator&lt;caffe::rng_t*, boost::uniform_real&lt;Dtype&gt; &amp;gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;  variate_generator(caffe_rng(), random_distribution);
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;for (int i = 0; i &amp;lt; n; ++i) {&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;r[i] = variate_generator();
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;}&lt;br /&gt;
+}&lt;/p&gt;
+
+&lt;p&gt;正确的解决方案&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-c&#34;&gt;in src/caffe/util/sampler.cpp
+
+@@ -106,6 +106,12 @@ void SampleBBox(const Sampler&amp;amp; sampler, NormalizedBBox* sampled_bbox) {
+
+  float bbox_width = scale * sqrt(aspect_ratio);
+  float bbox_height = scale / sqrt(aspect_ratio);
+
++  // Make sure bbox_width &amp;amp; bbox_height &amp;lt;= 1.0
++  // When 0.f &amp;gt; 1 - bbox_width caffe_rng_uniform will get
++  // a error on some devices
++  bbox_width = bbox_width &amp;gt;= 1.0? 1.0f : bbox_width;
++  bbox_height = bbox_height &amp;gt;= 1.0? 1.0f : bbox_height;
+
+  // Figure out top left coordinates.
+  float w_off, h_off;
+  caffe_rng_uniform(1, 0.f, 1 - bbox_width, &amp;amp;w_off);
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>caffe安装：基于anaconda3---python3.6,</title>
+            <link>/ai/caffe/caffe-install-miniconda3/</link>
+            <pubDate>Wed, 06 Nov 2019 15:43:27 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/caffe/caffe-install-miniconda3/</guid>
+            <description>
+
+&lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/chenzhenyu123456/article/details/84205974&#34; target=&#34;_blank&#34;&gt;Ubuntu 16.04 在Conda沙盒环境下安装Caffe(Python2.7.15 + Protobuf2.6.1 + GPU) - 世界很大 - CSDN博客&lt;/a&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;export PYTHONPATH=&amp;quot;/home/ubuntu/caffe/models/chuanqi305/build/python:$PYTHONPATH&amp;quot;
+export LD_LIBRARY_PATH=&amp;quot;/home/ubuntu/caffe/models/chuanqi305/build/lib:$LD_LIBRARY_PATH&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;~/caffe/models/chuanqi305&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;export PYTHONPATH=&amp;quot;/home/ubuntu/caffe/models/weiliu89/distribute/python:$PYTHONPATH&amp;quot;
+export LD_LIBRARY_PATH=&amp;quot;/home/ubuntu/caffe/models/weiliu89/distribute/lib:$LD_LIBRARY_PATH&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;caffe安装&lt;br /&gt;
+安装Anaconda3&lt;br /&gt;
+下载：Anaconda3-5.0.1-Linux-x86_64.sh&lt;br /&gt;
+默认路径安装（最终安装位置为/home/usename此处自己的用户名/anaconda3）&lt;br /&gt;
+安装：./Anaconda3-5.0.1-Linux-x86_64.sh&lt;/p&gt;
+
+&lt;p&gt;下载caffe&lt;br /&gt;
+首先安装依赖&lt;br /&gt;
+sudo apt-get install libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compilersudo&lt;br /&gt;
+sudo apt-get install --no-install-recommends libboost-all-dev&lt;br /&gt;
+sudo apt-get install libatlas-base-dev&lt;br /&gt;
+sudo apt-get install libhdf5-serial-dev&lt;br /&gt;
+sudo apt-get install libgflags-dev libgoogle-glog-dev liblmdb-dev&lt;br /&gt;
+下载caffe源码：&lt;br /&gt;
+git clone &lt;a href=&#34;https://github.com/BVLC/caffe.git&#34; target=&#34;_blank&#34;&gt;https://github.com/BVLC/caffe.git&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;（参考：&lt;a href=&#34;https://www.jianshu.com/p/5afdb561ce94）&#34; target=&#34;_blank&#34;&gt;https://www.jianshu.com/p/5afdb561ce94）&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;配置caffe的Makefile.config&lt;br /&gt;
+cd到caffe目录，复制一份Makefile.config：cp Makefile.config.example Makefile&lt;br /&gt;
+由于是基于anaconda和cpu，修改内容如下（默认路径安装的话可直接复制）：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;## Refer to http://caffe.berkeleyvision.org/installation.html
+# Contributions simplifying and improving our build system are welcome!
+
+# cuDNN acceleration switch (uncomment to build with cuDNN).
+# USE_CUDNN := 1
+
+# CPU-only switch (uncomment to build without GPU support).
+CPU_ONLY := 1
+
+# uncomment to disable IO dependencies and corresponding data layers
+# USE_OPENCV := 0
+# USE_LEVELDB := 0
+# USE_LMDB := 0
+# This code is taken from https://github.com/sh1r0/caffe-android-lib
+# USE_HDF5 := 0
+
+# uncomment to allow MDB_NOLOCK when reading LMDB files (only if necessary)
+#   You should not set this flag if you will be reading LMDBs with any
+#   possibility of simultaneous read and write
+# ALLOW_LMDB_NOLOCK := 1
+
+# Uncomment if you&#39;re using OpenCV 3
+# OPENCV_VERSION := 3
+
+# To customize your choice of compiler, uncomment and set the following.
+# N.B. the default for Linux is g++ and the default for OSX is clang++
+# CUSTOM_CXX := g++
+
+# CUDA directory contains bin/ and lib/ directories that we need.
+CUDA_DIR := /usr/local/cuda
+# On Ubuntu 14.04, if cuda tools are installed via
+# &amp;quot;sudo apt-get install nvidia-cuda-toolkit&amp;quot; then use this instead:
+# CUDA_DIR := /usr
+
+# CUDA architecture setting: going with all of them.
+# For CUDA &amp;lt; 6.0, comment the *_50 through *_61 lines for compatibility.
+# For CUDA &amp;lt; 8.0, comment the *_60 and *_61 lines for compatibility.
+# For CUDA &amp;gt;= 9.0, comment the *_20 and *_21 lines for compatibility.
+# CUDA_ARCH := -gencode arch=compute_20,code=sm_20 \
+        -gencode arch=compute_20,code=sm_21 \
+        -gencode arch=compute_30,code=sm_30 \
+        -gencode arch=compute_35,code=sm_35 \
+        -gencode arch=compute_50,code=sm_50 \
+        -gencode arch=compute_52,code=sm_52 \
+        -gencode arch=compute_60,code=sm_60 \
+        -gencode arch=compute_61,code=sm_61 \
+        -gencode arch=compute_61,code=compute_61
+
+# BLAS choice:
+# atlas for ATLAS (default)
+# mkl for MKL
+# open for OpenBlas
+BLAS := atlas
+# Custom (MKL/ATLAS/OpenBLAS) include and lib directories.
+# Leave commented to accept the defaults for your choice of BLAS
+# (which should work)!
+# BLAS_INCLUDE := /path/to/your/blas
+# BLAS_LIB := /path/to/your/blas
+
+# Homebrew puts openblas in a directory that is not on the standard search path
+# BLAS_INCLUDE := $(shell brew --prefix openblas)/include
+# BLAS_LIB := $(shell brew --prefix openblas)/lib
+
+# This is required only if you will compile the matlab interface.
+# MATLAB directory should contain the mex binary in /bin.
+# MATLAB_DIR := /usr/local
+# MATLAB_DIR := /Applications/MATLAB_R2012b.app
+
+# NOTE: this is required only if you will compile the python interface.
+# We need to be able to find Python.h and numpy/arrayobject.h.
+#PYTHON_INCLUDE := /usr/include/python2.7 \
+        /usr/lib/python2.7/dist-packages/numpy/core/include
+# Anaconda Python distribution is quite popular. Include path:
+# Verify anaconda location, sometimes it&#39;s in root.
+
+# ANACONDA_HOME := $(HOME)/miniconda3/envs/caffe-py2.7.15-pr2.6.1
+# PYTHON_INCLUDE := $(ANACONDA_HOME)/include \
+		$(ANACONDA_HOME)/include/python2.7 \
+		$(ANACONDA_HOME)/lib/python2.7/site-packages/numpy/core/include
+
+ANACONDA_HOME := $(HOME)/anaconda3
+PYTHON_INCLUDE := $(ANACONDA_HOME)/include \
+          $(ANACONDA_HOME)/include/python3.6m \
+          $(ANACONDA_HOME)/lib/python3.6/site-packages/numpy/core/include
+PYTHON_LIBRARIES := boost_python3 python3.6m
+
+### miniconda base envs
+# ANACONDA_HOME := $(HOME)/anaconda3
+# PYTHON_INCLUDE := $(ANACONDA_HOME)/include \
+#          $(ANACONDA_HOME)/include/python3.7m \
+#          $(ANACONDA_HOME)/lib/python3.7/site-packages/numpy/core/include
+# PYTHON_LIBRARIES := boost_python3 python3.7m
+
+# Uncomment to use Python 3 (default is Python 2)
+# PYTHON_LIBRARIES := boost_python3 python3.6m
+# PYTHON_INCLUDE := /usr/include/python3.6m \
+#                 /usr/lib/python3.6/dist-packages/numpy/core/include
+
+# We need to be able to find libpythonX.X.so or .dylib.
+#PYTHON_LIB := /usr/lib
+# PYTHON_LIB := $(ANACONDA_HOME)/lib
+
+# Homebrew installs numpy in a non standard path (keg only)
+# PYTHON_INCLUDE += $(dir $(shell python -c &#39;import numpy.core; print(numpy.core.__file__)&#39;))/include
+# PYTHON_LIB += $(shell brew --prefix numpy)/lib
+
+# Uncomment to support layers written in Python (will link against Python libs)
+WITH_PYTHON_LAYER := 1
+
+# Whatever else you find you need goes here.
+#INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include
+#LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib
+INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include /usr/include/hdf5/serial
+LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/hdf5/serial
+
+# If Homebrew is installed at a non standard location (for example your home directory) and you use it for general dependencies
+# INCLUDE_DIRS += $(shell brew --prefix)/include
+# LIBRARY_DIRS += $(shell brew --prefix)/lib
+
+# NCCL acceleration switch (uncomment to build with NCCL)
+# https://github.com/NVIDIA/nccl (last tested version: v1.2.3-1+cuda8.0)
+# USE_NCCL := 1
+
+# Uncomment to use `pkg-config` to specify OpenCV library paths.
+# (Usually not necessary -- OpenCV libraries are normally installed in one of the above $LIBRARY_DIRS.)
+# USE_PKG_CONFIG := 1
+
+# N.B. both build and distribute dirs are cleared on `make clean`
+BUILD_DIR := build
+DISTRIBUTE_DIR := distribute
+
+# Uncomment for debugging. Does not work on OSX due to https://github.com/BVLC/caffe/issues/171
+# DEBUG := 1
+
+# The ID of the GPU that &#39;make runtest&#39; will use to run unit tests.
+TEST_GPUID := 0
+
+# enable pretty build (comment to see full commands)
+Q ?= @
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;安装libboost（基于python3.6）的库&lt;br /&gt;
+wget -O boost_1_55_0.tar.gz &lt;a href=&#34;http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz/download&#34; target=&#34;_blank&#34;&gt;http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz/download&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;tar xzvf boost_1_55_0.tar.gz&lt;/p&gt;
+
+&lt;p&gt;cd boost_1_55_0/&lt;/p&gt;
+
+&lt;p&gt;./bootstrap --with-libraries=python --with-toolset=gcc&lt;/p&gt;
+
+&lt;p&gt;./b2 --with-python include=&amp;quot;/home/usename(自己的用户名)/anaconda3/include/python3.6m/&amp;quot;&lt;/p&gt;
+
+&lt;p&gt;sudo ./b2 install&lt;br /&gt;
+此时，/usr/local/lib中已增加了关于boost的动态库和静态库，建立软链接：&lt;/p&gt;
+
+&lt;p&gt;cd /usr/local/lib&lt;/p&gt;
+
+&lt;p&gt;sudo ln -s libboost_python36.so libboost_python3.so&lt;/p&gt;
+
+&lt;p&gt;sudo ln -s libboost_python36.a libboost_python3.a&lt;br /&gt;
+编译caffe&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;sudo make all -j8
+sudo make test -j8
+sudo make pycaffe -j8
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;（补充：在sudo make test -j8后运行 sudo make runtest -j8时出错，关于CPU_Device(float)的错误，查了很多，也试了多个版本的boost还是没能解决，如果你知道解决方案麻烦提供一下呀～。&lt;br /&gt;
+不过不影响caffe的正常使用）&lt;br /&gt;
+进入python环境：python&lt;/p&gt;
+
+&lt;p&gt;import caffe&lt;br /&gt;
+出错：提示找不到google模块&lt;br /&gt;
+利用网上的办法pip install protobuf-py3后，又报错，找不到symbol_database，在网上下载symbol_database.py后仍然报错。&lt;br /&gt;
+解决方案：卸载protobuf：pip uninstall protobuf-py3&lt;br /&gt;
+conda环境下安装protobuf：&lt;/p&gt;
+
+&lt;p&gt;conda install protobuf&lt;br /&gt;
+再次&lt;/p&gt;
+
+&lt;p&gt;import caffe&lt;br /&gt;
+成功！！！&lt;/p&gt;
+
+&lt;p&gt;一。makefile.config修改文件&lt;/p&gt;
+
+&lt;h2 id=&#34;refer-to-http-caffe-berkeleyvision-org-installation-html&#34;&gt;Refer to &lt;a href=&#34;http://caffe.berkeleyvision.org/installation.html&#34; target=&#34;_blank&#34;&gt;http://caffe.berkeleyvision.org/installation.html&lt;/a&gt;&lt;/h2&gt;
+
+&lt;h1 id=&#34;contributions-simplifying-and-improving-our-build-system-are-welcome&#34;&gt;Contributions simplifying and improving our build system are welcome!&lt;/h1&gt;
+
+&lt;h1 id=&#34;cudnn-acceleration-switch-uncomment-to-build-with-cudnn&#34;&gt;cuDNN acceleration switch (uncomment to build with cuDNN).&lt;/h1&gt;
+
+&lt;p&gt; USE_CUDNN := 1&lt;/p&gt;
+
+&lt;h1 id=&#34;cpu-only-switch-uncomment-to-build-without-gpu-support&#34;&gt;CPU-only switch (uncomment to build without GPU support).&lt;/h1&gt;
+
+&lt;h1 id=&#34;cpu-only-1&#34;&gt;CPU_ONLY := 1&lt;/h1&gt;
+
+&lt;h1 id=&#34;uncomment-to-disable-io-dependencies-and-corresponding-data-layers&#34;&gt;uncomment to disable IO dependencies and corresponding data layers&lt;/h1&gt;
+
+&lt;h1 id=&#34;use-opencv-0&#34;&gt;USE_OPENCV := 0&lt;/h1&gt;
+
+&lt;h1 id=&#34;use-leveldb-0&#34;&gt;USE_LEVELDB := 0&lt;/h1&gt;
+
+&lt;h1 id=&#34;use-lmdb-0&#34;&gt;USE_LMDB := 0&lt;/h1&gt;
+
+&lt;h1 id=&#34;uncomment-to-allow-mdb-nolock-when-reading-lmdb-files-only-if-necessary&#34;&gt;uncomment to allow MDB_NOLOCK when reading LMDB files (only if necessary)&lt;/h1&gt;
+
+&lt;h1 id=&#34;you-should-not-set-this-flag-if-you-will-be-reading-lmdbs-with-any&#34;&gt;You should not set this flag if you will be reading LMDBs with any&lt;/h1&gt;
+
+&lt;h1 id=&#34;possibility-of-simultaneous-read-and-write&#34;&gt;possibility of simultaneous read and write&lt;/h1&gt;
+
+&lt;h1 id=&#34;allow-lmdb-nolock-1&#34;&gt;ALLOW_LMDB_NOLOCK := 1&lt;/h1&gt;
+
+&lt;h1 id=&#34;uncomment-if-you-re-using-opencv-3&#34;&gt;Uncomment if you&#39;re using OpenCV 3&lt;/h1&gt;
+
+&lt;p&gt; OPENCV_VERSION := 3&lt;/p&gt;
+
+&lt;h1 id=&#34;to-customize-your-choice-of-compiler-uncomment-and-set-the-following&#34;&gt;To customize your choice of compiler, uncomment and set the following.&lt;/h1&gt;
+
+&lt;h1 id=&#34;n-b-the-default-for-linux-is-g-and-the-default-for-osx-is-clang&#34;&gt;N.B. the default for Linux is g++ and the default for OSX is clang++&lt;/h1&gt;
+
+&lt;h1 id=&#34;custom-cxx-g&#34;&gt;CUSTOM_CXX := g++&lt;/h1&gt;
+
+&lt;h1 id=&#34;cuda-directory-contains-bin-and-lib-directories-that-we-need&#34;&gt;CUDA directory contains bin/ and lib/ directories that we need.&lt;/h1&gt;
+
+&lt;p&gt;CUDA_DIR := /usr/local/cuda&lt;/p&gt;
+
+&lt;h1 id=&#34;on-ubuntu-14-04-if-cuda-tools-are-installed-via&#34;&gt;On Ubuntu 14.04, if cuda tools are installed via&lt;/h1&gt;
+
+&lt;h1 id=&#34;sudo-apt-get-install-nvidia-cuda-toolkit-then-use-this-instead&#34;&gt;&amp;quot;sudo apt-get install nvidia-cuda-toolkit&amp;quot; then use this instead:&lt;/h1&gt;
+
+&lt;h1 id=&#34;cuda-dir-usr&#34;&gt;CUDA_DIR := /usr&lt;/h1&gt;
+
+&lt;h1 id=&#34;cuda-architecture-setting-going-with-all-of-them&#34;&gt;CUDA architecture setting: going with all of them.&lt;/h1&gt;
+
+&lt;h1 id=&#34;for-cuda-6-0-comment-the-50-through-61-lines-for-compatibility&#34;&gt;For CUDA &amp;lt; 6.0, comment the *_50 through *_61 lines for compatibility.&lt;/h1&gt;
+
+&lt;h1 id=&#34;for-cuda-8-0-comment-the-60-and-61-lines-for-compatibility&#34;&gt;For CUDA &amp;lt; 8.0, comment the *_60 and *_61 lines for compatibility.&lt;/h1&gt;
+
+&lt;p&gt;CUDA_ARCH := -gencode arch=compute_20,code=sm_20 &lt;br /&gt;
+-gencode arch=compute_20,code=sm_21 &lt;br /&gt;
+-gencode arch=compute_30,code=sm_30 &lt;br /&gt;
+-gencode arch=compute_35,code=sm_35 &lt;br /&gt;
+-gencode arch=compute_50,code=sm_50 &lt;br /&gt;
+-gencode arch=compute_52,code=sm_52 &lt;br /&gt;
+-gencode arch=compute_60,code=sm_60 &lt;br /&gt;
+-gencode arch=compute_61,code=sm_61 &lt;br /&gt;
+-gencode arch=compute_61,code=compute_61&lt;/p&gt;
+
+&lt;h1 id=&#34;blas-choice&#34;&gt;BLAS choice:&lt;/h1&gt;
+
+&lt;h1 id=&#34;atlas-for-atlas-default&#34;&gt;atlas for ATLAS (default)&lt;/h1&gt;
+
+&lt;h1 id=&#34;mkl-for-mkl&#34;&gt;mkl for MKL&lt;/h1&gt;
+
+&lt;h1 id=&#34;open-for-openblas&#34;&gt;open for OpenBlas&lt;/h1&gt;
+
+&lt;p&gt;BLAS := atlas&lt;/p&gt;
+
+&lt;h1 id=&#34;custom-mkl-atlas-openblas-include-and-lib-directories&#34;&gt;Custom (MKL/ATLAS/OpenBLAS) include and lib directories.&lt;/h1&gt;
+
+&lt;h1 id=&#34;leave-commented-to-accept-the-defaults-for-your-choice-of-blas&#34;&gt;Leave commented to accept the defaults for your choice of BLAS&lt;/h1&gt;
+
+&lt;h1 id=&#34;which-should-work&#34;&gt;(which should work)!&lt;/h1&gt;
+
+&lt;h1 id=&#34;blas-include-path-to-your-blas&#34;&gt;BLAS_INCLUDE := /path/to/your/blas&lt;/h1&gt;
+
+&lt;h1 id=&#34;blas-lib-path-to-your-blas&#34;&gt;BLAS_LIB := /path/to/your/blas&lt;/h1&gt;
+
+&lt;h1 id=&#34;homebrew-puts-openblas-in-a-directory-that-is-not-on-the-standard-search-path&#34;&gt;Homebrew puts openblas in a directory that is not on the standard search path&lt;/h1&gt;
+
+&lt;h1 id=&#34;blas-include-shell-brew-prefix-openblas-include&#34;&gt;BLAS_INCLUDE := $(shell brew --prefix openblas)/include&lt;/h1&gt;
+
+&lt;h1 id=&#34;blas-lib-shell-brew-prefix-openblas-lib&#34;&gt;BLAS_LIB := $(shell brew --prefix openblas)/lib&lt;/h1&gt;
+
+&lt;h1 id=&#34;this-is-required-only-if-you-will-compile-the-matlab-interface&#34;&gt;This is required only if you will compile the matlab interface.&lt;/h1&gt;
+
+&lt;h1 id=&#34;matlab-directory-should-contain-the-mex-binary-in-bin&#34;&gt;MATLAB directory should contain the mex binary in /bin.&lt;/h1&gt;
+
+&lt;p&gt; MATLAB_DIR := /usr/local&lt;br /&gt;
+ MATLAB_DIR := /usr/local/MATLAB/R2016b&lt;/p&gt;
+
+&lt;h1 id=&#34;note-this-is-required-only-if-you-will-compile-the-python-interface&#34;&gt;NOTE: this is required only if you will compile the python interface.&lt;/h1&gt;
+
+&lt;h1 id=&#34;we-need-to-be-able-to-find-python-h-and-numpy-arrayobject-h&#34;&gt;We need to be able to find Python.h and numpy/arrayobject.h.&lt;/h1&gt;
+
+&lt;p&gt;#PYTHON_INCLUDE := /usr/include/python2.7 &lt;/p&gt;
+
+&lt;h1 id=&#34;usr-lib-python2-7-dist-packages-numpy-core-include&#34;&gt;/usr/lib/python2.7/dist-packages/numpy/core/include&lt;/h1&gt;
+
+&lt;h1 id=&#34;anaconda-python-distribution-is-quite-popular-include-path&#34;&gt;Anaconda Python distribution is quite popular. Include path:&lt;/h1&gt;
+
+&lt;h1 id=&#34;verify-anaconda-location-sometimes-it-s-in-root&#34;&gt;Verify anaconda location, sometimes it&#39;s in root.&lt;/h1&gt;
+
+&lt;p&gt;PYTHON_LIBRARIES := boost_python3 python3.6m&lt;/p&gt;
+
+&lt;p&gt; ANACONDA_HOME := $(HOME)/anaconda3&lt;br /&gt;
+ PYTHON_INCLUDE := $(ANACONDA_HOME)/include &lt;br /&gt;
+$(ANACONDA_HOME)/include/python3.6m &lt;br /&gt;
+$(ANACONDA_HOME)/include/pythonsudo apt-get install liblapack-dev3.6 &lt;br /&gt;
+$(ANACONDA_HOME)/lib/python3.6/site-packages/numpy/core/include&lt;/p&gt;
+
+&lt;h1 id=&#34;uncomment-to-use-python-3-default-is-python-2&#34;&gt;Uncomment to use Python 3 (default is Python 2)&lt;/h1&gt;
+
+&lt;h1 id=&#34;python-libraries-boost-python3-python3-5m&#34;&gt;PYTHON_LIBRARIES := boost_python3 python3.5m&lt;/h1&gt;
+
+&lt;h1 id=&#34;python-include-usr-include-python3-5m&#34;&gt;PYTHON_INCLUDE := /usr/include/python3.5m &lt;/h1&gt;
+
+&lt;p&gt;#                 /usr/lib/python3.5/dist-packages/numpy/core/include&lt;br /&gt;
+#PYTHON_LIBRARIES := boost_python3 python3.6m&lt;br /&gt;
+#PYTHON_INCLUDE := /home/zhao/anaconda3/include/python3.6m &lt;br /&gt;
+#                 /home/zhao/anaconda3/lib/python3.6/site-packages/numpy/core/include&lt;/p&gt;
+
+&lt;h1 id=&#34;we-need-to-be-able-to-find-libpythonx-x-so-or-dylib&#34;&gt;We need to be able to find libpythonX.X.so or .dylib.&lt;/h1&gt;
+
+&lt;p&gt;#PYTHON_LIB := /usr/lib&lt;br /&gt;
+ PYTHON_LIB := $(ANACONDA_HOME)/lib&lt;/p&gt;
+
+&lt;h1 id=&#34;homebrew-installs-numpy-in-a-non-standard-path-keg-only&#34;&gt;Homebrew installs numpy in a non standard path (keg only)&lt;/h1&gt;
+
+&lt;h1 id=&#34;python-include-dir-shell-python-c-import-numpy-core-print-numpy-core-file-include&#34;&gt;PYTHON_INCLUDE += $(dir $(shell python -c &#39;import numpy.core; print(numpy.core.&lt;strong&gt;file&lt;/strong&gt;)&#39;))/#include&lt;/h1&gt;
+
+&lt;h1 id=&#34;python-lib-shell-brew-prefix-numpy-lib&#34;&gt;PYTHON_LIB += $(shell brew --prefix numpy)/lib&lt;/h1&gt;
+
+&lt;h1 id=&#34;uncomment-to-support-layers-written-in-python-will-link-against-python-libs&#34;&gt;Uncomment to support layers written in Python (will link against Python libs)&lt;/h1&gt;
+
+&lt;p&gt; WITH_PYTHON_LAYER := 1&lt;/p&gt;
+
+&lt;h1 id=&#34;whatever-else-you-find-you-need-goes-here&#34;&gt;Whatever else you find you need goes here.&lt;/h1&gt;
+
+&lt;p&gt;#INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include&lt;br /&gt;
+#LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib&lt;br /&gt;
+INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include /usr/include/hdf5/serial&lt;br /&gt;
+LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/hdf5/serial&lt;/p&gt;
+
+&lt;h1 id=&#34;if-homebrew-is-installed-at-a-non-standard-location-for-example-your-home-directory-and-you-use-it-for-general-dependencies&#34;&gt;If Homebrew is installed at a non standard location (for example your home directory) and you use it for general dependencies&lt;/h1&gt;
+
+&lt;h1 id=&#34;include-dirs-shell-brew-prefix-include&#34;&gt;INCLUDE_DIRS += $(shell brew --prefix)/include&lt;/h1&gt;
+
+&lt;h1 id=&#34;library-dirs-shell-brew-prefix-lib&#34;&gt;LIBRARY_DIRS += $(shell brew --prefix)/lib&lt;/h1&gt;
+
+&lt;h1 id=&#34;nccl-acceleration-switch-uncomment-to-build-with-nccl&#34;&gt;NCCL acceleration switch (uncomment to build with NCCL)&lt;/h1&gt;
+
+&lt;h1 id=&#34;https-github-com-nvidia-nccl-last-tested-version-v1-2-3-1-cuda8-0&#34;&gt;&lt;a href=&#34;https://github.com/NVIDIA/nccl&#34; target=&#34;_blank&#34;&gt;https://github.com/NVIDIA/nccl&lt;/a&gt; (last tested version: v1.2.3-1+cuda8.0)&lt;/h1&gt;
+
+&lt;h1 id=&#34;use-nccl-1&#34;&gt;USE_NCCL := 1&lt;/h1&gt;
+
+&lt;h1 id=&#34;uncomment-to-use-pkg-config-to-specify-opencv-library-paths&#34;&gt;Uncomment to use &lt;code&gt;pkg-config&lt;/code&gt; to specify OpenCV library paths.&lt;/h1&gt;
+
+&lt;h1 id=&#34;usually-not-necessary-opencv-libraries-are-normally-installed-in-one-of-the-above-library-dirs&#34;&gt;(Usually not necessary -- OpenCV libraries are normally installed in one of the above $LIBRARY_DIRS.)&lt;/h1&gt;
+
+&lt;h1 id=&#34;use-pkg-config-1&#34;&gt;USE_PKG_CONFIG := 1&lt;/h1&gt;
+
+&lt;h1 id=&#34;n-b-both-build-and-distribute-dirs-are-cleared-on-make-clean&#34;&gt;N.B. both build and distribute dirs are cleared on &lt;code&gt;make clean&lt;/code&gt;&lt;/h1&gt;
+
+&lt;p&gt;BUILD_DIR := build&lt;br /&gt;
+DISTRIBUTE_DIR := distribute&lt;/p&gt;
+
+&lt;h1 id=&#34;uncomment-for-debugging-does-not-work-on-osx-due-to-https-github-com-bvlc-caffe-issues-171&#34;&gt;Uncomment for debugging. Does not work on OSX due to &lt;a href=&#34;https://github.com/BVLC/caffe/issues/171&#34; target=&#34;_blank&#34;&gt;https://github.com/BVLC/caffe/issues/171&lt;/a&gt;&lt;/h1&gt;
+
+&lt;h1 id=&#34;debug-1&#34;&gt;DEBUG := 1&lt;/h1&gt;
+
+&lt;h1 id=&#34;the-id-of-the-gpu-that-make-runtest-will-use-to-run-unit-tests&#34;&gt;The ID of the GPU that &#39;make runtest&#39; will use to run unit tests.&lt;/h1&gt;
+
+&lt;p&gt;TEST_GPUID := 0&lt;/p&gt;
+
+&lt;h1 id=&#34;enable-pretty-build-comment-to-see-full-commands&#34;&gt;enable pretty build (comment to see full commands)&lt;/h1&gt;
+
+&lt;p&gt;Q ?= @&lt;/p&gt;
+
+&lt;p&gt;二。Cannot build caffe with anaconda. Error: while loading shared libraries: libhdf5_hl.so.10&lt;/p&gt;
+
+&lt;p&gt;sudo cp -s $HOME/anaconda2/lib/libhdf5_hl.so.100.0.1 /usr/lib/libhdf5_hl.so.100&lt;/p&gt;
+
+&lt;p&gt;sudo cp -s $HOME/anaconda2/lib/libhdf5_hl.so.100.0.1 /usr/lib/x86_64-linux-gnu/libhdf5_hl.so.100&lt;/p&gt;
+
+&lt;p&gt;sudo cp -s $HOME/anaconda2/lib/libhdf5.so.101.0.0 /usr/lib/libhdf5.so.101&lt;/p&gt;
+
+&lt;p&gt;sudo cp -s $HOME/anaconda2/lib/libhdf5.so.101.0.0  /usr/lib/x86_64-linux-gnu/libhdf5.so.101&lt;/p&gt;
+
+&lt;p&gt;————————————————&lt;br /&gt;
+版权声明：本文为CSDN博主「威武胖子哥」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。&lt;br /&gt;
+原文链接：&lt;a href=&#34;https://blog.csdn.net/qq_38362252/article/details/79769501&#34; target=&#34;_blank&#34;&gt;https://blog.csdn.net/qq_38362252/article/details/79769501&lt;/a&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+        <item>
+            <title>caffe install pycaffe</title>
+            <link>/ai/caffe/caffe-install-pycaffe/</link>
+            <pubDate>Wed, 06 Nov 2019 15:32:05 CST</pubDate>
+            <author>rinetd</author>
+            <guid>/ai/caffe/caffe-install-pycaffe/</guid>
+            <description>
+
+&lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/greenchina1992/article/details/82772043&#34; target=&#34;_blank&#34;&gt;安装Pycaffe - greenchina1992的专栏 - CSDN博客&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;CUSTOM_CXX := g++ -std=c++11&lt;/p&gt;
+
+&lt;h1 id=&#34;安装pycaffe&#34;&gt;安装pycaffe&lt;/h1&gt;
+
+&lt;p&gt;本文的安装环境是centos(CentOS Linux release 7.2)服务器，但也提到一些ubuntu的设置，可供参考&lt;/p&gt;
+
+&lt;h2 id=&#34;0-安装python3&#34;&gt;0. 安装python3&lt;/h2&gt;
+
+&lt;p&gt;一般的服务器里面都会自带python2，所以这儿不再赘述安装python2的步骤。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;首先前往&lt;a href=&#34;https://www.python.org/&#34; target=&#34;_blank&#34;&gt;官网&lt;/a&gt;下载最新的release的版本，本文下载的版本是&lt;a href=&#34;https://www.python.org/ftp/python/3.5.6/Python-3.5.6.tgz&#34; target=&#34;_blank&#34;&gt;python3.5.6&lt;/a&gt;。&lt;br /&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;解压并编译安装&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;tar zxvf Python-3.5.6.tgz
+cd Python-3.5.6
+#这儿添加--enable-shared，是为了防止后面运行python3的时候会报错
+./configure --enable-shared
+make all -j8
+make install
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+&lt;li&gt;配置环境&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;运行下面的指令找到所需要的动态库&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;sudo find / -name libpython3.5m.so.1.0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;然后将找到的位置(本文找到的是&amp;quot;/usr/local/lib&amp;quot;)写入到配置环境中并使配置生效&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;vim /etc/ld.so.conf.d/python3.conf
+/usr/local/lib
+#退出vim
+ldconfig
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;1-python2与python3共存&#34;&gt;1. python2与python3共存&lt;/h2&gt;
+
+&lt;p&gt;为了后面更好的使用python的环境，我们这儿要做好python2与python3的共存以及管理，虽然可以使用软链以及输入&amp;quot;python2&amp;quot; 、&amp;quot;python3&amp;quot;这样的命令去区别，但本文建议使用update-alternative(ubuntu下也可以使用)来管理系统的默认环境&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;确认python2以及python3的位置&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;whereis python
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;将python2以及python3的真实的可执行文件告知update-alternative&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;#update-alternatives --install &amp;lt;link&amp;gt; &amp;lt;name&amp;gt; &amp;lt;path&amp;gt; &amp;lt;priority&amp;gt;
+#link即为真正需要管理的链接处，即我们输入python的时候会调用的地方
+#name是多个python版本统一的名字，后面调用--list或者--config的时候会游泳
+#paht即为真正需要管理的可执行程序的路径，也是我们上面执行whereis python所得到的路径
+#priority为显示的顺序
+sudo update-alternatives --install /usr/bin/python python /usr/local/bin/python3.6 1
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+&lt;li&gt;使用update-alternative选择需要使用的python版本&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;#如果是ubuntu则将--config 改为--list
+update-alternatives --config python
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;则会显示下面的文字:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;There are 2 programs which provide &#39;python&#39;.
+
+   Selection    Command
+ -----------------------------------------------
+ *+ 1           /usr/bin/python2.7
+    2           /usr/local/bin/python3.5
+
+ Enter to keep the current selection[+], or type selection number:
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;此时输入2，即可让默认的python指向python3&lt;/p&gt;
+
+&lt;p&gt;TPS: 如果默认的python指向的是python3，则运行yum的时候会报错&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;File &amp;quot;/usr/bin/yum&amp;quot;, line 30
+    except KeyboardInterrupt, e:
+                            ^
+  SyntaxError: invalid syntax
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;因为yum就是python在运行，所以这个时候需要切换为python2，yum才会正常运行&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;2-安装pip2以及pip3&#34;&gt;2. 安装pip2以及pip3&lt;/h2&gt;
+
+&lt;h3 id=&#34;2-1-安装pip2&#34;&gt;2.1 安装pip2&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;yum install python-pip
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;2-2-安装pip3&#34;&gt;2.2 安装pip3&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;从&lt;a href=&#34;https://pypi.org/project/setuptools/&#34; target=&#34;_blank&#34;&gt;官网&lt;/a&gt;或者&lt;a href=&#34;https://download.csdn.net/download/greenchina1992/10684948&#34; target=&#34;_blank&#34;&gt;csdn资源&lt;/a&gt;下载setuptools源码并安装：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;tar -zxvf setuptools.tar.gz
+cd setuptools
+python3 setup.py install
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+&lt;li&gt;从&lt;a href=&#34;https://github.com/pypa/pip/releases&#34; target=&#34;_blank&#34;&gt;pip-github官网&lt;/a&gt;或者&lt;a href=&#34;https://download.csdn.net/download/greenchina1992/10685005&#34; target=&#34;_blank&#34;&gt;csdn资源&lt;/a&gt;下载Pip源码安装：&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;gzip -dv pip.tar.gz
+tar xvf pip.tar
+cd pip
+python3 setup.py build
+python3 setup.py install
+ln -s /usr/local/bin/pip3 /usr/bin/pip3
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;2-3-升级pip&#34;&gt;2.3 升级Pip&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;#升级Pip2
+pip2 install -U pip
+#升级pip3
+pip3 install -U pip
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;3-安装caffe&#34;&gt;3. 安装caffe&lt;/h2&gt;
+
+&lt;h3 id=&#34;3-1-caffe依赖环境&#34;&gt;3.1 caffe依赖环境&lt;/h3&gt;
+
+&lt;p&gt;安装caffe之前需要安装一些依赖环境，比如CUDA等等，这儿不再介绍，可以参考&lt;a href=&#34;http://caffe.berkeleyvision.org/installation.html&#34; target=&#34;_blank&#34;&gt;caffe官网&lt;/a&gt;或者&lt;a href=&#34;https://www.mtyun.com/library/how-to-install-caffe-on-centos7&#34; target=&#34;_blank&#34;&gt;在CentOS 7上安装Caffe&lt;/a&gt;等等。&lt;/p&gt;
+
+&lt;h4 id=&#34;3-1-1-安装protobuf&#34;&gt;3.1.1 安装protobuf&lt;/h4&gt;
+
+&lt;p&gt;前往protobuf的&lt;a href=&#34;https://github.com/protocolbuffers/protobuf&#34; target=&#34;_blank&#34;&gt;github官网&lt;/a&gt;，从release里面下载所需要的版本，我下载的版本是&lt;a href=&#34;https://github.com/protocolbuffers/protobuf/releases/download/v3.6.1/protobuf-all-3.6.1.tar.gz&#34; target=&#34;_blank&#34;&gt;protobuf-all-3.6.1&lt;/a&gt;&lt;br /&gt;
+然后执行下面命令:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;./autogen.sh
+./configure
+make
+make check
+make install
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;最后记得将library的path写到~/.bashrc里面的LD_LIBRARY_PATH变量并source ~/.bashrc&lt;/p&gt;
+
+&lt;h4 id=&#34;3-1-2-安装hdf5&#34;&gt;3.1.2 安装hdf5&lt;/h4&gt;
+
+&lt;p&gt;前往hdf5&lt;a href=&#34;https://www.hdfgroup.org/downloads/&#34; target=&#34;_blank&#34;&gt;官网&lt;/a&gt;下载所需要的版本并解压&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;$ ./configure --prefix=/usr/local/hdf5
+$ make
+$ make check                # run test suite.
+$ make install
+$ make check-install
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;3-2-python配置&#34;&gt;3.2 python配置&lt;/h3&gt;
+
+&lt;p&gt;安装完caffe的依赖环境之后，先别急着安装caffe。&lt;br /&gt;
+首先需要安装一些python的依赖库，这儿要确保使用的时python3.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;cd python
+for req in $(cat requirements.txt); do pip install $req; done
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果上述命令不行，则可以运行：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;pip3 install -r requirements.txt
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;运行上面这个命令可能会有下面的提示:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;matplotlib 3.0.0 has requirement python-dateutil&amp;gt;=2.1, but you&#39;ll have python-dateutil 1.5 which is incompatible.
+pandas 0.23.4 has requirement python-dateutil&amp;gt;=2.5.0, but you&#39;ll have python-dateutil 1.5 which is incompatible
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个时候可以考虑将requirements.txt里面的&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;python-dateutil&amp;gt;=1.4,&amp;lt;2
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;改为&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;python-dateutil&amp;gt;=2.5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;接着我们需要配置一下caffe的Makefile.config文件。以下为我本人的主要配置：&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;注释掉所有包含compute_20的行，因为我们在用cuda-9.0&lt;br /&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;打开或者设置以下配置:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;USE_CUDNN := 1
+USE_HDF5 := 1
+BLAS := atlas
+BLAS_INCLUDE := /usr/include/atlas
+BLAS_LIB := /usr/lib64/atlas
+PYTHON_LIBRARIES := boost_python3 python3.5m
+PYTHON_INCLUDE := /usr/local/include/python3.5m \
+                 /usr/local/lib/python3.5/site-packages/numpy/core/include
+PYTHON_LIB := /usr/lib64
+    
+WITH_PYTHON_LAYER := 1
+
+CUSTOM_CXX := g++ -std=c++11
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;3-3-编译caffe以及pycaffe&#34;&gt;3.3 编译caffe以及pycaffe&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;接着就可以编译并安装caffe了&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;make all -j8
+make test -j8
+make runtest -j8
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;如果上述命令没有问题，接着编译pycaffe&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;make pycaffe
+make distribute
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果没有任何错误，这个时候你会在你的caffe主目录下面看到一个distribute的文件夹。这儿就是我们需要的pycaffe了。接着我们需要将python配置到环境变量里面：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;vim ~/.bashrc
+export PYTHONPATH=&amp;quot;~/caffe_root/distribute/python:$PYTHONPATH&amp;quot;
+export LD_LIBRARY_PATH=&amp;quot;~/caffe_root/distribute/lib:$LD_LIBRARY_PATH&amp;quot;
+#退出vim
+source ~/.bashrc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;后面你在命令行当中输入python并&amp;quot;import caffe&amp;quot;，如果么有发现错误提示，即代表安装成功。&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&#34;4-安装pycaffe时的错误集锦-欢迎提供新的错误&#34;&gt;4. 安装pycaffe时的错误集锦（欢迎提供新的错误）&lt;/h2&gt;
+
+&lt;h3 id=&#34;4-1-cannot-find-lboost-python3&#34;&gt;4.1  cannot find -lboost_python3&lt;/h3&gt;
+
+&lt;p&gt;在编译caffe的步骤里面的&amp;quot;make all&amp;quot;时候，可能会出现这个错误，这个错误就是因为没有安装适用于python的booost库。&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;如果你确定你安装的boost库是python3的版本的，则可以使用&lt;a href=&#34;https://github.com/BVLC/caffe/issues/4843&#34; target=&#34;_blank&#34;&gt;Solve the problem: “cannot find -lboost_python3” when using Python3 Ubuntu16.04&lt;/a&gt;提到的方法解决：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;find /usr -name libboost_python*
+cd /usr/lib/x86_64-linux-gnu/
+sudo ln -s libboost_python-py35.so libboost_python3.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+&lt;li&gt;如果没有发现这样的库，那可能是之前只是安装了python2版本的boost库，所以我们可能需要源码安装。&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;4-1-1-编译并安装boost库&#34;&gt;4.1.1 编译并安装boost库&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;前往&lt;a href=&#34;https://www.boost.org/users/download/&#34; target=&#34;_blank&#34;&gt;官网&lt;/a&gt;下载boost库源码&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;找到pyconfig.h所在目录$PY_CONFIG&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;sudo find / -name pyconfig.h
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;解压、配置并编译boost库：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;tar zxvf boost_1_68_0.tar.gz
+cd boost_1_68_0
+./bootstrap.sh
+./b2 --with-python include=&amp;quot;$PY_CONFIG&amp;quot;
+./b2 install
+ln -s /usr/local/lib/libboost_python35.so.1.68.0 /usr/local/lib/libboost_python3.so
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+&lt;li&gt;配置环境变量:&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;vim ~/.bashrc
+export LD_LIBRARY_PATH=&amp;quot;/usr/local/lib:$LD_LIBRARY_PATH&amp;quot;
+#退出vim
+source ~/.bashrc
+&lt;/code&gt;&lt;/pre&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&#34;4-2-libboost-system-so-1-68-0-cannot-open-shared-object-file-no-such-file-or-directory&#34;&gt;4.2 libboost_system.so.1.68.0: cannot open shared object file: No such file or directory&lt;/h3&gt;
+
+&lt;p&gt;这个是因为没有配置环境变量，按照4.1.1的第四步来即可解决；也有可能是没有执行&amp;quot;./b2 install&amp;quot;命令&lt;/p&gt;
+
+&lt;h3 id=&#34;4-3-can-t-create-weekday-with-n-0&#34;&gt;4.3 Can’t create weekday with n == 0&lt;/h3&gt;
+
+&lt;p&gt;在安装完Pycaffe之后，&amp;quot;import caffe&amp;quot;的时候可能会报错如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;File &amp;quot;/usr/local/lib/python3.5/site-packages/dateutil/rrule.py&amp;quot;, line 55
+    raise ValueError, &amp;quot;Can&#39;t create weekday with n == 0&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个时候需要更新一下python-dateutil库：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;pip3 install python-dateutil --upgrade
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-4-typeerror-expected-bytes-str-found&#34;&gt;4.4 TypeError: expected bytes, str found&lt;/h3&gt;
+
+&lt;p&gt;依然是在执行&amp;quot;import caffe&amp;quot;的时候会遇到的错误，大致报错信息如下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;File &amp;quot;/root/software/caffe-master/distribute/python/caffe/proto/caffe_pb2.py&amp;quot;, line 17, in &amp;lt;module&amp;gt;
+    serialized_pb=&#39;\n\x17\x63\x61\x66\x66\x65/proto/caffe.prot
+File &amp;quot;/usr/local/lib/python3.5/site-packages/google/protobuf/descriptor.py&amp;quot;, line 878, in __new__
+    return _message.default_pool.AddSerializedFile(serialized_pb)
+TypeError: expected bytes, str found
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个则是编译生成的caffe_pb2.py文件有问题，需要找一个正确编译的文件替代&amp;quot;caffe_root/python/caffe/proto/caffe_pb2.py&amp;quot;，已上传到&lt;a href=&#34;https://download.csdn.net/download/greenchina1992/10684980&#34; target=&#34;_blank&#34;&gt;csdn资源&lt;/a&gt;，下载并替换即可。&lt;/p&gt;
+
+&lt;h3 id=&#34;4-5-error-while-loading-shared-libraries-libpython3-5m-so-1-0&#34;&gt;4.5 error while loading shared libraries: libpython3.5m.so.1.0&lt;/h3&gt;
+
+&lt;p&gt;这个是因为在编译python3的时候没有添加&amp;quot;–enable-shared&amp;quot;选项，所以安装python3用以下的命令：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;./configure --enable-shared
+make all -j8
+make install
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;如果这个时候还是会报错，则找到libpython3.5m.so.1.0文件所在的位置，将该位置配置一下：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;find / -name libpython3.5m.so.1.0
+#比如找到的地址是/usr/local/lib
+vim /etc/ld.so.conf.d/python3.conf
+/usr/local/lib
+#退出vim
+ldconfig
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;6&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;4-6-no-module-named-caffe&#34;&gt;4.6 No Module Named caffe&lt;/h3&gt;
+
+&lt;p&gt;在&amp;quot;import caffe&amp;quot;的时候可能会报错，这是因为没有配置好python的环境变量：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;vim ~/.bashrc
+export PYTHONPATH=&amp;quot;~/caffe_root/distribute/python:$PYTHONPATH&amp;quot;
+#退出vim
+source ~/.bashrc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;4&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;4-7-importerror-libcaffe-so-1-0-0-cannot-open-shared-object-file-no-such-file-or-directory&#34;&gt;4.7 ImportError: libcaffe.so.1.0.0: cannot open shared object file: No such file or directory&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;vim ~/.bashrc
+export LD_LIBRARY_PATH=&amp;quot;~/caffe_root/distribute/lib:$LD_LIBRARY_PATH&amp;quot;
+#退出vim
+source ~/.bashrc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;4&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&#34;4-8-libboost-python35-so-1-68-0-undefined-symbol-pyclass-type&#34;&gt;4.8 libboost_python35.so.1.68.0: undefined symbol: PyClass_Type&lt;/h3&gt;
+
+&lt;p&gt;这个错误是因为编译boost的时候使用了python2，PyClass_Type是python2 C API，所以在python3里面&amp;quot;import caffe&amp;quot;的时候会出现这个错误，这个需要去重新编译一下boost，编译之前，需要确认使用&amp;quot;python&amp;quot;命令的时候出现的是python3&lt;br /&gt;
+或者参考&lt;a href=&#34;https://stackoverflow.com/questions/25188861/libboost-python3-so-1-56-0-undefined-symbol-pyclass-type&#34; target=&#34;_blank&#34;&gt;libboost_python3.so.1.56.0: undefined symbol: PyClass_Type&lt;/a&gt;去编译多个版本的liboost也可以：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;$ ./bootstrap.sh --with-python=/usr/bin/python2
+...
+Detecting Python version... 2.7
+$ ./b2 --with-python --buildid=2 # produces libboost_python-2.so
+$ ./bootstrap.sh --with-python=/usr/bin/python3 --with-python-root=/usr
+...
+Detecting Python version... 3.3
+$ ./b2 --with-python --buildid=3noclean # produces libboost_python-3noclean.so
+$ ./b2 --with-python --clean
+$ ./b2 --with-python --buildid=3 # produces libboost_python-3.so
+
+$ nm -D stage/lib/libboost_python-2.so | grep PyClass_Type
+                 U PyClass_Type
+$ nm -D stage/lib/libboost_python-3noclean.so | grep PyClass_Type
+                 U PyClass_Type
+$ nm -D stage/lib/libboost_python-3.so | grep PyClass_Type
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+&lt;li&gt;6&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;7&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;8&lt;br /&gt;&lt;/li&gt;
+&lt;li&gt;9&lt;br /&gt;
+0&lt;br /&gt;
+1&lt;br /&gt;
+2&lt;br /&gt;
+3&lt;br /&gt;
+4&lt;br /&gt;
+5&lt;br /&gt;
+6&lt;br /&gt;
+&lt;br /&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;As expected, libboost_python-2.so references the PyClass_Type symbol. Additionally, the libboost_python-3noclean.so contains a reference to PyClass_Type as it was built with libboost_python-2.so’s object files. With a clean build, libboost_python-3.so should not contain a reference to PyClass_Type.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&#34;4-9-fatal-error-python-h-no-such-file-or-directory&#34;&gt;4.9 fatal error: Python.h: No such file or directory&lt;/h3&gt;
+
+&lt;p&gt;对于centos系统，采用下面的命令：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;yum install python-devel   # for python2.x installs
+yum install python34-devel   # for python3.4 installs
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;其他的可以参考&lt;a href=&#34;https://stackoverflow.com/questions/21530577/fatal-error-python-h-no-such-file-or-directory&#34; target=&#34;_blank&#34;&gt;fatal error: Python.h: No such file or directory&lt;/a&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;For apt (Ubuntu, Debian…):&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;&amp;gt; sudo apt-get install python-dev   # for python2.x installs
+&amp;gt; sudo apt-get install python3-dev  # for python3.x installs
+&amp;gt; ```
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt; For yum (CentOS, RHEL…):
+&amp;gt;
+&amp;gt;
+&amp;gt; ```sh
+&amp;gt; sudo yum install python-devel   # for python2.x installs
+&amp;gt; sudo yum install python34-devel   # for python3.4 installs
+&amp;gt; ```
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt; For dnf (Fedora…):
+&amp;gt;
+&amp;gt;
+&amp;gt; ```sh
+&amp;gt; sudo dnf install python2-devel  # for python2.x installs
+&amp;gt; sudo dnf install python3-devel  # for python3.x installs
+&amp;gt; ```
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt; For zypper (openSUSE…):
+&amp;gt;
+&amp;gt;
+&amp;gt; ```sh
+&amp;gt; sudo zypper in python-devel   # for python2.x installs
+&amp;gt; sudo zypper in python3-devel  # for python3.x installs
+&amp;gt; ```
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt; For apk (Alpine…):
+&amp;gt;
+&amp;gt;
+&amp;gt; ```sh
+&amp;gt; # This is a departure from the normal Alpine naming
+&amp;gt; # scheme, which uses py2- and py3- prefixes
+&amp;gt; sudo apk add python2-dev  # for python2.x installs
+&amp;gt; sudo apk add python3-dev  # for python3.x installs
+&amp;gt; ```
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt;
+&amp;gt; For apt-cyg (Cygwin…):
+&amp;gt;
+&amp;gt;
+&amp;gt; ```sh
+&amp;gt; apt-cyg install python-devel   # for python2.x installs
+&amp;gt; apt-cyg install python3-devel  # for python3.x installs
+&amp;gt; ```
+&amp;gt;
+&amp;gt;
+&amp;gt;
+
+### 4.10 autoreconf: command not found
+
+在安装protobuf的时候可能会遇到这个错误，这是因为没有安装automake
+
+```sh
+yum install autoconf automake libtool
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&#34;4-11-make-all时提示要有-std-c-11&#34;&gt;4.11 make all时提示要有-std=c++11&lt;/h3&gt;
+
+&lt;p&gt;在编译caffe的时候可能会有下面的错误：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;#error This file requires compiler and library support for the ISO C++ 2011 standard. This support must be enabled with the -std=c++11 or -std=gnu++11 compiler options.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;这个时候大概率是protobuf的版本是用C++11编译的，而caffe的makefile里面默认是不带这个参数的，所以要么protobuf换做低版本，要么修改caffe的makefile，我建议修改caffe的makefile：&lt;br /&gt;
+将原有的&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;CXXFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS)
+NVCCFLAGS += -D_FORCE_INLINES -ccbin=$(CXX) -Xcompiler -fPIC $(COMMON_FLAGS)
+LINKFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;改为&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;CXXFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS) -std=c++11
+NVCCFLAGS += -D_FORCE_INLINES -ccbin=$(CXX) -Xcompiler -fPIC $(COMMON_FLAGS) -std=c++11
+LINKFLAGS += -pthread -fPIC $(COMMON_FLAGS) $(WARNINGS) -std=c++11
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-12-usr-bin-ld-cannot-find-lcblas&#34;&gt;4.12 /usr/bin/ld: cannot find -lcblas&lt;/h3&gt;
+
+&lt;p&gt;因为我使用的是centos系统，而centos下面不提供cblas，但是却有satlas和 tatlas，所以需要修改caffe里面的Makefile:&lt;br /&gt;
+将&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;LIBRARIES += cblas atlas
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;改成&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;LIBRARIES += satlas tatlas
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

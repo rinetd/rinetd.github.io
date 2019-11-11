@@ -1,8 +1,1194 @@
-<!doctype html><html lang=zh-cn class=no-js><title>Linux命令 Dockerfile</title><meta charset=utf-8><meta name=robots content=index,nofollow><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><meta http-equiv=x-dns-prefetch-control content=on><meta name=viewport content="width=device-width,initial-scale=1"><meta name=referrer content=origin-when-cross-origin><meta name=description content="http://www.cnblogs.com/52fhy/p/5638571.html dockerfile 剖析 ENV ENV 的就是给docker来设置变量的. 基本格式为: ENV name=jimmy age=18 修改环境变量 ENV PATH=$PATH:/user/bin 而通过 ENV 我们就可以完美的告诉docker 从这里开始,你就不能"><meta name=author content=rinetd><meta name=baidu-site-verification content=pCInWQYbNT><meta name=google-site-verification content=ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk><link rel=canonical href=../../../devops/docker/dockerfile/><link rel=icon href=../../../public/favicon.ico><link rel="shortcut icon" href=../../../public/favicon.ico><link rel=stylesheet href=../../../front/css/main.min.css><link rel=stylesheet href=../../../front/css/font-awesome.min.css><link rel=stylesheet href=//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css><body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome"><div id=wrapper><header id=header class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent"><nav class="nav-container group mobile-menu mobile-sticky" id=nav-mobile data-menu-id=header-1><div class=mobile-title-logo-in-header><p class=site-title><a class=custom-logo-link href rel=home title="Pytool | Home">Pytool</a></div><div class="ham__navbar-toggler-two collapsed" title=Menu aria-expanded=false><div class=ham__navbar-span-wrapper><span class="line line-1"></span><span class="line line-2"></span><span class="line line-3"></span></div></div><div class=nav-text>Linux命令 Dockerfile</div><div class="nav-wrap container"><ul class="nav container-inner group mobile-search"><li><form class="searchform themeform" action=https://demo-hueman.presscustomizr.com/><div><input class=search name=s onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"></div></form></ul><ul id=menu-topbar-menu class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href>Home</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../math/>Math</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../edit/>Edit</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/>文档生成器</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/>自动部署</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/android/>Android</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/golang/>Golang</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/goher/>Goher</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/hugo/>Hugo</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/java/>Java</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/java/hadoop/>Hadoop</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/php/>Php</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/php/magento/>Magento</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/python/>Python</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/python/scrapy/>Scrapy</a></ul></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/lvs/>Lvs</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/shell/>Shell</a></ul><li class=item><a class=text href=../../../series/>series</a><li class=item><a class=text href=../../../categories/>categories</a><li class=item><a class=text href=../../../tags/>tags</a><li class=item><a class=text href=../../../me/>about</a></ul></div></nav><nav class="nav-container group desktop-menu desktop-sticky" id=nav-topbar data-menu-id=header-2><div class=nav-text>Linux命令 Dockerfile</div><div class=topbar-toggle-down><i class="fas fa-angle-double-down" aria-hidden=true data-toggle=down title="Expand menu"></i><i class="fas fa-angle-double-up" aria-hidden=true data-toggle=up title="Collapse menu"></i></div><div class="nav-wrap container"><ul id=menu-topbar-menu-1 class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href=../../../>Home</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../math/>Math</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../edit/>Edit</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/>文档生成器</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/>自动部署</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/android/>Android</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/golang/>Golang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/java/>Java</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/php/>Php</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/python/>Python</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/lvs/>Lvs</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/shell/>Shell</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../post/>Post</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/life/>Life</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/reship/>Reship</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/basic/>Basic</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/english/>English</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/seo/>Seo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/software/>Software</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/wiki/>Wiki</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/windows/>Windows</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../series/>series</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../categories/>categories</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../tags/>tags</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../me/>about</a></ul></div></nav></header><div class=container id=page><div class=container-inner><div class=main><div class="main-inner group"><div class=content><div class="pad group page-title"><ul class="meta-single group"><li><span class="fa fa-folder-open"></span><li class=category><a href=../../../categories/docker/ rel="category tag">docker</a></ul></div><div class="pad group"><article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list"><div class="post-inner group"><h1 class=post-title>Linux命令 Dockerfile</h1><p class=post-byline>by · 2016年03月05日 · 15392 Words ·
-~31min reading time |
-<a href=https://gitlab.com/rinetd/blog/edit/master/devops/docker/Dockerfile.md target=_blank>Improve on <i class="fa fa-gitlab"></i></a><div class=clear></div><div class="entry themeform"><div class=entry-inner></br>原文链接：<a target=_blank href=../../../devops/docker/dockerfile/> Linux命令 Dockerfile</a><p><a href=http://www.cnblogs.com/52fhy/p/5638571.html target=_blank>http://www.cnblogs.com/52fhy/p/5638571.html</a><br><a href=http://www.tuicool.com/articles/fUjyaq target=_blank>dockerfile 剖析</a><h1 id=env-env-的就是给docker来设置变量的-基本格式为>ENV ENV 的就是给docker来设置变量的. 基本格式为:</h1><p>ENV name=jimmy age=18<h1 id=修改环境变量>修改环境变量</h1><p>ENV PATH=$PATH:/user/bin<br>而通过 ENV 我们就可以完美的告诉docker 从这里开始,你就不能使用cache,自己的重新来.( 因为,每条指令都会生成layer并且有独立的id,一旦你更改的ENV,那么从该指令开始id都会发生改变,也就匹配不到缓存了 )<h1 id=arg-指定构建过程中使用的环境变>ARG 指定构建过程中使用的环境变</h1><p>添加个人信息LABEL<p>顾名思义,使用 LABEL 就是给你的image打上独一无二的标签.让别人能够了解,这个Image是属于你的. 又或是,用来提醒你自己,这个image现在处于哪一个版本状态.<h1 id=设置自己的label>设置自己的label</h1><p>LABEL owner=&quot;jimmy&quot; version=&quot;0.0.1&quot;<h1 id=在dockerfile定义了默认变量>在dockerfile定义了默认变量</h1><p>ARG user=jimy<h1 id=在运行时-进行手动替换>在运行时,进行手动替换</h1><p>docker build --build-arg user=sam -t jimmy/demo .<p>上面说了ARG和ENV比较类似,不过,里面的区别还是有的. 即, ARG只能用在 docker build 的阶段, 并且不会被保存在 image 中,这就是和ENV的区别.<p>##############Dockerfile#########################<h1 id=容器需要开放ssh-22端口>容器需要开放SSH 22端口</h1><p>EXPOSE 22<br>!!!<br>ENTRYPOINT，表示镜像在初始化时需要执行的命令，不可被重写覆盖，需谨记<br>CMD，表示镜像运行默认参数，可被重写覆盖<br>ENTRYPOINT/CMD都只能在文件中存在一次，并且最后一个生效 多个存在，只有最后一个生效，其它无效！<br>需要初始化运行多个命令，彼此之间可以使用 &amp;&amp; 隔开，但最后一个须要为无限运行的命令，需切记！<p>ENTRYPOINT/CMD，一般两者可以配合使用，比如：<p>ENTRYPOINT [&quot;/usr/sbin/sshd&quot;]<br>CMD [&quot;-D&quot;]<p>在Docker　daemon模式下，无论你是使用ENTRYPOINT，还是CMD，最后的命令，一定要是当前进程需要一直运行的，才能够防容器退出。<p>以下无效方式：<p>ENTRYPOINT service tomcat7 start #运行几秒钟之后，容器就会退出<br>CMD service tomcat7 start #运行几秒钟之后，容器就会退出<p>这样有效：<p>ENTRYPOINT service tomcat7 start &amp;&amp; tail -f /var/lib/tomcat7/logs/catalina.out<h1 id=或者>或者</h1><p>CMD service tomcat7 start &amp;&amp; tail -f /var/lib/tomcat7/logs/catalina.out<p>这样也有效：<p>ENTRYPOINT [&quot;/usr/sbin/sshd&quot;]<br>CMD [&quot;-D&quot;]<p>Capabilities的主要思想在于分割root用户的特权，即将root的特权分割成不同的能力，每种能力代表一定的特权操作。例如：能力CAP_SYS_MODULE表示用户能够加载(或卸载)内核模块的特权操作，而CAP_SETUID表示用户能够修改进程用户身份的特权操作。在Capbilities中系统将根据进程拥有的能力来进行特权操作的访问控制。<pre><code>在Capilities中，只有进程和可执行文件才具有能力，每个进程拥有三组能力集，分别称为cap_effective, cap_inheritable, cap_permitted(分别简记为:pE,pI,pP)，其中cap_permitted表示进程所拥有的最大能力集；cap_effective表示进程当前可用的能力集，可以看做是cap_permitted的一个子集；而cap_inheitable则表示进程可以传递给其子进程的能力集。系统根据进程的cap_effective能力集进行访问控制，cap_effective为cap_permitted的子集，进程可以通过取消cap_effective中的某些能力来放弃进程的一些特权。可执行文件也拥有三组能力集，对应于进程的三组能力集，分别称为cap_effective, cap_allowed 和 cap_forced（分别简记为fE,fI,fP），其中，cap_allowed表示程序运行时可从原进程的cap_inheritable中集成的能力集，cap_forced表示运行文件时必须拥有才能完成其服务的能力集；而cap_effective则表示文件开始运行时可以使用的能力。
-</code></pre><p>（一）Linux内核中Capabilities的实现机制<pre><code> Linux内核从2.2版本开始，就加进的Capabilities的概念与机制，并随着版本升高逐步得到改进。在linux中，root权限被分割成一下29中能力：
-</code></pre><p>CAP_CHOWN:修改文件属主的权限<br>CAP_DAC_OVERRIDE:忽略文件的DAC访问限制<br>CAP_DAC_READ_SEARCH:忽略文件读及目录搜索的DAC访问限制<br>CAP_FOWNER：忽略文件属主ID必须和进程用户ID相匹配的限制<br>CAP_FSETID:允许设置文件的setuid位<br>CAP_KILL:允许对不属于自己的进程发送信号<br>CAP_SETGID:允许改变进程的组ID<br>CAP_SETUID:允许改变进程的用户ID<br>CAP_SETPCAP:允许向其他进程转移能力以及删除其他进程的能力<br>CAP_LINUX_IMMUTABLE:允许修改文件的IMMUTABLE和APPEND属性标志<br>CAP_NET_BIND_SERVICE:允许绑定到小于1024的端口<br>CAP_NET_BROADCAST:允许网络广播和多播访问<br>CAP_NET_ADMIN:允许执行网络管理任务<br>CAP_NET_RAW:允许使用原始套接字<br>CAP_IPC_LOCK:允许锁定共享内存片段<br>CAP_IPC_OWNER:忽略IPC所有权检查<br>CAP_SYS_MODULE:允许插入和删除内核模块<br>CAP_SYS_RAWIO:允许直接访问/devport,/dev/mem,/dev/kmem及原始块设备<br>CAP_SYS_CHROOT:允许使用chroot()系统调用<br>CAP_SYS_PTRACE:允许跟踪任何进程<br>CAP_SYS_PACCT:允许执行进程的BSD式审计<br>CAP_SYS_ADMIN:允许执行系统管理任务，如加载或卸载文件系统、设置磁盘配额等<br>CAP_SYS_BOOT:允许重新启动系统<br>CAP_SYS_NICE:允许提升优先级及设置其他进程的优先级<br>CAP_SYS_RESOURCE:忽略资源限制<br>CAP_SYS_TIME:允许改变系统时钟<br>CAP_SYS_TTY_CONFIG:允许配置TTY设备<br>CAP_MKNOD:允许使用mknod()系统调用<br>CAP_LEASE:允许修改文件锁的FL_LEASE标志<br>################################################################################<h2 id=docker-搭建android开发环境>docker 搭建Android开发环境</h2><p>docker pull ubuntu:10.04<br>docker run -it -p 8080:80 -v /media/ubuntu/sdb2/Android:/mnt -w /mnt ubuntu:10.04 /bin/bash<p>docker ps -a<br>docker start 8c055f32bd33<br>docker attach 8c055f32bd33<br>sudo vi /etc/apt/source.list<br>sed -i 's/httpredir.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list<p>sudo sed -i 's/archive.ubuntu.com/mirrors.sohu.com/g' /etc/apt/sources.list<br>sudo sed -i 's/archive.ubuntu.com/mirrors.163.com/g' /etc/apt/sources.list<br>sudo sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list<br>sudo sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list<br>sudo sed -i 's/archive.ubuntu.com/mirrors.aliyuncs.com/g' /etc/apt/sources.list #内网使用<pre><code>#网易
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+
+<head>
+    
+<title>Linux命令 Dockerfile</title>
+<meta charset="utf-8">
+
+<meta name="robots" content="index,nofollow">
+
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta http-equiv="x-dns-prefetch-control" content="on">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="origin-when-cross-origin" />
+
+<meta name="description" content="http://www.cnblogs.com/52fhy/p/5638571.html dockerfile 剖析 ENV ENV 的就是给docker来设置变量的. 基本格式为: ENV name=jimmy age=18 修改环境变量 ENV PATH=$PATH:/user/bin 而通过 ENV 我们就可以完美的告诉docker 从这里开始,你就不能">
+
+<meta name="author" content=rinetd>
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+
+  
+
+
+
+
+
+
+
+
+<link rel="canonical" href="../../../devops/docker/dockerfile/" />
+
+<link rel="icon" href="../../../public/favicon.ico"/>
+<link rel="shortcut icon" href="../../../public/favicon.ico"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../../../front/css/main.min.css" >
+
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+
+
+
+
+
+<link rel="stylesheet" href="//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css" />
+
+</head>
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+    <div id="wrapper">
+        <header id="header" class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent">
+    
+  <nav class="nav-container group mobile-menu mobile-sticky " id="nav-mobile" data-menu-id="header-1">
+    <div class="mobile-title-logo-in-header">
+        <p class="site-title">
+            <a class="custom-logo-link" href="" rel="home" title="Pytool | Home ">
+                
+                Pytool
+            </a>
+        </p>
+    </div>
+    <div class="ham__navbar-toggler-two collapsed" title="Menu" aria-expanded="false">
+        <div class="ham__navbar-span-wrapper">
+            <span class="line line-1"></span>
+            <span class="line line-2"></span>
+            <span class="line line-3"></span>
+        </div>
+    </div>
+    <div class="nav-text">Linux命令 Dockerfile</div>
+    <div class="nav-wrap container">
+        <ul class="nav container-inner group mobile-search">
+            <li>
+                <form method="get" class="searchform themeform" action="https://demo-hueman.presscustomizr.com/">
+                    <div>
+                        <input type="text" class="search" name="s" onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"/>
+                    </div>
+                </form>
+            </li>
+        </ul>
+        <ul id="menu-topbar-menu" class="nav container-inner group">
+        
+            <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a href=" ">Home</a>
+            </li>
+
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../ai/">Ai </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../ai/math/">Math</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../language/">Language </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/python/">Python</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/python/scrapy/">Scrapy</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/golang/">Golang</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/golang/hugo/">Hugo</a>
+                                                
+                                            </li>                
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/golang/goher/">Goher</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/java/">Java</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/java/hadoop/">Hadoop</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/awesome/">Awesome</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/php/">Php</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/php/magento/">Magento</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/android/">Android</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../macos/">Macos </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../hardware/">Hardware </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hardware/rtmp/">Rtmp</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../linux/">Linux </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/cmd/">Cmd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/shell/">Shell</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/nginx/">Nginx</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/ip/">Ip</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/git/">Git</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/haproxy/">Haproxy</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/lvs/">Lvs</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../frontend/">Frontend </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../frontend/css/">Css</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../frontend/vue/">Vue</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../devops/">Devops </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/docker/">Docker</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/elk/">Elk</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/ansible/">Ansible</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/prometheus/">Prometheus</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/drone/">Drone</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/kubernetes/">Kubernetes</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/oauth2/">OAuth2</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/etcd/">Etcd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/apidoc/">Apidoc</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../database/">Database </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../database/mysql/">Mysql</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../database/mongo/">Mongo</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../database/redis/">Redis</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../windows/">Windows </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../hacker/">Hacker </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/01-info-gather/">01-Info-Gather</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/02-spoof/">02-Spoof</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/shells/">Shells</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../work/">Work </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../weixin/">Weixin </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../edit/">Edit </a>
+                
+                        
+
+              </li>
+            
+        
+        
+        <li class="item ">
+                <a class="text" href="../../../series/">series</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../categories/">categories</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../tags/">tags</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../me/">about</a>
+        </li>
+
+        
+        </ul>
+    </div>
+  </nav>
+    
+  <nav class="nav-container group desktop-menu desktop-sticky " id="nav-topbar" data-menu-id="header-2">
+    <div class="nav-text">Linux命令 Dockerfile</div>
+    
+    <div class="topbar-toggle-down">
+        <i class="fas fa-angle-double-down" aria-hidden="true" data-toggle="down" title="Expand menu"></i>
+        <i class="fas fa-angle-double-up" aria-hidden="true" data-toggle="up" title="Collapse menu"></i>
+    </div>
+
+    
+    <div class="nav-wrap container">
+      <ul id="menu-topbar-menu-1" class="nav container-inner group">
+        <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a href="../../../">Home</a></li>
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../ai/">Ai </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../ai/math/">Math</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../language/">Language </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/python/">Python</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/golang/">Golang</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/java/">Java</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/awesome/">Awesome</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/php/">Php</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/android/">Android</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../macos/">Macos </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../hardware/">Hardware </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hardware/rtmp/">Rtmp</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../linux/">Linux </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/cmd/">Cmd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/shell/">Shell</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/nginx/">Nginx</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/ip/">Ip</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/git/">Git</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/haproxy/">Haproxy</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/lvs/">Lvs</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../post/">Post </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/software/">Software</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/english/">English</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/seo/">Seo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/life/">Life</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/wiki/">Wiki</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/basic/">Basic</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/reship/">Reship</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../frontend/">Frontend </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../frontend/css/">Css</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../frontend/vue/">Vue</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../devops/">Devops </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/docker/">Docker</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/elk/">Elk</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/ansible/">Ansible</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/prometheus/">Prometheus</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/drone/">Drone</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/kubernetes/">Kubernetes</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/oauth2/">OAuth2</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/etcd/">Etcd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/apidoc/">Apidoc</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../database/">Database </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../database/mysql/">Mysql</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../database/mongo/">Mongo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../database/redis/">Redis</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../windows/">Windows </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../hacker/">Hacker </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/01-info-gather/">01-Info-Gather</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/02-spoof/">02-Spoof</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/shells/">Shells</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../work/">Work </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../weixin/">Weixin </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../edit/">Edit </a>
+                
+                  
+              </li>
+                    
+        
+       
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../series/">series</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../categories/">categories</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../tags/">tags</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../me/">about</a>
+        </li>
+        
+
+        
+      </ul>
+      
+    </div>
+    
+    
+  
+  </nav>
+  
+
+  
+  
+
+</header>
+
+        <div class="container" id="page">
+            <div class="container-inner">
+                <div class="main">
+                    <div class="main-inner group">
+                        <div class="content">
+    
+        <div class="pad group page-title">
+            <ul class="meta-single group">
+                
+                <li><span class="fa fa-folder-open"></span></li>
+                
+                <li class="category">
+                <a href="../../../categories/docker/" rel="category tag">docker</a>
+                </li>
+                
+            </ul>
+        </div>
+
+        
+        <div class="pad group">
+            <article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list">
+                <div class="post-inner group">
+                        <h1 class="post-title">Linux命令 Dockerfile</h1>
+
+                        <p class="post-byline">
+                          by  · 2016年03月05日 · 15408 Words ·
+                          ~31min reading time |
+                          
+                          
+                          <a href="https://gitlab.com/rinetd/blog/edit/master/devops/docker/Dockerfile.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                        </p>
+                    <div class="clear"></div>
+                    <div class="entry themeform">
+                        <div class="entry-inner">
+                            
+                            </br>
+                            原文链接：<a target="_blank" href="../../../devops/docker/dockerfile/"> Linux命令 Dockerfile</a> 
+                            </p>
+                            
+
+<p><a href="http://www.cnblogs.com/52fhy/p/5638571.html" target="_blank">http://www.cnblogs.com/52fhy/p/5638571.html</a><br />
+<a href="http://www.tuicool.com/articles/fUjyaq" target="_blank">dockerfile 剖析</a></p>
+
+<h1 id="env-env-的就是给docker来设置变量的-基本格式为">ENV ENV 的就是给docker来设置变量的. 基本格式为:</h1>
+
+<p>ENV name=jimmy age=18</p>
+
+<h1 id="修改环境变量">修改环境变量</h1>
+
+<p>ENV PATH=$PATH:/user/bin<br />
+而通过 ENV 我们就可以完美的告诉docker 从这里开始,你就不能使用cache,自己的重新来.( 因为,每条指令都会生成layer并且有独立的id,一旦你更改的ENV,那么从该指令开始id都会发生改变,也就匹配不到缓存了 )</p>
+
+<h1 id="arg-指定构建过程中使用的环境变">ARG 指定构建过程中使用的环境变</h1>
+
+<p>添加个人信息LABEL</p>
+
+<p>顾名思义,使用 LABEL 就是给你的image打上独一无二的标签.让别人能够了解,这个Image是属于你的. 又或是,用来提醒你自己,这个image现在处于哪一个版本状态.</p>
+
+<h1 id="设置自己的label">设置自己的label</h1>
+
+<p>LABEL owner=&quot;jimmy&quot; version=&quot;0.0.1&quot;</p>
+
+<h1 id="在dockerfile定义了默认变量">在dockerfile定义了默认变量</h1>
+
+<p>ARG user=jimy</p>
+
+<h1 id="在运行时-进行手动替换">在运行时,进行手动替换</h1>
+
+<p>docker build --build-arg user=sam -t jimmy/demo .</p>
+
+<p>上面说了ARG和ENV比较类似,不过,里面的区别还是有的. 即, ARG只能用在 docker build 的阶段, 并且不会被保存在 image 中,这就是和ENV的区别.</p>
+
+<p>##############Dockerfile#########################</p>
+
+<h1 id="容器需要开放ssh-22端口">容器需要开放SSH 22端口</h1>
+
+<p>EXPOSE 22<br />
+!!!<br />
+ENTRYPOINT，表示镜像在初始化时需要执行的命令，不可被重写覆盖，需谨记<br />
+CMD，表示镜像运行默认参数，可被重写覆盖<br />
+ENTRYPOINT/CMD都只能在文件中存在一次，并且最后一个生效 多个存在，只有最后一个生效，其它无效！<br />
+需要初始化运行多个命令，彼此之间可以使用 &amp;&amp; 隔开，但最后一个须要为无限运行的命令，需切记！</p>
+
+<p>ENTRYPOINT/CMD，一般两者可以配合使用，比如：</p>
+
+<p>ENTRYPOINT [&quot;/usr/sbin/sshd&quot;]<br />
+CMD [&quot;-D&quot;]</p>
+
+<p>在Docker　daemon模式下，无论你是使用ENTRYPOINT，还是CMD，最后的命令，一定要是当前进程需要一直运行的，才能够防容器退出。</p>
+
+<p>以下无效方式：</p>
+
+<p>ENTRYPOINT service tomcat7 start #运行几秒钟之后，容器就会退出<br />
+CMD service tomcat7 start #运行几秒钟之后，容器就会退出</p>
+
+<p>这样有效：</p>
+
+<p>ENTRYPOINT service tomcat7 start &amp;&amp; tail -f /var/lib/tomcat7/logs/catalina.out</p>
+
+<h1 id="或者">或者</h1>
+
+<p>CMD service tomcat7 start &amp;&amp; tail -f /var/lib/tomcat7/logs/catalina.out</p>
+
+<p>这样也有效：</p>
+
+<p>ENTRYPOINT [&quot;/usr/sbin/sshd&quot;]<br />
+CMD [&quot;-D&quot;]</p>
+
+<p>Capabilities的主要思想在于分割root用户的特权，即将root的特权分割成不同的能力，每种能力代表一定的特权操作。例如：能力CAP_SYS_MODULE表示用户能够加载(或卸载)内核模块的特权操作，而CAP_SETUID表示用户能够修改进程用户身份的特权操作。在Capbilities中系统将根据进程拥有的能力来进行特权操作的访问控制。</p>
+
+<pre><code>在Capilities中，只有进程和可执行文件才具有能力，每个进程拥有三组能力集，分别称为cap_effective, cap_inheritable, cap_permitted(分别简记为:pE,pI,pP)，其中cap_permitted表示进程所拥有的最大能力集；cap_effective表示进程当前可用的能力集，可以看做是cap_permitted的一个子集；而cap_inheitable则表示进程可以传递给其子进程的能力集。系统根据进程的cap_effective能力集进行访问控制，cap_effective为cap_permitted的子集，进程可以通过取消cap_effective中的某些能力来放弃进程的一些特权。可执行文件也拥有三组能力集，对应于进程的三组能力集，分别称为cap_effective, cap_allowed 和 cap_forced（分别简记为fE,fI,fP），其中，cap_allowed表示程序运行时可从原进程的cap_inheritable中集成的能力集，cap_forced表示运行文件时必须拥有才能完成其服务的能力集；而cap_effective则表示文件开始运行时可以使用的能力。
+</code></pre>
+
+<p>（一）Linux内核中Capabilities的实现机制</p>
+
+<pre><code> Linux内核从2.2版本开始，就加进的Capabilities的概念与机制，并随着版本升高逐步得到改进。在linux中，root权限被分割成一下29中能力：
+</code></pre>
+
+<p>CAP_CHOWN:修改文件属主的权限<br />
+CAP_DAC_OVERRIDE:忽略文件的DAC访问限制<br />
+CAP_DAC_READ_SEARCH:忽略文件读及目录搜索的DAC访问限制<br />
+CAP_FOWNER：忽略文件属主ID必须和进程用户ID相匹配的限制<br />
+CAP_FSETID:允许设置文件的setuid位<br />
+CAP_KILL:允许对不属于自己的进程发送信号<br />
+CAP_SETGID:允许改变进程的组ID<br />
+CAP_SETUID:允许改变进程的用户ID<br />
+CAP_SETPCAP:允许向其他进程转移能力以及删除其他进程的能力<br />
+CAP_LINUX_IMMUTABLE:允许修改文件的IMMUTABLE和APPEND属性标志<br />
+CAP_NET_BIND_SERVICE:允许绑定到小于1024的端口<br />
+CAP_NET_BROADCAST:允许网络广播和多播访问<br />
+CAP_NET_ADMIN:允许执行网络管理任务<br />
+CAP_NET_RAW:允许使用原始套接字<br />
+CAP_IPC_LOCK:允许锁定共享内存片段<br />
+CAP_IPC_OWNER:忽略IPC所有权检查<br />
+CAP_SYS_MODULE:允许插入和删除内核模块<br />
+CAP_SYS_RAWIO:允许直接访问/devport,/dev/mem,/dev/kmem及原始块设备<br />
+CAP_SYS_CHROOT:允许使用chroot()系统调用<br />
+CAP_SYS_PTRACE:允许跟踪任何进程<br />
+CAP_SYS_PACCT:允许执行进程的BSD式审计<br />
+CAP_SYS_ADMIN:允许执行系统管理任务，如加载或卸载文件系统、设置磁盘配额等<br />
+CAP_SYS_BOOT:允许重新启动系统<br />
+CAP_SYS_NICE:允许提升优先级及设置其他进程的优先级<br />
+CAP_SYS_RESOURCE:忽略资源限制<br />
+CAP_SYS_TIME:允许改变系统时钟<br />
+CAP_SYS_TTY_CONFIG:允许配置TTY设备<br />
+CAP_MKNOD:允许使用mknod()系统调用<br />
+CAP_LEASE:允许修改文件锁的FL_LEASE标志<br />
+################################################################################</p>
+
+<h2 id="docker-搭建android开发环境">docker 搭建Android开发环境</h2>
+
+<p>docker pull ubuntu:10.04<br />
+docker run -it -p 8080:80 -v /media/ubuntu/sdb2/Android:/mnt -w /mnt ubuntu:10.04 /bin/bash</p>
+
+<p>docker ps -a<br />
+docker start 8c055f32bd33<br />
+docker attach 8c055f32bd33<br />
+sudo vi /etc/apt/source.list<br />
+sed -i 's/httpredir.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list</p>
+
+<p>sudo sed -i 's/archive.ubuntu.com/mirrors.sohu.com/g' /etc/apt/sources.list<br />
+sudo sed -i 's/archive.ubuntu.com/mirrors.163.com/g' /etc/apt/sources.list<br />
+sudo sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list<br />
+sudo sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list<br />
+sudo sed -i 's/archive.ubuntu.com/mirrors.aliyuncs.com/g' /etc/apt/sources.list #内网使用</p>
+
+<pre><code>#网易
 deb http://mirrors.163.com/ubuntu/ lucid main universe restricted multiverse
 deb-src http://mirrors.163.com/ubuntu/ lucid main universe restricted multiverse
 deb http://mirrors.163.com/ubuntu/ lucid-security universe main multiverse restricted
@@ -13,126 +1199,2752 @@ deb-src http://mirrors.163.com/ubuntu/ lucid-proposed universe main multiverse r
 deb http://mirrors.163.com/ubuntu/ lucid-backports universe main multiverse restricted
 deb-src http://mirrors.163.com/ubuntu/ lucid-backports universe main multiverse restricted
 deb-src http://mirrors.163.com/ubuntu/ lucid-updates universe main multiverse restricted
-</code></pre><p>sudo apt-get update<p>sudo apt-get install gnupg flex bison gperf build-essential<br>zip curl zlib1g-dev libc6-dev lib32ncurses5-dev ia32-libs<br>x11proto-core-dev libx11-dev lib32readline5-dev lib32z-dev<br>libgl1-mesa-dev g++-multilib mingw32 tofrodos python-markdown<br>libxml2-utils xsltproc<p><code>sudo apt-get install software-properties-common</code><br><code>sudo apt-get install python-software-properties</code><br>sudo add-apt-repository ppa:webupd8team/java #添加PPA<br>sudo apt-get update<br>sudo apt-get install oracle-java6-installer #java-6u45<p>sudo docker commit -m=&quot;Android source Complie&quot; -a=&quot;rinetd&quot; ab044db61af2 rinetd/ubuntu:v1<br>docker tag 5db5f8471261 rinetd/ubuntu:devel<br>docker push rinetd/ubuntu<p>###<br>Docker命令参考<br>使用方法: docker [OPTIONS] COMMAND [arg...]<p>一个自给自足的运行时linux容器。<p>选项:<br>--api-enable-cors=false 在远程的API中启用CORS 头。<br>-b, --bridge=&quot;&quot; 附加容器到一个已经存在的网桥上。如果将该选项的值设置为 'none'，则表示不使用用网桥。<br>--bip=&quot;&quot; 设置网桥的IP地址，使用CIIDR标记方式的地址，不兼容 -b选项。<br>-D, --debug=false 启用debug 模式。<br>-d, --daemon=false 启用daemon 模式。<br>--dns=[] 强制Docker使用特定的DNS 服务器。<br>--dns-search=[] 强制 Docker使用特定的DNS 搜索域。<br>-e, --exec-driver=&quot;native&quot; 强制Docker运行时使用特定的exec驱动。<br>--fixed-cidr=&quot;&quot; IPv4子网设置掩码(ex: 10.20.0.0/16)，这个子网必须嵌套于网桥子网内(由-b 或者-bip定义)。<br>-G, --group=&quot;docker&quot; 在使用-H运行为守护进程的情况下，设定分配给运行unix套接字的组，如果设置为'' (空字符)，那么将不会设置组。<br>-g, --graph=&quot;/var/lib/docker&quot; 设定Docker运行时作为根目录的目录路径。<br>-H, --host=[] 设置用于在守护进程模式下或者是在客户端模式下连接的套接字，可以是tcp://host:port, unix:///path/to/socket, fd://* or fd://socketfd中的一个或者多。<br>--icc=true 启用容器间通信。<br>--insecure-registry=[] 对于特定注册启用非安全通信(对于HTTPS没有证书校验，启用HTTP启用fallback) (例如, localhost:5000 or 10.20.0.0/16)。<br>--ip=0.0.0.0 在容器绑定端口时使用的默认IP地址。<br>--ip-forward=true 启用net.ipv4.ip_forward，也就是开启路由转发功能。<br>--ip-masq=true 对于网桥的IP段启用ip伪装。<br>--iptables=true 启用Docker增加的iptables规则。<br>--mtu=0 设置容器网络的MTU。如果没有提供设置的值：默认将它的值设置为路由器的MTU，如果默认的路由器无效那么就设置为1500。<br>-p, --pidfile=&quot;/var/run/docker.pid&quot; 设置守护进程PID文件的路径。<br>--registry-mirror=[] 指定优先使用的Docker registry镜像。<br>-s, --storage-driver=&quot;&quot; 强制Docker运行时使用特定的存储驱动器。<br>--selinux-enabled=false 启用对selinux机制的支持。SELinux目前不支持BTRFS存储驱动器。<br>--storage-opt=[] 设置存储驱动器选项。<br>--tls=false 使用TLS，暗示使用tls-verify标志。<br>--tlscacert=&quot;/root/.docker/ca.pem&quot; 设置ca证书的路径。远程访问仅信任使用由CA签名的证书。<br>--tlscert=&quot;/root/.docker/cert.pem&quot; 设置TLS 证书的路径。<br>--tlskey=&quot;/root/.docker/key.pem&quot; 设置TLS key 文件的路径。<br>--tlsverify=false 使用TLS校验远程登录(daemon:校验客户端, client: 校验守护进程)<br>-v, --version=false 显示版本信息并退出。<p>命令:<br>attach 附加到一个运行的容器上。<br>build 从Dockerfile构建镜像。<br>commit 从改变后的容器创建一个新的镜像<br>cp 从容器文件系统拷贝文件/目录到宿主机路径。<br>create 创建一个新的容器。<br>diff 检查容器文件系统的改变。<br>events 从Get real time events from the server<br>exec 在已经存在的容器上运行一个命令。<br>export Stream the contents of a container as a tar archive<br>history 显示镜像的历史。<br>images 列举镜像。<br>import 从一个tar包的内容创建一个新的文件系统镜像。<br>info 显示系统层面的信息。<br>inspect 查看容器的底层信息。<br>kill 杀掉一个正在运行中的容器。<br>load 从tar文件中载入一个镜像。<br>login 注册或者登录到Docker registry 服务器。<br>logout 从Docker registry 服务器退出。<br>logs 获取容器的日志信息。<br>port Lookup the public-facing port that is NAT-ed to PRIVATE_PORT<br>pause 停止容器内所有的进程。<br>ps 列出容器。<br>pull 从Docker registry 服务器拉回一个镜像或者一个仓库。<br>push 将一个镜像或者一个仓库推向Docker registry 服务器。<br>restart 重新启动一个运行中的容器。<br>rm 移除一个或者多个容器。<br>rmi 移除一个或者多个镜像。<br>run 在新的容器中运行一个命令。<br>save 将镜像保存为一个tar文档。<br>search 在Docker Hub上搜索一个镜像。<br>start 启动一个停止的容器。<br>stop S停止一个运行中的容器。<br>tag Tag an image into a repository<br>top 查看容器中运行的进程。<br>unpause 取消暂停的容器。<br>version 显示Docker 的版本信息。<br>wait Block until a container stops, then print its exit code<p>docker attach<p>使用方法: docker attach [OPTIONS] CONTAINER<p>附加到一个正在运行的容器上。<p>--no-stdin=false 不附加STDIN。<br>--sig-proxy=true 代理所有接收到的信号到进程(即使是非TTY模式)。SIGCHLD, SIGKILL, 或者 SIGSTOP 不会被代理。<p>docker build<p>使用方法: docker build [OPTIONS] PATH | URL | -<p>在指定的PATH源代码下构建新的镜像。<p>--force-rm=false 总是立即移除容器，即使是在成功创建之后。<br>--no-cache=false 在构建镜像时不使用缓存。<br>-q, --quiet=false 抑制由容器生成详细输出。<br>--rm=true 成功创建容器之后就立即删除。<br>-t, --tag=&quot;&quot; 指定仓库名字(和一个可选的标签)，在构建成功的镜像结果中应用。<p>docker commit<p>使用方法: docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]<p>从有改变的容器上创建一个新的镜像。<p>-a, --author=&quot;&quot; 作者 (例如 &quot;John Hannibal Smith <a href=mailto:hannibal@a-team.com target=_blank>hannibal@a-team.com</a>&quot;<br>-m, --message=&quot;&quot; 提交信息。<br>-p, --pause=true 在提交的过程中暂停容器。<p>docker cp<p>使用方法: docker cp CONTAINERATH HOSTPATH<p>从PATH 拷贝文件/目录到 HOSTPATH。<p>docker create<br>使用方法: docker create [OPTIONS] IMAGE [COMMAND] [ARG...]<p>创建一个新容器。<p>-a, --attach=[] 附加到STDIN, STDOUT 或者STDERR。<br>--add-host=[] 自定义一个主机到IP的映射(host:ip)。<br>-c, --cpu-shares=0 设定CPU共享(相对权重)。<br>--cap-add=[] 添加Linux capabilities。<br>--cap-drop=[] 移除 Linux capabilities。<br>--cidfile=&quot;&quot; 写容器ID的文件。<br>--cpuset=&quot;&quot; 设置使用CPU的数量(0-3, 0,1)。<br>--device=[] 添加一个主机设备到容器(例如<br>--device=/dev/sdc:/dev/xvdc)<br>--dns=[] 设置自定义DNS 服务器。<br>--dns-search=[] 设置自定义DNS 搜索域。<br>-e, --env=[] 设置环境变量。<br>--entrypoint=&quot;&quot; 覆盖掉镜像中默认的ENTRYPOINT。<br>--env-file=[] 读以逗号分隔的环境变量文件(文件中的行以逗号分隔，每一行都是环境变量)。<br>--expose=[] 将一个没有发布的端口暴露给宿主机。<br>-h, --hostname=&quot;&quot; 容器主机名字。<br>-i, --interactive=false 保持 STDIN 打开，即使没有被附加。<br>--link=[] 以name:alias格式添加连接到其它容器上。<br>--lxc-conf=[] (lxc exec-driver only) 添加自定义lxc 选项<br>--lxc-conf=&quot;lxc.cgroup.cpuset.cpus = 0,1&quot;<br>-m, --memory=&quot;&quot; 内存限制 (格式: <number><optional unit>,<br>unit = b, k, m or g)<br>--name=&quot;&quot; 指定容器的名字。<br>--net=&quot;bridge&quot; 为容器设置网络模式，<pre><code>                           'bridge': 在docker bridge桥上创建一个新的网络栈。
+</code></pre>
+
+<p>sudo apt-get update</p>
+
+<p>sudo apt-get install gnupg flex bison gperf build-essential <br />
+  zip curl zlib1g-dev libc6-dev lib32ncurses5-dev ia32-libs <br />
+  x11proto-core-dev libx11-dev lib32readline5-dev lib32z-dev <br />
+  libgl1-mesa-dev g++-multilib mingw32 tofrodos python-markdown <br />
+  libxml2-utils xsltproc</p>
+
+<p><code>sudo apt-get install software-properties-common</code><br />
+<code>sudo apt-get install python-software-properties</code><br />
+  sudo add-apt-repository ppa:webupd8team/java    #添加PPA<br />
+  sudo apt-get update<br />
+  sudo apt-get install oracle-java6-installer     #java-6u45</p>
+
+<p>sudo docker commit -m=&quot;Android source Complie&quot; -a=&quot;rinetd&quot; ab044db61af2 rinetd/ubuntu:v1<br />
+docker tag 5db5f8471261 rinetd/ubuntu:devel<br />
+docker push rinetd/ubuntu</p>
+
+<p>###<br />
+Docker命令参考<br />
+使用方法: docker [OPTIONS] COMMAND [arg...]</p>
+
+<p>一个自给自足的运行时linux容器。</p>
+
+<p>选项:<br />
+  --api-enable-cors=false              在远程的API中启用CORS 头。<br />
+  -b, --bridge=&quot;&quot;                      附加容器到一个已经存在的网桥上。如果将该选项的值设置为 'none'，则表示不使用用网桥。<br />
+  --bip=&quot;&quot;                             设置网桥的IP地址，使用CIIDR标记方式的地址，不兼容 -b选项。<br />
+  -D, --debug=false                    启用debug 模式。<br />
+  -d, --daemon=false                   启用daemon 模式。<br />
+  --dns=[]                             强制Docker使用特定的DNS 服务器。<br />
+  --dns-search=[]                      强制 Docker使用特定的DNS 搜索域。<br />
+  -e, --exec-driver=&quot;native&quot;           强制Docker运行时使用特定的exec驱动。<br />
+  --fixed-cidr=&quot;&quot;                      IPv4子网设置掩码(ex: 10.20.0.0/16)，这个子网必须嵌套于网桥子网内(由-b 或者-bip定义)。<br />
+  -G, --group=&quot;docker&quot;                 在使用-H运行为守护进程的情况下，设定分配给运行unix套接字的组，如果设置为'' (空字符)，那么将不会设置组。<br />
+  -g, --graph=&quot;/var/lib/docker&quot;        设定Docker运行时作为根目录的目录路径。<br />
+  -H, --host=[]                        设置用于在守护进程模式下或者是在客户端模式下连接的套接字，可以是tcp://host:port, unix:///path/to/socket, fd://* or fd://socketfd中的一个或者多。<br />
+  --icc=true                           启用容器间通信。<br />
+  --insecure-registry=[]               对于特定注册启用非安全通信(对于HTTPS没有证书校验，启用HTTP启用fallback) (例如, localhost:5000 or 10.20.0.0/16)。<br />
+  --ip=0.0.0.0                         在容器绑定端口时使用的默认IP地址。<br />
+  --ip-forward=true                    启用net.ipv4.ip_forward，也就是开启路由转发功能。<br />
+  --ip-masq=true                       对于网桥的IP段启用ip伪装。<br />
+  --iptables=true                      启用Docker增加的iptables规则。<br />
+  --mtu=0                              设置容器网络的MTU。如果没有提供设置的值：默认将它的值设置为路由器的MTU，如果默认的路由器无效那么就设置为1500。<br />
+  -p, --pidfile=&quot;/var/run/docker.pid&quot;  设置守护进程PID文件的路径。<br />
+  --registry-mirror=[]                 指定优先使用的Docker registry镜像。<br />
+  -s, --storage-driver=&quot;&quot;              强制Docker运行时使用特定的存储驱动器。<br />
+  --selinux-enabled=false              启用对selinux机制的支持。SELinux目前不支持BTRFS存储驱动器。<br />
+  --storage-opt=[]                     设置存储驱动器选项。<br />
+  --tls=false                          使用TLS，暗示使用tls-verify标志。<br />
+  --tlscacert=&quot;/root/.docker/ca.pem&quot;   设置ca证书的路径。远程访问仅信任使用由CA签名的证书。<br />
+  --tlscert=&quot;/root/.docker/cert.pem&quot;   设置TLS 证书的路径。<br />
+  --tlskey=&quot;/root/.docker/key.pem&quot;     设置TLS key 文件的路径。<br />
+  --tlsverify=false                    使用TLS校验远程登录(daemon:校验客户端, client: 校验守护进程)<br />
+  -v, --version=false                  显示版本信息并退出。</p>
+
+<p>命令:<br />
+attach    附加到一个运行的容器上。<br />
+build     从Dockerfile构建镜像。<br />
+commit    从改变后的容器创建一个新的镜像<br />
+cp        从容器文件系统拷贝文件/目录到宿主机路径。<br />
+create    创建一个新的容器。<br />
+diff      检查容器文件系统的改变。<br />
+events    从Get real time events from the server<br />
+exec      在已经存在的容器上运行一个命令。<br />
+export    Stream the contents of a container as a tar archive<br />
+history   显示镜像的历史。<br />
+images    列举镜像。<br />
+import    从一个tar包的内容创建一个新的文件系统镜像。<br />
+info      显示系统层面的信息。<br />
+inspect   查看容器的底层信息。<br />
+kill      杀掉一个正在运行中的容器。<br />
+load      从tar文件中载入一个镜像。<br />
+login     注册或者登录到Docker registry 服务器。<br />
+logout    从Docker registry 服务器退出。<br />
+logs      获取容器的日志信息。<br />
+port      Lookup the public-facing port that is NAT-ed to PRIVATE_PORT<br />
+pause     停止容器内所有的进程。<br />
+ps        列出容器。<br />
+pull      从Docker registry 服务器拉回一个镜像或者一个仓库。<br />
+push      将一个镜像或者一个仓库推向Docker registry 服务器。<br />
+restart   重新启动一个运行中的容器。<br />
+rm        移除一个或者多个容器。<br />
+rmi       移除一个或者多个镜像。<br />
+run       在新的容器中运行一个命令。<br />
+save      将镜像保存为一个tar文档。<br />
+search    在Docker Hub上搜索一个镜像。<br />
+start     启动一个停止的容器。<br />
+stop      S停止一个运行中的容器。<br />
+tag       Tag an image into a repository<br />
+top       查看容器中运行的进程。<br />
+unpause   取消暂停的容器。<br />
+version   显示Docker 的版本信息。<br />
+wait      Block until a container stops, then print its exit code</p>
+
+<p>docker attach</p>
+
+<p>使用方法: docker attach [OPTIONS] CONTAINER</p>
+
+<p>附加到一个正在运行的容器上。</p>
+
+<p>--no-stdin=false    不附加STDIN。<br />
+  --sig-proxy=true    代理所有接收到的信号到进程(即使是非TTY模式)。SIGCHLD, SIGKILL, 或者 SIGSTOP 不会被代理。</p>
+
+<p>docker build</p>
+
+<p>使用方法: docker build [OPTIONS] PATH | URL | -</p>
+
+<p>在指定的PATH源代码下构建新的镜像。</p>
+
+<p>--force-rm=false     总是立即移除容器，即使是在成功创建之后。<br />
+  --no-cache=false     在构建镜像时不使用缓存。<br />
+  -q, --quiet=false    抑制由容器生成详细输出。<br />
+  --rm=true            成功创建容器之后就立即删除。<br />
+  -t, --tag=&quot;&quot;         指定仓库名字(和一个可选的标签)，在构建成功的镜像结果中应用。</p>
+
+<p>docker commit</p>
+
+<p>使用方法: docker commit [OPTIONS] CONTAINER [REPOSITORY[:TAG]]</p>
+
+<p>从有改变的容器上创建一个新的镜像。</p>
+
+<p>-a, --author=&quot;&quot;     作者 (例如 &quot;John Hannibal Smith <a href="mailto:hannibal@a-team.com" target="_blank">hannibal@a-team.com</a>&quot;<br />
+  -m, --message=&quot;&quot;    提交信息。<br />
+  -p, --pause=true    在提交的过程中暂停容器。</p>
+
+<p>docker cp</p>
+
+<p>使用方法: docker cp CONTAINERATH HOSTPATH</p>
+
+<p>从PATH 拷贝文件/目录到 HOSTPATH。</p>
+
+<p>docker create<br />
+使用方法: docker create [OPTIONS] IMAGE [COMMAND] [ARG...]</p>
+
+<p>创建一个新容器。</p>
+
+<p>-a, --attach=[]            附加到STDIN, STDOUT 或者STDERR。<br />
+  --add-host=[]              自定义一个主机到IP的映射(host:ip)。<br />
+  -c, --cpu-shares=0         设定CPU共享(相对权重)。<br />
+  --cap-add=[]               添加Linux capabilities。<br />
+  --cap-drop=[]              移除 Linux capabilities。<br />
+  --cidfile=&quot;&quot;               写容器ID的文件。<br />
+  --cpuset=&quot;&quot;                设置使用CPU的数量(0-3, 0,1)。<br />
+  --device=[]                添加一个主机设备到容器(例如<br />
+--device=/dev/sdc:/dev/xvdc)<br />
+  --dns=[]                   设置自定义DNS 服务器。<br />
+  --dns-search=[]            设置自定义DNS 搜索域。<br />
+  -e, --env=[]               设置环境变量。<br />
+  --entrypoint=&quot;&quot;            覆盖掉镜像中默认的ENTRYPOINT。<br />
+  --env-file=[]              读以逗号分隔的环境变量文件(文件中的行以逗号分隔，每一行都是环境变量)。<br />
+  --expose=[]                将一个没有发布的端口暴露给宿主机。<br />
+  -h, --hostname=&quot;&quot;          容器主机名字。<br />
+  -i, --interactive=false    保持 STDIN 打开，即使没有被附加。<br />
+  --link=[]                  以name:alias格式添加连接到其它容器上。<br />
+  --lxc-conf=[]              (lxc exec-driver only) 添加自定义lxc 选项<br />
+--lxc-conf=&quot;lxc.cgroup.cpuset.cpus = 0,1&quot;<br />
+  -m, --memory=&quot;&quot;            内存限制 (格式: <number><optional unit>,<br />
+unit = b, k, m or g)<br />
+  --name=&quot;&quot;                  指定容器的名字。<br />
+  --net=&quot;bridge&quot;             为容器设置网络模式，</p>
+
+<pre><code>                           'bridge': 在docker bridge桥上创建一个新的网络栈。
                              'none': 该容器没有网络。
               'container:&lt;name|id&gt;': 重新使用其它容器的网络栈。
                              'host': 在该容器内使用host网络堆栈。注意：host模式对宿主机上的本地文件系统给定了容器全部的访问权限，包括D-bus，因此容器被认为是不安全的。
-</code></pre><p>-P, --publish-all=false 发布所有的暴露端口到宿主机接口上。<br>-p, --publish=[] 发布容器的一个端口到宿主机接口上。<pre><code>                         格式：
-</code></pre><p>ip:hostPort:containerPort<br>ip::containerPort<br>hostPort:containerPort<br>containerPort<pre><code>                           (使用 'docker port'查看实际的映射)
-</code></pre><p>--privileged=false 给这个容器扩展权限。<br>--restart=&quot;&quot; 当容器退出时重启策略将会被应用，选项值有：<br>(no, on-failure[:max-retry], always)<br>--security-opt=[] 安全选项。<br>-t, --tty=false 分配伪终端。<br>-u, --user=&quot;&quot; 用户名或者UID。<br>-v, --volume=[] 绑定挂载卷(例如，从宿主机挂接：-v /host:/container，从Docker挂接：-v /container)<br>--volumes-from=[] 从指定的容器挂载卷。<br>-w, --workdir=&quot;&quot; 指定容器内的工作目录。<p>docker diff<p>使用方法: docker diff CONTAINER<p>查看容器内文件系统的变化。<p>docker events<p>使用方法: docker events [OPTIONS]<p>从服务器上获得实时事件。<br>--since=&quot;&quot; 从指定的时间戳后显示所有事件。<br>--until=&quot;&quot; 流水时间显示到指定的时间为止。<p>docker exec<p>使用方法: docker exec [OPTIONS] CONTAINER COMMAND [ARG...]<p>在已经存在的容器内运行一个命令。<p>-d, --detach=false 分离模式: 在后台运行<br>-i, --interactive=false 即使没有附加也保持STDIN 打开<br>-t, --tty=false 分配一个伪终端<p>docker export<p>使用方法: docker export CONTAINER<p>将文件系统作为一个tar归档文件导出到STDOUT。<p>docker info<p>使用方法: docker info<p>显示系统级别的信息。<p>docker history<p>使用方法: docker history [OPTIONS] IMAGE<p>显示镜像的历史。<p>--no-trunc=false 不要截断输出。<br>-q, --quiet=false 只显示数字ID。<p>docker images<p>使用方法: docker images [OPTIONS] [NAME]<p>列出镜像。<p>-a, --all=false 显示所有镜像(默认情况下过滤掉中间层镜像)。<br>-f, --filter=[] 提供过滤值 (例如. 'dangling=true')<br>--no-trunc=false 不要截断输出。<br>-q, --quiet=false 只显示数字ID。<p>docker import<p>使用方法: docker import URL|- [REPOSITORY[:TAG]]<p>创建一个空的文件系统镜像，并且将压缩包(.tar, .tar.gz, .tgz, .bzip, .tar.xz, .txz)内容输入到其中。<p>docker inspect<p>使用方法: docker inspect [OPTIONS] CONTAINER|IMAGE [CONTAINER|IMAGE...]<p>查看容器或者镜像的低级信息。<p>-f, --format=&quot;&quot; 使用给定的模板格式化输出。<p>docker kill<p>使用方法: docker kill [OPTIONS] CONTAINER [CONTAINER...]<p>使用SIGKILL杀掉指定的容器。<p>-s, --signal=&quot;KILL&quot; 向容器发送的信号。<p>docker load<p>使用方法: docker load [OPTIONS]<p>从STDIN上载入tar包作为镜像。<p>-i, --input=&quot;&quot; 从tar文件，而不是STDIN读取。<p>docker login<p>使用方法: docker login [OPTIONS] [SERVER]<p>注册或者登录到一个Docker服务器，如果没有指定服务器，那么<a href=https://index.docker.io/v1/将会作为默认值。 target=_blank>https://index.docker.io/v1/将会作为默认值。</a><p>-e, --email=&quot;&quot; 邮件<br>-p, --password=&quot;&quot; 密码<br>-u, --username=&quot;&quot; 用户名<p>docker logout<p>使用方法: docker logout [SERVER]<p>从一个Docker registry退出，如果没有指定服务器，那么<a href=https://index.docker.io/v1/将会作为默认值。 target=_blank>https://index.docker.io/v1/将会作为默认值。</a><p>docker logs<p>使用方法: docker logs [OPTIONS] CONTAINER<p>从容器获取日志。<p>-f, --follow=false 跟踪日志输出。<br>-t, --timestamps=false 显示时间戳。<br>--tail=&quot;all&quot; 输出日志尾部特定行(默认是所有)。<br>docker port<p>使用方法: docker port CONTAINER [PRIVATE_PORT[/PROTO]]<p>列出指定的容器的端口映射，或者查找将PRIVATE_PORT NAT到面向公众的端口。<p>docker pause<br>使用方法: docker pause CONTAINER<p>暂停容器内所有的进程。<p>docker ps<p>使用方法: docker ps [OPTIONS]<p>列出容器。<p>-a, --all=false 显示所有的容器。默认情况下仅显示正在运行的容器。<br>--before=&quot;&quot; 仅显示在ID或者名字之前的容器，包括没有运行的容器。<br>-f, --filter=[] 提供过滤值. 有效的过滤器:<pre><code>                      exited=&lt;int&gt; - 容器退出的代码 &lt;int&gt;
+</code></pre>
+
+<p>-P, --publish-all=false    发布所有的暴露端口到宿主机接口上。<br />
+  -p, --publish=[]           发布容器的一个端口到宿主机接口上。</p>
+
+<pre><code>                         格式：
+</code></pre>
+
+<p>ip:hostPort:containerPort<br />
+ip::containerPort<br />
+hostPort:containerPort<br />
+containerPort</p>
+
+<pre><code>                           (使用 'docker port'查看实际的映射)
+</code></pre>
+
+<p>--privileged=false         给这个容器扩展权限。<br />
+  --restart=&quot;&quot;               当容器退出时重启策略将会被应用，选项值有：<br />
+(no, on-failure[:max-retry], always)<br />
+  --security-opt=[]          安全选项。<br />
+  -t, --tty=false            分配伪终端。<br />
+  -u, --user=&quot;&quot;              用户名或者UID。<br />
+  -v, --volume=[]             绑定挂载卷(例如，从宿主机挂接：-v /host:/container，从Docker挂接：-v /container)<br />
+  --volumes-from=[]          从指定的容器挂载卷。<br />
+  -w, --workdir=&quot;&quot;           指定容器内的工作目录。</p>
+
+<p>docker diff</p>
+
+<p>使用方法: docker diff CONTAINER</p>
+
+<p>查看容器内文件系统的变化。</p>
+
+<p>docker events</p>
+
+<p>使用方法: docker events [OPTIONS]</p>
+
+<p>从服务器上获得实时事件。<br />
+  --since=&quot;&quot;         从指定的时间戳后显示所有事件。<br />
+  --until=&quot;&quot;         流水时间显示到指定的时间为止。</p>
+
+<p>docker exec</p>
+
+<p>使用方法: docker exec [OPTIONS] CONTAINER COMMAND [ARG...]</p>
+
+<p>在已经存在的容器内运行一个命令。</p>
+
+<p>-d, --detach=false         分离模式: 在后台运行<br />
+  -i, --interactive=false    即使没有附加也保持STDIN 打开<br />
+  -t, --tty=false            分配一个伪终端</p>
+
+<p>docker export</p>
+
+<p>使用方法: docker export CONTAINER</p>
+
+<p>将文件系统作为一个tar归档文件导出到STDOUT。</p>
+
+<p>docker info</p>
+
+<p>使用方法: docker info</p>
+
+<p>显示系统级别的信息。</p>
+
+<p>docker history</p>
+
+<p>使用方法: docker history [OPTIONS] IMAGE</p>
+
+<p>显示镜像的历史。</p>
+
+<p>--no-trunc=false     不要截断输出。<br />
+  -q, --quiet=false    只显示数字ID。</p>
+
+<p>docker images</p>
+
+<p>使用方法: docker images [OPTIONS] [NAME]</p>
+
+<p>列出镜像。</p>
+
+<p>-a, --all=false      显示所有镜像(默认情况下过滤掉中间层镜像)。<br />
+  -f, --filter=[]      提供过滤值 (例如. 'dangling=true')<br />
+  --no-trunc=false     不要截断输出。<br />
+  -q, --quiet=false    只显示数字ID。</p>
+
+<p>docker import</p>
+
+<p>使用方法: docker import URL|- [REPOSITORY[:TAG]]</p>
+
+<p>创建一个空的文件系统镜像，并且将压缩包(.tar, .tar.gz, .tgz, .bzip, .tar.xz, .txz)内容输入到其中。</p>
+
+<p>docker inspect</p>
+
+<p>使用方法: docker inspect [OPTIONS] CONTAINER|IMAGE [CONTAINER|IMAGE...]</p>
+
+<p>查看容器或者镜像的低级信息。</p>
+
+<p>-f, --format=&quot;&quot;    使用给定的模板格式化输出。</p>
+
+<p>docker kill</p>
+
+<p>使用方法: docker kill [OPTIONS] CONTAINER [CONTAINER...]</p>
+
+<p>使用SIGKILL杀掉指定的容器。</p>
+
+<p>-s, --signal=&quot;KILL&quot;    向容器发送的信号。</p>
+
+<p>docker load</p>
+
+<p>使用方法: docker load [OPTIONS]</p>
+
+<p>从STDIN上载入tar包作为镜像。</p>
+
+<p>-i, --input=&quot;&quot;     从tar文件，而不是STDIN读取。</p>
+
+<p>docker login</p>
+
+<p>使用方法: docker login [OPTIONS] [SERVER]</p>
+
+<p>注册或者登录到一个Docker服务器，如果没有指定服务器，那么<a href="https://index.docker.io/v1/将会作为默认值。" target="_blank">https://index.docker.io/v1/将会作为默认值。</a></p>
+
+<p>-e, --email=&quot;&quot;       邮件<br />
+  -p, --password=&quot;&quot;    密码<br />
+  -u, --username=&quot;&quot;    用户名</p>
+
+<p>docker logout</p>
+
+<p>使用方法: docker logout [SERVER]</p>
+
+<p>从一个Docker registry退出，如果没有指定服务器，那么<a href="https://index.docker.io/v1/将会作为默认值。" target="_blank">https://index.docker.io/v1/将会作为默认值。</a></p>
+
+<p>docker logs</p>
+
+<p>使用方法: docker logs [OPTIONS] CONTAINER</p>
+
+<p>从容器获取日志。</p>
+
+<p>-f, --follow=false        跟踪日志输出。<br />
+  -t, --timestamps=false    显示时间戳。<br />
+  --tail=&quot;all&quot;              输出日志尾部特定行(默认是所有)。<br />
+docker port</p>
+
+<p>使用方法: docker port CONTAINER [PRIVATE_PORT[/PROTO]]</p>
+
+<p>列出指定的容器的端口映射，或者查找将PRIVATE_PORT NAT到面向公众的端口。</p>
+
+<p>docker pause<br />
+使用方法: docker pause CONTAINER</p>
+
+<p>暂停容器内所有的进程。</p>
+
+<p>docker ps</p>
+
+<p>使用方法: docker ps [OPTIONS]</p>
+
+<p>列出容器。</p>
+
+<p>-a, --all=false       显示所有的容器。默认情况下仅显示正在运行的容器。<br />
+  --before=&quot;&quot;           仅显示在ID或者名字之前的容器，包括没有运行的容器。<br />
+  -f, --filter=[]       提供过滤值. 有效的过滤器:</p>
+
+<pre><code>                      exited=&lt;int&gt; - 容器退出的代码 &lt;int&gt;
                       status=(restarting|running|paused|exited)
-</code></pre><p>-l, --latest=false 仅显示最后一个创建的容器，包括没有运行的。<br>-n=-1 显示n个最后创建的容器，包括没有运行的。<br>--no-trunc=false 不要截断输出。<br>-q, --quiet=false 仅显示数值ID。<br>-s, --size=false 显示大小。<br>--since=&quot;&quot; 仅显示从Id 或者 Name以来的容器，包括没有运行的。<p>docker pull<p>使用方法: docker pull [OPTIONS] NAME[:TAG]<p>从registry上拉回一个镜像或者一个容器。<p>-a, --all-tags=false 在指定的仓库下载所有标记的镜像。<p>docker push<p>使用方法: docker push NAME[:TAG]<p>将一个镜像或者仓库推送到指定的仓库。<p>docker restart<p>使用方法: docker restart [OPTIONS] CONTAINER [CONTAINER...]<p>重新启动一个运行中的容器。<p>-t, --time=10 在杀掉指定容器之前停动的时间，一旦杀掉容器，那么就会重新启动。默认时间为10秒。<p>docker rm<p>使用方法: docker rm [OPTIONS] CONTAINER [CONTAINER...]<p>删除一个或者多个容器。<p>-f, --force=false 强制移除一个正在运行的容器(使用 SIGKILL)<br>-l, --link=false 移除指定的连接，而不是潜在的容器。<br>-v, --volumes=false 移除与容器相关的卷。<p>docker rmi<p>使用方法: docker rmi [OPTIONS] IMAGE [IMAGE...]<p>移除一个或者多个镜像。<p>-f, --force=false 强制移除一个镜像。<br>--no-prune=false 不要删除未标记的父镜像。<p>docker run<p>使用方法: docker run [OPTIONS] IMAGE [COMMAND] [ARG...]<p>在新的容器中运行一个命令。<p>-a, --attach=[] 附加到STDIN, STDOUT 或者 STDERR。<br>--add-host=[] 添加一个自定义的host-to-IP 映射(host:ip)。<br>-c, --cpu-shares=0 CPU shares (相对权重)。<br>--cap-add=[] 添加Linux capabilities。<br>--cap-drop=[] 放弃 Linux capabilities。<br>--cidfile=&quot;&quot; 将容器 ID写入文件。<br>--cpuset=&quot;&quot; 允许使用的CPU数量(0-3, 0,1)<br>-d, --detach=false 分离模式：在后台运行容器，并且显示出新容器的ID。<br>--device=[] 向容器添加一个宿主机设备。<br>(例如， --device=/dev/sdc:/dev/xvdc)<br>--dns=[] 设置自定义的DNS 服务器。<br>--dns-search=[] 设置自定义DNS 搜索域。<br>-e, --env=[] 设置环境变量。<br>--entrypoint=&quot;&quot; 覆盖掉镜像中默认的ENTRYPOINT。<br>--env-file=[] 读以逗号分隔的环境变量文件(文件中的行以逗号分隔，每一行都是环境变量)。<br>--expose=[] 将一个没有发布的端口暴露给宿主机。<br>-h, --hostname=&quot;&quot; 容器主机名字。<br>-i, --interactive=false 保持 STDIN 打开，即使没有被附加。<br>--link=[] 以name:alias格式添加连接到其它容器上。<br>--lxc-conf=[] (lxc exec-driver only) 添加自定义lxc 选项<br>--lxc-conf=&quot;lxc.cgroup.cpuset.cpus = 0,1&quot;<br>-m, --memory=&quot;&quot; 内存限制 (格式: <number><optional unit>,<br>unit = b, k, m or g)<br>--name=&quot;&quot; 指定容器的名字。<br>--net=&quot;bridge&quot; 为容器设置网络模式，<pre><code>                           'bridge': 在docker bridge桥上创建一个新的网络栈。
+</code></pre>
+
+<p>-l, --latest=false    仅显示最后一个创建的容器，包括没有运行的。<br />
+  -n=-1                 显示n个最后创建的容器，包括没有运行的。<br />
+  --no-trunc=false      不要截断输出。<br />
+  -q, --quiet=false     仅显示数值ID。<br />
+  -s, --size=false      显示大小。<br />
+  --since=&quot;&quot;            仅显示从Id 或者 Name以来的容器，包括没有运行的。</p>
+
+<p>docker pull</p>
+
+<p>使用方法: docker pull [OPTIONS] NAME[:TAG]</p>
+
+<p>从registry上拉回一个镜像或者一个容器。</p>
+
+<p>-a, --all-tags=false    在指定的仓库下载所有标记的镜像。</p>
+
+<p>docker push</p>
+
+<p>使用方法: docker push NAME[:TAG]</p>
+
+<p>将一个镜像或者仓库推送到指定的仓库。</p>
+
+<p>docker restart</p>
+
+<p>使用方法: docker restart [OPTIONS] CONTAINER [CONTAINER...]</p>
+
+<p>重新启动一个运行中的容器。</p>
+
+<p>-t, --time=10      在杀掉指定容器之前停动的时间，一旦杀掉容器，那么就会重新启动。默认时间为10秒。</p>
+
+<p>docker rm</p>
+
+<p>使用方法: docker rm [OPTIONS] CONTAINER [CONTAINER...]</p>
+
+<p>删除一个或者多个容器。</p>
+
+<p>-f, --force=false      强制移除一个正在运行的容器(使用 SIGKILL)<br />
+  -l, --link=false       移除指定的连接，而不是潜在的容器。<br />
+  -v, --volumes=false    移除与容器相关的卷。</p>
+
+<p>docker rmi</p>
+
+<p>使用方法: docker rmi [OPTIONS] IMAGE [IMAGE...]</p>
+
+<p>移除一个或者多个镜像。</p>
+
+<p>-f, --force=false    强制移除一个镜像。<br />
+  --no-prune=false     不要删除未标记的父镜像。</p>
+
+<p>docker run</p>
+
+<p>使用方法: docker run [OPTIONS] IMAGE [COMMAND] [ARG...]</p>
+
+<p>在新的容器中运行一个命令。</p>
+
+<p>-a, --attach=[]            附加到STDIN, STDOUT 或者 STDERR。<br />
+  --add-host=[]              添加一个自定义的host-to-IP 映射(host:ip)。<br />
+  -c, --cpu-shares=0         CPU shares (相对权重)。<br />
+  --cap-add=[]               添加Linux capabilities。<br />
+  --cap-drop=[]              放弃 Linux capabilities。<br />
+  --cidfile=&quot;&quot;               将容器 ID写入文件。<br />
+  --cpuset=&quot;&quot;                允许使用的CPU数量(0-3, 0,1)<br />
+  -d, --detach=false         分离模式：在后台运行容器，并且显示出新容器的ID。<br />
+  --device=[]                向容器添加一个宿主机设备。<br />
+(例如， --device=/dev/sdc:/dev/xvdc)<br />
+  --dns=[]                   设置自定义的DNS 服务器。<br />
+  --dns-search=[]            设置自定义DNS 搜索域。<br />
+  -e, --env=[]               设置环境变量。<br />
+  --entrypoint=&quot;&quot;            覆盖掉镜像中默认的ENTRYPOINT。<br />
+  --env-file=[]              读以逗号分隔的环境变量文件(文件中的行以逗号分隔，每一行都是环境变量)。<br />
+  --expose=[]                将一个没有发布的端口暴露给宿主机。<br />
+  -h, --hostname=&quot;&quot;          容器主机名字。<br />
+  -i, --interactive=false    保持 STDIN 打开，即使没有被附加。<br />
+  --link=[]                  以name:alias格式添加连接到其它容器上。<br />
+  --lxc-conf=[]              (lxc exec-driver only) 添加自定义lxc 选项<br />
+--lxc-conf=&quot;lxc.cgroup.cpuset.cpus = 0,1&quot;<br />
+  -m, --memory=&quot;&quot;            内存限制 (格式: <number><optional unit>,<br />
+unit = b, k, m or g)<br />
+  --name=&quot;&quot;                  指定容器的名字。<br />
+  --net=&quot;bridge&quot;             为容器设置网络模式，</p>
+
+<pre><code>                           'bridge': 在docker bridge桥上创建一个新的网络栈。
                              'none': 该容器没有网络。
               'container:&lt;name|id&gt;': 重新使用其它容器的网络栈。
                              'host': 在该容器内使用host网络堆栈。注意：host模式对宿主机上的本地文件系统给定了容器全部的访问权限，包括D-bus，因此容器被认为是不安全的。
-</code></pre><p>-P, --publish-all=false 发布所有的暴露端口到宿主机接口上。<br>-p, --publish=[] 发布容器的一个端口到宿主机接口上。<pre><code>                         格式：
-</code></pre><p>ip:hostPort:containerPort<br>ip::containerPort<br>hostPort:containerPort<br>containerPort<pre><code>                           (使用 'docker port'查看实际的映射)
-</code></pre><p>--privileged=false 给这个容器扩展权限。<br>--restart=&quot;&quot; 当容器退出时重启策略将会被应用，选项值有：<br>(no, on-failure[:max-retry], always)<br>--security-opt=[] 安全选项。<br>-t, --tty=false 分配伪终端。<br>-u, --user=&quot;&quot; 用户名或者UID。<br>-v, --volume=[] 绑定挂载卷(例如，从宿主机挂接：-v /host:/container，从Docker挂接：-v /container)<br>--volumes-from=[] 从指定的容器挂载卷。<br>-w, --workdir=&quot;&quot; 指定容器内的工作目录。<p>docker save<p>使用方法: docker save [OPTIONS] IMAGE [IMAGE...]<p>将镜像保存到一个归档文件(默认为STDOUT)<p>-o, --output=&quot;&quot; 输出到一个文件而不是STDOUT。<p>docker search<p>使用方法: docker search [OPTIONS] TERM<p>从Docker Hub 上搜索镜像。<p>--automated=false 仅显示自动构建。<br>--no-trunc=false 不要截断输出。<br>-s, --stars=0 仅显示至少x 星级的镜像。<p>docker start<p>使用方法: docker start [OPTIONS] CONTAINER [CONTAINER...]<p>重新启动一个停止的容器。<p>-a, --attach=false 附加容器的STDOUT 和 STDERR，并且所有的信号到进程。<br>-i, --interactive=false 附加容器的STDIN。<p>docker stop<p>使用方法: docker stop [OPTIONS] CONTAINER [CONTAINER...]<p>通过发送SIGTERM 信号，在一个优雅的时间断后然后是SIGKILL停止运行的容器。<p>-t, --time=10 在杀掉容器之前等待容器停止的时间数。<p>docker tag<p>使用方法: docker tag [OPTIONS] IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG]<p>标记一个进入仓库的镜像。<p>-f, --force=false 强制。<p>docker top<p>使用方法: docker top CONTAINER [ps OPTIONS]<p>显示容器中运行的进程。<p>docker unpause<br>使用方法: docker unpause CONTAINER<p>取消暂停容器内的所有进程。<p>docker version<p>使用方法: docker version<p>显示Docker的版本信息。<p>docker wait<p>使用方法: docker wait CONTAINER [CONTAINER...]<p>Block until a container stops, then print its exit code.<br>阻塞运行直到容器停止，然后打印出它的退出代码。<p>##############################################################################<br>docker 之所以这么牛逼, 一是在于他强大的生态环境, 以及,他container和writable layer 的新颖的概念.<br>docker镜像的简单剖析<p>docker的images,我们可以理解为积木, 一层一层往上搭, 最后完成一个工程化的大项目.<p>在最初,docker实际上,只有一个静态的image(Ps: read-only). 相当于只能读, 所以, 你所有的改动并不会影响到原来的image上, 只会一层一层的叠加, 比如, 你在Ubuntu的image上面, 再接一层nodeJS的image. 实际上的结果是, 两个image叠加起来.<p>这里放一张 the Docker book 的说明图:<p>(Ps: 算啦,估计大家也没听懂,还是在下面根据实例,来进行细致的区分吧)<p>docker 在下载image的时候,会在 /var/lib/docker 目录下创建相关的image 目录. 而运行的container则会放在 /var/lib/docker/containers 中.<p>另外,docker中的image,是存储在 docker仓库 . 现在,我们通过快速创建自已的仓库来仔细了解一下docker是怎样拥有这样一个完善的生态的.<br>docker 仓库<p>首先, 要想拥有自己的docker 仓库, 你得有一个自己的docker账号.so, 那就想apply 一个呗. 在 docker hub 上面注册一下自己的账号就行.<br>登录指令<p>在docker中,不仅支持web查看docker中的内容, 而且还支持使用命令行登录.<p>// 登录到docker<br>docker login // 然后输入账户密码就ok了<br>// 使用完毕,想要登出<br>docker logout<p>实际上,docker会将你的认证信息存放在. ~/.docker/config.json 当中。<br>images 常用命令<p>如果浏览了上面的docker仓库, 会发现在一个repository里面会存在很多images, 比如 ubuntu的repository .不同的images发布,代表的都是特定的版本系统. 所以,在拉取的时候,需要额外注意一下你需要的指定docker images.<br>images的拉取<p>在container中,我们讲过,使用docker run的时候, 你会发现如果你的images里面没有存在指定的image时, docker会主动去docker hub里面找,然后下载,并且自动运行.<p>// 运行最新版的ubuntu image<br>docker run -t -i ubuntu:latest<p>如果,你想自己手动下载images的话,可以直接 pull<p>// 手动拉取images<br>docker pull ubuntu:latest<br>// 拉取12.04版本的ubuntu images<br>docker pull ubuntu:12.04<p>如果在拉取的时候,想知道这个image是否是真正存在的话,就可以使用.docker 提供的搜索指令.<br>搜索指定docker<p>在docker中,可以使用自带的 search 命令,搜索所有含有指定term的image. 相当于js中的search 方法.<p>// 搜索name中含有demo的image<br>docker search demo<br>// 结果为: 名字. 通常为: author/image_name . 通常搜索的就是这个<br>// 描述: 就是一段文字描述<br>NAME DESCRIPTION STARS OFFICIAL AUTOMATED<p>查到之后,我们就可以使用pull将指定的库,拉下来了.<br>创建自己的image<p>上面说过, contianer是copy image运行的进程容器,image是不会变的read-only 块. 但是,如果我们在container里面, 改动了一些设置,比如,下载了node, 而且,我想要保存我这次改动, 以至于,下次我想重新,启动该image时, 他已经具备了node.<p>// 现在我再ubuntu:latest上面安装了node<br>// 伪代码<br>npm install node -g<p>docker提供了一个非常快捷的方式就是创建自己的docker image. 使用 docker commit .<p>// 查看刚才改动的container ID<br>docker ps -a -q -l<br>// 得到 docker_id, 提交到自己的库中<br>docker commit docker_id villainHR/node<br>// 之后会返回新的image id<p>需要注意, docker commit 提交的并不是一个整体的100+MB的ubuntu+node. 他只会将两个仓库的差异提交,比如原来image和新的image比起来,就是多了一个 npm install node -g 命令.<br>使用Dockerfile<p>Dockerfile是为了迅速的构建image而出现的. 他与docker commit 的区别在于. 能够迅速的更替历史image 命令. 比如,我们以前下载的npm是version 2, 现在想要更换为npm@3的话,则难度就不是一般的了. 但是,如果我们能够像写命令一样将下载的配置命令下载Dockerfile里面, 那么以后我们想要更换版本,就是很方便的啦.<p>ok, 现在我们来了解一下Dockerfile是怎样的运行的.<br>dockerfile demo讲解<p>这里,我们利用dockerfile 来搭建一个简单的webServer. 首先创建一个你自己的dockerfile目录<p>mkdir first_docker<br>cd first_docker<br>touch Dockerfile<p>然后, 确保你有ubuntu:latest image.因为, 接下来我们就是基于它,来搭建我们的server.<h1 id=first-dockerfile-demo>first dockerfile demo</h1><p>FROM ubuntu:latest<h1 id=设置该dockerfile的作者和联系邮箱>设置该dockerfile的作者和联系邮箱</h1><p>MAINTAINER Jimmy &quot;villainhr@gmail.com&quot;<h1 id=开始配置环境-下载apt-get-生成index-html的文件>开始配置环境, 下载apt-get,生成index.html的文件</h1><p>RUN apt-get update &amp;&amp; apt-get install -y nginx<br>RUN echo 'first demo' &gt; /usr/share/nginx/html/index.html<h1 id=暴露server的port>暴露server的port</h1><p>EXPOSE 80<p>说一下上面的命令内涵.<pre><code>FROM: 用来指定第一层image, 这是必须有的. 并且指定的image是存在在你的computer中. 相当于是 docker run.
+</code></pre>
+
+<p>-P, --publish-all=false    发布所有的暴露端口到宿主机接口上。<br />
+  -p, --publish=[]           发布容器的一个端口到宿主机接口上。</p>
+
+<pre><code>                         格式：
+</code></pre>
+
+<p>ip:hostPort:containerPort<br />
+ip::containerPort<br />
+hostPort:containerPort<br />
+containerPort</p>
+
+<pre><code>                           (使用 'docker port'查看实际的映射)
+</code></pre>
+
+<p>--privileged=false         给这个容器扩展权限。<br />
+  --restart=&quot;&quot;               当容器退出时重启策略将会被应用，选项值有：<br />
+(no, on-failure[:max-retry], always)<br />
+  --security-opt=[]          安全选项。<br />
+  -t, --tty=false            分配伪终端。<br />
+  -u, --user=&quot;&quot;              用户名或者UID。<br />
+  -v, --volume=[]             绑定挂载卷(例如，从宿主机挂接：-v /host:/container，从Docker挂接：-v /container)<br />
+  --volumes-from=[]          从指定的容器挂载卷。<br />
+  -w, --workdir=&quot;&quot;           指定容器内的工作目录。</p>
+
+<p>docker save</p>
+
+<p>使用方法: docker save [OPTIONS] IMAGE [IMAGE...]</p>
+
+<p>将镜像保存到一个归档文件(默认为STDOUT)</p>
+
+<p>-o, --output=&quot;&quot;    输出到一个文件而不是STDOUT。</p>
+
+<p>docker search</p>
+
+<p>使用方法: docker search [OPTIONS] TERM</p>
+
+<p>从Docker Hub 上搜索镜像。</p>
+
+<p>--automated=false    仅显示自动构建。<br />
+  --no-trunc=false     不要截断输出。<br />
+  -s, --stars=0        仅显示至少x 星级的镜像。</p>
+
+<p>docker start</p>
+
+<p>使用方法: docker start [OPTIONS] CONTAINER [CONTAINER...]</p>
+
+<p>重新启动一个停止的容器。</p>
+
+<p>-a, --attach=false         附加容器的STDOUT 和 STDERR，并且所有的信号到进程。<br />
+  -i, --interactive=false    附加容器的STDIN。</p>
+
+<p>docker stop</p>
+
+<p>使用方法: docker stop [OPTIONS] CONTAINER [CONTAINER...]</p>
+
+<p>通过发送SIGTERM 信号，在一个优雅的时间断后然后是SIGKILL停止运行的容器。</p>
+
+<p>-t, --time=10      在杀掉容器之前等待容器停止的时间数。</p>
+
+<p>docker tag</p>
+
+<p>使用方法: docker tag [OPTIONS] IMAGE[:TAG] [REGISTRYHOST/][USERNAME/]NAME[:TAG]</p>
+
+<p>标记一个进入仓库的镜像。</p>
+
+<p>-f, --force=false    强制。</p>
+
+<p>docker top</p>
+
+<p>使用方法: docker top CONTAINER [ps OPTIONS]</p>
+
+<p>显示容器中运行的进程。</p>
+
+<p>docker unpause<br />
+使用方法: docker unpause CONTAINER</p>
+
+<p>取消暂停容器内的所有进程。</p>
+
+<p>docker version</p>
+
+<p>使用方法: docker version</p>
+
+<p>显示Docker的版本信息。</p>
+
+<p>docker wait</p>
+
+<p>使用方法: docker wait CONTAINER [CONTAINER...]</p>
+
+<p>Block until a container stops, then print its exit code.<br />
+阻塞运行直到容器停止，然后打印出它的退出代码。</p>
+
+<p>##############################################################################<br />
+docker 之所以这么牛逼, 一是在于他强大的生态环境, 以及,他container和writable layer 的新颖的概念.<br />
+docker镜像的简单剖析</p>
+
+<p>docker的images,我们可以理解为积木, 一层一层往上搭, 最后完成一个工程化的大项目.</p>
+
+<p>在最初,docker实际上,只有一个静态的image(Ps: read-only). 相当于只能读, 所以, 你所有的改动并不会影响到原来的image上, 只会一层一层的叠加, 比如, 你在Ubuntu的image上面, 再接一层nodeJS的image. 实际上的结果是, 两个image叠加起来.</p>
+
+<p>这里放一张 the Docker book 的说明图:</p>
+
+<p>(Ps: 算啦,估计大家也没听懂,还是在下面根据实例,来进行细致的区分吧)</p>
+
+<p>docker 在下载image的时候,会在 /var/lib/docker 目录下创建相关的image 目录. 而运行的container则会放在 /var/lib/docker/containers 中.</p>
+
+<p>另外,docker中的image,是存储在 docker仓库 . 现在,我们通过快速创建自已的仓库来仔细了解一下docker是怎样拥有这样一个完善的生态的.<br />
+docker 仓库</p>
+
+<p>首先, 要想拥有自己的docker 仓库, 你得有一个自己的docker账号.so, 那就想apply 一个呗. 在 docker hub 上面注册一下自己的账号就行.<br />
+登录指令</p>
+
+<p>在docker中,不仅支持web查看docker中的内容, 而且还支持使用命令行登录.</p>
+
+<p>// 登录到docker<br />
+docker login // 然后输入账户密码就ok了<br />
+// 使用完毕,想要登出<br />
+docker logout</p>
+
+<p>实际上,docker会将你的认证信息存放在. ~/.docker/config.json 当中。<br />
+images 常用命令</p>
+
+<p>如果浏览了上面的docker仓库, 会发现在一个repository里面会存在很多images, 比如 ubuntu的repository .不同的images发布,代表的都是特定的版本系统. 所以,在拉取的时候,需要额外注意一下你需要的指定docker images.<br />
+images的拉取</p>
+
+<p>在container中,我们讲过,使用docker run的时候, 你会发现如果你的images里面没有存在指定的image时, docker会主动去docker hub里面找,然后下载,并且自动运行.</p>
+
+<p>// 运行最新版的ubuntu image<br />
+docker run -t -i ubuntu:latest</p>
+
+<p>如果,你想自己手动下载images的话,可以直接 pull</p>
+
+<p>// 手动拉取images<br />
+docker pull ubuntu:latest<br />
+// 拉取12.04版本的ubuntu images<br />
+docker pull ubuntu:12.04</p>
+
+<p>如果在拉取的时候,想知道这个image是否是真正存在的话,就可以使用.docker 提供的搜索指令.<br />
+搜索指定docker</p>
+
+<p>在docker中,可以使用自带的 search 命令,搜索所有含有指定term的image. 相当于js中的search 方法.</p>
+
+<p>// 搜索name中含有demo的image<br />
+docker search demo<br />
+// 结果为: 名字. 通常为: author/image_name . 通常搜索的就是这个<br />
+// 描述: 就是一段文字描述<br />
+NAME  DESCRIPTION  STARS OFFICIAL   AUTOMATED</p>
+
+<p>查到之后,我们就可以使用pull将指定的库,拉下来了.<br />
+创建自己的image</p>
+
+<p>上面说过, contianer是copy image运行的进程容器,image是不会变的read-only 块. 但是,如果我们在container里面, 改动了一些设置,比如,下载了node, 而且,我想要保存我这次改动, 以至于,下次我想重新,启动该image时, 他已经具备了node.</p>
+
+<p>// 现在我再ubuntu:latest上面安装了node<br />
+// 伪代码<br />
+npm install node -g</p>
+
+<p>docker提供了一个非常快捷的方式就是创建自己的docker image. 使用 docker commit .</p>
+
+<p>// 查看刚才改动的container ID<br />
+docker ps -a -q -l<br />
+// 得到 docker_id, 提交到自己的库中<br />
+docker commit docker_id villainHR/node<br />
+// 之后会返回新的image id</p>
+
+<p>需要注意, docker commit 提交的并不是一个整体的100+MB的ubuntu+node. 他只会将两个仓库的差异提交,比如原来image和新的image比起来,就是多了一个 npm install node -g 命令.<br />
+使用Dockerfile</p>
+
+<p>Dockerfile是为了迅速的构建image而出现的. 他与docker commit 的区别在于. 能够迅速的更替历史image 命令. 比如,我们以前下载的npm是version 2, 现在想要更换为npm@3的话,则难度就不是一般的了. 但是,如果我们能够像写命令一样将下载的配置命令下载Dockerfile里面, 那么以后我们想要更换版本,就是很方便的啦.</p>
+
+<p>ok, 现在我们来了解一下Dockerfile是怎样的运行的.<br />
+dockerfile demo讲解</p>
+
+<p>这里,我们利用dockerfile 来搭建一个简单的webServer. 首先创建一个你自己的dockerfile目录</p>
+
+<p>mkdir first_docker<br />
+cd first_docker<br />
+touch Dockerfile</p>
+
+<p>然后, 确保你有ubuntu:latest image.因为, 接下来我们就是基于它,来搭建我们的server.</p>
+
+<h1 id="first-dockerfile-demo">first dockerfile demo</h1>
+
+<p>FROM ubuntu:latest</p>
+
+<h1 id="设置该dockerfile的作者和联系邮箱">设置该dockerfile的作者和联系邮箱</h1>
+
+<p>MAINTAINER Jimmy &quot;villainhr@gmail.com&quot;</p>
+
+<h1 id="开始配置环境-下载apt-get-生成index-html的文件">开始配置环境, 下载apt-get,生成index.html的文件</h1>
+
+<p>RUN apt-get update &amp;&amp; apt-get install -y nginx<br />
+RUN echo 'first demo' &gt; /usr/share/nginx/html/index.html</p>
+
+<h1 id="暴露server的port">暴露server的port</h1>
+
+<p>EXPOSE 80</p>
+
+<p>说一下上面的命令内涵.</p>
+
+<pre><code>FROM: 用来指定第一层image, 这是必须有的. 并且指定的image是存在在你的computer中. 相当于是 docker run.
 
 RUN: 这是用来在container中,做出相应的修改. 相当于 修改+docker commit xxx . 给原来的image加上一层layer. 然后, docker会在你commit新一层之后,重新docker run你最新改动过的image
 
 MAINTAINER: 设置作者和联系邮箱.其实就是docker commit 后面的Name参数. 而且加上了联系邮箱. 这是在dockerfile 运行完后,会自动添加到image上的.
 
 EXPOSE: 用来给最新的container 设置与外部交流的port
-</code></pre><p>上面简单的介绍了基本的dockerfile的命令. 不过, 这尼玛太简单了,不符合我们一贯追求到底的风格.<p>这里, 我们在来细说一下RUN这个命令. 实际上, 这应该是dockerfile的关键. RUN的原理很简单, 就是 commit + run . 先创建一个新的image 然后 在这个基础上将原有的container替换为新的,如果某一步的RUN发生错误,则container会停在那个阶段, 这样,你可以直接进入该container去查看,你那一步的RUN发生了什么BUG。 另外, 使用RUN的时候, 需要注意, 由于,dockerfile是由上到下解析的, 比如你一开始 FROM ubuntu 的image, 那么此时的环境是停留在ubuntu的shell中的.<p>比如:<p>RUN touch demo.js<br>// 等同于<br>/bin/sh -c touch demo.js<p>所以, 如果你调用的image 并没有shell的话, 那么久需要使用exec调用系统shell 来执行命令.<p>// 调用系统的shell来运行, 实际上就是 exec xxx xxx xxx.<br>RUN [&quot;npm&quot;,&quot;install&quot;,&quot;node&quot;]<p>运行dockerfile<p>上面的dockerfile文件配置好了之后,就轮到我们运行dockerfile.直接运行 docker build 即可.<p>// 注意后面的&quot;.&quot;, 用来指定搜索dockerfile文件的路径.<br>docker build -t=&quot;jimmy/first_dockerfile&quot; .<p>说一下docker build的指令吧.<p>// 基本格式为:<br>docker build -t=&quot;repository/name:tag&quot; directory<br>// -t用来指定生成的image的name,比如仓库,image的名字以及他的tag,如果你不指定tag, 那么docker会自动添加latest代替。<br>// directory 用来相对于当前运行build的目录, 搜索指定的dockerfile.当然,你也可以使用绝对路径了<p>顺利的话,应该就会有, 下列的信息出来.<p>Sending build context to Docker daemon 2.048 kB<br>Step 1 : FROM ubuntu:latest<br>---&gt; c5f1cf30c96b<br>Step 2 : MAINTAINER jimmy &quot;villainhr@gmai.com&quot;<br>---&gt; Running in 078148a5086a<br>---&gt; 11b061f665d1<br>Removing intermediate container 078148a5086a<br>Step 3 : RUN cd /var<br>---&gt; Running in ffd3141e64c8<br>---&gt; a4d7c5303b60<br>Removing intermediate container ffd3141e64c8<br>Step 4 : RUN touch demo.js<br>---&gt; Running in c8393a6fcc98<br>---&gt; 109b402b9adc<br>Removing intermediate container c8393a6fcc98<br>Step 5 : EXPOSE 80<br>---&gt; Running in 2c064f4bac57<br>---&gt; ff7ad58a5d8a<br>Removing intermediate container 2c064f4bac57<br>Successfully built ff7ad58a5d8a<p>然后, 你可以使用 docker images 查看.就会发现多出来一个image.<br>dockerfile cache<p>上面已经提到过,使用docker build的时候,如果你的dockerfile中的某一步出现问题的话,你生成的image会停留在那一步.当你fix errors时, 重新运行 docker build , 此时,docker是不会真的重头来建一遍的,他会使用你改动line的前一个image,然后以此为基点继续向下构建.<p>不过,如果你使用缓存的话,他前面的版本id是不会发生改变的.如果你想完整的得到一个新的ID的话,就可以在build的时候,禁用掉cache.<p>docker build --no-cache -t=&quot;jimmy/first_dockerfile&quot; .<p>不过,该方法是不推荐的. 因为一个非常棒的cache机制,就被你硬生生的cancel. 而且,这也极力不推荐使用该方法进行cache的取消.以为,有些地方,我们完全可以利用cache来加快速度.这就需要使用到 ENV 关键字.来帮助我们,另外利用cache.<p>在讲解 ENV 之前,先给大家讲解一下docker cache的运行机理.<p>（是不是感觉很激动~）<p>实际上,机理就一句话: ID命中 . 因为docker在你每次运行一行命令的时候,会自动生成一个id值.<p>Sending build context to Docker daemon 2.048 kB<br>Step 1 : FROM ubuntu:latest<br>---&gt; c5f1cf30c96b // 这就是ID值<p>docker借由这个ID值,来判断是否有cache镜像.所以,这里就需要借一下 ENV 这个比较费的指令,来灵活的帮助我们使用cache.<br>配置化cache<p>ENV 的就是给docker来设置变量的. 基本格式为:<h1 id=一个一个的赋值>一个一个的赋值</h1><p>ENV key value<br>// demo:<br>ENV name jimmy<br>ENV age 18<h1 id=另外-还可以一起赋值>另外,还可以一起赋值</h1><p>ENV key=value[...]<br>// demo:<br>ENV name=jimmy age=18<p>而通过 ENV 我们就可以完美的告诉docker 从这里开始,你就不能使用cache,自己的重新来.( 因为,每条指令都会生成layer并且有独立的id,一旦你更改的ENV,那么从该指令开始id都会发生改变,也就匹配不到缓存了 )<p>看个demo:<h1 id=第一个dockerfile>第一个dockerfile</h1><p>FROM ubuntu:latest<br>MAINTAINER jimmy &quot;villainhr@gmai.com&quot;<br>ENV REFRESH first # 这里设置的是refresh=first<br>RUN cd /var<br>RUN touch demo.js<br>EXPOSE 80<p>// 使用docker build ... 后面就会生成一系列新的id和images<br>// 现在修改dockerfile<h1 id=第二个dockerfile>第二个dockerfile</h1><p>FROM ubuntu:latest<br>MAINTAINER jimmy &quot;villainhr@gmai.com&quot;<br>ENV REFRESH second # 这里设置的是refresh=second<br>RUN cd /var<br>RUN touch demo.js<br>EXPOSE 80<p>// 开始运行docker build... 你会发现,从下面语句开始.<br>ENV REFRESH second<br>// 其docker id就已经发生了改变,并且docker 没有了use cache的提示.说明,下面就没有命中缓存了. 所以,如果你想在某一段不使用缓存,只需要将ENV后面的value改变即可.<p>创建完后, 我们可以使用 docker history ,查看一下刚才创建的image的整个流程.<p>// 查看image创建的过程<br>docker history jimmy/first_dockerfile<br>// 输出的结果为:<br>2322ddc85cc3 10 hours ago /bin/sh -c #(nop) EXPOSE 80/tcp 0 B<br>b39397abc7aa 10 hours ago /bin/sh -c touch demo.js 0 B<br>3c9a4daf4c42 10 hours ago /bin/sh -c cd /var 0 B<br>b1c2f890a262 10 hours ago /bin/sh -c #(nop) ENV REFRESH=second 0 B<br>2cf0ee3c373c 10 hours ago /bin/sh -c #(nop) MAINTAINER jimmy &quot;villainhr 0 B<p>俺的目的,其实是想让你们看看,docker在每一层是怎么执行的-- /bin/sh . 了解了之后,我们就继续了.<br>docker container的接口暴露<p>上面通过dockerfile 已经暴露了一个80接口,用来和外部通信。 不过,如果我们没有使用 EXPOSE 暴露接口的话, 那应该怎么做呢？<p>我们可以直接在外部运行docker image, 手动指定暴露的端口.<h1 id=同样-暴露80端口给外部交互>同样,暴露80端口给外部交互</h1><p>docker run -d -p 80 --name demo jimmy/node<br>node -jimmy app.js<h1 id=d是daemon的意思>-d是daemon的意思</h1><h1 id=p-80-表示暴露80的port给外部>-p 80 表示暴露80的port给外部</h1><h1 id=node-jimmy-app-js-表示在jimmy-node-image里面运行的指令>node -jimmy app.js 表示在jimmy/node image里面运行的指令</h1><p>这里, 我们需要额外了解一下80端口的开启. docker 其实是在底层上面,虚拟化了存储. 并且,docker在运行的时候,会自动向主机要一个ip(假的), 相当于,有了自己的host. (这不就一个主机吗？)<p>这里我们开启的80端口,是docker在内部虚拟开启的, 他会从32768 到 61000端口之间,随机抽一个映射到docker开启的80端口上, 依此来和外部进行真正的交互(膜拜///).<h1 id=使用docker-ps-l-来查看开启情况>使用docker ps -l 来查看开启情况</h1><p>docker ps -l<h1 id=得到-只截取了一部分>得到: 只截取了一部分.</h1><p>0.0.0.0:49154-&gt;80 tcp<h1 id=或者指定查看docker端口开启情况>或者指定查看docker端口开启情况</h1><p>docker port c96f2c18bb64 80 // ID也可以使用name代替<h1 id=返回>返回:</h1><p>0.0.0.0:49154<p>手动指定端口<p>如果你不想让docker决定的绑定的接口是哪一个,ok, 你可以自己指定.<h1 id=手动指定端口>手动指定端口</h1><h1 id=指定docker的8080连接到container暴露的80端口>指定docker的8080连接到container暴露的80端口</h1><p>docker run -d -p 8080:80 --name demo jimmy/node<br>node -jimmy app.js<h1 id=甚至你也可以指定ip-port>甚至你也可以指定ip+port</h1><h1 id=指定docker的127-0-0-1-8080连接container的80>指定docker的127.0.0.1:8080连接container的80</h1><p>docker run -d -p 127.0.0.1:8080:80 --name demo jimmy/node<br>node -jimmy app.js<p>利用EXPOSE<p>在写dockerfile的时候,我们已经了解了,使用EXPOSE可以完美的实现端口的暴露. 但如果,我们在dockerfile里面暴露多个port的话,那么-p的参数,感觉有点鸡肋啊喂~<p>不过,现在我们可以使用 -P (注意是大写). 来手动开启所有在dockerfile中,通过 EXPOSE 暴露的端口.<p>docker run -d -P --name demo jimmy/node<br>node -jimmy app.js<p>外部访问<p>通过端口开启之后,我们就可以间接的访问docker的路由, 来访问在docker里面开启的端口了.<h1 id=假如上面我们通过dockre暴露的端口是34251的话-就可以在docker环境外访问了>假如上面我们通过dockre暴露的端口是34251的话,就可以在docker环境外访问了.</h1><p>ping localhost:34251<p>dockerfile常用指令<br>自动化运行CMD<p>你是不是已经厌烦了使用docker run 来运行命令了呢？ 你是不是已经讨厌重复的copy命令运行了呢？<p>那么请使用 CMD 吧.<p>CMD的作用是,用来指定当你调其对应的container时, 运行的命令.<p>比如在dockerfile中,指定/bin/bash.<h1 id=当调起container时-运行-bin-bash>当调起container时,运行/bin/bash</h1><p>docker run -t -i jimmy/ubuntu:latest /bin/bash<h1 id=等同于在dockerfile中指定cmd>等同于在dockerfile中指定CMD</h1><p>CMD [&quot;/bin/bash&quot;]<br>// 运行docker run<br>docker run -t -i jimmy/ubuntu:latest<p>不过,如果你在run后面手动指定指令运行的话,会默认覆盖掉CMD提供的命令.<p>熟悉了CMD,感觉有种 RUN 的感觉. 但,这两者的区别还是很大的<pre><code>RUN: 一般是用来给image增加layer来完善image, 他一旦执行完,就和后面的运行没有关系了
+</code></pre>
+
+<p>上面简单的介绍了基本的dockerfile的命令. 不过, 这尼玛太简单了,不符合我们一贯追求到底的风格.</p>
+
+<p>这里, 我们在来细说一下RUN这个命令. 实际上, 这应该是dockerfile的关键. RUN的原理很简单, 就是 commit + run . 先创建一个新的image 然后 在这个基础上将原有的container替换为新的,如果某一步的RUN发生错误,则container会停在那个阶段, 这样,你可以直接进入该container去查看,你那一步的RUN发生了什么BUG。 另外, 使用RUN的时候, 需要注意, 由于,dockerfile是由上到下解析的, 比如你一开始 FROM ubuntu 的image, 那么此时的环境是停留在ubuntu的shell中的.</p>
+
+<p>比如:</p>
+
+<p>RUN touch demo.js<br />
+// 等同于<br />
+/bin/sh -c touch demo.js</p>
+
+<p>所以, 如果你调用的image 并没有shell的话, 那么久需要使用exec调用系统shell 来执行命令.</p>
+
+<p>// 调用系统的shell来运行, 实际上就是 exec xxx xxx xxx.<br />
+RUN [&quot;npm&quot;,&quot;install&quot;,&quot;node&quot;]</p>
+
+<p>运行dockerfile</p>
+
+<p>上面的dockerfile文件配置好了之后,就轮到我们运行dockerfile.直接运行 docker build 即可.</p>
+
+<p>// 注意后面的&quot;.&quot;, 用来指定搜索dockerfile文件的路径.<br />
+docker build -t=&quot;jimmy/first_dockerfile&quot; .</p>
+
+<p>说一下docker build的指令吧.</p>
+
+<p>// 基本格式为:<br />
+docker build -t=&quot;repository/name:tag&quot;  directory<br />
+// -t用来指定生成的image的name,比如仓库,image的名字以及他的tag,如果你不指定tag, 那么docker会自动添加latest代替。<br />
+// directory 用来相对于当前运行build的目录, 搜索指定的dockerfile.当然,你也可以使用绝对路径了</p>
+
+<p>顺利的话,应该就会有, 下列的信息出来.</p>
+
+<p>Sending build context to Docker daemon 2.048 kB<br />
+Step 1 : FROM ubuntu:latest<br />
+ ---&gt; c5f1cf30c96b<br />
+Step 2 : MAINTAINER jimmy &quot;villainhr@gmai.com&quot;<br />
+ ---&gt; Running in 078148a5086a<br />
+ ---&gt; 11b061f665d1<br />
+Removing intermediate container 078148a5086a<br />
+Step 3 : RUN cd /var<br />
+ ---&gt; Running in ffd3141e64c8<br />
+ ---&gt; a4d7c5303b60<br />
+Removing intermediate container ffd3141e64c8<br />
+Step 4 : RUN touch demo.js<br />
+ ---&gt; Running in c8393a6fcc98<br />
+ ---&gt; 109b402b9adc<br />
+Removing intermediate container c8393a6fcc98<br />
+Step 5 : EXPOSE 80<br />
+ ---&gt; Running in 2c064f4bac57<br />
+ ---&gt; ff7ad58a5d8a<br />
+Removing intermediate container 2c064f4bac57<br />
+Successfully built ff7ad58a5d8a</p>
+
+<p>然后, 你可以使用 docker images 查看.就会发现多出来一个image.<br />
+dockerfile cache</p>
+
+<p>上面已经提到过,使用docker build的时候,如果你的dockerfile中的某一步出现问题的话,你生成的image会停留在那一步.当你fix errors时, 重新运行 docker build , 此时,docker是不会真的重头来建一遍的,他会使用你改动line的前一个image,然后以此为基点继续向下构建.</p>
+
+<p>不过,如果你使用缓存的话,他前面的版本id是不会发生改变的.如果你想完整的得到一个新的ID的话,就可以在build的时候,禁用掉cache.</p>
+
+<p>docker build --no-cache -t=&quot;jimmy/first_dockerfile&quot; .</p>
+
+<p>不过,该方法是不推荐的. 因为一个非常棒的cache机制,就被你硬生生的cancel. 而且,这也极力不推荐使用该方法进行cache的取消.以为,有些地方,我们完全可以利用cache来加快速度.这就需要使用到 ENV 关键字.来帮助我们,另外利用cache.</p>
+
+<p>在讲解 ENV 之前,先给大家讲解一下docker cache的运行机理.</p>
+
+<p>（是不是感觉很激动~）</p>
+
+<p>实际上,机理就一句话: ID命中 . 因为docker在你每次运行一行命令的时候,会自动生成一个id值.</p>
+
+<p>Sending build context to Docker daemon 2.048 kB<br />
+Step 1 : FROM ubuntu:latest<br />
+ ---&gt; c5f1cf30c96b  // 这就是ID值</p>
+
+<p>docker借由这个ID值,来判断是否有cache镜像.所以,这里就需要借一下 ENV 这个比较费的指令,来灵活的帮助我们使用cache.<br />
+配置化cache</p>
+
+<p>ENV 的就是给docker来设置变量的. 基本格式为:</p>
+
+<h1 id="一个一个的赋值">一个一个的赋值</h1>
+
+<p>ENV key value<br />
+// demo:<br />
+ENV name jimmy<br />
+ENV age 18</p>
+
+<h1 id="另外-还可以一起赋值">另外,还可以一起赋值</h1>
+
+<p>ENV key=value[...]<br />
+// demo:<br />
+ENV name=jimmy age=18</p>
+
+<p>而通过 ENV 我们就可以完美的告诉docker 从这里开始,你就不能使用cache,自己的重新来.( 因为,每条指令都会生成layer并且有独立的id,一旦你更改的ENV,那么从该指令开始id都会发生改变,也就匹配不到缓存了 )</p>
+
+<p>看个demo:</p>
+
+<h1 id="第一个dockerfile">第一个dockerfile</h1>
+
+<p>FROM ubuntu:latest<br />
+MAINTAINER jimmy &quot;villainhr@gmai.com&quot;<br />
+ENV REFRESH first # 这里设置的是refresh=first<br />
+RUN cd /var<br />
+RUN touch demo.js<br />
+EXPOSE 80</p>
+
+<p>// 使用docker build ... 后面就会生成一系列新的id和images<br />
+// 现在修改dockerfile</p>
+
+<h1 id="第二个dockerfile">第二个dockerfile</h1>
+
+<p>FROM ubuntu:latest<br />
+MAINTAINER jimmy &quot;villainhr@gmai.com&quot;<br />
+ENV REFRESH second # 这里设置的是refresh=second<br />
+RUN cd /var<br />
+RUN touch demo.js<br />
+EXPOSE 80</p>
+
+<p>// 开始运行docker build... 你会发现,从下面语句开始.<br />
+ENV REFRESH second<br />
+// 其docker id就已经发生了改变,并且docker 没有了use cache的提示.说明,下面就没有命中缓存了. 所以,如果你想在某一段不使用缓存,只需要将ENV后面的value改变即可.</p>
+
+<p>创建完后, 我们可以使用 docker history ,查看一下刚才创建的image的整个流程.</p>
+
+<p>// 查看image创建的过程<br />
+docker history jimmy/first_dockerfile<br />
+// 输出的结果为:<br />
+2322ddc85cc3        10 hours ago        /bin/sh -c #(nop) EXPOSE 80/tcp                 0 B<br />
+b39397abc7aa        10 hours ago        /bin/sh -c touch demo.js                        0 B<br />
+3c9a4daf4c42        10 hours ago        /bin/sh -c cd /var                              0 B<br />
+b1c2f890a262        10 hours ago        /bin/sh -c #(nop) ENV REFRESH=second            0 B<br />
+2cf0ee3c373c        10 hours ago        /bin/sh -c #(nop) MAINTAINER jimmy &quot;villainhr   0 B</p>
+
+<p>俺的目的,其实是想让你们看看,docker在每一层是怎么执行的-- /bin/sh . 了解了之后,我们就继续了.<br />
+docker container的接口暴露</p>
+
+<p>上面通过dockerfile 已经暴露了一个80接口,用来和外部通信。 不过,如果我们没有使用 EXPOSE 暴露接口的话, 那应该怎么做呢？</p>
+
+<p>我们可以直接在外部运行docker image, 手动指定暴露的端口.</p>
+
+<h1 id="同样-暴露80端口给外部交互">同样,暴露80端口给外部交互</h1>
+
+<p>docker run -d -p 80 --name demo jimmy/node <br />
+node -jimmy app.js</p>
+
+<h1 id="d是daemon的意思">-d是daemon的意思</h1>
+
+<h1 id="p-80-表示暴露80的port给外部">-p 80 表示暴露80的port给外部</h1>
+
+<h1 id="node-jimmy-app-js-表示在jimmy-node-image里面运行的指令">node -jimmy app.js 表示在jimmy/node image里面运行的指令</h1>
+
+<p>这里, 我们需要额外了解一下80端口的开启. docker 其实是在底层上面,虚拟化了存储. 并且,docker在运行的时候,会自动向主机要一个ip(假的), 相当于,有了自己的host. (这不就一个主机吗？)</p>
+
+<p>这里我们开启的80端口,是docker在内部虚拟开启的, 他会从32768 到 61000端口之间,随机抽一个映射到docker开启的80端口上, 依此来和外部进行真正的交互(膜拜///).</p>
+
+<h1 id="使用docker-ps-l-来查看开启情况">使用docker ps -l 来查看开启情况</h1>
+
+<p>docker ps -l</p>
+
+<h1 id="得到-只截取了一部分">得到: 只截取了一部分.</h1>
+
+<p>0.0.0.0:49154-&gt;80 tcp</p>
+
+<h1 id="或者指定查看docker端口开启情况">或者指定查看docker端口开启情况</h1>
+
+<p>docker port c96f2c18bb64 80 // ID也可以使用name代替</p>
+
+<h1 id="返回">返回:</h1>
+
+<p>0.0.0.0:49154</p>
+
+<p>手动指定端口</p>
+
+<p>如果你不想让docker决定的绑定的接口是哪一个,ok, 你可以自己指定.</p>
+
+<h1 id="手动指定端口">手动指定端口</h1>
+
+<h1 id="指定docker的8080连接到container暴露的80端口">指定docker的8080连接到container暴露的80端口</h1>
+
+<p>docker run -d -p 8080:80 --name demo jimmy/node <br />
+node -jimmy app.js</p>
+
+<h1 id="甚至你也可以指定ip-port">甚至你也可以指定ip+port</h1>
+
+<h1 id="指定docker的127-0-0-1-8080连接container的80">指定docker的127.0.0.1:8080连接container的80</h1>
+
+<p>docker run -d -p 127.0.0.1:8080:80 --name demo jimmy/node <br />
+node -jimmy app.js</p>
+
+<p>利用EXPOSE</p>
+
+<p>在写dockerfile的时候,我们已经了解了,使用EXPOSE可以完美的实现端口的暴露. 但如果,我们在dockerfile里面暴露多个port的话,那么-p的参数,感觉有点鸡肋啊喂~</p>
+
+<p>不过,现在我们可以使用 -P (注意是大写). 来手动开启所有在dockerfile中,通过 EXPOSE 暴露的端口.</p>
+
+<p>docker run -d -P --name demo jimmy/node <br />
+node -jimmy app.js</p>
+
+<p>外部访问</p>
+
+<p>通过端口开启之后,我们就可以间接的访问docker的路由, 来访问在docker里面开启的端口了.</p>
+
+<h1 id="假如上面我们通过dockre暴露的端口是34251的话-就可以在docker环境外访问了">假如上面我们通过dockre暴露的端口是34251的话,就可以在docker环境外访问了.</h1>
+
+<p>ping localhost:34251</p>
+
+<p>dockerfile常用指令<br />
+自动化运行CMD</p>
+
+<p>你是不是已经厌烦了使用docker run 来运行命令了呢？ 你是不是已经讨厌重复的copy命令运行了呢？</p>
+
+<p>那么请使用 CMD 吧.</p>
+
+<p>CMD的作用是,用来指定当你调其对应的container时, 运行的命令.</p>
+
+<p>比如在dockerfile中,指定/bin/bash.</p>
+
+<h1 id="当调起container时-运行-bin-bash">当调起container时,运行/bin/bash</h1>
+
+<p>docker run  -t -i jimmy/ubuntu:latest /bin/bash</p>
+
+<h1 id="等同于在dockerfile中指定cmd">等同于在dockerfile中指定CMD</h1>
+
+<p>CMD [&quot;/bin/bash&quot;]<br />
+// 运行docker run<br />
+docker run -t -i jimmy/ubuntu:latest</p>
+
+<p>不过,如果你在run后面手动指定指令运行的话,会默认覆盖掉CMD提供的命令.</p>
+
+<p>熟悉了CMD,感觉有种 RUN 的感觉. 但,这两者的区别还是很大的</p>
+
+<pre><code>RUN: 一般是用来给image增加layer来完善image, 他一旦执行完,就和后面的运行没有关系了
 
 CMD: 这个在docker build过程中,是没有半毛钱关系的. 他只和在调用image时,关系比较大
-</code></pre><p>强制运行ENTRYPOINT<p>这里的 ENTRYPOINT 和 CMD 很相似. 可以说,在一定程度上两者可以互相替代,但,两者的实际意义相差还是挺大的.<p>ENTRYPOINT 的主要功能是强制执行的环境.<h1 id=指定entrypoint为-bin-sh>指定ENTRYPOINT为/bin/sh</h1><p>ENTRYPOINT [&quot;/bin/sh&quot;]<br>// 然后在build之后,调起container<h1 id=我们尝试在run后面加上参数>我们尝试在run后面加上参数:</h1><p>docker run -t -i jimmy/demo /bin/bash/<br>// 不出意外的话,会得到一个bug提示:<blockquote><blockquote><p>/bin/sh: 0: Can't open /bin/bash/</blockquote></blockquote><p>所以, ENTRYPOINT 的主要功能实际上是,指定了内部运行命令的解析器. 而使用docker run添加的命令,会被当做参数添加给 ENTRYPOINT .<h1 id=已经指定了entrypoint-bin-sh>已经指定了ENTRYPOINT [&quot;/bin/sh&quot;]</h1><h1 id=运行docker-run>运行docker run</h1><p>docker run -t -i jimmy/demo /bin/bash/<h1 id=实际上相当于-不出错才怪嘞>实际上相当于(不出错才怪嘞...)</h1><p>/bin/sh /bin/bash/<p>另外,我们还可以使用 CMD 配合 ENTRYPOINT 写成默认参数的效果.<h1 id=默认执行-bin-bash-default-sh>默认执行 /bin/bash default.sh</h1><p>ENTRYPOINT [&quot;/bin/bash&quot;]<br>CMD [&quot;default.sh&quot;]<h1 id=如果你在docker-run中指定了参数的话-则cmd会默认被代替>如果你在docker run中指定了参数的话,则CMD会默认被代替</h1><p>docker run jimmy/demo sam.sh<p>不过,CMD和ENTRYPOINT都只能在dockerfile里面出现一次.<br>指定运行目录WORKDIR<p>既然,我们能够在dockerfile里面运行指定的命令。 但,有时,我们仅仅是想在不同的目录中执行不同的命令. 那,在dockerfile中,如何做到灵活的目录切换呢？<p>那就得使用docker提供的 WORKDIR 命令了.<h1 id=在-var-data里面创建data-js>在/var/data里面创建data.js</h1><p>WORKDIR /var/data<br>RUN touch data.js<h1 id=然后在-etc-下创建data-conf文件>然后在/etc 下创建data.conf文件</h1><p>WORKDIR /etc<br>RUN touch data.conf<p>并且当你在使用docker run时,他也会停留在使用 WORKDIR 指定的目录中.<br>环境变量的设置ENV<p>ENV 在dockerfile里面的用处,应该算是灰常大的. 什么灵活更新,什么变量设置,什么更改全局变量等. 都是so easy.<p>那 ENV 到底是用来干嘛的?<p>答: 就是用来设置变量的啊喂. 只是他是设置全局变量.<p>比如像PATH神马的之类的.<h1 id=设置一个data的全局变量>设置一个DATA的全局变量.</h1><p>ENV DATA=jimmy<p>ENV最独特之处在于,他所设置的变量,会在你运行的时候生效.即,如果你修改了PATH,他也会在container中立即生效.<h1 id=修改环境变量-1>修改环境变量</h1><p>ENV PATH=$PATH:/user/bin<br>// 现在进入到运行的container中<br>echo $PATH<blockquote><blockquote><p>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/data</blockquote></blockquote><p>挂载通用盘VOLUME<p>在说里面正式的内容之前,我们先来说一下,什么叫做 VOLUME . 说人话吧, VOLUME 叫做数据卷, 相当于通用盘一样的东西. 他其实也是一个存储装置,我们就把他叫做硬盘吧. 这个硬盘不普通,有&gt;1的外接口.(说人话) 每一个外接口,都可以接入到一个操作系统里面. 即,实现了多个系统的数据共享.<p>一句话:<p>VOLUME就是一个数据共享盘<p>而,docker秉承着,虚拟储存idea, 想下面idea践行到底.<p>wirte once, run anywhere<p>(感觉,在哪见过)<p>所以, dockerfile提供了一个 VOLUME 的指令,能够让我们指定数据卷的位置.<h1 id=指定-opt-data为数据卷>指定/opt/data为数据卷</h1><p>VOLUME [&quot;/opt/data&quot;]<h1 id=指定多个目录为数据卷-opt-data-opt-project>指定多个目录为数据卷/opt/data, /opt/project</h1><p>VOLUME [&quot;/opt/data&quot;,&quot;/opt/project&quot;]<p>当然,关于数据卷的操作,肯定不止挂载这一点,还有迁移,备份等等,相关操作. 具体,可以参考: Docker VOLUME<br>添加外部文件ADD<p>有时,我们仅仅是想将外部文件copy到container中,docker有办法吗？<p>nonsense<p>docker 提供了 ADD 命令,来帮助我们完成文件的添加. 不过,这里ADD有点限制, 即, 你添加的文件或者目录,只能在docker build运行的目录下, 因为,这是docker在调起container的时候,只将该目录放进了daemon(尴尬~)<h1 id=现假设-docker-build运行的目录为-data>现假设,docker build运行的目录为: /data</h1><p>// 只能添加指定目录下<br>// 将/data/sam.js 添加到image中的/opt/node/sam.js<br>// 如果存在该文件,则不会被覆盖<br>ADD sam.js /opt/node/<h1 id=添加文件-还可以使用通配符>添加文件,还可以使用通配符</h1><p>// 将所有的js文件,添加到node目录下<br>ADD *.js /opt/node/<h1 id=如果destination不是绝对路径-则相对于最近的workdir>如果destination不是绝对路径,则相对于最近的WORKDIR</h1><p>// 如果最近的WORKDIR为/var<br>// 则下列添加的路径为/var/opt/node<br>ADD *.js opt/node/<p>当文件被添加到指定目录中时,该文件的权限是755,并且UID和GID都是0.<p>ADD 还支持url添加,以及文件自动解压.<h1 id=使用url添加>使用url添加</h1><p>// 将指定路由的文件放到根目录当中<br>ADD <a href=http://example.com/foobar target=_blank>http://example.com/foobar</a> /<h1 id=自动解压tar-gz文件>自动解压tar.gz文件</h1><p>// 将文件解压过后放在指定目录中<br>ADD latest.tar.gz /var/www/wordpress/<p>纯粹的COPY<p>COPY和ADD非常类似. 我们可以做个类比:<p>ADD 包含 COPY<p>COPY做的事情比不上ADD, 他比ADD少了解压缩和URL下载的功能. 不过,他耗费的性能比较少,他只做纯粹的添加和下载.他的结构和ADD一毛一样. 不过, 有一点,COPY的时候,如果遇到目录不存在的情况下,COPY会自动创建<p>COPY file.js /opt/data/<p>添加个人信息LABEL<p>顾名思义,使用 LABEL 就是给你的image打上独一无二的标签.让别人能够了解,这个Image是属于你的. 又或是,用来提醒你自己,这个image现在处于哪一个版本状态.<h1 id=设置自己的label-1>设置自己的label</h1><p>LABEL owner=&quot;jimmy&quot; version=&quot;0.0.1&quot;<p>在创建完image之后, 我们可以使用 docker inspect 来查看我们已经打的LABEL<p>docker inspect jimmy/node<br>...<br>labels:{<pre><code>owner:&quot;jimmy&quot;,
+</code></pre>
+
+<p>强制运行ENTRYPOINT</p>
+
+<p>这里的 ENTRYPOINT 和 CMD 很相似. 可以说,在一定程度上两者可以互相替代,但,两者的实际意义相差还是挺大的.</p>
+
+<p>ENTRYPOINT 的主要功能是强制执行的环境.</p>
+
+<h1 id="指定entrypoint为-bin-sh">指定ENTRYPOINT为/bin/sh</h1>
+
+<p>ENTRYPOINT [&quot;/bin/sh&quot;]<br />
+// 然后在build之后,调起container</p>
+
+<h1 id="我们尝试在run后面加上参数">我们尝试在run后面加上参数:</h1>
+
+<p>docker run -t -i jimmy/demo /bin/bash/<br />
+// 不出意外的话,会得到一个bug提示:</p>
+
+<blockquote>
+<blockquote>
+<p>/bin/sh: 0: Can't open /bin/bash/</p>
+</blockquote>
+</blockquote>
+
+<p>所以, ENTRYPOINT 的主要功能实际上是,指定了内部运行命令的解析器. 而使用docker run添加的命令,会被当做参数添加给 ENTRYPOINT .</p>
+
+<h1 id="已经指定了entrypoint-bin-sh">已经指定了ENTRYPOINT [&quot;/bin/sh&quot;]</h1>
+
+<h1 id="运行docker-run">运行docker run</h1>
+
+<p>docker run -t -i jimmy/demo /bin/bash/</p>
+
+<h1 id="实际上相当于-不出错才怪嘞">实际上相当于(不出错才怪嘞...)</h1>
+
+<p>/bin/sh /bin/bash/</p>
+
+<p>另外,我们还可以使用 CMD 配合 ENTRYPOINT 写成默认参数的效果.</p>
+
+<h1 id="默认执行-bin-bash-default-sh">默认执行 /bin/bash default.sh</h1>
+
+<p>ENTRYPOINT [&quot;/bin/bash&quot;]<br />
+CMD [&quot;default.sh&quot;]</p>
+
+<h1 id="如果你在docker-run中指定了参数的话-则cmd会默认被代替">如果你在docker run中指定了参数的话,则CMD会默认被代替</h1>
+
+<p>docker run jimmy/demo sam.sh</p>
+
+<p>不过,CMD和ENTRYPOINT都只能在dockerfile里面出现一次.<br />
+指定运行目录WORKDIR</p>
+
+<p>既然,我们能够在dockerfile里面运行指定的命令。 但,有时,我们仅仅是想在不同的目录中执行不同的命令. 那,在dockerfile中,如何做到灵活的目录切换呢？</p>
+
+<p>那就得使用docker提供的 WORKDIR 命令了.</p>
+
+<h1 id="在-var-data里面创建data-js">在/var/data里面创建data.js</h1>
+
+<p>WORKDIR /var/data<br />
+RUN touch data.js</p>
+
+<h1 id="然后在-etc-下创建data-conf文件">然后在/etc 下创建data.conf文件</h1>
+
+<p>WORKDIR /etc<br />
+RUN touch data.conf</p>
+
+<p>并且当你在使用docker run时,他也会停留在使用 WORKDIR 指定的目录中.<br />
+环境变量的设置ENV</p>
+
+<p>ENV 在dockerfile里面的用处,应该算是灰常大的. 什么灵活更新,什么变量设置,什么更改全局变量等. 都是so easy.</p>
+
+<p>那 ENV 到底是用来干嘛的?</p>
+
+<p>答: 就是用来设置变量的啊喂. 只是他是设置全局变量.</p>
+
+<p>比如像PATH神马的之类的.</p>
+
+<h1 id="设置一个data的全局变量">设置一个DATA的全局变量.</h1>
+
+<p>ENV DATA=jimmy</p>
+
+<p>ENV最独特之处在于,他所设置的变量,会在你运行的时候生效.即,如果你修改了PATH,他也会在container中立即生效.</p>
+
+<h1 id="修改环境变量-1">修改环境变量</h1>
+
+<p>ENV PATH=$PATH:/user/bin<br />
+// 现在进入到运行的container中<br />
+echo $PATH</p>
+
+<blockquote>
+<blockquote>
+<p>/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/data</p>
+</blockquote>
+</blockquote>
+
+<p>挂载通用盘VOLUME</p>
+
+<p>在说里面正式的内容之前,我们先来说一下,什么叫做 VOLUME . 说人话吧, VOLUME 叫做数据卷, 相当于通用盘一样的东西. 他其实也是一个存储装置,我们就把他叫做硬盘吧. 这个硬盘不普通,有&gt;1的外接口.(说人话) 每一个外接口,都可以接入到一个操作系统里面. 即,实现了多个系统的数据共享.</p>
+
+<p>一句话:</p>
+
+<p>VOLUME就是一个数据共享盘</p>
+
+<p>而,docker秉承着,虚拟储存idea, 想下面idea践行到底.</p>
+
+<p>wirte once, run anywhere</p>
+
+<p>(感觉,在哪见过)</p>
+
+<p>所以, dockerfile提供了一个 VOLUME 的指令,能够让我们指定数据卷的位置.</p>
+
+<h1 id="指定-opt-data为数据卷">指定/opt/data为数据卷</h1>
+
+<p>VOLUME [&quot;/opt/data&quot;]</p>
+
+<h1 id="指定多个目录为数据卷-opt-data-opt-project">指定多个目录为数据卷/opt/data, /opt/project</h1>
+
+<p>VOLUME [&quot;/opt/data&quot;,&quot;/opt/project&quot;]</p>
+
+<p>当然,关于数据卷的操作,肯定不止挂载这一点,还有迁移,备份等等,相关操作. 具体,可以参考: Docker VOLUME<br />
+添加外部文件ADD</p>
+
+<p>有时,我们仅仅是想将外部文件copy到container中,docker有办法吗？</p>
+
+<p>nonsense</p>
+
+<p>docker 提供了 ADD 命令,来帮助我们完成文件的添加. 不过,这里ADD有点限制, 即, 你添加的文件或者目录,只能在docker build运行的目录下, 因为,这是docker在调起container的时候,只将该目录放进了daemon(尴尬~)</p>
+
+<h1 id="现假设-docker-build运行的目录为-data">现假设,docker build运行的目录为: /data</h1>
+
+<p>// 只能添加指定目录下<br />
+// 将/data/sam.js 添加到image中的/opt/node/sam.js<br />
+// 如果存在该文件,则不会被覆盖<br />
+ADD sam.js /opt/node/</p>
+
+<h1 id="添加文件-还可以使用通配符">添加文件,还可以使用通配符</h1>
+
+<p>// 将所有的js文件,添加到node目录下<br />
+ADD *.js /opt/node/</p>
+
+<h1 id="如果destination不是绝对路径-则相对于最近的workdir">如果destination不是绝对路径,则相对于最近的WORKDIR</h1>
+
+<p>// 如果最近的WORKDIR为/var<br />
+// 则下列添加的路径为/var/opt/node<br />
+ADD *.js opt/node/</p>
+
+<p>当文件被添加到指定目录中时,该文件的权限是755,并且UID和GID都是0.</p>
+
+<p>ADD 还支持url添加,以及文件自动解压.</p>
+
+<h1 id="使用url添加">使用url添加</h1>
+
+<p>// 将指定路由的文件放到根目录当中<br />
+ADD <a href="http://example.com/foobar" target="_blank">http://example.com/foobar</a> /</p>
+
+<h1 id="自动解压tar-gz文件">自动解压tar.gz文件</h1>
+
+<p>// 将文件解压过后放在指定目录中<br />
+ADD latest.tar.gz /var/www/wordpress/</p>
+
+<p>纯粹的COPY</p>
+
+<p>COPY和ADD非常类似. 我们可以做个类比:</p>
+
+<p>ADD 包含 COPY</p>
+
+<p>COPY做的事情比不上ADD, 他比ADD少了解压缩和URL下载的功能. 不过,他耗费的性能比较少,他只做纯粹的添加和下载.他的结构和ADD一毛一样. 不过, 有一点,COPY的时候,如果遇到目录不存在的情况下,COPY会自动创建</p>
+
+<p>COPY file.js /opt/data/</p>
+
+<p>添加个人信息LABEL</p>
+
+<p>顾名思义,使用 LABEL 就是给你的image打上独一无二的标签.让别人能够了解,这个Image是属于你的. 又或是,用来提醒你自己,这个image现在处于哪一个版本状态.</p>
+
+<h1 id="设置自己的label-1">设置自己的label</h1>
+
+<p>LABEL owner=&quot;jimmy&quot; version=&quot;0.0.1&quot;</p>
+
+<p>在创建完image之后, 我们可以使用 docker inspect 来查看我们已经打的LABEL</p>
+
+<p>docker inspect jimmy/node<br />
+...<br />
+labels:{</p>
+
+<pre><code>owner:&quot;jimmy&quot;,
 version:&quot;0.0.1&quot;
-</code></pre><p>}<br>...<p>本人觉得, 这个指令其实真的,有时, 母鸡用到什么地方去...<p>并且,书写的时候,最好多个连着写,因为这样只会增加一层image.(image的层数是有限制的)<br>参数形式ARG<p>这是docker提供的另外一个,让我有点懵逼的命令. 他的实际效果和 ENV 的区别可以趋近于无。<h1 id=使用arg定义变量>使用ARG定义变量</h1><p>ARG buildno<h1 id=设置默认值>设置默认值</h1><p>ARG user1=someuser<p>当然,我们可以在命令中,手动指定替换.<h1 id=在dockerfile定义了默认变量-1>在dockerfile定义了默认变量</h1><p>ARG user=jimy<h1 id=在运行时-进行手动替换-1>在运行时,进行手动替换</h1><p>docker build --build-arg user=sam -t jimmy/demo .<p>上面说了ARG和ENV比较类似,不过,里面的区别还是有的. 即, ARG只能用在 docker build 的阶段, 并且不会被保存在 image 中,这就是和ENV的区别.<br>模板image之ONBUILD<p>因为dockerfile的构建的层数有限制,所以,这也带给了我们一些麻烦, 如果搭建的环境过多,则会造成写到一半,发现dockerfile已经full. 这时候, 就轮到ONBUILD出场了. ONBUILD 的作用在于,他可以完美的实现模板image的搭建.<p>ONBUILD的主要作用在于,他定义的命令,可以在子dockerfile中使用.(md... 好绕口)<h1 id=使用onbuild-默认下载apache>使用ONBUILD 默认下载Apache</h1><p>ONBUILD RUN apt-get update &amp;&amp; apt-get install -y apache2<p>// 然后运行docker file 会得到下列结果<br>Step 3 : ONBUILD RUN apt-get update &amp;&amp; apt-get install -y apache2<br>---&gt; Running in 0e117f6ea4ba<br>---&gt; a79983575b8<p>//然后生成一个新的image,我们这里暂且叫他jimmy/demo<p>接下来,我们再来写一个dockerfile<h1 id=这里继承上面的jimmy-demo>这里继承上面的jimmy/demo</h1><p>FROM jimmy/demo:latest<br>ENV SEX=001<p>// 运行上面的dockerfile,得到:<br>Step 0 : FROM jimmy/demo<h1 id=executing-1-build-triggers>Executing 1 build triggers</h1><p>Step onbuild-0 : ADD . /var/www/<br>---&gt; 1a018213a59d<br>---&gt; 1a018213a59d<br>Step 1: ENV SEX=001<br>...<p>细心的童鞋可以发现这一条命令:<p>Step onbuild-0 : RUN apt-get update &amp;&amp; apt-get install -y apache2<br>---&gt; 1a018213a59d<br>---&gt; 1a018213a59d<p>他居然在这里自动运行了. 所以,我们可以将 ONBUILD 命令理解为模板命令. 即,子dockerfile里面运行时同样生效(这里,我没有说grandchildren的事).<p>但 ONBUILD 只能往下延伸一级. 相当于你用 ONBUILD 定义的命令,有两次有效次数,一次在build原来Image时,已经用掉了. 所以, 另外一次(在子dockerfile中使用)用掉了之后就无效了. grandchildren dockerfile就没法使用了.</div><div class=clear></div></div></div></article><div class=clear></div><p class=post-tags><span class="fa fa-tags">Tags:</span>
-<a rel=tag href=../../../tags/docker>Docker</a><div id=related-posts><div class=related-inner></div></div><section id=comments class=themeform><div id=gitment></div><link rel=stylesheet href=https://imsun.github.io/gitment/style/default.css><script src=https://imsun.github.io/gitment/dist/gitment.browser.js></script><script>var gitment=new Gitment({id:location.pathname,owner:'rinetd',repo:'rinetd.github.io',oauth:{client_id:'89af57db85ca20b7668c',client_secret:'4e57a031d7bd29f740559a907db2fe0efb3bf813',},})
-gitment.render('gitment')</script></section><section id=comments class=themeform></section></div></div><div class="sidebar s1 collapsed" data-position=left data-layout=col-3cm data-sb-id=s1><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>Follow:<ul class=social-links><li><a class=social-tooltip href=mailto: title=Email><i class="fa fa-envelope"></i></a><li><a class=social-tooltip href=//github.com/ title=GitHub><i class="fa fa-github"></i></a><li><a class=social-tooltip title="RSS Feed" aria-label="RSS Feed" href=../../../feed target=_blank style=color:rgba(255,255,255,.7)><i class="fa fa-rss"></i></a></ul></div><ul class="post-nav group"><li class=previous><a href=../../../devops/docker/docker-volume/ rel=prev><i class="fa fa-chevron-left"></i><strong>Previous Post</strong>
-<span>Linux命令 Docker volume</span></a></ul><div id=categories-2 class="widget widget_categories"><h3>分类</h3><ul><li class="cat-item cat-item-1"><a href=../../../categories/android/>Android</a>
-<small>(17)</small><li class="cat-item cat-item-1"><a href=../../../categories/devops/>Devops</a>
-<small>(63)</small><li class="cat-item cat-item-1"><a href=../../../categories/docker/>Docker</a>
-<small>(15)</small><li class="cat-item cat-item-1"><a href=../../../categories/golang/>Golang</a>
-<small>(77)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux/>Linux</a>
-<small>(77)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux-%E5%91%BD%E4%BB%A4/>Linux-命令</a>
-<small>(113)</small><li class="cat-item cat-item-1"><a href=../../../categories/windows/>Windows</a>
-<small>(5)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/>前端技术</a>
-<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/>嵌入式</a>
-<small>(22)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B7%A5%E5%85%B7/>工具</a>
-<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/>常用算法</a>
-<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/>数据库</a>
-<small>(36)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/>文本编辑</a>
-<small>(27)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/>正则表达式</a>
-<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/>生活技巧</a>
-<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/>程序员</a>
-<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/>网络安全</a>
-<small>(39)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/>集群监控</a>
-<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/>静态博客</a>
-<small>(14)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%AB%98%E6%95%B0/>高数</a>
-<small>(2)</small></ul></div></div></div><div class="sidebar s2 collapsed" data-position=right data-layout=col-3cm data-sb-id=s2><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>More</div><ul class="post-nav group"><li class=next><a href=../../../devops/docker/alpine/ rel=next><i class="fa fa-chevron-right"></i><strong>Next post</strong>
-<span>Linux命令 alpie</span></a></ul><div id=tag_cloud-2 class="widget widget_tag_cloud"><h3>标签云</h3><div class="tagcloud post-tags"><a rel=tag href=../../../tags/ansible/ class=tag-link-12 title="1 Posts">ansible<small>(12)</small></a>
-<a rel=tag href=../../../tags/awesome/ class=tag-link-3 title="1 Posts">awesome<small>(3)</small></a>
-<a rel=tag href=../../../tags/centos7/ class=tag-link-2 title="1 Posts">centos7<small>(2)</small></a>
-<a rel=tag href=../../../tags/css/ class=tag-link-18 title="1 Posts">css<small>(18)</small></a>
-<a rel=tag href=../../../tags/curd/ class=tag-link-3 title="1 Posts">curd<small>(3)</small></a>
-<a rel=tag href=../../../tags/curl/ class=tag-link-2 title="1 Posts">curl<small>(2)</small></a>
-<a rel=tag href=../../../tags/docker/ class=tag-link-18 title="1 Posts">docker<small>(18)</small></a>
-<a rel=tag href=../../../tags/drone/ class=tag-link-18 title="1 Posts">drone<small>(18)</small></a>
-<a rel=tag href=../../../tags/emacs/ class=tag-link-12 title="1 Posts">emacs<small>(12)</small></a>
-<a rel=tag href=../../../tags/encode/ class=tag-link-3 title="1 Posts">encode<small>(3)</small></a>
-<a rel=tag href=../../../tags/etcd/ class=tag-link-4 title="1 Posts">etcd<small>(4)</small></a>
-<a rel=tag href=../../../tags/flannel/ class=tag-link-2 title="1 Posts">flannel<small>(2)</small></a>
-<a rel=tag href=../../../tags/git/ class=tag-link-4 title="1 Posts">git<small>(4)</small></a>
-<a rel=tag href=../../../tags/golang/ class=tag-link-84 title="1 Posts">golang<small>(84)</small></a>
-<a rel=tag href=../../../tags/gradle/ class=tag-link-3 title="1 Posts">gradle<small>(3)</small></a>
-<a rel=tag href=../../../tags/haproxy/ class=tag-link-5 title="1 Posts">haproxy<small>(5)</small></a>
-<a rel=tag href=../../../tags/hexo/ class=tag-link-2 title="1 Posts">hexo<small>(2)</small></a>
-<a rel=tag href=../../../tags/html/ class=tag-link-2 title="1 Posts">html<small>(2)</small></a>
-<a rel=tag href=../../../tags/http/ class=tag-link-2 title="1 Posts">http<small>(2)</small></a>
-<a rel=tag href=../../../tags/hugo/ class=tag-link-13 title="1 Posts">hugo<small>(13)</small></a>
-<a rel=tag href=../../../tags/imagemagick/ class=tag-link-2 title="1 Posts">imagemagick<small>(2)</small></a>
-<a rel=tag href=../../../tags/ip/ class=tag-link-3 title="1 Posts">ip<small>(3)</small></a>
-<a rel=tag href=../../../tags/iproute2/ class=tag-link-5 title="1 Posts">iproute2<small>(5)</small></a>
-<a rel=tag href=../../../tags/iptables/ class=tag-link-13 title="1 Posts">iptables<small>(13)</small></a>
-<a rel=tag href=../../../tags/javascript/ class=tag-link-6 title="1 Posts">javascript<small>(6)</small></a>
-<a rel=tag href=../../../tags/jwt/ class=tag-link-3 title="1 Posts">jwt<small>(3)</small></a>
-<a rel=tag href=../../../tags/kubernetes/ class=tag-link-11 title="1 Posts">kubernetes<small>(11)</small></a>
-<a rel=tag href=../../../tags/linux/ class=tag-link-6 title="1 Posts">linux<small>(6)</small></a>
-<a rel=tag href=../../../tags/lvs/ class=tag-link-8 title="1 Posts">lvs<small>(8)</small></a>
-<a rel=tag href=../../../tags/makefile/ class=tag-link-2 title="1 Posts">makefile<small>(2)</small></a>
-<a rel=tag href=../../../tags/mariadb/ class=tag-link-9 title="1 Posts">mariadb<small>(9)</small></a>
-<a rel=tag href=../../../tags/maven/ class=tag-link-2 title="1 Posts">maven<small>(2)</small></a>
-<a rel=tag href=../../../tags/meteor/ class=tag-link-7 title="1 Posts">meteor<small>(7)</small></a>
-<a rel=tag href=../../../tags/ml/ class=tag-link-2 title="1 Posts">ml<small>(2)</small></a>
-<a rel=tag href=../../../tags/mysql/ class=tag-link-50 title="1 Posts">mysql<small>(50)</small></a>
-<a rel=tag href=../../../tags/nginx/ class=tag-link-26 title="1 Posts">nginx<small>(26)</small></a>
-<a rel=tag href=../../../tags/nmap/ class=tag-link-3 title="1 Posts">nmap<small>(3)</small></a>
-<a rel=tag href=../../../tags/npm/ class=tag-link-3 title="1 Posts">npm<small>(3)</small></a>
-<a rel=tag href=../../../tags/oauth2/ class=tag-link-2 title="1 Posts">oauth2<small>(2)</small></a>
-<a rel=tag href=../../../tags/pandoc/ class=tag-link-2 title="1 Posts">pandoc<small>(2)</small></a>
-<a rel=tag href=../../../tags/php/ class=tag-link-3 title="1 Posts">php<small>(3)</small></a>
-<a rel=tag href=../../../tags/powershell/ class=tag-link-2 title="1 Posts">powershell<small>(2)</small></a>
-<a rel=tag href=../../../tags/prometheus/ class=tag-link-8 title="1 Posts">prometheus<small>(8)</small></a>
-<a rel=tag href=../../../tags/python/ class=tag-link-5 title="1 Posts">python<small>(5)</small></a>
-<a rel=tag href=../../../tags/redis/ class=tag-link-2 title="1 Posts">redis<small>(2)</small></a>
-<a rel=tag href=../../../tags/responsive/ class=tag-link-3 title="1 Posts">responsive<small>(3)</small></a>
-<a rel=tag href=../../../tags/restful/ class=tag-link-6 title="1 Posts">restful<small>(6)</small></a>
-<a rel=tag href=../../../tags/rsync/ class=tag-link-2 title="1 Posts">rsync<small>(2)</small></a>
-<a rel=tag href=../../../tags/scrapy/ class=tag-link-8 title="1 Posts">scrapy<small>(8)</small></a>
-<a rel=tag href=../../../tags/scss/ class=tag-link-2 title="1 Posts">scss<small>(2)</small></a>
-<a rel=tag href=../../../tags/sed/ class=tag-link-3 title="1 Posts">sed<small>(3)</small></a>
-<a rel=tag href=../../../tags/seo/ class=tag-link-5 title="1 Posts">seo<small>(5)</small></a>
-<a rel=tag href=../../../tags/shell/ class=tag-link-8 title="1 Posts">shell<small>(8)</small></a>
-<a rel=tag href=../../../tags/ssh/ class=tag-link-3 title="1 Posts">ssh<small>(3)</small></a>
-<a rel=tag href=../../../tags/stm32/ class=tag-link-5 title="1 Posts">stm32<small>(5)</small></a>
-<a rel=tag href=../../../tags/swagger/ class=tag-link-2 title="1 Posts">swagger<small>(2)</small></a>
-<a rel=tag href=../../../tags/swarm/ class=tag-link-2 title="1 Posts">swarm<small>(2)</small></a>
-<a rel=tag href=../../../tags/sysbench/ class=tag-link-2 title="1 Posts">sysbench<small>(2)</small></a>
-<a rel=tag href=../../../tags/sysctl/ class=tag-link-2 title="1 Posts">sysctl<small>(2)</small></a>
-<a rel=tag href=../../../tags/tc/ class=tag-link-2 title="1 Posts">tc<small>(2)</small></a>
-<a rel=tag href=../../../tags/tcpdump/ class=tag-link-2 title="1 Posts">tcpdump<small>(2)</small></a>
-<a rel=tag href=../../../tags/timezone/ class=tag-link-2 title="1 Posts">timezone<small>(2)</small></a>
-<a rel=tag href=../../../tags/tshark/ class=tag-link-2 title="1 Posts">tshark<small>(2)</small></a>
-<a rel=tag href=../../../tags/ubuntu/ class=tag-link-2 title="1 Posts">ubuntu<small>(2)</small></a>
-<a rel=tag href=../../../tags/ulimit/ class=tag-link-2 title="1 Posts">ulimit<small>(2)</small></a>
-<a rel=tag href=../../../tags/vim/ class=tag-link-11 title="1 Posts">vim<small>(11)</small></a>
-<a rel=tag href=../../../tags/webpack3/ class=tag-link-2 title="1 Posts">webpack3<small>(2)</small></a>
-<a rel=tag href=../../../tags/windows/ class=tag-link-2 title="1 Posts">windows<small>(2)</small></a>
-<a rel=tag href=../../../tags/wireshark/ class=tag-link-2 title="1 Posts">wireshark<small>(2)</small></a>
-<a rel=tag href=../../../tags/xidel/ class=tag-link-2 title="1 Posts">xidel<small>(2)</small></a>
-<a rel=tag href=../../../tags/xml/ class=tag-link-2 title="1 Posts">xml<small>(2)</small></a>
-<a rel=tag href=../../../tags/yaml/ class=tag-link-2 title="1 Posts">yaml<small>(2)</small></a>
-<a rel=tag href=../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/ class=tag-link-2 title="1 Posts">微服务<small>(2)</small></a></div></div></div></div>`</div></div></div></div></div><footer id=footer><section class=container id=footer-bottom><div class=container-inner><a id=back-to-top href=#><i class="fa fa-angle-up"></i></a><div class="pad group"><div class="grid one-half"><div id=copyright><p>Copyright (c) 2017. All rights reserved. (版权所有) <a href=http://www.miitbeian.gov.cn/>鲁ICP备17074587号-1</a></div></div><div class="grid one-half last"><ul class=social-links><li><a class=social-tooltip title="On WeiBo" href=http://weibo.com/rinetd target=_blank><i class="fa fa-weibo"></i></a><li><a class=social-tooltip title="On Twitter" href=https://twitter.com/rinetd target=_blank><i class="fa fa-twitter"></i></a><li><a class=social-tooltip title="On GitHub" href=https://github.com/rinetd target=_blank><i class="fa fa-github"></i></a></ul></div></div></div></section></footer><div class=back-to-top id=back-to-top><i class="fa fa-angle-double-up"></i></div><script>var HUParams={"_disabled":[],"SmoothScroll":{"Enabled":true,"Options":{"touchpadSupport":false}},"centerAllImg":"1","timerOnScrollAllBrowsers":"1","extLinksStyle":"1","extLinksTargetExt":"1","extLinksSkipSelectors":{"classes":["btn","button"],"ids":[]},"imgSmartLoadEnabled":"1","imgSmartLoadOpts":{"parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],"opts":{"excludeImg":[".tc-holder-img"],"fadeIn_options":100}},"goldenRatio":"1.618","gridGoldenRatioLimit":"350","sbStickyUserSettings":{"desktop":true,"mobile":true},"isWPMobile":"","menuStickyUserSettings":{"desktop":"stick_up","mobile":"stick_up"},"isDevMode":"","ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1","frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},"userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},"isWelcomeNoteOn":"","welcomeContent":""};</script><script src=https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js></script><script src=https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js></script><script src=../../../front/js/scripts.js></script><script>$(".topbar-toggle-down").click(function(){$("#nav-topbar").css("overflow","visible");});</script><script>window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;ga('create','UA-106129999-2','auto');ga('send','pageview');</script><script async src=//www.google-analytics.com/analytics.js></script><noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height=0 width=0 style=display:none;visibility:hidden></iframe></noscript><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5HM5XM2');</script><script id=baidu_analytics>var _hmt=_hmt||[];(function(){if(window.location.hostname==='localhost')return;var hm=document.createElement("script");hm.async=true;hm.src="https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+</code></pre>
+
+<p>}<br />
+...</p>
+
+<p>本人觉得, 这个指令其实真的,有时, 母鸡用到什么地方去...</p>
+
+<p>并且,书写的时候,最好多个连着写,因为这样只会增加一层image.(image的层数是有限制的)<br />
+参数形式ARG</p>
+
+<p>这是docker提供的另外一个,让我有点懵逼的命令. 他的实际效果和 ENV 的区别可以趋近于无。</p>
+
+<h1 id="使用arg定义变量">使用ARG定义变量</h1>
+
+<p>ARG buildno</p>
+
+<h1 id="设置默认值">设置默认值</h1>
+
+<p>ARG user1=someuser</p>
+
+<p>当然,我们可以在命令中,手动指定替换.</p>
+
+<h1 id="在dockerfile定义了默认变量-1">在dockerfile定义了默认变量</h1>
+
+<p>ARG user=jimy</p>
+
+<h1 id="在运行时-进行手动替换-1">在运行时,进行手动替换</h1>
+
+<p>docker build --build-arg user=sam -t jimmy/demo .</p>
+
+<p>上面说了ARG和ENV比较类似,不过,里面的区别还是有的. 即, ARG只能用在 docker build 的阶段, 并且不会被保存在 image 中,这就是和ENV的区别.<br />
+模板image之ONBUILD</p>
+
+<p>因为dockerfile的构建的层数有限制,所以,这也带给了我们一些麻烦, 如果搭建的环境过多,则会造成写到一半,发现dockerfile已经full. 这时候, 就轮到ONBUILD出场了. ONBUILD 的作用在于,他可以完美的实现模板image的搭建.</p>
+
+<p>ONBUILD的主要作用在于,他定义的命令,可以在子dockerfile中使用.(md... 好绕口)</p>
+
+<h1 id="使用onbuild-默认下载apache">使用ONBUILD 默认下载Apache</h1>
+
+<p>ONBUILD RUN apt-get update &amp;&amp; apt-get install -y apache2</p>
+
+<p>// 然后运行docker file 会得到下列结果<br />
+ Step 3 : ONBUILD RUN apt-get update &amp;&amp; apt-get install -y apache2<br />
+   ---&gt; Running in 0e117f6ea4ba<br />
+   ---&gt; a79983575b8</p>
+
+<p>//然后生成一个新的image,我们这里暂且叫他jimmy/demo</p>
+
+<p>接下来,我们再来写一个dockerfile</p>
+
+<h1 id="这里继承上面的jimmy-demo">这里继承上面的jimmy/demo</h1>
+
+<p>FROM jimmy/demo:latest<br />
+ENV SEX=001</p>
+
+<p>// 运行上面的dockerfile,得到:<br />
+Step 0 : FROM jimmy/demo</p>
+
+<h1 id="executing-1-build-triggers">Executing 1 build triggers</h1>
+
+<p>Step onbuild-0 : ADD . /var/www/<br />
+   ---&gt; 1a018213a59d<br />
+   ---&gt; 1a018213a59d<br />
+ Step 1: ENV SEX=001<br />
+ ...</p>
+
+<p>细心的童鞋可以发现这一条命令:</p>
+
+<p>Step onbuild-0 : RUN apt-get update &amp;&amp; apt-get install -y apache2<br />
+   ---&gt; 1a018213a59d<br />
+   ---&gt; 1a018213a59d</p>
+
+<p>他居然在这里自动运行了. 所以,我们可以将 ONBUILD 命令理解为模板命令. 即,子dockerfile里面运行时同样生效(这里,我没有说grandchildren的事).</p>
+
+<p>但 ONBUILD 只能往下延伸一级. 相当于你用 ONBUILD 定义的命令,有两次有效次数,一次在build原来Image时,已经用掉了. 所以, 另外一次(在子dockerfile中使用)用掉了之后就无效了. grandchildren dockerfile就没法使用了.</p>
+
+                        </div>                      
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </article>   
+            <div class="clear"></div>
+
+            
+            <p class="post-tags">
+                  <span class="fa fa-tags">Tags:</span>
+                  
+                    <a rel="tag" href="../../../tags/docker">Docker</a>
+                  
+            </p>
+            
+            <div id="related-posts">
+                <div class="related-inner">
+                </div>
+            </div>
+            
+            
+<section id="comments" class="themeform">
+  
+
+  
+
+  
+  
+
+<div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+
+
+<script>
+var gitment = new Gitment({
+  
+  id: location.pathname,
+  owner: 'rinetd',
+  repo: 'rinetd.github.io',
+  oauth: {
+    client_id: '89af57db85ca20b7668c',
+    client_secret: '4e57a031d7bd29f740559a907db2fe0efb3bf813',
+  },
+})
+gitment.render('gitment')
+</script>
+
+  
+
+
+</section>
+
+            
+            <section id="comments" class="themeform">
+                
+            </section>
+        </div>
+</div> <div class="sidebar s1 collapsed" data-position="left" data-layout="col-3cm" data-sb-id="s1">
+    <a class="sidebar-toggle" title="Expand Sidebar">
+        <i class="fas icon-sidebar-toggle"></i>
+    </a>
+    <div class="sidebar-content">
+        <div class="sidebar-top group">
+            <p>Follow:</p>  
+                          
+<ul class="social-links">
+    
+    
+    
+    
+
+    
+    <li>
+        <a class="social-tooltip" href="mailto:" title="Email">
+            <i class="fa fa-envelope"></i></a>
+    </li>
+
+    
+    <li>
+        <a class="social-tooltip"  href="//github.com/" title="GitHub"><i
+                class="fa fa-github"></i></a>
+    </li>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    <li>
+        <a class="social-tooltip" title="RSS Feed"
+            aria-label="RSS Feed"
+            href="../../../feed" target="_blank"
+            style="color:rgba(255,255,255,0.7)">
+            <i class="fa fa-rss"></i>
+        </a>
+    </li>
+
+</ul>
+   
+        </div>
+            <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="../../../devops/docker/alpine/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>Linux命令 alpie</span>
+      </a>
+      
+  </li>
+</ul>
+
+            
+            <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/ai/">Ai</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/algorithm/">Algorithm</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/ansible/">Ansible</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/beats/">Beats</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/caffe/">Caffe</a>
+        <small>(18)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/camera/">Camera</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/cgo/">Cgo</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/clang/">Clang</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/cmd/">Cmd</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/cpp/">Cpp</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/css/">Css</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/dart/">Dart</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/database/">Database</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/dataset/">Dataset</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/deeplearning/">Deeplearning</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/devops/">Devops</a>
+        <small>(70)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/docker/">Docker</a>
+        <small>(18)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/dts/">Dts</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/elasticsearch/">Elasticsearch</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/english/">English</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/freertos/">Freertos</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/front-end/">Front-End</a>
+        <small>(20)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/golang/">Golang</a>
+        <small>(127)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/hacker/">Hacker</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/hardware/">Hardware</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/hisi/">Hisi</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/jetson/">Jetson</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/js/">Js</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/jumpserver/">Jumpserver</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/kernel/">Kernel</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/linux/">Linux</a>
+        <small>(91)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
+        <small>(120)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/mac/">Mac</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/machinelearn/">Machinelearn</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/machinelearning/">Machinelearning</a>
+        <small>(11)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/macos/">Macos</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/math/">Math</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/matplotlib/">Matplotlib</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/mysql/">Mysql</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/ncnn/">Ncnn</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/network/">Network</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/nginx/">Nginx</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/node/">Node</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/numpy/">Numpy</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/opencv/">Opencv</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/pandas/">Pandas</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/platform/">Platform</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/post/">Post</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/pyqt/">Pyqt</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/python/">Python</a>
+        <small>(24)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/pytorch/">Pytorch</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/rk3288/">Rk3288</a>
+        <small>(23)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/rk3399/">Rk3399</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/rtmp/">Rtmp</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/scikit/">Scikit</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/shell/">Shell</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/tool/">Tool</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/weixin/">Weixin</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/windows/">Windows</a>
+        <small>(22)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/work/">Work</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/yolo/">Yolo</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%8D%8F%E8%AE%AE/">协议</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+        <small>(23)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%B7%A5%E5%85%B7/">工具</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/">排列组合</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(37)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(30)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(40)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(15)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E9%AB%98%E6%95%B0/">高数</a>
+        <small>(2)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    </div>
+</div> <div class="sidebar s2 collapsed" data-position="right" data-layout="col-3cm" data-sb-id="s2">
+        <a class="sidebar-toggle" title="Expand Sidebar">
+            <i class="fas icon-sidebar-toggle"></i>
+        </a>
+        <div class="sidebar-content">
+            <div class="sidebar-top group">
+                <p>More</p>
+            </div>
+            <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="../../../devops/docker/docker-volume/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>Linux命令 Docker volume</span>
+      </a>
+      
+  </li>
+</ul>
+
+            <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ai/" class="tag-link-4" title="1 Posts">ai<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ansible/" class="tag-link-19" title="1 Posts">ansible<small>(19)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/awesome/" class="tag-link-3" title="1 Posts">awesome<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/bfc/" class="tag-link-2" title="1 Posts">bfc<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/c/" class="tag-link-5" title="1 Posts">c<small>(5)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/caffe/" class="tag-link-18" title="1 Posts">caffe<small>(18)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/cgo/" class="tag-link-9" title="1 Posts">cgo<small>(9)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/clang/" class="tag-link-6" title="1 Posts">clang<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/cmd/" class="tag-link-2" title="1 Posts">cmd<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/cpp/" class="tag-link-2" title="1 Posts">cpp<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/css/" class="tag-link-20" title="1 Posts">css<small>(20)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/css3/" class="tag-link-2" title="1 Posts">css3<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/dataset/" class="tag-link-2" title="1 Posts">dataset<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/devops/" class="tag-link-3" title="1 Posts">devops<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/docker/" class="tag-link-21" title="1 Posts">docker<small>(21)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/drone/" class="tag-link-22" title="1 Posts">drone<small>(22)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/dts/" class="tag-link-6" title="1 Posts">dts<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/elasticsearch/" class="tag-link-9" title="1 Posts">elasticsearch<small>(9)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/encode/" class="tag-link-3" title="1 Posts">encode<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/english/" class="tag-link-8" title="1 Posts">english<small>(8)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/es6/" class="tag-link-2" title="1 Posts">es6<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/etcd/" class="tag-link-4" title="1 Posts">etcd<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/flannel/" class="tag-link-2" title="1 Posts">flannel<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/git/" class="tag-link-6" title="1 Posts">git<small>(6)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/github/" class="tag-link-2" title="1 Posts">github<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/golang/" class="tag-link-141" title="1 Posts">golang<small>(141)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/gradle/" class="tag-link-3" title="1 Posts">gradle<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/hardware/" class="tag-link-10" title="1 Posts">hardware<small>(10)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/hexo/" class="tag-link-3" title="1 Posts">hexo<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/html/" class="tag-link-2" title="1 Posts">html<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/http/" class="tag-link-6" title="1 Posts">http<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/hugo/" class="tag-link-14" title="1 Posts">hugo<small>(14)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ip/" class="tag-link-3" title="1 Posts">ip<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/iptables/" class="tag-link-17" title="1 Posts">iptables<small>(17)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/javascript/" class="tag-link-19" title="1 Posts">javascript<small>(19)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/jquery/" class="tag-link-12" title="1 Posts">jquery<small>(12)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/js/" class="tag-link-10" title="1 Posts">js<small>(10)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/jumpserver/" class="tag-link-2" title="1 Posts">jumpserver<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/jwt/" class="tag-link-3" title="1 Posts">jwt<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/kernel/" class="tag-link-6" title="1 Posts">kernel<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/kubernetes/" class="tag-link-11" title="1 Posts">kubernetes<small>(11)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/linux/" class="tag-link-19" title="1 Posts">linux<small>(19)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/machinelearn/" class="tag-link-3" title="1 Posts">machinelearn<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/machinelearning/" class="tag-link-11" title="1 Posts">machinelearning<small>(11)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/macos/" class="tag-link-7" title="1 Posts">macos<small>(7)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/mariadb/" class="tag-link-9" title="1 Posts">mariadb<small>(9)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/math/" class="tag-link-6" title="1 Posts">math<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/matplotlib/" class="tag-link-3" title="1 Posts">matplotlib<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/maven/" class="tag-link-2" title="1 Posts">maven<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ml/" class="tag-link-3" title="1 Posts">ml<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/mysql/" class="tag-link-61" title="1 Posts">mysql<small>(61)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ncnn/" class="tag-link-3" title="1 Posts">ncnn<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/netns/" class="tag-link-2" title="1 Posts">netns<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/network/" class="tag-link-2" title="1 Posts">network<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/nginx/" class="tag-link-28" title="1 Posts">nginx<small>(28)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/nmap/" class="tag-link-2" title="1 Posts">nmap<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/node/" class="tag-link-4" title="1 Posts">node<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/nosql/" class="tag-link-8" title="1 Posts">nosql<small>(8)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/npm/" class="tag-link-3" title="1 Posts">npm<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/numpy/" class="tag-link-4" title="1 Posts">numpy<small>(4)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/oauth2/" class="tag-link-2" title="1 Posts">oauth2<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/opencv/" class="tag-link-10" title="1 Posts">opencv<small>(10)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/openssl/" class="tag-link-3" title="1 Posts">openssl<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/php/" class="tag-link-4" title="1 Posts">php<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/post/" class="tag-link-3" title="1 Posts">post<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/prometheus/" class="tag-link-8" title="1 Posts">prometheus<small>(8)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/pyqt/" class="tag-link-4" title="1 Posts">pyqt<small>(4)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/python/" class="tag-link-26" title="1 Posts">python<small>(26)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/pytorch/" class="tag-link-6" title="1 Posts">pytorch<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/redis/" class="tag-link-2" title="1 Posts">redis<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/reflect/" class="tag-link-3" title="1 Posts">reflect<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/responsive/" class="tag-link-2" title="1 Posts">responsive<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/restful/" class="tag-link-6" title="1 Posts">restful<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/rk3288/" class="tag-link-22" title="1 Posts">rk3288<small>(22)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/rk3399/" class="tag-link-9" title="1 Posts">rk3399<small>(9)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/route/" class="tag-link-2" title="1 Posts">route<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/scikit/" class="tag-link-3" title="1 Posts">scikit<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/scss/" class="tag-link-2" title="1 Posts">scss<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/seo/" class="tag-link-5" title="1 Posts">seo<small>(5)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/shell/" class="tag-link-10" title="1 Posts">shell<small>(10)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/sqlite/" class="tag-link-2" title="1 Posts">sqlite<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/swagger/" class="tag-link-2" title="1 Posts">swagger<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/swarm/" class="tag-link-2" title="1 Posts">swarm<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/sysctl/" class="tag-link-2" title="1 Posts">sysctl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/ulimit/" class="tag-link-2" title="1 Posts">ulimit<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/vim/" class="tag-link-14" title="1 Posts">vim<small>(14)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/windows/" class="tag-link-18" title="1 Posts">windows<small>(18)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/yolo/" class="tag-link-7" title="1 Posts">yolo<small>(7)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-2" title="1 Posts">微服务<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+  </div>
+</div>
+
+
+        </div>
+    </div>`
+
+                    </div>
+                    
+                </div>
+                
+
+            </div>
+
+        </div>
+    </div>
+
+    <footer id="footer">
+    <section class="container" id="footer-bottom">
+      <div class="container-inner">
+        <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+        <div class="pad group">
+          <div class="grid one-half">
+            <div id="copyright">
+                <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+                
+            </div>
+            
+          </div>
+          
+          <div class="grid one-half last">
+            <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+          </div>
+        </div>
+  
+      </div>
+      
+    </section>
+    
+  </footer>
+
+
+<div class="back-to-top" id="back-to-top">
+    <i class="fa fa-angle-double-up"></i>
+</div>
+
+
+
+
+
+<script type='text/javascript'>
+    var HUParams={
+        "_disabled":[],
+        "SmoothScroll":{
+            "Enabled":true,
+            "Options":{"touchpadSupport":false}
+        },
+        "centerAllImg":"1",
+        "timerOnScrollAllBrowsers":"1",
+        "extLinksStyle":"1",
+        "extLinksTargetExt":"1",
+        "extLinksSkipSelectors":{
+            "classes":["btn","button"],"ids":[]
+        },
+        "imgSmartLoadEnabled":"1",
+        "imgSmartLoadOpts":{
+            "parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],
+            "opts":{
+                "excludeImg":[".tc-holder-img"],
+                "fadeIn_options":100
+            }
+        },
+        "goldenRatio":"1.618","gridGoldenRatioLimit":"350",
+        "sbStickyUserSettings":{"desktop":true,"mobile":true},
+        "isWPMobile":"",
+        "menuStickyUserSettings":{
+            "desktop":"stick_up",
+            "mobile":"stick_up"
+        },
+        "isDevMode":"",
+        "ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1",
+            "frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},
+            "userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},
+            "isWelcomeNoteOn":"","welcomeContent":""};
+</script>
+
+
+
+<script src="https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript" src="../../../front/js/scripts.js"></script> 
+
+
+
+
+<script>
+  $(".topbar-toggle-down").click(function(){
+    $("#nav-topbar").css("overflow","visible");
+  });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-106129999-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+
+</body>
+
+</html>

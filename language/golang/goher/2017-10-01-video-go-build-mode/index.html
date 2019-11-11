@@ -1,7 +1,1132 @@
-<!doctype html><html lang=zh-cn class=no-js><title>视频笔记：Go 的构建模式 - David Crawshaw</title><meta charset=utf-8><meta name=robots content=index,nofollow><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><meta http-equiv=x-dns-prefetch-control content=on><meta name=viewport content="width=device-width,initial-scale=1"><meta name=referrer content=origin-when-cross-origin><meta name=description content="视频信息 Go Build Modes by David Crawshaw, Google at GopherCon 2017 {% owl youtube x-LhC-J2Vbk %} https://www.youtube.com/watch?v=x-LhC-J2Vbk 什么是 Build Mode？ build mode 用于指导编译器如何创建可执行二进制文件。越多的执行方式，就意味着可以让 Go 程序运"><meta name=author content=rinetd><meta name=baidu-site-verification content=pCInWQYbNT><meta name=google-site-verification content=ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk><link rel=canonical href=../../../../language/golang/goher/2017-10-01-video-go-build-mode/><link rel=icon href=../../../../public/favicon.ico><link rel="shortcut icon" href=../../../../public/favicon.ico><link rel=stylesheet href=../../../../front/css/main.min.css><link rel=stylesheet href=../../../../front/css/font-awesome.min.css><link rel=stylesheet href=//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css><body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome"><div id=wrapper><header id=header class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent"><nav class="nav-container group mobile-menu mobile-sticky" id=nav-mobile data-menu-id=header-1><div class=mobile-title-logo-in-header><p class=site-title><a class=custom-logo-link href rel=home title="Pytool | Home">Pytool</a></div><div class="ham__navbar-toggler-two collapsed" title=Menu aria-expanded=false><div class=ham__navbar-span-wrapper><span class="line line-1"></span><span class="line line-2"></span><span class="line line-3"></span></div></div><div class=nav-text>视频笔记：Go 的构建模式 - David Crawshaw</div><div class="nav-wrap container"><ul class="nav container-inner group mobile-search"><li><form class="searchform themeform" action=https://demo-hueman.presscustomizr.com/><div><input class=search name=s onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"></div></form></ul><ul id=menu-topbar-menu class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href>Home</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../math/>Math</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../edit/>Edit</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/>文档生成器</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/>自动部署</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../frontend/css/>Css</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/android/>Android</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/golang/>Golang</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/golang/goher/>Goher</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/golang/hugo/>Hugo</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/java/>Java</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/java/hadoop/>Hadoop</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/php/>Php</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/php/magento/>Magento</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/python/>Python</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/python/scrapy/>Scrapy</a></ul></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/git/>Git</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/lvs/>Lvs</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/shell/>Shell</a></ul><li class=item><a class=text href=../../../../series/>series</a><li class=item><a class=text href=../../../../categories/>categories</a><li class=item><a class=text href=../../../../tags/>tags</a><li class=item><a class=text href=../../../../me/>about</a></ul></div></nav><nav class="nav-container group desktop-menu desktop-sticky" id=nav-topbar data-menu-id=header-2><div class=nav-text>视频笔记：Go 的构建模式 - David Crawshaw</div><div class=topbar-toggle-down><i class="fas fa-angle-double-down" aria-hidden=true data-toggle=down title="Expand menu"></i><i class="fas fa-angle-double-up" aria-hidden=true data-toggle=up title="Collapse menu"></i></div><div class="nav-wrap container"><ul id=menu-topbar-menu-1 class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href=../../../../>Home</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../math/>Math</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../edit/>Edit</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/>文档生成器</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/>自动部署</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../frontend/css/>Css</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/android/>Android</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/golang/>Golang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/java/>Java</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/php/>Php</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/python/>Python</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/git/>Git</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/lvs/>Lvs</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/shell/>Shell</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../post/>Post</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/life/>Life</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/reship/>Reship</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/basic/>Basic</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/english/>English</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/seo/>Seo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/software/>Software</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/wiki/>Wiki</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/windows/>Windows</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../series/>series</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../categories/>categories</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../tags/>tags</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../me/>about</a></ul></div></nav></header><div class=container id=page><div class=container-inner><div class=main><div class="main-inner group"><div class=content><div class="pad group page-title"><ul class="meta-single group"><li><span class="fa fa-folder-open"></span></ul></div><div class="pad group"><article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list"><div class="post-inner group"><h1 class=post-title>视频笔记：Go 的构建模式 - David Crawshaw</h1><p class=post-byline>by · 2017年10月01日 · 3718 Words ·
-~8min reading time |
-<a href=https://gitlab.com/rinetd/blog/edit/master/language/golang/goher/2017-10-01-video-go-build-mode.md target=_blank>Improve on <i class="fa fa-gitlab"></i></a><div class=clear></div><div class="entry themeform"><div class=entry-inner></br>原文链接：<a target=_blank href=../../../../language/golang/goher/2017-10-01-video-go-build-mode/> 视频笔记：Go 的构建模式 - David Crawshaw</a></p><h1 id=视频信息>视频信息</h1><p><strong>Go Build Modes</strong><br>by David Crawshaw, Google<br>at GopherCon 2017<p>{% owl youtube x-LhC-J2Vbk %}<p><a href="https://www.youtube.com/watch?v=x-LhC-J2Vbk" target=_blank>https://www.youtube.com/watch?v=x-LhC-J2Vbk</a><h1 id=什么是-build-mode>什么是 Build Mode？</h1><p><strong>build mode</strong> 用于指导编译器如何创建可执行二进制文件。越多的执行方式，就意味着可以让 Go 程序运行于更多的位置。<h1 id=go-的八种-build-mode>Go 的八种 Build Mode</h1><ul><li><code>exe</code> (静态编译)<br><li><code>exe</code> (动态链接 <code>libc</code>)<br><li><code>exe</code> (动态链接 <code>libc</code> 和非 Go 代码)<br><li><code>pie</code> 地址无关可执行文件（安全特性）<br><li><code>c-archive</code> C 的静态链接库<br><li><code>c-shared</code> C 的动态链接库<br><li><code>shared</code> Go 的动态链接库<br><li><code>plugin</code> Go 的插件<br><br></ul><h2 id=exe-静态编译><code>exe</code> （静态编译）</h2><p>这个是大家最喜欢的，所有的代码都构建到一个可执行文件了。<pre><code class=language-bash>CGO_ENABLED=0 go build hello.go
-</code></pre><p>这是大家使用 Go 最喜欢的构建方式。所有的依赖都构建到了一个二进制文件了，没有任何外部依赖，可执行文件直接调用 <code>syscall</code> 和内核通讯。<p>这里使用 <code>CGO_ENABLED=0</code> 来约束不使用任何 <code>CGO</code> 的部分，这样不会依赖 <code>libc</code> 这类库。<h2 id=exe-用-libc>exe (用 libc)</h2><p>这样的可执行文件大部分都是静态编译，只不过使用了 <code>libc</code> 动态链接库，因此像一些 net 包的操作，比如 DNS 查询、<code>os/user</code> 的用户名查询等等，这些会使用系统提供的 <code>libc</code> 动态链接库。<p>其好处是，可以利用系统特定的实现，保证行为和系统一致。<h2 id=exe-动态链接-libc-和非-go-代码>exe (动态链接 <code>libc</code> 和非 Go 代码)</h2><p>当程序编译的时候，所有 Go 代码自然都被编译为 object 文件，而所有非 Go 的代码，也可以被被其编译器（如 C, Fortran 等）编译为 object 文件，而这些非 Go 代码可以被 <code>cgo</code> 调用。<p>当程序被连接(link)的时候，这些非 Go 代码可以选择被编译进最终的二进制文件中，也可以选择动态链接，在运行时加载。<h2 id=pie-position-independent-executables><code>pie</code> - Position Independent Executables</h2><p>这是构建运行地址无关的二进制可执行文件的形式，这是一种安全特性，可以在支持 PIE 的操作系统中，让可执行文件在加载时，每次的地址都是不同的。避免已知地址的跳跃式的攻击。<p>这种方式和 exe 基本一样，将来可能会成为默认。<h2 id=c-archive-c-的静态链接库><code>c-archive</code> C 的静态链接库</h2><p>从这里开始，和前面构建可执行文件不同了。这里构建的是供 C 程序调用的库。更准确一些的说，这里是把 Go 程序构建为 archive (<code>.a</code>) 文件，这样 C 类的程序可以静态链接 <code>.a</code> 文件，并调用其中代码。<ul><li><code>hello.go</code><br><br></ul><pre><code class=language-go>package main
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+
+<head>
+    
+<title>视频笔记：Go 的构建模式 - David Crawshaw</title>
+<meta charset="utf-8">
+
+<meta name="robots" content="index,nofollow">
+
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta http-equiv="x-dns-prefetch-control" content="on">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="origin-when-cross-origin" />
+
+<meta name="description" content="视频信息 Go Build Modes by David Crawshaw, Google at GopherCon 2017 {% owl youtube x-LhC-J2Vbk %} https://www.youtube.com/watch?v=x-LhC-J2Vbk 什么是 Build Mode？ build mode 用于指导编译器如何创建可执行二进制文件。越多的执行方式，就意味着可以让 Go 程序运">
+
+<meta name="author" content=rinetd>
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+
+  
+
+
+
+
+
+
+
+
+<link rel="canonical" href="../../../../language/golang/goher/2017-10-01-video-go-build-mode/" />
+
+<link rel="icon" href="../../../../public/favicon.ico"/>
+<link rel="shortcut icon" href="../../../../public/favicon.ico"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../../../../front/css/main.min.css" >
+
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+
+
+
+
+
+<link rel="stylesheet" href="//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css" />
+
+</head>
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+    <div id="wrapper">
+        <header id="header" class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent">
+    
+  <nav class="nav-container group mobile-menu mobile-sticky " id="nav-mobile" data-menu-id="header-1">
+    <div class="mobile-title-logo-in-header">
+        <p class="site-title">
+            <a class="custom-logo-link" href="" rel="home" title="Pytool | Home ">
+                
+                Pytool
+            </a>
+        </p>
+    </div>
+    <div class="ham__navbar-toggler-two collapsed" title="Menu" aria-expanded="false">
+        <div class="ham__navbar-span-wrapper">
+            <span class="line line-1"></span>
+            <span class="line line-2"></span>
+            <span class="line line-3"></span>
+        </div>
+    </div>
+    <div class="nav-text">视频笔记：Go 的构建模式 - David Crawshaw</div>
+    <div class="nav-wrap container">
+        <ul class="nav container-inner group mobile-search">
+            <li>
+                <form method="get" class="searchform themeform" action="https://demo-hueman.presscustomizr.com/">
+                    <div>
+                        <input type="text" class="search" name="s" onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"/>
+                    </div>
+                </form>
+            </li>
+        </ul>
+        <ul id="menu-topbar-menu" class="nav container-inner group">
+        
+            <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a href=" ">Home</a>
+            </li>
+
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../ai/">Ai </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../ai/math/">Math</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../language/">Language </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../language/python/">Python</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../../language/python/scrapy/">Scrapy</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../language/golang/">Golang</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../../language/golang/hugo/">Hugo</a>
+                                                
+                                            </li>                
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../../language/golang/goher/">Goher</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../language/java/">Java</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../../language/java/hadoop/">Hadoop</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../language/awesome/">Awesome</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../language/php/">Php</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../../language/php/magento/">Magento</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../language/android/">Android</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../macos/">Macos </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../hardware/">Hardware </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../hardware/rtmp/">Rtmp</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../linux/">Linux </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../linux/cmd/">Cmd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../linux/shell/">Shell</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../linux/nginx/">Nginx</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../linux/ip/">Ip</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../linux/git/">Git</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../linux/haproxy/">Haproxy</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../linux/lvs/">Lvs</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../frontend/">Frontend </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../frontend/css/">Css</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../frontend/vue/">Vue</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../devops/">Devops </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/docker/">Docker</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/elk/">Elk</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/ansible/">Ansible</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/prometheus/">Prometheus</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/drone/">Drone</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/kubernetes/">Kubernetes</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/oauth2/">OAuth2</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/etcd/">Etcd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/apidoc/">Apidoc</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../database/">Database </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../database/mysql/">Mysql</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../database/mongo/">Mongo</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../database/redis/">Redis</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../windows/">Windows </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../hacker/">Hacker </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../hacker/01-info-gather/">01-Info-Gather</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../hacker/02-spoof/">02-Spoof</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../../hacker/shells/">Shells</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../work/">Work </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../weixin/">Weixin </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../../edit/">Edit </a>
+                
+                        
+
+              </li>
+            
+        
+        
+        <li class="item ">
+                <a class="text" href="../../../../series/">series</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../../categories/">categories</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../../tags/">tags</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../../me/">about</a>
+        </li>
+
+        
+        </ul>
+    </div>
+  </nav>
+    
+  <nav class="nav-container group desktop-menu desktop-sticky " id="nav-topbar" data-menu-id="header-2">
+    <div class="nav-text">视频笔记：Go 的构建模式 - David Crawshaw</div>
+    
+    <div class="topbar-toggle-down">
+        <i class="fas fa-angle-double-down" aria-hidden="true" data-toggle="down" title="Expand menu"></i>
+        <i class="fas fa-angle-double-up" aria-hidden="true" data-toggle="up" title="Collapse menu"></i>
+    </div>
+
+    
+    <div class="nav-wrap container">
+      <ul id="menu-topbar-menu-1" class="nav container-inner group">
+        <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a href="../../../../">Home</a></li>
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../ai/">Ai </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../ai/math/">Math</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../language/">Language </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../language/python/">Python</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../language/golang/">Golang</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../language/java/">Java</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../language/awesome/">Awesome</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../language/php/">Php</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../language/android/">Android</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../macos/">Macos </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../hardware/">Hardware </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../hardware/rtmp/">Rtmp</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../linux/">Linux </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../linux/cmd/">Cmd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../linux/shell/">Shell</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../linux/nginx/">Nginx</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../linux/ip/">Ip</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../linux/git/">Git</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../linux/haproxy/">Haproxy</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../linux/lvs/">Lvs</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../post/">Post </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../post/software/">Software</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../post/english/">English</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../post/seo/">Seo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../post/life/">Life</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../post/wiki/">Wiki</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../post/basic/">Basic</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../post/reship/">Reship</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../frontend/">Frontend </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../frontend/css/">Css</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../frontend/vue/">Vue</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../devops/">Devops </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/docker/">Docker</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/elk/">Elk</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/ansible/">Ansible</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/prometheus/">Prometheus</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/drone/">Drone</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/kubernetes/">Kubernetes</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/oauth2/">OAuth2</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/etcd/">Etcd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/apidoc/">Apidoc</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../database/">Database </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../database/mysql/">Mysql</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../database/mongo/">Mongo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../database/redis/">Redis</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../windows/">Windows </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../hacker/">Hacker </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../hacker/01-info-gather/">01-Info-Gather</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../hacker/02-spoof/">02-Spoof</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../../hacker/shells/">Shells</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../work/">Work </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../weixin/">Weixin </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../../edit/">Edit </a>
+                
+                  
+              </li>
+                    
+        
+       
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../../series/">series</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../../categories/">categories</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../../tags/">tags</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../../me/">about</a>
+        </li>
+        
+
+        
+      </ul>
+      
+    </div>
+    
+    
+  
+  </nav>
+  
+
+  
+  
+
+</header>
+
+        <div class="container" id="page">
+            <div class="container-inner">
+                <div class="main">
+                    <div class="main-inner group">
+                        <div class="content">
+    
+        <div class="pad group page-title">
+            <ul class="meta-single group">
+                
+                <li><span class="fa fa-folder-open"></span></li>
+                
+            </ul>
+        </div>
+
+        
+        <div class="pad group">
+            <article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list">
+                <div class="post-inner group">
+                        <h1 class="post-title">视频笔记：Go 的构建模式 - David Crawshaw</h1>
+
+                        <p class="post-byline">
+                          by  · 2017年10月01日 · 3726 Words ·
+                          ~8min reading time |
+                          
+                          
+                          <a href="https://gitlab.com/rinetd/blog/edit/master/language/golang/goher/2017-10-01-video-go-build-mode.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                        </p>
+                    <div class="clear"></div>
+                    <div class="entry themeform">
+                        <div class="entry-inner">
+                            
+                            </br>
+                            原文链接：<a target="_blank" href="../../../../language/golang/goher/2017-10-01-video-go-build-mode/"> 视频笔记：Go 的构建模式 - David Crawshaw</a> 
+                            </p>
+                            
+
+<!-- toc -->
+
+<h1 id="视频信息">视频信息</h1>
+
+<p><strong>Go Build Modes</strong><br />
+by David Crawshaw, Google<br />
+at GopherCon 2017</p>
+
+<p>{% owl youtube x-LhC-J2Vbk %}</p>
+
+<p><a href="https://www.youtube.com/watch?v=x-LhC-J2Vbk" target="_blank">https://www.youtube.com/watch?v=x-LhC-J2Vbk</a></p>
+
+<h1 id="什么是-build-mode">什么是 Build Mode？</h1>
+
+<p><strong>build mode</strong> 用于指导编译器如何创建可执行二进制文件。越多的执行方式，就意味着可以让 Go 程序运行于更多的位置。</p>
+
+<h1 id="go-的八种-build-mode">Go 的八种 Build Mode</h1>
+
+<ul>
+<li><code>exe</code> (静态编译)<br /></li>
+<li><code>exe</code> (动态链接 <code>libc</code>)<br /></li>
+<li><code>exe</code> (动态链接 <code>libc</code> 和非 Go 代码)<br /></li>
+<li><code>pie</code> 地址无关可执行文件（安全特性）<br /></li>
+<li><code>c-archive</code> C 的静态链接库<br /></li>
+<li><code>c-shared</code> C 的动态链接库<br /></li>
+<li><code>shared</code> Go 的动态链接库<br /></li>
+<li><code>plugin</code> Go 的插件<br />
+<br /></li>
+</ul>
+
+<h2 id="exe-静态编译"><code>exe</code> （静态编译）</h2>
+
+<p>这个是大家最喜欢的，所有的代码都构建到一个可执行文件了。</p>
+
+<pre><code class="language-bash">CGO_ENABLED=0 go build hello.go
+</code></pre>
+
+<p>这是大家使用 Go 最喜欢的构建方式。所有的依赖都构建到了一个二进制文件了，没有任何外部依赖，可执行文件直接调用 <code>syscall</code> 和内核通讯。</p>
+
+<p>这里使用 <code>CGO_ENABLED=0</code> 来约束不使用任何 <code>CGO</code> 的部分，这样不会依赖 <code>libc</code> 这类库。</p>
+
+<h2 id="exe-用-libc">exe (用 libc)</h2>
+
+<p>这样的可执行文件大部分都是静态编译，只不过使用了 <code>libc</code> 动态链接库，因此像一些 net 包的操作，比如 DNS 查询、<code>os/user</code> 的用户名查询等等，这些会使用系统提供的 <code>libc</code> 动态链接库。</p>
+
+<p>其好处是，可以利用系统特定的实现，保证行为和系统一致。</p>
+
+<h2 id="exe-动态链接-libc-和非-go-代码">exe (动态链接 <code>libc</code> 和非 Go 代码)</h2>
+
+<p>当程序编译的时候，所有 Go 代码自然都被编译为 object 文件，而所有非 Go 的代码，也可以被被其编译器（如 C, Fortran 等）编译为 object 文件，而这些非 Go 代码可以被 <code>cgo</code> 调用。</p>
+
+<p>当程序被连接(link)的时候，这些非 Go 代码可以选择被编译进最终的二进制文件中，也可以选择动态链接，在运行时加载。</p>
+
+<h2 id="pie-position-independent-executables"><code>pie</code> - Position Independent Executables</h2>
+
+<p>这是构建运行地址无关的二进制可执行文件的形式，这是一种安全特性，可以在支持 PIE 的操作系统中，让可执行文件在加载时，每次的地址都是不同的。避免已知地址的跳跃式的攻击。</p>
+
+<p>这种方式和 exe 基本一样，将来可能会成为默认。</p>
+
+<h2 id="c-archive-c-的静态链接库"><code>c-archive</code> C 的静态链接库</h2>
+
+<p>从这里开始，和前面构建可执行文件不同了。这里构建的是供 C 程序调用的库。更准确一些的说，这里是把 Go 程序构建为 archive (<code>.a</code>) 文件，这样 C 类的程序可以静态链接 <code>.a</code> 文件，并调用其中代码。</p>
+
+<ul>
+<li><code>hello.go</code><br />
+<br /></li>
+</ul>
+
+<pre><code class="language-go">package main
 
 import &quot;fmt&quot;
 import &quot;C&quot;
@@ -12,10 +1137,26 @@ func main() {}
 func Hello() {
 	fmt.Println(&quot;Hello, world.&quot;)
 }
-</code></pre><blockquote><p>注意这里的 <code>//export Hello</code>，这是约定，所有需要导出给 <code>C</code> 调用的函数，必须通过注释添加这个构建信息，否则不会构建生成 C 所需的头文件。</blockquote><p>然后我们构建这个 <code>hello.go</code> 文件：<pre><code class=language-bash>go build -buildmode=c-archive hello.go
-</code></pre><p>构建后，会生成两个文件，一个是静态库文件 <code>hello.a</code>，另一个则是 C 的头文件 <code>hello.h</code>。<pre><code class=language-bash>hello.a:  current ar archive random library
+</code></pre>
+
+<blockquote>
+<p>注意这里的 <code>//export Hello</code>，这是约定，所有需要导出给 <code>C</code> 调用的函数，必须通过注释添加这个构建信息，否则不会构建生成 C 所需的头文件。</p>
+</blockquote>
+
+<p>然后我们构建这个 <code>hello.go</code> 文件：</p>
+
+<pre><code class="language-bash">go build -buildmode=c-archive hello.go
+</code></pre>
+
+<p>构建后，会生成两个文件，一个是静态库文件 <code>hello.a</code>，另一个则是 C 的头文件 <code>hello.h</code>。</p>
+
+<pre><code class="language-bash">hello.a:  current ar archive random library
 hello.h:  c program text, ASCII text
-</code></pre><p>在所生成的 <code>hello.h</code> 的头文件中，我们可以看到 Go 的 <code>Hello()</code> 函数的定义：<pre><code class=language-c>#ifdef __cplusplus
+</code></pre>
+
+<p>在所生成的 <code>hello.h</code> 的头文件中，我们可以看到 Go 的 <code>Hello()</code> 函数的定义：</p>
+
+<pre><code class="language-c">#ifdef __cplusplus
 extern &quot;C&quot; {
 #endif
 
@@ -25,36 +1166,98 @@ extern void Hello();
 #ifdef __cplusplus
 }
 #endif
-</code></pre><p>然后我们可以在 <code>hello.c</code> 中引用头文件，并使用 Go 编译的静态库：<pre><code class=language-c>#include &quot;hello.h&quot;
+</code></pre>
+
+<p>然后我们可以在 <code>hello.c</code> 中引用头文件，并使用 Go 编译的静态库：</p>
+
+<pre><code class="language-c">#include &quot;hello.h&quot;
 
 int main(void) {
   Hello();
   return 0;
 }
-</code></pre><p>然后，构建 C 程序：<pre><code class=language-bash>cc hello.a hello.c -o hello
-</code></pre><p>最后执行：<pre><code class=language-bash>$ ./hello
+</code></pre>
+
+<p>然后，构建 C 程序：</p>
+
+<pre><code class="language-bash">cc hello.a hello.c -o hello
+</code></pre>
+
+<p>最后执行：</p>
+
+<pre><code class="language-bash">$ ./hello
 Hello, world.
-</code></pre><h2 id=c-shared-c-的动态链接库><code>c-shared</code> C 的动态链接库</h2><p>和前一个例子不同的地方是，这将用 Go 代码创建一个动态链接库（Unix: <code>.so</code>/Windows <code>.dll</code>），然后用 C 语言程序动态加载运行。<p>Go 和 C 语言的代码和上面是一样的，但是构建过程不同：<pre><code class=language-bash>go build -buildmode=c-shared -o hello.so hello.go
-</code></pre><p>这里我们使用了 <code>-buildmode=c-shared</code>，以构建 C 所支持的动态链接库。<blockquote><p>注：需要注意的是，这里明确指定了 <code>-o hello.so</code>，这里我和演讲者不同，如果不指定输出文件名，那么默认会使用 <code>hello</code> 作为文件名，导致后续的操作找不到 <code>hello.so</code> 文件。</blockquote><p>这次也生成了两个文件，一个是 <code>hello.so</code>，一个是 <code>hello.h</code>：<pre><code class=language-bash>hello.h:  c program text, ASCII text
+</code></pre>
+
+<h2 id="c-shared-c-的动态链接库"><code>c-shared</code> C 的动态链接库</h2>
+
+<p>和前一个例子不同的地方是，这将用 Go 代码创建一个动态链接库（Unix: <code>.so</code>/Windows <code>.dll</code>），然后用 C 语言程序动态加载运行。</p>
+
+<p>Go 和 C 语言的代码和上面是一样的，但是构建过程不同：</p>
+
+<pre><code class="language-bash">go build -buildmode=c-shared -o hello.so hello.go
+</code></pre>
+
+<p>这里我们使用了 <code>-buildmode=c-shared</code>，以构建 C 所支持的动态链接库。</p>
+
+<blockquote>
+<p>注：需要注意的是，这里明确指定了 <code>-o hello.so</code>，这里我和演讲者不同，如果不指定输出文件名，那么默认会使用 <code>hello</code> 作为文件名，导致后续的操作找不到 <code>hello.so</code> 文件。</p>
+</blockquote>
+
+<p>这次也生成了两个文件，一个是 <code>hello.so</code>，一个是 <code>hello.h</code>：</p>
+
+<pre><code class="language-bash">hello.h:  c program text, ASCII text
 hello.so: Mach-O 64-bit dynamically linked shared library x86_64
-</code></pre><p>然后，编译对应的 C 程序：<pre><code class=language-bash>cc hello.c hello.so -o hello
-</code></pre><p>如果对比 <code>c-archive</code> 例子和 <code>c-shared</code> 例子中的 <code>hello</code> 二进制可执行文件的大小，就会发现 <code>c-shared</code> 的例子的 <code>hello</code> 要小很多：<pre><code class=language-bash># c-archive
+</code></pre>
+
+<p>然后，编译对应的 C 程序：</p>
+
+<pre><code class="language-bash">cc hello.c hello.so -o hello
+</code></pre>
+
+<p>如果对比 <code>c-archive</code> 例子和 <code>c-shared</code> 例子中的 <code>hello</code> 二进制可执行文件的大小，就会发现 <code>c-shared</code> 的例子的 <code>hello</code> 要小很多：</p>
+
+<pre><code class="language-bash"># c-archive
 -rwxr-xr-x  1 taowang  staff   1.5M  3 Oct 17:51 hello
 
 # c-shared
 -rwxr-xr-x  1 taowang  staff   8.2K  3 Oct 19:17 hello
-</code></pre><p>这是因为前者，将 Go 的代码静态编译进了 C 的程序中；而后者，则是动态链接，C 的可执行文件内不包含我们写的 Go 的代码，所有这部分函数都在动态链接库 <code>hello.so</code> 中。<pre><code class=language-bash>-rw-r--r--  1 taowang  staff   2.2M  3 Oct 19:17 hello.so
-</code></pre><p>因此，执行的时候，我们除了需要 <code>hello</code> 这个二进制可执行文件外，我们还需要 <code>hello.so</code> 这个动态链接库。如果默认的 <code>LD_LIBRARY_PATH</code> 包含了当前目录，并且 <code>hello.so</code> 就在当前目录，那么可以直接：<pre><code class=language-bash>$ ./hello
+</code></pre>
+
+<p>这是因为前者，将 Go 的代码静态编译进了 C 的程序中；而后者，则是动态链接，C 的可执行文件内不包含我们写的 Go 的代码，所有这部分函数都在动态链接库 <code>hello.so</code> 中。</p>
+
+<pre><code class="language-bash">-rw-r--r--  1 taowang  staff   2.2M  3 Oct 19:17 hello.so
+</code></pre>
+
+<p>因此，执行的时候，我们除了需要 <code>hello</code> 这个二进制可执行文件外，我们还需要 <code>hello.so</code> 这个动态链接库。如果默认的 <code>LD_LIBRARY_PATH</code> 包含了当前目录，并且 <code>hello.so</code> 就在当前目录，那么可以直接：</p>
+
+<pre><code class="language-bash">$ ./hello
 Hello, world.
-</code></pre><p>否则，如果提示找不到 <code>hello.so</code>，如：<pre><code>dyld: Library not loaded: hello.so
-</code></pre><p>那可以手动指定 <code>LD_LIBRARY_PATH</code> 变量，告诉操作系统到哪里去寻找动态链接库：<pre><code class=language-bash># On Linux
+</code></pre>
+
+<p>否则，如果提示找不到 <code>hello.so</code>，如：</p>
+
+<pre><code>dyld: Library not loaded: hello.so
+</code></pre>
+
+<p>那可以手动指定 <code>LD_LIBRARY_PATH</code> 变量，告诉操作系统到哪里去寻找动态链接库：</p>
+
+<pre><code class="language-bash"># On Linux
 $ LD_LIBRARY_PATH=. ./hello
 Hello, world.
 
 # On macOS
 $ DYLD_LIBRARY_PATH=. ./hello
 Hello, world.
-</code></pre><h3 id=为什么会需要动态链接>为什么会需要动态链接？</h3><p>从开始使用 Go 我们就反反复复的听到人说 Go 的静态链接如何方便，既然如此，那么我们为什么需要动态链接？<p>因为动态链接可以在运行时需要的时候，由程序决定加载，也可以在不需要的时候卸载，这样可以节约内存资源。<pre><code class=language-c>#include &lt;dlfcn.h&gt;
+</code></pre>
+
+<h3 id="为什么会需要动态链接">为什么会需要动态链接？</h3>
+
+<p>从开始使用 Go 我们就反反复复的听到人说 Go 的静态链接如何方便，既然如此，那么我们为什么需要动态链接？</p>
+
+<p>因为动态链接可以在运行时需要的时候，由程序决定加载，也可以在不需要的时候卸载，这样可以节约内存资源。</p>
+
+<pre><code class="language-c">#include &lt;dlfcn.h&gt;
 #include &lt;stdio.h&gt;
 
 int main(void) {
@@ -69,33 +1272,89 @@ int main(void) {
   fn();
   return 0;
 }
-</code></pre><p>这里我们使用 <code>dlopen()</code> 来加载库，然后用 <code>dlsym()</code> 来加载符号（函数）到一个函数指针，然后我们调用该函数指针 <code>fn()</code>。<h2 id=shared-go-的动态链接库><code>shared</code> Go 的动态链接库</h2><p><code>shared</code> 模式和 <code>c-shared</code> 有些相似，都是构建一个动态链接库，以便在运行时加载。所不同的是 <code>shared</code> 并非构建 C 语言的动态链接库，而是专门为 Go 可执行文件构建动态链接库。<blockquote><p>macOS 下目前不支持 <code>shared</code> 模式。</blockquote><p>这次还是 <code>hello.go</code>，不过稍有不同。<pre><code class=language-go>package main
+</code></pre>
+
+<p>这里我们使用 <code>dlopen()</code> 来加载库，然后用 <code>dlsym()</code> 来加载符号（函数）到一个函数指针，然后我们调用该函数指针 <code>fn()</code>。</p>
+
+<h2 id="shared-go-的动态链接库"><code>shared</code> Go 的动态链接库</h2>
+
+<p><code>shared</code> 模式和 <code>c-shared</code> 有些相似，都是构建一个动态链接库，以便在运行时加载。所不同的是 <code>shared</code> 并非构建 C 语言的动态链接库，而是专门为 Go 可执行文件构建动态链接库。</p>
+
+<blockquote>
+<p>macOS 下目前不支持 <code>shared</code> 模式。</p>
+</blockquote>
+
+<p>这次还是 <code>hello.go</code>，不过稍有不同。</p>
+
+<pre><code class="language-go">package main
 
 import &quot;fmt&quot;
 
 func main() {
 	fmt.Println(&quot;Hello, World!&quot;)
 }
-</code></pre><p>这里就是独立的一个文件，一个 <code>main()</code>，执行后打印 <code>Hello, World</code>。我们可以像以前一样用 <code>exe</code> 模式构建，然后执行。不过这次我们用一种不同的方式构建。<pre><code class=language-bash>go install -buildmode=shared std
+</code></pre>
+
+<p>这里就是独立的一个文件，一个 <code>main()</code>，执行后打印 <code>Hello, World</code>。我们可以像以前一样用 <code>exe</code> 模式构建，然后执行。不过这次我们用一种不同的方式构建。</p>
+
+<pre><code class="language-bash">go install -buildmode=shared std
 go build -linkshared hello.go
-</code></pre><p>这里我们首先把 Go 标准库 <code>std</code> 构建并安装到 <code>$GOPATH/pkg</code> 下，然后使用 <code>-linkshared</code> 来构建 <code>hello.go</code>。<p>执行结果和前面一样，但是如果仔细观察生成的文件，就会发现和前面很不同。<pre><code class=language-bash>$ ls -l hello
+</code></pre>
+
+<p>这里我们首先把 Go 标准库 <code>std</code> 构建并安装到 <code>$GOPATH/pkg</code> 下，然后使用 <code>-linkshared</code> 来构建 <code>hello.go</code>。</p>
+
+<p>执行结果和前面一样，但是如果仔细观察生成的文件，就会发现和前面很不同。</p>
+
+<pre><code class="language-bash">$ ls -l hello
 -rwxr-xr-x 1 root root 16032 Oct  3 13:27 hello
-</code></pre><p>可以看到这个 Hello World 程序只有十几KB大小。对于 C 程序员来说，这没啥惊讶的，因为就应该这么大啊。但是对于 Go 程序员来说，这就是很奇怪了，因为一般不都得 7~8MB 么？<p>其原因就是使用了动态链接库，所有标准库部分，都用动态链接的办法来调用，构建的二进制可执行文件中只包含了程序部分。C 程序构建的 Hello World 之所以小，也是因为动态链接的原因。<p>如果我们查阅程序所调用的库就可以看到具体情况：<pre><code class=language-bash>$ ldd hello
+</code></pre>
+
+<p>可以看到这个 Hello World 程序只有十几KB大小。对于 C 程序员来说，这没啥惊讶的，因为就应该这么大啊。但是对于 Go 程序员来说，这就是很奇怪了，因为一般不都得 7~8MB 么？</p>
+
+<p>其原因就是使用了动态链接库，所有标准库部分，都用动态链接的办法来调用，构建的二进制可执行文件中只包含了程序部分。C 程序构建的 Hello World 之所以小，也是因为动态链接的原因。</p>
+
+<p>如果我们查阅程序所调用的库就可以看到具体情况：</p>
+
+<pre><code class="language-bash">$ ldd hello
         linux-vdso.so.1 (0x00007ffed3d4e000)
         libstd.so =&gt; /usr/local/go/pkg/linux_amd64_dynlink/libstd.so (0x00007f608c409000)
         libc.so.6 =&gt; /lib/x86_64-linux-gnu/libc.so.6 (0x00007f608c06a000)
         libdl.so.2 =&gt; /lib/x86_64-linux-gnu/libdl.so.2 (0x00007f608be66000)
         libpthread.so.0 =&gt; /lib/x86_64-linux-gnu/libpthread.so.0 (0x00007f608bc49000)
         /lib64/ld-linux-x86-64.so.2 (0x00007f608e866000)
-</code></pre><p>如果我们进一步去查看 <code>libstd.so</code>，就会看到一个巨大的动态链接库，这就是 Go 的标准库：<pre><code class=language-bash>-rw-r--r-- 1 root root 37M Oct  3 13:27 /usr/local/go/pkg/linux_amd64_dynlink/libstd.so
-</code></pre><p>当然，要使用这个模式需要很多准备工作，所有的动态链接库都需要在指定的位置，版本都必须兼容等等，所以我们一般不常用这个模式。<h2 id=plugin-go-的插件><code>plugin</code> Go 的插件</h2><p>插件形式和 <code>c-shared</code>、<code>shared</code> 相似，都是构建一个动态链接库，和 <code>shared</code> 一样，这是构建一个 Go 专用的动态链接库，而和 <code>shared</code> 不同的是，动态链接库并非在程序启动时加载，而是由程序内决定何时加载和释放。<blockquote><p>这是个新的东西，所以意味着可能不能用😓……，当然如果用的对的话，应该还可以用。</blockquote><p>我们创建一个 plugin，<code>myplugin.go</code>：<pre><code class=language-go>package main
+</code></pre>
+
+<p>如果我们进一步去查看 <code>libstd.so</code>，就会看到一个巨大的动态链接库，这就是 Go 的标准库：</p>
+
+<pre><code class="language-bash">-rw-r--r-- 1 root root 37M Oct  3 13:27 /usr/local/go/pkg/linux_amd64_dynlink/libstd.so
+</code></pre>
+
+<p>当然，要使用这个模式需要很多准备工作，所有的动态链接库都需要在指定的位置，版本都必须兼容等等，所以我们一般不常用这个模式。</p>
+
+<h2 id="plugin-go-的插件"><code>plugin</code> Go 的插件</h2>
+
+<p>插件形式和 <code>c-shared</code>、<code>shared</code> 相似，都是构建一个动态链接库，和 <code>shared</code> 一样，这是构建一个 Go 专用的动态链接库，而和 <code>shared</code> 不同的是，动态链接库并非在程序启动时加载，而是由程序内决定何时加载和释放。</p>
+
+<blockquote>
+<p>这是个新的东西，所以意味着可能不能用😓……，当然如果用的对的话，应该还可以用。</p>
+</blockquote>
+
+<p>我们创建一个 plugin，<code>myplugin.go</code>：</p>
+
+<pre><code class="language-go">package main
 
 import &quot;fmt&quot;
 
 func Hello() {
   fmt.Println(&quot;Hello, World!&quot;)
 }
-</code></pre><p>可以看到，这和最初那个静态链接库的性质相似。不过不同的是，这里既没有 <code>import &quot;C&quot;</code>，也没有 <code>//export Hello</code>，而且也没有 <code>func main()</code>。因为这里不需要，我们是 Go 调用 Go 的代码，因此很多东西都省了。<p>调用代码这么写：<pre><code class=language-go>package main
+</code></pre>
+
+<p>可以看到，这和最初那个静态链接库的性质相似。不过不同的是，这里既没有 <code>import &quot;C&quot;</code>，也没有 <code>//export Hello</code>，而且也没有 <code>func main()</code>。因为这里不需要，我们是 Go 调用 Go 的代码，因此很多东西都省了。</p>
+
+<p>调用代码这么写：</p>
+
+<pre><code class="language-go">package main
 
 import &quot;plugin&quot;
 
@@ -113,104 +1372,1772 @@ func main() {
 	//	调用函数
 	fn.(func())()
 }
-</code></pre><p>可以看到，这个逻辑上，和 <code>hello-dyn.c</code> 很相似。<code>plugin.Open()</code> 有点儿像 <code>dlopen()</code>；而 <code>p.Lookup()</code> 有点儿像 <code>dlsym()</code>。实际上也是如此，底层实现的时候就是调用的这两个函数。<p>注意这里的 <code>fn.(func())()</code>，<code>p.Lookup()</code> 返回的是一个 <code>interface{}</code>，因此这里需要转型为具体函数类型。<p>用下面的命令构建：<pre><code class=language-bash>go build -buildmode=plugin myplugin.go
+</code></pre>
+
+<p>可以看到，这个逻辑上，和 <code>hello-dyn.c</code> 很相似。<code>plugin.Open()</code> 有点儿像 <code>dlopen()</code>；而 <code>p.Lookup()</code> 有点儿像 <code>dlsym()</code>。实际上也是如此，底层实现的时候就是调用的这两个函数。</p>
+
+<p>注意这里的 <code>fn.(func())()</code>，<code>p.Lookup()</code> 返回的是一个 <code>interface{}</code>，因此这里需要转型为具体函数类型。</p>
+
+<p>用下面的命令构建：</p>
+
+<pre><code class="language-bash">go build -buildmode=plugin myplugin.go
 go build runplugin.go
-</code></pre><p>前者会生成一个 <code>myplugin.so</code>，后者会生成调用者 <code>runplugin</code>。<pre><code class=language-bash>-rw-r--r-- 1 root root 3.8M Oct  3 13:58 myplugin.so
+</code></pre>
+
+<p>前者会生成一个 <code>myplugin.so</code>，后者会生成调用者 <code>runplugin</code>。</p>
+
+<pre><code class="language-bash">-rw-r--r-- 1 root root 3.8M Oct  3 13:58 myplugin.so
 -rwxr-xr-x 1 root root 3.5M Oct  3 13:58 runplugin
-</code></pre><h1 id=优缺点>优缺点</h1><ul><li><code>exe</code> (静态编译)<br><ul><li>Pros:<br><li>全部集成，不需要任何依赖<br><li>非常适合超小型的容器环境<br><li>很容易跨不同 Linux 发行版<br></ul><li><code>exe</code> (动态链接 <code>libc</code>)<br><ul><li>Pros:<br><li>可以利用系统功能，比如 DNS 查询。<br><li>可以通过 <code>libc</code> 直接使用系统配置。<br><li>Cons:<br><li>依赖用户空间的执行环境<br></ul><li><code>exe</code> (动态链接 <code>libc</code> 和非 Go 代码)<br><ul><li>Pros:<br><li>可以直接在 Go 程序中使用非 Go 的代码<br><li>方便和老的系统集成<br><li>Cons:<br><li>构建变得更加复杂<br><li>C 不是 Go<br><li>更容易出问题。<br><ul><li>所有 Go 可能出问题地方<br><li>所有 C 可能出问题的地方<br><li>所有 Go &lt;-&gt; C 之间通讯可能出问题的地方<br></ul></ul><li><code>pie</code> 地址无关可执行文件（安全特性）<br><ul><li>Pros:<br><li>和 <code>exe</code> 一样<br><li>让系统更难攻击<br><li>Cons:<br><li>二进制会更大一些(bug, will be fixed)<br><li>大约会有 <code>~1%</code> 的性能损失<br></ul><li><code>c-archive</code> C 的静态链接库<br><ul><li>Pros:<br><li>可以让 Go 集成到现有的 C 程序中<br><li>事实上，这就是 Go 在 iOS 上的工作方式<br><li>非常适用于已存在的非 Go 环境的构建<br><li>Cons:<br><li>跨语言调用会比较麻烦<br></ul><li><code>c-shared</code> C 的动态链接库<br><ul><li>Pros:<br><li>比较方便 Go 集成进现有的 C 程序中<br><li>可以在运行时加载<br><li>这是目前 Go 在 Android 下的工作方式（Java 的 <code>System.load()</code>）<br><li>Cons:<br><li>跨语言调用会比较麻烦<br><li>想想 Android 的环境，可能出问题的面积更大了：<br><ul><li>Go 可能出问题的地方<br><li>C 可能出问题的地方<br><li>Java 可能出问题的地方<br><li>所有它们之间通讯可能出问题的地方……😱<br></ul></ul><li><code>shared</code> Go 的动态链接库<br><ul><li>Pros:<br><li>多个可执行文件可以共享动态链接库，可以降低系统总的体积。<br><li>一般操作系统厂商会比较青睐于这种方式，可以让整个系统的体积降低。<br><ul><li>事实上，这就是 <strong>Canonical(Ubuntu)</strong> 力推实现的方式<br></ul><li>可以降低系统体积，不过现在存储空间一般不是问题<br><li>可以降低内存，可以在内存中共享动态链接库代码(如果动态链接库的 loader 足够聪明的话)<br><li>Cons:<br><li>依赖管理、以及发布是非常难得<br><ul><li>不过一般操作系统厂商已经有成熟的发布系统了<br></ul></ul><li><code>plugin</code> Go 的插件<br><ul><li>Pros:<br><li>在运行时 Go 程序加载其它 Go 程序<br><li>对于复杂应用来说，允许不同部分在不同时间构建<br><li>Cons:<br><li>构建比较复杂，部署也会很复杂<br><li>如果问演讲者是否该用 <code>plugin</code> 模式，答案一般是 <strong>No</strong>。<br><br></ul></ul><h1 id=未来>未来</h1><p>还有很多地方需要改进。<ul><li><code>c-shared</code>：目前不支持 Windows（可能），macOS（部分支持）<br><li><code>shared</code>：目前不支持 macOS<br><li><code>plugin</code>：目前不支持 macOS、Windows<br><li><code>plugin</code>：或许可以将 <code>runtime</code> 从插件中移除以获得更小的可执行文件<br></ul></div><div class=clear></div></div></div></article><div class=clear></div><p class=post-tags><span class="fa fa-tags">Tags:</span>
-<a rel=tag href=../../../../tags/golang>golang</a><div id=related-posts><div class=related-inner></div></div><section id=comments class=themeform><div id=gitment></div><link rel=stylesheet href=https://imsun.github.io/gitment/style/default.css><script src=https://imsun.github.io/gitment/dist/gitment.browser.js></script><script>var gitment=new Gitment({id:location.pathname,owner:'rinetd',repo:'rinetd.github.io',oauth:{client_id:'89af57db85ca20b7668c',client_secret:'4e57a031d7bd29f740559a907db2fe0efb3bf813',},})
-gitment.render('gitment')</script></section><section id=comments class=themeform></section></div></div><div class="sidebar s1 collapsed" data-position=left data-layout=col-3cm data-sb-id=s1><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>Follow:<ul class=social-links><li><a class=social-tooltip href=mailto: title=Email><i class="fa fa-envelope"></i></a><li><a class=social-tooltip href=//github.com/ title=GitHub><i class="fa fa-github"></i></a><li><a class=social-tooltip title="RSS Feed" aria-label="RSS Feed" href=../../../../feed target=_blank style=color:rgba(255,255,255,.7)><i class="fa fa-rss"></i></a></ul></div><ul class="post-nav group"><li class=previous><a href=../../../../devops/tbd/ rel=prev><i class="fa fa-chevron-left"></i><strong>Previous Post</strong>
-<span>基于主干的开发(TBD) Trunk Based Development</span></a></ul><div id=categories-2 class="widget widget_categories"><h3>分类</h3><ul><li class="cat-item cat-item-1"><a href=../../../../categories/android/>Android</a>
-<small>(17)</small><li class="cat-item cat-item-1"><a href=../../../../categories/devops/>Devops</a>
-<small>(63)</small><li class="cat-item cat-item-1"><a href=../../../../categories/docker/>Docker</a>
-<small>(15)</small><li class="cat-item cat-item-1"><a href=../../../../categories/golang/>Golang</a>
-<small>(77)</small><li class="cat-item cat-item-1"><a href=../../../../categories/linux/>Linux</a>
-<small>(77)</small><li class="cat-item cat-item-1"><a href=../../../../categories/linux-%E5%91%BD%E4%BB%A4/>Linux-命令</a>
-<small>(113)</small><li class="cat-item cat-item-1"><a href=../../../../categories/windows/>Windows</a>
-<small>(5)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/>前端技术</a>
-<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/>嵌入式</a>
-<small>(22)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%B7%A5%E5%85%B7/>工具</a>
-<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/>常用算法</a>
-<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/>数据库</a>
-<small>(36)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/>文本编辑</a>
-<small>(27)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/>正则表达式</a>
-<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/>生活技巧</a>
-<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/>程序员</a>
-<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/>网络安全</a>
-<small>(39)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/>集群监控</a>
-<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/>静态博客</a>
-<small>(14)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E9%AB%98%E6%95%B0/>高数</a>
-<small>(2)</small></ul></div></div></div><div class="sidebar s2 collapsed" data-position=right data-layout=col-3cm data-sb-id=s2><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>More</div><ul class="post-nav group"><li class=next><a href=../../../../language/golang/goher/go-build-mode/ rel=next><i class="fa fa-chevron-right"></i><strong>Next post</strong>
-<span>视频笔记：Go 的构建模式 - David Crawshaw</span></a></ul><div id=tag_cloud-2 class="widget widget_tag_cloud"><h3>标签云</h3><div class="tagcloud post-tags"><a rel=tag href=../../../../tags/ansible/ class=tag-link-12 title="1 Posts">ansible<small>(12)</small></a>
-<a rel=tag href=../../../../tags/awesome/ class=tag-link-3 title="1 Posts">awesome<small>(3)</small></a>
-<a rel=tag href=../../../../tags/centos7/ class=tag-link-2 title="1 Posts">centos7<small>(2)</small></a>
-<a rel=tag href=../../../../tags/css/ class=tag-link-18 title="1 Posts">css<small>(18)</small></a>
-<a rel=tag href=../../../../tags/curd/ class=tag-link-3 title="1 Posts">curd<small>(3)</small></a>
-<a rel=tag href=../../../../tags/curl/ class=tag-link-2 title="1 Posts">curl<small>(2)</small></a>
-<a rel=tag href=../../../../tags/docker/ class=tag-link-18 title="1 Posts">docker<small>(18)</small></a>
-<a rel=tag href=../../../../tags/drone/ class=tag-link-18 title="1 Posts">drone<small>(18)</small></a>
-<a rel=tag href=../../../../tags/emacs/ class=tag-link-12 title="1 Posts">emacs<small>(12)</small></a>
-<a rel=tag href=../../../../tags/encode/ class=tag-link-3 title="1 Posts">encode<small>(3)</small></a>
-<a rel=tag href=../../../../tags/etcd/ class=tag-link-4 title="1 Posts">etcd<small>(4)</small></a>
-<a rel=tag href=../../../../tags/flannel/ class=tag-link-2 title="1 Posts">flannel<small>(2)</small></a>
-<a rel=tag href=../../../../tags/git/ class=tag-link-4 title="1 Posts">git<small>(4)</small></a>
-<a rel=tag href=../../../../tags/golang/ class=tag-link-84 title="1 Posts">golang<small>(84)</small></a>
-<a rel=tag href=../../../../tags/gradle/ class=tag-link-3 title="1 Posts">gradle<small>(3)</small></a>
-<a rel=tag href=../../../../tags/haproxy/ class=tag-link-5 title="1 Posts">haproxy<small>(5)</small></a>
-<a rel=tag href=../../../../tags/hexo/ class=tag-link-2 title="1 Posts">hexo<small>(2)</small></a>
-<a rel=tag href=../../../../tags/html/ class=tag-link-2 title="1 Posts">html<small>(2)</small></a>
-<a rel=tag href=../../../../tags/http/ class=tag-link-2 title="1 Posts">http<small>(2)</small></a>
-<a rel=tag href=../../../../tags/hugo/ class=tag-link-13 title="1 Posts">hugo<small>(13)</small></a>
-<a rel=tag href=../../../../tags/imagemagick/ class=tag-link-2 title="1 Posts">imagemagick<small>(2)</small></a>
-<a rel=tag href=../../../../tags/ip/ class=tag-link-3 title="1 Posts">ip<small>(3)</small></a>
-<a rel=tag href=../../../../tags/iproute2/ class=tag-link-5 title="1 Posts">iproute2<small>(5)</small></a>
-<a rel=tag href=../../../../tags/iptables/ class=tag-link-13 title="1 Posts">iptables<small>(13)</small></a>
-<a rel=tag href=../../../../tags/javascript/ class=tag-link-6 title="1 Posts">javascript<small>(6)</small></a>
-<a rel=tag href=../../../../tags/jwt/ class=tag-link-3 title="1 Posts">jwt<small>(3)</small></a>
-<a rel=tag href=../../../../tags/kubernetes/ class=tag-link-11 title="1 Posts">kubernetes<small>(11)</small></a>
-<a rel=tag href=../../../../tags/linux/ class=tag-link-6 title="1 Posts">linux<small>(6)</small></a>
-<a rel=tag href=../../../../tags/lvs/ class=tag-link-8 title="1 Posts">lvs<small>(8)</small></a>
-<a rel=tag href=../../../../tags/makefile/ class=tag-link-2 title="1 Posts">makefile<small>(2)</small></a>
-<a rel=tag href=../../../../tags/mariadb/ class=tag-link-9 title="1 Posts">mariadb<small>(9)</small></a>
-<a rel=tag href=../../../../tags/maven/ class=tag-link-2 title="1 Posts">maven<small>(2)</small></a>
-<a rel=tag href=../../../../tags/meteor/ class=tag-link-7 title="1 Posts">meteor<small>(7)</small></a>
-<a rel=tag href=../../../../tags/ml/ class=tag-link-2 title="1 Posts">ml<small>(2)</small></a>
-<a rel=tag href=../../../../tags/mysql/ class=tag-link-50 title="1 Posts">mysql<small>(50)</small></a>
-<a rel=tag href=../../../../tags/nginx/ class=tag-link-26 title="1 Posts">nginx<small>(26)</small></a>
-<a rel=tag href=../../../../tags/nmap/ class=tag-link-3 title="1 Posts">nmap<small>(3)</small></a>
-<a rel=tag href=../../../../tags/npm/ class=tag-link-3 title="1 Posts">npm<small>(3)</small></a>
-<a rel=tag href=../../../../tags/oauth2/ class=tag-link-2 title="1 Posts">oauth2<small>(2)</small></a>
-<a rel=tag href=../../../../tags/pandoc/ class=tag-link-2 title="1 Posts">pandoc<small>(2)</small></a>
-<a rel=tag href=../../../../tags/php/ class=tag-link-3 title="1 Posts">php<small>(3)</small></a>
-<a rel=tag href=../../../../tags/powershell/ class=tag-link-2 title="1 Posts">powershell<small>(2)</small></a>
-<a rel=tag href=../../../../tags/prometheus/ class=tag-link-8 title="1 Posts">prometheus<small>(8)</small></a>
-<a rel=tag href=../../../../tags/python/ class=tag-link-5 title="1 Posts">python<small>(5)</small></a>
-<a rel=tag href=../../../../tags/redis/ class=tag-link-2 title="1 Posts">redis<small>(2)</small></a>
-<a rel=tag href=../../../../tags/responsive/ class=tag-link-3 title="1 Posts">responsive<small>(3)</small></a>
-<a rel=tag href=../../../../tags/restful/ class=tag-link-6 title="1 Posts">restful<small>(6)</small></a>
-<a rel=tag href=../../../../tags/rsync/ class=tag-link-2 title="1 Posts">rsync<small>(2)</small></a>
-<a rel=tag href=../../../../tags/scrapy/ class=tag-link-8 title="1 Posts">scrapy<small>(8)</small></a>
-<a rel=tag href=../../../../tags/scss/ class=tag-link-2 title="1 Posts">scss<small>(2)</small></a>
-<a rel=tag href=../../../../tags/sed/ class=tag-link-3 title="1 Posts">sed<small>(3)</small></a>
-<a rel=tag href=../../../../tags/seo/ class=tag-link-5 title="1 Posts">seo<small>(5)</small></a>
-<a rel=tag href=../../../../tags/shell/ class=tag-link-8 title="1 Posts">shell<small>(8)</small></a>
-<a rel=tag href=../../../../tags/ssh/ class=tag-link-3 title="1 Posts">ssh<small>(3)</small></a>
-<a rel=tag href=../../../../tags/stm32/ class=tag-link-5 title="1 Posts">stm32<small>(5)</small></a>
-<a rel=tag href=../../../../tags/swagger/ class=tag-link-2 title="1 Posts">swagger<small>(2)</small></a>
-<a rel=tag href=../../../../tags/swarm/ class=tag-link-2 title="1 Posts">swarm<small>(2)</small></a>
-<a rel=tag href=../../../../tags/sysbench/ class=tag-link-2 title="1 Posts">sysbench<small>(2)</small></a>
-<a rel=tag href=../../../../tags/sysctl/ class=tag-link-2 title="1 Posts">sysctl<small>(2)</small></a>
-<a rel=tag href=../../../../tags/tc/ class=tag-link-2 title="1 Posts">tc<small>(2)</small></a>
-<a rel=tag href=../../../../tags/tcpdump/ class=tag-link-2 title="1 Posts">tcpdump<small>(2)</small></a>
-<a rel=tag href=../../../../tags/timezone/ class=tag-link-2 title="1 Posts">timezone<small>(2)</small></a>
-<a rel=tag href=../../../../tags/tshark/ class=tag-link-2 title="1 Posts">tshark<small>(2)</small></a>
-<a rel=tag href=../../../../tags/ubuntu/ class=tag-link-2 title="1 Posts">ubuntu<small>(2)</small></a>
-<a rel=tag href=../../../../tags/ulimit/ class=tag-link-2 title="1 Posts">ulimit<small>(2)</small></a>
-<a rel=tag href=../../../../tags/vim/ class=tag-link-11 title="1 Posts">vim<small>(11)</small></a>
-<a rel=tag href=../../../../tags/webpack3/ class=tag-link-2 title="1 Posts">webpack3<small>(2)</small></a>
-<a rel=tag href=../../../../tags/windows/ class=tag-link-2 title="1 Posts">windows<small>(2)</small></a>
-<a rel=tag href=../../../../tags/wireshark/ class=tag-link-2 title="1 Posts">wireshark<small>(2)</small></a>
-<a rel=tag href=../../../../tags/xidel/ class=tag-link-2 title="1 Posts">xidel<small>(2)</small></a>
-<a rel=tag href=../../../../tags/xml/ class=tag-link-2 title="1 Posts">xml<small>(2)</small></a>
-<a rel=tag href=../../../../tags/yaml/ class=tag-link-2 title="1 Posts">yaml<small>(2)</small></a>
-<a rel=tag href=../../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/ class=tag-link-2 title="1 Posts">微服务<small>(2)</small></a></div></div></div></div>`</div></div></div></div></div><footer id=footer><section class=container id=footer-bottom><div class=container-inner><a id=back-to-top href=#><i class="fa fa-angle-up"></i></a><div class="pad group"><div class="grid one-half"><div id=copyright><p>Copyright (c) 2017. All rights reserved. (版权所有) <a href=http://www.miitbeian.gov.cn/>鲁ICP备17074587号-1</a></div></div><div class="grid one-half last"><ul class=social-links><li><a class=social-tooltip title="On WeiBo" href=http://weibo.com/rinetd target=_blank><i class="fa fa-weibo"></i></a><li><a class=social-tooltip title="On Twitter" href=https://twitter.com/rinetd target=_blank><i class="fa fa-twitter"></i></a><li><a class=social-tooltip title="On GitHub" href=https://github.com/rinetd target=_blank><i class="fa fa-github"></i></a></ul></div></div></div></section></footer><div class=back-to-top id=back-to-top><i class="fa fa-angle-double-up"></i></div><script>var HUParams={"_disabled":[],"SmoothScroll":{"Enabled":true,"Options":{"touchpadSupport":false}},"centerAllImg":"1","timerOnScrollAllBrowsers":"1","extLinksStyle":"1","extLinksTargetExt":"1","extLinksSkipSelectors":{"classes":["btn","button"],"ids":[]},"imgSmartLoadEnabled":"1","imgSmartLoadOpts":{"parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],"opts":{"excludeImg":[".tc-holder-img"],"fadeIn_options":100}},"goldenRatio":"1.618","gridGoldenRatioLimit":"350","sbStickyUserSettings":{"desktop":true,"mobile":true},"isWPMobile":"","menuStickyUserSettings":{"desktop":"stick_up","mobile":"stick_up"},"isDevMode":"","ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1","frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},"userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},"isWelcomeNoteOn":"","welcomeContent":""};</script><script src=https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js></script><script src=https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js></script><script src=../../../../front/js/scripts.js></script><script>$(".topbar-toggle-down").click(function(){$("#nav-topbar").css("overflow","visible");});</script><script>window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;ga('create','UA-106129999-2','auto');ga('send','pageview');</script><script async src=//www.google-analytics.com/analytics.js></script><noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height=0 width=0 style=display:none;visibility:hidden></iframe></noscript><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5HM5XM2');</script><script id=baidu_analytics>var _hmt=_hmt||[];(function(){if(window.location.hostname==='localhost')return;var hm=document.createElement("script");hm.async=true;hm.src="https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+</code></pre>
+
+<h1 id="优缺点">优缺点</h1>
+
+<ul>
+<li><code>exe</code> (静态编译)<br />
+
+<ul>
+<li>Pros:<br /></li>
+<li>全部集成，不需要任何依赖<br /></li>
+<li>非常适合超小型的容器环境<br /></li>
+<li>很容易跨不同 Linux 发行版<br /></li>
+</ul></li>
+<li><code>exe</code> (动态链接 <code>libc</code>)<br />
+
+<ul>
+<li>Pros:<br /></li>
+<li>可以利用系统功能，比如 DNS 查询。<br /></li>
+<li>可以通过 <code>libc</code> 直接使用系统配置。<br /></li>
+<li>Cons:<br /></li>
+<li>依赖用户空间的执行环境<br /></li>
+</ul></li>
+<li><code>exe</code> (动态链接 <code>libc</code> 和非 Go 代码)<br />
+
+<ul>
+<li>Pros:<br /></li>
+<li>可以直接在 Go 程序中使用非 Go 的代码<br /></li>
+<li>方便和老的系统集成<br /></li>
+<li>Cons:<br /></li>
+<li>构建变得更加复杂<br /></li>
+<li>C 不是 Go<br /></li>
+<li>更容易出问题。<br />
+
+<ul>
+<li>所有 Go 可能出问题地方<br /></li>
+<li>所有 C 可能出问题的地方<br /></li>
+<li>所有 Go &lt;-&gt; C 之间通讯可能出问题的地方<br /></li>
+</ul></li>
+</ul></li>
+<li><code>pie</code> 地址无关可执行文件（安全特性）<br />
+
+<ul>
+<li>Pros:<br /></li>
+<li>和 <code>exe</code> 一样<br /></li>
+<li>让系统更难攻击<br /></li>
+<li>Cons:<br /></li>
+<li>二进制会更大一些(bug, will be fixed)<br /></li>
+<li>大约会有 <code>~1%</code> 的性能损失<br /></li>
+</ul></li>
+<li><code>c-archive</code> C 的静态链接库<br />
+
+<ul>
+<li>Pros:<br /></li>
+<li>可以让 Go 集成到现有的 C 程序中<br /></li>
+<li>事实上，这就是 Go 在 iOS 上的工作方式<br /></li>
+<li>非常适用于已存在的非 Go 环境的构建<br /></li>
+<li>Cons:<br /></li>
+<li>跨语言调用会比较麻烦<br /></li>
+</ul></li>
+<li><code>c-shared</code> C 的动态链接库<br />
+
+<ul>
+<li>Pros:<br /></li>
+<li>比较方便 Go 集成进现有的 C 程序中<br /></li>
+<li>可以在运行时加载<br /></li>
+<li>这是目前 Go 在 Android 下的工作方式（Java 的 <code>System.load()</code>）<br /></li>
+<li>Cons:<br /></li>
+<li>跨语言调用会比较麻烦<br /></li>
+<li>想想 Android 的环境，可能出问题的面积更大了：<br />
+
+<ul>
+<li>Go 可能出问题的地方<br /></li>
+<li>C 可能出问题的地方<br /></li>
+<li>Java 可能出问题的地方<br /></li>
+<li>所有它们之间通讯可能出问题的地方……😱<br /></li>
+</ul></li>
+</ul></li>
+<li><code>shared</code> Go 的动态链接库<br />
+
+<ul>
+<li>Pros:<br /></li>
+<li>多个可执行文件可以共享动态链接库，可以降低系统总的体积。<br /></li>
+<li>一般操作系统厂商会比较青睐于这种方式，可以让整个系统的体积降低。<br />
+
+<ul>
+<li>事实上，这就是 <strong>Canonical(Ubuntu)</strong> 力推实现的方式<br /></li>
+</ul></li>
+<li>可以降低系统体积，不过现在存储空间一般不是问题<br /></li>
+<li>可以降低内存，可以在内存中共享动态链接库代码(如果动态链接库的 loader 足够聪明的话)<br /></li>
+<li>Cons:<br /></li>
+<li>依赖管理、以及发布是非常难得<br />
+
+<ul>
+<li>不过一般操作系统厂商已经有成熟的发布系统了<br /></li>
+</ul></li>
+</ul></li>
+<li><code>plugin</code> Go 的插件<br />
+
+<ul>
+<li>Pros:<br /></li>
+<li>在运行时 Go 程序加载其它 Go 程序<br /></li>
+<li>对于复杂应用来说，允许不同部分在不同时间构建<br /></li>
+<li>Cons:<br /></li>
+<li>构建比较复杂，部署也会很复杂<br /></li>
+<li>如果问演讲者是否该用 <code>plugin</code> 模式，答案一般是 <strong>No</strong>。<br />
+<br /></li>
+</ul></li>
+</ul>
+
+<h1 id="未来">未来</h1>
+
+<p>还有很多地方需要改进。</p>
+
+<ul>
+<li><code>c-shared</code>：目前不支持 Windows（可能），macOS（部分支持）<br /></li>
+<li><code>shared</code>：目前不支持 macOS<br /></li>
+<li><code>plugin</code>：目前不支持 macOS、Windows<br /></li>
+<li><code>plugin</code>：或许可以将 <code>runtime</code> 从插件中移除以获得更小的可执行文件<br /></li>
+</ul>
+
+                        </div>                      
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </article>   
+            <div class="clear"></div>
+
+            
+            <p class="post-tags">
+                  <span class="fa fa-tags">Tags:</span>
+                  
+                    <a rel="tag" href="../../../../tags/golang">golang</a>
+                  
+            </p>
+            
+            <div id="related-posts">
+                <div class="related-inner">
+                </div>
+            </div>
+            
+            
+<section id="comments" class="themeform">
+  
+
+  
+
+  
+  
+
+<div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+
+
+<script>
+var gitment = new Gitment({
+  
+  id: location.pathname,
+  owner: 'rinetd',
+  repo: 'rinetd.github.io',
+  oauth: {
+    client_id: '89af57db85ca20b7668c',
+    client_secret: '4e57a031d7bd29f740559a907db2fe0efb3bf813',
+  },
+})
+gitment.render('gitment')
+</script>
+
+  
+
+
+</section>
+
+            
+            <section id="comments" class="themeform">
+                
+            </section>
+        </div>
+</div> <div class="sidebar s1 collapsed" data-position="left" data-layout="col-3cm" data-sb-id="s1">
+    <a class="sidebar-toggle" title="Expand Sidebar">
+        <i class="fas icon-sidebar-toggle"></i>
+    </a>
+    <div class="sidebar-content">
+        <div class="sidebar-top group">
+            <p>Follow:</p>  
+                          
+<ul class="social-links">
+    
+    
+    
+    
+
+    
+    <li>
+        <a class="social-tooltip" href="mailto:" title="Email">
+            <i class="fa fa-envelope"></i></a>
+    </li>
+
+    
+    <li>
+        <a class="social-tooltip"  href="//github.com/" title="GitHub"><i
+                class="fa fa-github"></i></a>
+    </li>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    <li>
+        <a class="social-tooltip" title="RSS Feed"
+            aria-label="RSS Feed"
+            href="../../../../feed" target="_blank"
+            style="color:rgba(255,255,255,0.7)">
+            <i class="fa fa-rss"></i>
+        </a>
+    </li>
+
+</ul>
+   
+        </div>
+            <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="../../../../language/golang/goher/go-build-mode/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>视频笔记：Go 的构建模式 - David Crawshaw</span>
+      </a>
+      
+  </li>
+</ul>
+
+            
+            <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/ai/">Ai</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/algorithm/">Algorithm</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/ansible/">Ansible</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/beats/">Beats</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/caffe/">Caffe</a>
+        <small>(18)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/camera/">Camera</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/cgo/">Cgo</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/clang/">Clang</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/cmd/">Cmd</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/cpp/">Cpp</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/css/">Css</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/dart/">Dart</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/database/">Database</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/dataset/">Dataset</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/deeplearning/">Deeplearning</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/devops/">Devops</a>
+        <small>(70)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/docker/">Docker</a>
+        <small>(18)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/dts/">Dts</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/elasticsearch/">Elasticsearch</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/english/">English</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/freertos/">Freertos</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/front-end/">Front-End</a>
+        <small>(20)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/golang/">Golang</a>
+        <small>(127)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/hacker/">Hacker</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/hardware/">Hardware</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/hisi/">Hisi</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/jetson/">Jetson</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/js/">Js</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/jumpserver/">Jumpserver</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/kernel/">Kernel</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/linux/">Linux</a>
+        <small>(91)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
+        <small>(120)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/mac/">Mac</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/machinelearn/">Machinelearn</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/machinelearning/">Machinelearning</a>
+        <small>(11)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/macos/">Macos</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/math/">Math</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/matplotlib/">Matplotlib</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/mysql/">Mysql</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/ncnn/">Ncnn</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/network/">Network</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/nginx/">Nginx</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/node/">Node</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/numpy/">Numpy</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/opencv/">Opencv</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/pandas/">Pandas</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/platform/">Platform</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/post/">Post</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/pyqt/">Pyqt</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/python/">Python</a>
+        <small>(24)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/pytorch/">Pytorch</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/rk3288/">Rk3288</a>
+        <small>(23)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/rk3399/">Rk3399</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/rtmp/">Rtmp</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/scikit/">Scikit</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/shell/">Shell</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/tool/">Tool</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/weixin/">Weixin</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/windows/">Windows</a>
+        <small>(22)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/work/">Work</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/yolo/">Yolo</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E5%8D%8F%E8%AE%AE/">协议</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+        <small>(23)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E5%B7%A5%E5%85%B7/">工具</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/">排列组合</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(37)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(30)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(40)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(15)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../../categories/%E9%AB%98%E6%95%B0/">高数</a>
+        <small>(2)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    </div>
+</div> <div class="sidebar s2 collapsed" data-position="right" data-layout="col-3cm" data-sb-id="s2">
+        <a class="sidebar-toggle" title="Expand Sidebar">
+            <i class="fas icon-sidebar-toggle"></i>
+        </a>
+        <div class="sidebar-content">
+            <div class="sidebar-top group">
+                <p>More</p>
+            </div>
+            <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="../../../../devops/tbd/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>基于主干的开发(TBD) Trunk Based Development</span>
+      </a>
+      
+  </li>
+</ul>
+
+            <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/ai/" class="tag-link-4" title="1 Posts">ai<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/ansible/" class="tag-link-19" title="1 Posts">ansible<small>(19)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/awesome/" class="tag-link-3" title="1 Posts">awesome<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/bfc/" class="tag-link-2" title="1 Posts">bfc<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/c/" class="tag-link-5" title="1 Posts">c<small>(5)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/caffe/" class="tag-link-18" title="1 Posts">caffe<small>(18)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/cgo/" class="tag-link-9" title="1 Posts">cgo<small>(9)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/clang/" class="tag-link-6" title="1 Posts">clang<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/cmd/" class="tag-link-2" title="1 Posts">cmd<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/cpp/" class="tag-link-2" title="1 Posts">cpp<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/css/" class="tag-link-20" title="1 Posts">css<small>(20)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/css3/" class="tag-link-2" title="1 Posts">css3<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/dataset/" class="tag-link-2" title="1 Posts">dataset<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/devops/" class="tag-link-3" title="1 Posts">devops<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/docker/" class="tag-link-21" title="1 Posts">docker<small>(21)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/drone/" class="tag-link-22" title="1 Posts">drone<small>(22)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/dts/" class="tag-link-6" title="1 Posts">dts<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/elasticsearch/" class="tag-link-9" title="1 Posts">elasticsearch<small>(9)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/encode/" class="tag-link-3" title="1 Posts">encode<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/english/" class="tag-link-8" title="1 Posts">english<small>(8)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/es6/" class="tag-link-2" title="1 Posts">es6<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/etcd/" class="tag-link-4" title="1 Posts">etcd<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/flannel/" class="tag-link-2" title="1 Posts">flannel<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/git/" class="tag-link-6" title="1 Posts">git<small>(6)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/github/" class="tag-link-2" title="1 Posts">github<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/golang/" class="tag-link-141" title="1 Posts">golang<small>(141)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/gradle/" class="tag-link-3" title="1 Posts">gradle<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/hardware/" class="tag-link-10" title="1 Posts">hardware<small>(10)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/hexo/" class="tag-link-3" title="1 Posts">hexo<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/html/" class="tag-link-2" title="1 Posts">html<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/http/" class="tag-link-6" title="1 Posts">http<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/hugo/" class="tag-link-14" title="1 Posts">hugo<small>(14)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/ip/" class="tag-link-3" title="1 Posts">ip<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/iptables/" class="tag-link-17" title="1 Posts">iptables<small>(17)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/javascript/" class="tag-link-19" title="1 Posts">javascript<small>(19)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/jquery/" class="tag-link-12" title="1 Posts">jquery<small>(12)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/js/" class="tag-link-10" title="1 Posts">js<small>(10)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/jumpserver/" class="tag-link-2" title="1 Posts">jumpserver<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/jwt/" class="tag-link-3" title="1 Posts">jwt<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/kernel/" class="tag-link-6" title="1 Posts">kernel<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/kubernetes/" class="tag-link-11" title="1 Posts">kubernetes<small>(11)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/linux/" class="tag-link-19" title="1 Posts">linux<small>(19)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/machinelearn/" class="tag-link-3" title="1 Posts">machinelearn<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/machinelearning/" class="tag-link-11" title="1 Posts">machinelearning<small>(11)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/macos/" class="tag-link-7" title="1 Posts">macos<small>(7)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/mariadb/" class="tag-link-9" title="1 Posts">mariadb<small>(9)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/math/" class="tag-link-6" title="1 Posts">math<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/matplotlib/" class="tag-link-3" title="1 Posts">matplotlib<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/maven/" class="tag-link-2" title="1 Posts">maven<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/ml/" class="tag-link-3" title="1 Posts">ml<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/mysql/" class="tag-link-61" title="1 Posts">mysql<small>(61)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/ncnn/" class="tag-link-3" title="1 Posts">ncnn<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/netns/" class="tag-link-2" title="1 Posts">netns<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/network/" class="tag-link-2" title="1 Posts">network<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/nginx/" class="tag-link-28" title="1 Posts">nginx<small>(28)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/nmap/" class="tag-link-2" title="1 Posts">nmap<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/node/" class="tag-link-4" title="1 Posts">node<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/nosql/" class="tag-link-8" title="1 Posts">nosql<small>(8)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/npm/" class="tag-link-3" title="1 Posts">npm<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/numpy/" class="tag-link-4" title="1 Posts">numpy<small>(4)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/oauth2/" class="tag-link-2" title="1 Posts">oauth2<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/opencv/" class="tag-link-10" title="1 Posts">opencv<small>(10)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/openssl/" class="tag-link-3" title="1 Posts">openssl<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/php/" class="tag-link-4" title="1 Posts">php<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/post/" class="tag-link-3" title="1 Posts">post<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/prometheus/" class="tag-link-8" title="1 Posts">prometheus<small>(8)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/pyqt/" class="tag-link-4" title="1 Posts">pyqt<small>(4)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/python/" class="tag-link-26" title="1 Posts">python<small>(26)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/pytorch/" class="tag-link-6" title="1 Posts">pytorch<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/redis/" class="tag-link-2" title="1 Posts">redis<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/reflect/" class="tag-link-3" title="1 Posts">reflect<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/responsive/" class="tag-link-2" title="1 Posts">responsive<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/restful/" class="tag-link-6" title="1 Posts">restful<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/rk3288/" class="tag-link-22" title="1 Posts">rk3288<small>(22)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/rk3399/" class="tag-link-9" title="1 Posts">rk3399<small>(9)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/route/" class="tag-link-2" title="1 Posts">route<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/scikit/" class="tag-link-3" title="1 Posts">scikit<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/scss/" class="tag-link-2" title="1 Posts">scss<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/seo/" class="tag-link-5" title="1 Posts">seo<small>(5)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/shell/" class="tag-link-10" title="1 Posts">shell<small>(10)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/sqlite/" class="tag-link-2" title="1 Posts">sqlite<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/swagger/" class="tag-link-2" title="1 Posts">swagger<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/swarm/" class="tag-link-2" title="1 Posts">swarm<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/sysctl/" class="tag-link-2" title="1 Posts">sysctl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/ulimit/" class="tag-link-2" title="1 Posts">ulimit<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/vim/" class="tag-link-14" title="1 Posts">vim<small>(14)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/windows/" class="tag-link-18" title="1 Posts">windows<small>(18)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../../tags/yolo/" class="tag-link-7" title="1 Posts">yolo<small>(7)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-2" title="1 Posts">微服务<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+  </div>
+</div>
+
+
+        </div>
+    </div>`
+
+                    </div>
+                    
+                </div>
+                
+
+            </div>
+
+        </div>
+    </div>
+
+    <footer id="footer">
+    <section class="container" id="footer-bottom">
+      <div class="container-inner">
+        <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+        <div class="pad group">
+          <div class="grid one-half">
+            <div id="copyright">
+                <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+                
+            </div>
+            
+          </div>
+          
+          <div class="grid one-half last">
+            <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+          </div>
+        </div>
+  
+      </div>
+      
+    </section>
+    
+  </footer>
+
+
+<div class="back-to-top" id="back-to-top">
+    <i class="fa fa-angle-double-up"></i>
+</div>
+
+
+
+
+
+<script type='text/javascript'>
+    var HUParams={
+        "_disabled":[],
+        "SmoothScroll":{
+            "Enabled":true,
+            "Options":{"touchpadSupport":false}
+        },
+        "centerAllImg":"1",
+        "timerOnScrollAllBrowsers":"1",
+        "extLinksStyle":"1",
+        "extLinksTargetExt":"1",
+        "extLinksSkipSelectors":{
+            "classes":["btn","button"],"ids":[]
+        },
+        "imgSmartLoadEnabled":"1",
+        "imgSmartLoadOpts":{
+            "parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],
+            "opts":{
+                "excludeImg":[".tc-holder-img"],
+                "fadeIn_options":100
+            }
+        },
+        "goldenRatio":"1.618","gridGoldenRatioLimit":"350",
+        "sbStickyUserSettings":{"desktop":true,"mobile":true},
+        "isWPMobile":"",
+        "menuStickyUserSettings":{
+            "desktop":"stick_up",
+            "mobile":"stick_up"
+        },
+        "isDevMode":"",
+        "ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1",
+            "frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},
+            "userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},
+            "isWelcomeNoteOn":"","welcomeContent":""};
+</script>
+
+
+
+<script src="https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript" src="../../../../front/js/scripts.js"></script> 
+
+
+
+
+<script>
+  $(".topbar-toggle-down").click(function(){
+    $("#nav-topbar").css("overflow","visible");
+  });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-106129999-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+
+</body>
+
+</html>

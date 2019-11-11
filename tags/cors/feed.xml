@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>cors on 时光小栈</title>
+    <link>/tags/cors/</link>
+    <description>Recent content in cors on 时光小栈</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <managingEditor>rinetd@163.com (rinetd)</managingEditor>
+    <webMaster>rinetd@163.com (rinetd)</webMaster>
+    <copyright>Copyright (c) 2017. All rights reserved. (版权所有) &lt;a href=&#39;http://www.miitbeian.gov.cn/&#39;&gt;鲁ICP备17074587号-1&lt;/a&gt;</copyright>
+    <lastBuildDate>Mon, 23 Jul 2018 08:27:03 +0800</lastBuildDate>
+    
+	<atom:link href="/tags/cors/feed.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>跨域资源共享 CORS 详解</title>
+      <link>/frontend/cors/</link>
+      <pubDate>Mon, 23 Jul 2018 08:27:03 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/frontend/cors/</guid>
+      <description>&lt;h1 id=&#34;1-golang-websocket-跨域问题&#34;&gt;1. golang websocket 跨域问题&lt;/h1&gt;
+
+&lt;p&gt;首先, 因为跨域报错&lt;/p&gt;
+
+&lt;p&gt;服务器端日志&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;websocket: &#39;Origin&#39; header value not allowed
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;前端报错:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;WebSocket connection to &#39;ws://localhost:8081/ws&#39; failed: Error during WebSocket handshake: Unexpected response code: 403
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;用的是 github.com/gorilla/websocket 这个 websocket 包&lt;/p&gt;
+
+&lt;p&gt;网上的方法有很多&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;比如 添加这个
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;w.Header().Set(&amp;quot;Access-Control-Allow-Origin&amp;quot;, &amp;quot;*&amp;quot;)
+w.Header().Set(&amp;quot;Access-Control-Allow-Methods&amp;quot;, &amp;quot;POST, GET, OPTIONS&amp;quot;)
+w.Header().Set(&amp;quot;Access-Control-Allow-Headers&amp;quot;, &amp;quot;*&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;比如 添加这个
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;origin := r.Header.Get(&amp;quot;Origin&amp;quot;)
+w.Header().Set(&amp;quot;Access-Control-Allow-Origin&amp;quot;, origin)
+w.Header().Set(&amp;quot;Access-Control-Allow-Credentials&amp;quot;, &amp;quot;true&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;比如 Nginx 中添加这个
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection &amp;quot;upgrade&amp;quot;;
+proxy_set_header Host $host;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;还有很多方法! 我试了都没用&lt;/p&gt;
+
+&lt;p&gt;然后我自己看了下代码, 发现在包里的 server.go 里 有个检测 host 的.. 大约在 127 行左右&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;checkOrigin := u.CheckOrigin
+if checkOrigin == nil {
+    checkOrigin = checkSameOrigin
+}
+if !checkOrigin(r) {
+    return u.returnError(w, r, http.StatusForbidden, &amp;quot;websocket:&#39;Origin&#39;header value not allowed&amp;quot;)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;而检验返回回来的是个 bool 值, 我打印了下我的结果.. 是 false&lt;/p&gt;
+
+&lt;p&gt;所以目前的方法是, 我把这个验证给去了...&lt;/p&gt;
+
+&lt;p&gt;做法是&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;r.Header.Del(&amp;quot;Origin&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;恩! 然后正常运行了... 只不过... 可能有点问题... 如果是公网.. 可以考虑加个白名单, 只有白名单里的 域名 才删除, 不是白名单里的, 就不允许...&lt;/p&gt;
+
+&lt;p&gt;origin := r.Header.Get(&amp;quot;Origin&amp;quot;)&lt;br /&gt;
+whiteList := &amp;quot;domain&amp;quot;// 哈哈刚学, 判断是否在数组里.. 暂时不会, 所以就写一个字符串... 类似于 php 的 in_array(PHP 是世界上最好的语言)&lt;br /&gt;
+if origin == whiteList {&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;r.Header.Del(&amp;quot;Origin&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;}&lt;br /&gt;
+当然这个做法是不对的，正确的做法是:&lt;/p&gt;
+
+&lt;p&gt;upgrader.CheckOrigin = func(r *http.Request) bool {&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;return true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;}&lt;/p&gt;
+
+&lt;p&gt;这个 CheckOrigin 是给开放给用户自己配置的。&lt;/p&gt;
+
+&lt;h1 id=&#34;2-配置-nginx-cors-跨域&#34;&gt;2.配置 nginx CORS 跨域&lt;/h1&gt;
+
+&lt;h2 id=&#34;设置允许所有的请求&#34;&gt;设置允许所有的请求&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-nginx&#34;&gt;server {
+    location / {
+        add_header &#39;Access-Control-Allow-Origin&#39; &#39;*&#39;;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;只允许get请求&#34;&gt;只允许GET请求&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-nginx&#34;&gt;server {
+    location / {
+        add_header &#39;Access-Control-Allow-Origin&#39; &#39;*&#39;;
+        add_header &#39;Access-Control-Request-Method&#39; &#39;GET&#39;;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;请求白名单&#34;&gt;请求白名单&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-nginx&#34;&gt;server {
+    location / {
+        # 白名单
+        if ($http_origin ~* (baidu\.com|github.xuexb.com)$) {
+            add_header &#39;Access-Control-Allow-Origin&#39; &#39;$http_origin&#39;;
+
+            # 允许cookie
+            add_header &#39;Access-Control-Allow-Credentials&#39; true;
+
+            # 只允许某些方法
+            add_header &#39;Access-Control-Request-Method&#39; &#39;GET, POST, OPTIONS&#39;;
+
+            # 支持获取其她字段, 需要前端设置 `xhr.withCredentials = true`
+            add_header &#39;Access-Control-Allow-Headers&#39; &#39;User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type&#39;;
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;3-跨域资源共享-cors-详解&#34;&gt;3.跨域资源共享 CORS 详解&lt;/h1&gt;
+
+&lt;p&gt;CORS 是一个 W3C 标准，全称是 &amp;quot;跨域资源共享&amp;quot;（Cross-origin resource sharing）。&lt;br /&gt;
+它允许浏览器向跨源服务器，发出 &lt;code&gt;XMLHttpRequest&lt;/code&gt; 请求，从而克服了 AJAX 只能 ** 同源 ** 使用的限制。&lt;br /&gt;
+本文详细介绍 CORS 的内部机制。&lt;/p&gt;</description>
+    </item>
+    
+  </channel>
+</rss>

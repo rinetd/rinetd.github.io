@@ -1,8 +1,1450 @@
-<!doctype html><html lang=zh-cn class=no-js><title>使用 openssl 制作证书</title><meta charset=utf-8><meta name=robots content=index,nofollow><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><meta http-equiv=x-dns-prefetch-control content=on><meta name=viewport content="width=device-width,initial-scale=1"><meta name=referrer content=origin-when-cross-origin><meta name=description content="非对称加密算法：RSA，DSA/DSS 对称加密算法：AES，RC4，3DES HASH 算法：MD5，SHA1，SHA256 Chapter 7 OpenSSL OpenSSL 生成根证书 CA 及签发"><meta name=author content=rinetd><meta name=baidu-site-verification content=pCInWQYbNT><meta name=google-site-verification content=ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk><link rel=canonical href=../../../linux/cmd/linux-openssl/><link rel=icon href=../../../public/favicon.ico><link rel="shortcut icon" href=../../../public/favicon.ico><link rel=stylesheet href=../../../front/css/main.min.css><link rel=stylesheet href=../../../front/css/font-awesome.min.css><link rel=stylesheet href=//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css><body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome"><div id=wrapper><header id=header class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent"><nav class="nav-container group mobile-menu mobile-sticky" id=nav-mobile data-menu-id=header-1><div class=mobile-title-logo-in-header><p class=site-title><a class=custom-logo-link href rel=home title="Pytool | Home">Pytool</a></div><div class="ham__navbar-toggler-two collapsed" title=Menu aria-expanded=false><div class=ham__navbar-span-wrapper><span class="line line-1"></span><span class="line line-2"></span><span class="line line-3"></span></div></div><div class=nav-text>使用 openssl 制作证书</div><div class="nav-wrap container"><ul class="nav container-inner group mobile-search"><li><form class="searchform themeform" action=https://demo-hueman.presscustomizr.com/><div><input class=search name=s onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"></div></form></ul><ul id=menu-topbar-menu class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href>Home</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../math/>Math</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../edit/>Edit</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/>文档生成器</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/>自动部署</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/android/>Android</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/golang/>Golang</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/goher/>Goher</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/hugo/>Hugo</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/java/>Java</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/java/hadoop/>Hadoop</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/php/>Php</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/php/magento/>Magento</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/python/>Python</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/python/scrapy/>Scrapy</a></ul></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/lvs/>Lvs</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/shell/>Shell</a></ul><li class=item><a class=text href=../../../series/>series</a><li class=item><a class=text href=../../../categories/>categories</a><li class=item><a class=text href=../../../tags/>tags</a><li class=item><a class=text href=../../../me/>about</a></ul></div></nav><nav class="nav-container group desktop-menu desktop-sticky" id=nav-topbar data-menu-id=header-2><div class=nav-text>使用 openssl 制作证书</div><div class=topbar-toggle-down><i class="fas fa-angle-double-down" aria-hidden=true data-toggle=down title="Expand menu"></i><i class="fas fa-angle-double-up" aria-hidden=true data-toggle=up title="Collapse menu"></i></div><div class="nav-wrap container"><ul id=menu-topbar-menu-1 class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href=../../../>Home</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../math/>Math</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../edit/>Edit</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/%E6%96%87%E6%A1%A3%E7%94%9F%E6%88%90%E5%99%A8/>文档生成器</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/%E8%87%AA%E5%8A%A8%E9%83%A8%E7%BD%B2/>自动部署</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/android/>Android</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/golang/>Golang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/java/>Java</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/php/>Php</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/python/>Python</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/lvs/>Lvs</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/shell/>Shell</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../post/>Post</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/life/>Life</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/reship/>Reship</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/basic/>Basic</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/english/>English</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/seo/>Seo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/software/>Software</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/wiki/>Wiki</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/windows/>Windows</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../series/>series</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../categories/>categories</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../tags/>tags</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../me/>about</a></ul></div></nav></header><div class=container id=page><div class=container-inner><div class=main><div class="main-inner group"><div class=content><div class="pad group page-title"><ul class="meta-single group"><li><span class="fa fa-folder-open"></span><li class=category><a href=../../../categories/linux-%E5%91%BD%E4%BB%A4/ rel="category tag">Linux 命令</a></ul></div><div class="pad group"><article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list"><div class="post-inner group"><h1 class=post-title>使用 openssl 制作证书</h1><p class=post-byline>by · 2016年01月06日 · 10930 Words ·
-~22min reading time |
-<a href=https://gitlab.com/rinetd/blog/edit/master/linux/cmd/linux-openssl.md target=_blank>Improve on <i class="fa fa-gitlab"></i></a><div class=clear></div><div class="entry themeform"><div class=entry-inner></br>原文链接：<a target=_blank href=../../../linux/cmd/linux-openssl/> 使用 openssl 制作证书</a><p>非对称加密算法：RSA，DSA/DSS<br>对称加密算法：AES，RC4，3DES<br>HASH 算法：MD5，SHA1，SHA256<br><a href=http://netkiller.github.io/cryptography/openssl/ target=_blank>Chapter 7 OpenSSL</a><br><a href=https://yq.aliyun.com/articles/40398 target=_blank>OpenSSL 生成根证书 CA 及签发子证书</a><h2 id=那些证书相关的玩意儿-ssl-x-509-pem-der-crt-cer-key-csr-p12-等>那些证书相关的玩意儿 (SSL,X.509,PEM,DER,CRT,CER,KEY,CSR,P12 等)</h2><p><a href=https://program-think.blogspot.com/2010/02/introduce-digital-certificate-and-ca.html target=_blank>数字证书及 CA 的扫盲介绍 @ 编程随想的博客</a><br><a href=http://blog.csdn.net/oscar999/article/details/9364101 target=_blank>数字签名与数字证书 - oscar999 的专栏 - 博客频道 - CSDN.NET</a><br><a href=http://www.cnblogs.com/SirSmith/p/4985571.html target=_blank>数字签名原理简介（附数字证书） - kingsleylam - 博客园</a><h2 id=1-公钥加密-无密码加密传输>1. [公钥加密] 无密码加密传输</h2><p><img src=http://images2015.cnblogs.com/blog/452847/201511/452847-20151122114059983-1639010659.png alt=公钥加密><br>这是并不能确保文件是不是被其他人篡改过了，因为任何人都可以拿到 B 的公钥<h2 id=2-公钥加密-数字签名-解决源文件被修改的问题>2. [公钥加密+数字签名] 解决源文件被修改的问题</h2><p><img src=http://images2015.cnblogs.com/blog/452847/201511/452847-20151122120233593-605577968.png alt=非对称加密><h2 id=3-公钥加密-数字签名-对称加密-解决公钥加密速度慢的问题>3. [公钥加密+数字签名+对称加密] 解决公钥加密速度慢的问题</h2><ol><li>B 的公钥加密 AES 密钥（加密密码） B 的私钥解密 对称密钥（解密密码）<br><li>用 AES 密钥加密原文（密码） （解密）<br><li>A 的私钥加密 摘要 （数字签名） A 的公钥解密 HASH<br><img src=http://images2015.cnblogs.com/blog/452847/201511/452847-20151122122115358-1810987945.png alt=对称加密><br><br></ol><p>当 A 使用 B 的公钥对 AES 密钥进行加密时，如何确定 B 的公钥就是正确的呢？<h2 id=4-证书-数字签名-对称加密-解决信任问题>4. [证书 + 数字签名 + 对称加密] 解决信任问题</h2><p>用 CA 的公钥解开数字证书，就可以拿到 B 真实的公钥了，然后就能证明 &quot;数字签名&quot; 是否真的是鲍勃签的<br><img src=http://files.jb51.net/file_images/article/201212/2012121714270132.png alt><h2 id=证书格式转换-https-csr-chinassl-net-convert-ssl-html><a href=https://csr.chinassl.net/convert-ssl.html target=_blank>证书格式转换</a></h2><p>一些概念<br>数字证书： 证书是为了让客户端确认一个我拿到的这个公钥就是服务器(google)的，而不是别人伪造的<br>KEY : 私钥文件，决定 ssl 安全的基础<br>CSR : Certificate Signing Request 证书请求文件，包含公钥和证书信息<br>CA : 中级证书颁发机构，一般是可信的第三方，CA 证书会验证公钥是否被认证<br>root CA：通过它的私钥对中级机构提交的 CSR 进行了签名<p>申请 ssl 证书需要用到 openssl，linux 系统中默认会安装，手动安装 openssl：<br><code>yum install -y openssl openssl-devel</code><h3 id=一-生成私钥-key>一. 生成私钥.key</h3><p>私钥是 SSL 安全性的基础，使用 RSA 算法生成，只有证书申请者持有，即使 CA 也没有对私钥的访问权限，应妥善保管。私钥长度决定其安全性，2009 年 768 位 RSA 已被破解，1024 位 RSA 短期内是安全的，但随着计算机越来越快，已不足以抵御攻击，为了安全起见应尽量使用 2048 位 RSA，生成 2048 位私钥：<br><code>openssl genrsa -out 52os.net.key 2048</code><p>如果对安全性要求较高，可以用密码加密密钥文件，每次读取密钥都需输入密码：<br><code>openssl genrsa -des3 -out 52os.net.key 2048</code><h4 id=如何去除私钥密码保护>如何去除私钥密码保护</h4><p>如果您的密钥已经加载密码保护，可以通过 OpenSSL 工具 运行以下命令去掉密码保护：<br><code>openssl rsa -in encryedprivate.key -out unencryed.key</code><pre><code>encryedprivate.key 是带密码保护的私钥文件。
+<!DOCTYPE html>
+<html lang="zh-CN" class="no-js">
+
+<head>
+    
+<title>使用 openssl 制作证书</title>
+<meta charset="utf-8">
+
+<meta name="robots" content="index,nofollow">
+
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta http-equiv="x-dns-prefetch-control" content="on">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="origin-when-cross-origin" />
+
+<meta name="description" content="Chapter 7 OpenSSL OpenSSL 生成根证书 CA 及签发子证书 那些证书相关的玩意儿 (SSL,X.509,PEM,DER,CRT,CER,KEY,CSR,P12 等) 数字证书及 CA 的扫盲介绍 @ 编程随想的博客 数字签名与数字证书 - oscar999 的专栏 - 博客频道 - CSDN.NET 数">
+
+<meta name="author" content=rinetd>
+
+<meta name="baidu-site-verification" content="pCInWQYbNT" />
+<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+
+  
+
+
+
+
+
+
+
+
+<link rel="canonical" href="../../../linux/cmd/linux-openssl/" />
+
+<link rel="icon" href="../../../public/favicon.ico"/>
+<link rel="shortcut icon" href="../../../public/favicon.ico"/>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="../../../front/css/main.min.css" >
+
+<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+
+
+
+
+
+<link rel="stylesheet" href="//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css" />
+
+</head>
+
+<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
+    <div id="wrapper">
+        <header id="header" class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent">
+    
+  <nav class="nav-container group mobile-menu mobile-sticky " id="nav-mobile" data-menu-id="header-1">
+    <div class="mobile-title-logo-in-header">
+        <p class="site-title">
+            <a class="custom-logo-link" href="" rel="home" title="Pytool | Home ">
+                
+                Pytool
+            </a>
+        </p>
+    </div>
+    <div class="ham__navbar-toggler-two collapsed" title="Menu" aria-expanded="false">
+        <div class="ham__navbar-span-wrapper">
+            <span class="line line-1"></span>
+            <span class="line line-2"></span>
+            <span class="line line-3"></span>
+        </div>
+    </div>
+    <div class="nav-text">使用 openssl 制作证书</div>
+    <div class="nav-wrap container">
+        <ul class="nav container-inner group mobile-search">
+            <li>
+                <form method="get" class="searchform themeform" action="https://demo-hueman.presscustomizr.com/">
+                    <div>
+                        <input type="text" class="search" name="s" onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"/>
+                    </div>
+                </form>
+            </li>
+        </ul>
+        <ul id="menu-topbar-menu" class="nav container-inner group">
+        
+            <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a href=" ">Home</a>
+            </li>
+
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../ai/">Ai </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../ai/math/">Math</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../language/">Language </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/python/">Python</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/python/scrapy/">Scrapy</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/golang/">Golang</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/golang/hugo/">Hugo</a>
+                                                
+                                            </li>                
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/golang/goher/">Goher</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/java/">Java</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/java/hadoop/">Hadoop</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/awesome/">Awesome</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/php/">Php</a>
+                                
+                                            
+                                                 
+                                        <ul class="sub-menu">
+                                            
+                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
+                                                <a href="../../../language/php/magento/">Magento</a>
+                                                
+                                            </li>                
+                                            
+                                        </ul>
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../language/android/">Android</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../macos/">Macos </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../hardware/">Hardware </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hardware/rtmp/">Rtmp</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../linux/">Linux </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/cmd/">Cmd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/shell/">Shell</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/nginx/">Nginx</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/ip/">Ip</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/git/">Git</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/haproxy/">Haproxy</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../linux/lvs/">Lvs</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../frontend/">Frontend </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../frontend/css/">Css</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../frontend/vue/">Vue</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../devops/">Devops </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/docker/">Docker</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/elk/">Elk</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/ansible/">Ansible</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/prometheus/">Prometheus</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/drone/">Drone</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/kubernetes/">Kubernetes</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/oauth2/">OAuth2</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/etcd/">Etcd</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/apidoc/">Apidoc</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../database/">Database </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../database/mysql/">Mysql</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../database/mongo/">Mongo</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../database/redis/">Redis</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../windows/">Windows </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../hacker/">Hacker </a>
+                
+                                 
+                            <ul class="sub-menu">
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/01-info-gather/">01-Info-Gather</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/02-spoof/">02-Spoof</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
+                                <a href="../../../hacker/shells/">Shells</a>
+                                
+                                            
+                                        
+                                </li>                
+                            
+                            </ul>
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../work/">Work </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../weixin/">Weixin </a>
+                
+                        
+
+              </li>
+            
+        
+            
+                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
+                
+                <a  href="../../../edit/">Edit </a>
+                
+                        
+
+              </li>
+            
+        
+        
+        <li class="item ">
+                <a class="text" href="../../../series/">series</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../categories/">categories</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../tags/">tags</a>
+        </li>
+        <li class="item ">
+                <a class="text" href="../../../me/">about</a>
+        </li>
+
+        
+        </ul>
+    </div>
+  </nav>
+    
+  <nav class="nav-container group desktop-menu desktop-sticky " id="nav-topbar" data-menu-id="header-2">
+    <div class="nav-text">使用 openssl 制作证书</div>
+    
+    <div class="topbar-toggle-down">
+        <i class="fas fa-angle-double-down" aria-hidden="true" data-toggle="down" title="Expand menu"></i>
+        <i class="fas fa-angle-double-up" aria-hidden="true" data-toggle="up" title="Collapse menu"></i>
+    </div>
+
+    
+    <div class="nav-wrap container">
+      <ul id="menu-topbar-menu-1" class="nav container-inner group">
+        <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
+            <a href="../../../">Home</a></li>
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../ai/">Ai </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../ai/math/">Math</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../language/">Language </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/python/">Python</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/golang/">Golang</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/java/">Java</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/awesome/">Awesome</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/php/">Php</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../language/android/">Android</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../macos/">Macos </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../hardware/">Hardware </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hardware/rtmp/">Rtmp</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../linux/">Linux </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/cmd/">Cmd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/shell/">Shell</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/nginx/">Nginx</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/ip/">Ip</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/git/">Git</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/haproxy/">Haproxy</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../linux/lvs/">Lvs</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../post/">Post </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/software/">Software</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/english/">English</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/seo/">Seo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/life/">Life</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/wiki/">Wiki</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/basic/">Basic</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../post/reship/">Reship</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../frontend/">Frontend </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../frontend/css/">Css</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../frontend/vue/">Vue</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../devops/">Devops </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/docker/">Docker</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/elk/">Elk</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/ansible/">Ansible</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/prometheus/">Prometheus</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/drone/">Drone</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/kubernetes/">Kubernetes</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/oauth2/">OAuth2</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/etcd/">Etcd</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/apidoc/">Apidoc</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../database/">Database </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../database/mysql/">Mysql</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../database/mongo/">Mongo</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../database/redis/">Redis</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../windows/">Windows </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../hacker/">Hacker </a>
+                
+                           
+                    <ul class="sub-menu">
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/01-info-gather/">01-Info-Gather</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/02-spoof/">02-Spoof</a>
+                          
+                        </li>                
+                        
+                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
+                          <a href="../../../hacker/shells/">Shells</a>
+                          
+                        </li>                
+                      
+                    </ul>
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../work/">Work </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../weixin/">Weixin </a>
+                
+                  
+              </li>
+                    
+        
+            
+              
+                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
+                <a href="../../../edit/">Edit </a>
+                
+                  
+              </li>
+                    
+        
+       
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../series/">series</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../categories/">categories</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../tags/">tags</a>
+        </li>
+        
+        <li class="menu-item menu-item-type-post_type menu-item-object-page">
+          <a href="../../../me/">about</a>
+        </li>
+        
+
+        
+      </ul>
+      
+    </div>
+    
+    
+  
+  </nav>
+  
+
+  
+  
+
+</header>
+
+        <div class="container" id="page">
+            <div class="container-inner">
+                <div class="main">
+                    <div class="main-inner group">
+                        <div class="content">
+    
+        <div class="pad group page-title">
+            <ul class="meta-single group">
+                
+                <li><span class="fa fa-folder-open"></span></li>
+                
+                <li class="category">
+                <a href="../../../categories/linux-%E5%91%BD%E4%BB%A4/" rel="category tag">Linux 命令</a>
+                </li>
+                
+            </ul>
+        </div>
+
+        
+        <div class="pad group">
+            <article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list">
+                <div class="post-inner group">
+                        <h1 class="post-title">使用 openssl 制作证书</h1>
+
+                        <p class="post-byline">
+                          by  · 2016年01月06日 · 13906 Words ·
+                          ~28min reading time |
+                          
+                          
+                          <a href="https://gitlab.com/rinetd/blog/edit/master/linux/cmd/linux-openssl.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                        </p>
+                    <div class="clear"></div>
+                    <div class="entry themeform">
+                        <div class="entry-inner">
+                            
+                            </br>
+                            原文链接：<a target="_blank" href="../../../linux/cmd/linux-openssl/"> 使用 openssl 制作证书</a> 
+                            </p>
+                            
+
+<p><a href="http://netkiller.github.io/cryptography/openssl/" target="_blank">Chapter 7 OpenSSL</a><br />
+<a href="https://yq.aliyun.com/articles/40398" target="_blank">OpenSSL 生成根证书 CA 及签发子证书</a></p>
+
+<h2 id="那些证书相关的玩意儿-ssl-x-509-pem-der-crt-cer-key-csr-p12-等">那些证书相关的玩意儿 (SSL,X.509,PEM,DER,CRT,CER,KEY,CSR,P12 等)</h2>
+
+<p><a href="https://program-think.blogspot.com/2010/02/introduce-digital-certificate-and-ca.html" target="_blank">数字证书及 CA 的扫盲介绍 @ 编程随想的博客</a><br />
+<a href="http://blog.csdn.net/oscar999/article/details/9364101" target="_blank">数字签名与数字证书 - oscar999 的专栏 - 博客频道 - CSDN.NET</a><br />
+<a href="http://www.cnblogs.com/SirSmith/p/4985571.html" target="_blank">数字签名原理简介（附数字证书） - kingsleylam - 博客园</a></p>
+
+<h3 id="生成随机数">生成随机数</h3>
+
+<p><code>openssl rand -base64 128</code></p>
+
+<h3 id="字符串加解密">字符串加解密</h3>
+
+<pre><code class="language-sh">echo &quot;message&quot; | openssl enc -aes-256-cbc -a -pass pass:$password
+echo &quot;encmessage&quot; | openssl enc -aes-256-cbc -a -d -pass pass:$password
+</code></pre>
+
+<h3 id="文件加密aes">文件加密AES</h3>
+
+<p>-binary<br />
+-nopad -nosalt<br />
+bad decrypt<br />
+windows加密Linux解密错误处理: envelope routines:EVP_EncryptFinal_ex:data not multiple of block length:evp_enc.c:414 只在Linux解密时 增加 -nopad 参数</p>
+
+<p><code>openssl aes-256-cbc -e -md md5 -pass &quot;pass:Hr2019&quot; -in lzkp_bi.zip -out a.zip.gpg</code>   # 密码加密<br />
+<code>openssl aes-256-cbc -d -md md5 -pass &quot;pass:Hr2019&quot; -in a.txt.gpg  -out aa.txt</code> # 密码解密</p>
+
+<p><code>openssl enc -e -aes-256-cbc -pass pass:'123456' -in a.txt -out a.txt.gpg</code> # 密码加密                  openssl enc -d -aes-256-cbc -pass pass:'123456' -in a.txt.gpg  -out aa.txt # 密码解密</p>
+
+<p>openssl aes-256-cbc -md md5 -k 'lzkp' -in a.txt -out a.txt.gpg<br />
+openssl aes-256-cbc -md md5 -e -k '123456' -in a.txt -out a.txt.gpg<br />
+openssl aes-256-cbc -md md5 -nopad -d -k '123456' -in a.txt.gpg  -out aa.txt</p>
+
+<p>加密参数:<br />
+-salt               是否加盐,加密 -e 时使用<br />
+-k      &quot;123456&quot;    =不等价=  -pass pass:'123456'<br />
+-kfile  &quot;pass.pem&quot;  =等价=    -pass file:'./pass.pem'<br />
+-md     md5|SHA256   指定hash算法 use to create a key from a passphrase.<br />
+-a -base64           对输出文件进行 base64 编码输出</p>
+
+<h3 id="cbc模式下的blowfish">CBC模式下的Blowfish</h3>
+
+<p>要加密：</p>
+
+<p>$ openssl bf &lt; arquivo.txt &gt; arquivo.txt.bf<br />
+要解密：</p>
+
+<p>$ openssl bf -d &lt; arquivo.txt.bf &gt; arquivo.txt<br />
+bf === CBC模式下的Blowfish</p>
+
+<h2 id="cipher-suites">cipher suites</h2>
+
+<p>密码套件（Cipher suite）是传输层安全（TLS）/安全套接字层（SSL）网络协议中的一个概念。<br />
+在TLS 1.3之前，密码套件的名称是以协商安全设置时使用的身份验证、加密、消息认证码（MAC）和密钥交换算法组成。TLS 1.3中的密码套件格式已经修改。在目前的TLS 1.3草案文档中，密码套件仅用于协商加密和HMAC算法。[1]</p>
+
+<p>每个cipher suite（例如TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256）定义一个密钥交换算法、一个批量加密算法、一个消息认证码（MAC）算法，以及一个伪随机函数（PRF）。</p>
+
+<pre><code>密钥交换算法，例如ECDHE_RSA，用于决定客户端与服务器之间在握手时如何身份验证。[8]
+批量加密算法，例如AES_128_GCM，用于加密消息流。它还包括密钥大小及显式和隐式初始化向量（密码学随机数）的长度。[9]
+消息认证码算法，例如SHA256，用于创建消息摘要，消息流每个数据块的加密散列。[9]
+伪随机函数，例如TLS 1.2的伪随机函数使用MAC算法的散列函数来创建一个主密钥——连接双方共享的一个48字节的私钥。主密钥在创建会话密钥（例如创建MAC）时作为一个熵来源。[10]
+</code></pre>
+
+<p>算法示例</p>
+
+<ol>
+<li>密钥交换/协商<br />
+RSA、Diffie–Hellman、ECDH、SRP、PSK<br /></li>
+<li>身份验证<br />
+RSA、DSA、ECDSA<br /></li>
+<li>块密码<br />
+RC4、3DES、AES、IDEA、DES、Camellia。在旧版本的SSL中，RC2也被使用过。<br /></li>
+<li>消息身份验证<br />
+对于TLS来说，密钥散列消息认证码使用MD5或一种SHA散列算法。对于SSL，则SHA、MD5、MD4及MD2都可使用。<br />
+<br /></li>
+</ol>
+
+<ul>
+<li>对称加密<br />
+  AES(128) | DES(64) | Blowfish(64) | CAST(64) | IDEA(64) | RC2(64) | RC5(64)<br /></li>
+<li>非对称加密<br />
+  DH | RSA | DSA | EC<br /></li>
+<li>信息摘要 hash<br />
+  MD2 | MD5 | MDC2 | SHA | RIPEMD | DSS<br />
+<br /></li>
+</ul>
+
+<h4 id="1-公钥加密-无密码加密传输">1. [公钥加密] 无密码加密传输</h4>
+
+<p><img src="http://images2015.cnblogs.com/blog/452847/201511/452847-20151122114059983-1639010659.png" alt="公钥加密" /><br />
+这是并不能确保文件是不是被其他人篡改过了，因为任何人都可以拿到 B 的公钥</p>
+
+<h4 id="2-公钥加密-数字签名-解决源文件被修改的问题">2. [公钥加密+数字签名] 解决源文件被修改的问题</h4>
+
+<p><img src="http://images2015.cnblogs.com/blog/452847/201511/452847-20151122120233593-605577968.png" alt="非对称加密" /></p>
+
+<h4 id="3-公钥加密-数字签名-对称加密-解决公钥加密速度慢的问题">3. [公钥加密+数字签名+对称加密] 解决公钥加密速度慢的问题</h4>
+
+<ol>
+<li>B 的公钥加密 AES 密钥（加密密码）                      B 的私钥解密 对称密钥（解密密码）<br /></li>
+<li>用 AES 密钥加密原文（密码）                          （解密）<br /></li>
+<li>A 的私钥加密 摘要   （数字签名）                       A 的公钥解密 HASH<br />
+<img src="http://images2015.cnblogs.com/blog/452847/201511/452847-20151122122115358-1810987945.png" alt="对称加密" /><br />
+<br /></li>
+</ol>
+
+<p>当 A 使用 B 的公钥对 AES 密钥进行加密时，如何确定 B 的公钥就是正确的呢？</p>
+
+<h4 id="4-证书-数字签名-对称加密-解决信任问题">4. [证书 + 数字签名 + 对称加密] 解决信任问题</h4>
+
+<p>用 CA 的公钥解开数字证书，就可以拿到 B 真实的公钥了，然后就能证明 &quot;数字签名&quot; 是否真的是鲍勃签的<br />
+ <img src="http://files.jb51.net/file_images/article/201212/2012121714270132.png" alt="" /></p>
+
+<p>消息摘要与MAC的区别，消息摘要只能保证消息的完整性，MAC不仅能够保证完整性，还能够保证真实性<br />
+MAC不能保证消息的不可抵赖性，而数字签名可以保证。因为数字签名使用的是公钥密码体制，私钥只有你自己才知道；而MAC使用对称加密，既然一方能够验证你的MAC，就能够伪造你的MAC，因为发送方和接收方的秘钥是一样的。当然如果你在MAC中绑定一些关键信息，并通过某些手段，让一方只能生成MAC，另一方只能验证MAC，其实也是可以实现签名效果的。</p>
+
+<h3 id="1-摘要算法hash-确保得到的数据完整可靠-没有被篡改的">1. 摘要算法HASH - 确保得到的数据完整可靠，没有被篡改的。</h3>
+
+<p>数字摘要是采用单项Hash函数将需要加密的明文“摘要”成一串固定长度（128位）的密文，这一串密文又称为数字指纹，它有固定的长度，而且不同的明文摘要成密文，其结果总是不同的，而同样的明文其摘要必定一致。“数字摘要“是https能确保数据完整性和防篡改的根本原因。</p>
+
+<h3 id="消息认证码算法-hmac-不仅能够保证完整性-还能够保证真实性">消息认证码算法 HMAC - 不仅能够保证完整性，还能够保证真实性</h3>
+
+<p>消息摘要与MAC的区别，消息摘要只能保证消息的完整性，MAC不仅能够保证完整性，还能够保证真实性<br />
+比如客户端A想给服务端B发送一条消息，A需要把消息内容和对应的消息摘要都发给B；B通过同样的摘要算法，自然可以知道消息是否被篡改。比如攻击者C将A发送的原始消息和摘要，都篡改成新的消息和摘要，那么这个消息对B来说也是完整的，只不过不是A发的。因为MAC含有秘钥(只有A和B知道)，如果A将消息内容和MAC发给B，虽然C是仍然可以修改消息内容和MAC，但是由于C不知道秘钥，所以无法生成与篡改后内容匹配的MAC。</p>
+
+<h3 id="数字签名-确保信息的摘要是发送者生成的-而不是其他人伪造的">数字签名 - 确保信息的摘要是发送者生成的，而不是其他人伪造的。</h3>
+
+<p>MAC不能保证消息的不可抵赖性，而数字签名可以保证。因为数字签名使用的是公钥密码体制，私钥只有你自己才知道；而MAC使用对称加密，既然一方能够验证你的MAC，就能够伪造你的MAC，因为发送方和接收方的秘钥是一样的。当然如果你在MAC中绑定一些关键信息，并通过某些手段，让一方只能生成MAC，另一方只能验证MAC，其实也是可以实现签名效果的。<br />
+数字签名 发送者将信息哈希后用发送者的私钥加密，与原文一起传送给接收者。接收者只有用发送者的公钥才能解密被加密的摘要信息，然后用HASH函数对收到的原文产生一个摘要信息，与解密的摘要信息对比。如果相同，则说明收到的信息是完整的，在传输过程中没有被修改，否则说明信息被修改过，因此数字签名能够验证信息的完整性。<br />
+数字签名的过程如下：<br />
+明文 --&gt; hash运算 --&gt; 摘要 --&gt; 私钥加密摘要 --&gt; 数字签名</p>
+
+<p>数字签名有两种功效：<br />
+一、能确定消息确实是由发送方签名并发出来的，因为别人假冒不了发送方的签名。<br />
+二、数字签名能确定消息的完整性。</p>
+
+<pre><code>注意：
+数字签名只能验证数据的完整性，数据本身是否加密不属于数字签名的控制范围
+</code></pre>
+
+<h3 id="数字证书-确保-数字签名的公钥-是可信的">数字证书 - 确保 数字签名的公钥 是可信的</h3>
+
+<p>为什么要有数字证书？</p>
+
+<p>对于请求方来说，它怎么能确定它所得到的公钥一定是从目标主机那里发布的，而且没有被篡改过呢？亦或者请求的目标主机本本身就从事窃取用户信息的不正当行为呢？这时候，我们需要有一个权威的值得信赖的第三方机构(一般是由政府审核并授权的机构)来统一对外发放主机机构的公钥，只要请求方这种机构获取公钥，就避免了上述问题的发生。<br />
+数字证书的颁发过程</p>
+
+<p>用户首先产生自己的密钥对，并将公共密钥及部分个人身份信息传送给认证中心。认证中心在核实身份后，将执行一些必要的步骤，以确信请求确实由用户发送而来，然后，认证中心将发给用户一个数字证书，该证书内包含用户的个人信息和他的公钥信息，同时还附有认证中心的签名信息(根证书私钥签名)。用户就可以使用自己的数字证书进行相关的各种活动。数字证书由独立的证书发行机构发布，数字证书各不相同，每种证书可提供不同级别的可信度。<br />
+证书包含哪些内容</p>
+
+<pre><code>证书颁发机构的名称
+证书本身的数字签名
+证书持有者公钥
+证书签名用到的Hash算法
+</code></pre>
+
+<p>验证证书的有效性</p>
+
+<p>浏览器默认都会内置CA根证书，其中根证书包含了CA的公钥</p>
+
+<pre><code>证书颁发的机构是伪造的：浏览器不认识，直接认为是危险证书
+证书颁发的机构是确实存在的，于是根据CA名，找到对应内置的CA根证书、CA的公钥。用CA的公钥，对伪造的证书的摘要进行解密，发现解不了，认为是危险证书。
+对于篡改的证书，使用CA的公钥对数字签名进行解密得到摘要A，然后再根据签名的Hash算法计算出证书的摘要B，对比A与B，若相等则正常，若不相等则是被篡改过的。
+证书可在其过期前被吊销，通常情况是该证书的私钥已经失密。较新的浏览器如Chrome、Firefox、Opera和Internet Explorer都实现了在线证书状态协议（OCSP）以排除这种情形：浏览器将网站提供的证书的序列号通过OCSP发送给证书颁发机构，后者会告诉浏览器证书是否还是有效的。
+</code></pre>
+
+<p>1、2点是对伪造证书进行的，3是对于篡改后的证书验证，4是对于过期失效的验证。</p>
+
+<h3 id="hmac-keyed-hash-message-authentication-code-消息认证码算法-是含有密钥的散列函数算法">HMAC (keyed-Hash Message Authentication Code，消息认证码算法）是含有密钥的散列函数算法</h3>
+
+<p>HMAC算法的实现过程需要一个散列函数（表示为H,Md5或者SHA）和一个密钥。<br />
+ 用公开函数和密钥产生一个固定长度的值作为认证标识，用这个标识鉴别消息的完整性。使用一个密钥生成一个固定大小的小数据块，即MAC，并将其加入到消息中，然后传输<br />
+ 在实践中它应该是这么用的:</p>
+
+<pre><code class="language-go">  //sha256
+	h := sha256.New()
+	io.WriteString(h, &quot;aaaaaa&quot;)
+	fmt.Printf(&quot;%x\n&quot;, h.Sum(nil))
+
+	//hmac ,use sha1
+	key := []byte(&quot;passwdkey&quot;)
+	mac := hmac.New(sha1.New, key)
+	mac.Write([]byte(&quot;aaaaaa&quot;))
+  fmt.Printf(&quot;%x\n&quot;, mac.Sum(nil))  
+</code></pre>
+
+<p>(1)客户端向服务器发起请求,访问登录页面.<br />
+(2)这时服务器生成一个随机密钥,把这个随机密钥存储在服务端session之中,然后将随机密钥返回给客户端.<br />
+(3)客户端填写登录表单,经过HMAC算法和收到的随机密钥，将用户信息加密后post到服务器.<br />
+(4)服务器读取数据库中的密码,用HMAC将密码和session中的密钥进行加密产生密码的密文,将密文与用户提交的进行比较.</p>
+
+<p>HMAC_MD5(&quot;&quot;, &quot;&quot;)    = 74e6f7298a9c2d168935f58c001bad88<br />
+HMAC_SHA1(&quot;&quot;, &quot;&quot;)   = fbdb1d1b18aa6c08324b7d64b71fb76370690e1d<br />
+HMAC_SHA256(&quot;&quot;, &quot;&quot;) = b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad</p>
+
+<h2 id="证书格式转换-https-csr-chinassl-net-convert-ssl-html"><a href="https://csr.chinassl.net/convert-ssl.html" target="_blank">证书格式转换</a></h2>
+
+<p>一些概念<br />
+ 数字证书： 证书是为了让客户端确认一个我拿到的这个公钥就是服务器(google)的，而不是别人伪造的<br />
+ KEY : 私钥文件，决定 ssl 安全的基础<br />
+ CSR : Certificate Signing Request 证书请求文件，包含公钥和证书信息<br />
+ CA : 中级证书颁发机构，一般是可信的第三方，CA 证书会验证公钥是否被认证<br />
+ root CA：通过它的私钥对中级机构提交的 CSR 进行了签名</p>
+
+<p>申请 ssl 证书需要用到 openssl，linux 系统中默认会安装，手动安装 openssl：<br />
+ <code>yum install -y openssl openssl-devel</code></p>
+
+<h3 id="配置-etc-ssl-openssl-cnf">配置 /etc/ssl/openssl.cnf</h3>
+
+<p>CA 密钥公钥</p>
+
+<pre><code>[ CA_default ]
+
+dir           = /etc/pki/CA                // 工作目录
+certs         = $dir/certs                 // 客户端证书保存目录
+crl_dir       = $dir/crl                   // 证书吊销列表的位置
+database      = $dir/index.txt             // 证书发证记录数据库
+new_certs_dir = $dir/newcerts              // 新生成证书存放目录
+certificate   = $dir/cacert.pem            // CA的证书文件
+serial        = $dir/serial                // 签发证书的序列号，一般从01开始
+crlnumber     = $dir/crlnumber             // 帧数吊销列表的序列号
+crl           = $dir/crl.pem               // 证书吊销列表文件
+private_key   = $dir/private/cakey.pem     // CA的私钥文件
+RANDFILE      = $dir/private/.rand         // 随机数生产文件，会自动创建
+default_days  = 365                        // 默认签发有效期
+</code></pre>
+
+<h3 id="一-生成私钥-key">一. 生成私钥.key</h3>
+
+<p>私钥是 SSL 安全性的基础，使用 RSA 算法生成，只有证书申请者持有，即使 CA 也没有对私钥的访问权限，应妥善保管。私钥长度决定其安全性，2009 年 768 位 RSA 已被破解，1024 位 RSA 短期内是安全的，但随着计算机越来越快，已不足以抵御攻击，为了安全起见应尽量使用 2048 位 RSA，生成 2048 位私钥：<br />
+ <code>openssl genrsa -out 52os.net.key 2048</code></p>
+
+<p>如果对安全性要求较高，可以用密码加密密钥文件，每次读取密钥都需输入密码：<br />
+ <code>openssl genrsa -des3 -out 52os.net.key 2048</code></p>
+
+<h4 id="如何去除私钥密码保护">如何去除私钥密码保护</h4>
+
+<p>如果您的密钥已经加载密码保护，可以通过 OpenSSL 工具 运行以下命令去掉密码保护：<br />
+  <code>openssl rsa -in encryedprivate.key -out unencryed.key</code></p>
+
+<pre><code>encryedprivate.key 是带密码保护的私钥文件。
 unencryed.key 是去掉了密码的私钥文件，扩展名为 key 或者 pem 均可。
-</code></pre><p>### 二. 生成 CSR 【B 的公钥】<p>证书签名请求文件（CSR）中包含了公钥和证书的详细信息，将 CSR 发送给 CA 认证后就会得到数字证书或证书链，生成 CSR 文件：<p><code>openssl req -new -sha256 -key 52os.net.key -out 52os.net.csr</code><br>按照提示输入：国家、省份、城市、组织名、部门、公共名称、邮件地址等，最后的 extra 信息不要填写，个人用户也可以使用默认或留空，只需注意‘Common Name’是要使用 ssl 证书的域名，根据实际情况，可以写单域名，多个域名，或使用 * 通配域名<br>验证 CSR 文件信息：<p>openssl req -noout -text -in 52os.net.csr<br>确认信息正确就可以提交给 ca 进行认证，CA 会根据你的 CSR 文件进行签名，之后颁发数字证书，该数字证书和私钥就可以部署到服务器了；通常 ca 认证需付费，普通 ssl 证书不贵，也有一些提供免费的证书的 ca，如 startssl、Let's Encrypt 等<h3 id=如何制作阿里云-csr-文件>如何制作阿里云 CSR 文件?</h3><p>三. 自签名<br>在某些情况下，如内网 https 的应用，不需要付费使用第三方签名，此时就可以使用自签名证书。自签名分两种：<br>使用自己的私钥签发自己的 csr 生成证书，也可以直接生成私钥和证书<br>生成 ca，使用 ca 签发<br>生成 ca 的好处是：客户只要手动信任该 ca 一次，即可信任该 ca 签发的所有证书，不需要为每个证书添加信任<p>3.1 使用自签名<br>使用上面生成的私钥签发证书：<br><code>openssl x509 -req -days 365 -in 52os.net.csr -extensions v3_ca -signkey 52os.net.key -out 52os.net365.crt</code><br>或者直接生成私钥和证书：<br><code>openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout 52os.net.key -out 52os.net.crt</code><br>可以使用 chrome 浏览器导出证书并安装到 windows 信任证书中，安装后浏览器地址栏的 https 就会变成绿色。导出方法：访问 https 网站，点击地址栏上有红色叉的锁型图标，点击详细信息，点击查看证书，在弹出的证书窗口中点击详细信息选项卡，点击复制到文件，之后按证书导出向导的提示即可导出<p>3.2 使用 ca 签名<p>生成 CA:<br>openssl genrsa -out CA.key 2048<br><code>openssl req -new -x509 -key CA.key -out CA.cer -days 36500 -subj /CN='52os CA'</code><br>使用 ca 签发证书：<br><code>openssl x509 -req -in 52os.net.csr -extensions v3_usr -CA CA.cer -CAkey CA.key -CAcreateserial -out 52os.net.crt</code><br>为了更好的兼容浏览器，还需：<p>cat CA.cer &gt;&gt; 52os.net.crt<br>客户端手动信任 CA.cer 即可，windows 下可以双击安装<p>参考文章：<br><a href="http://www.51ean.com/interaction/safety_information_details.html?postId=585" target=_blank>http://www.51ean.com/interaction/safety_information_details.html?postId=585</a><br><a href=http://blog.csdn.net/tenfyguo/article/details/40922813 target=_blank>http://blog.csdn.net/tenfyguo/article/details/40922813</a><br><a href=http://www.wosign.com/Basic/index.htm target=_blank>http://www.wosign.com/Basic/index.htm</a><br><a href=http://www.cnblogs.com/kyrios/p/tls-and-certificates.html target=_blank>http://www.cnblogs.com/kyrios/p/tls-and-certificates.html</a><p>HTTPS:<ol><li>server 生成 crt.pub<br><li>client 生成 random + key server 生成对称密钥<br><li>通过对称密钥加密<br><br></ol><p>之前没接触过证书加密的话, 对证书相关的这些概念真是感觉挺棘手的, 因为一下子来了一大堆新名词, 看起来像是另一个领域的东西, 而不是我们所熟悉的编程领域的那些东西, 起码我个人感觉如此, 且很长时间都没怎么搞懂. 写这篇文章的目的就是为了理理清这些概念, 搞清楚它们的含义及关联, 还有一些基本操作.<h3 id=ssl>SSL</h3><p>SSL - Secure Sockets Layer, 现在应该叫 &quot;TLS&quot;, 但由于习惯问题, 我们还是叫 &quot;SSL&quot; 比较多. http 协议默认情况下是不加密内容的, 这样就很可能在内容传播的时候被别人监听到, 对于安全性要求较高的场合, 必须要加密, https 就是带加密的 http 协议, 而 https 的加密是基于 SSL 的, 它执行的是一个比较下层的加密, 也就是说, 在加密前, 你的服务器程序在干嘛, 加密后也一样在干嘛, 不用动, 这个加密对用户和开发者来说都是透明的. More:[维基百科]<p>OpenSSL - 简单地说, OpenSSL 是 SSL 的一个实现, SSL 只是一种规范. 理论上来说, SSL 这种规范是安全的, 目前的技术水平很难破解, 但 SSL 的实现就可能有些漏洞, 如著名的 &quot;心脏出血&quot;.OpenSSL 还提供了一大堆强大的工具软件, 强大到 90% 我们都用不到.<h3 id=证书-标准><strong>证书</strong>标准</h3><p>X.509 - 这是一种证书标准, 主要定义了证书中应该包含哪些内容. 其详情可以参考 RFC5280,SSL 使用的就是这种证书标准.<br>编码格式<br>同样的 X.509 证书, 可能有不同的编码格式, 目前有以下两种编码格式.<h4 id=编码格式>编码格式</h4><ol><li><p>文本格式 PEM - Privacy Enhanced Mail, 打开看文本格式, 以 &quot;-----BEGIN...&quot; 开头, &quot;-----END...&quot; 结尾, 内容是 BASE64 编码.<br>查看 PEM 格式证书的信息: openssl x509 -in certificate.pem -text -noout<br>Apache 和 * NIX 服务器偏向于使用这种编码格式.<li><p>二进制格式 DER - Distinguished Encoding Rules, 打开看是二进制格式, 不可读.<br>查看 DER 格式证书的信息: openssl x509 -in certificate.der -inform der -text -noout<br>Java 和 Windows 服务器偏向于使用这种编码格式.<h3 id=文件扩展名>文件扩展名</h3></ol><p>这是比较误导人的地方, 虽然我们已经知道有 PEM 和 DER 这两种编码格式, 但文件扩展名并不一定就叫 &quot;PEM&quot; 或者 &quot;DER&quot;, 常见的扩展名除了 PEM 和 DER 还有以下这些, 它们除了编码格式可能不同之外, 内容也有差别, 但大多数都能相互转换编码格式.<ol><li><p>CRT - CRT 应该是 certificate 的三个字母, 其实还是证书的意思, 常见于 * NIX 系统, 有可能是 PEM 编码, 也有可能是 DER 编码, 大多数应该是 PEM 编码, 相信你已经知道怎么辨别.<li><p>CER - 还是 certificate, 还是证书, 常见于 Windows 系统, 同样的, 可能是 PEM 编码, 也可能是 DER 编码, 大多数应该是 DER 编码.<li><p>KEY - 通常用来存放一个公钥或者私钥, 并非 X.509 证书, 编码同样的, 可能是 PEM, 也可能是 DER.<br>查看 KEY 的办法: <code>openssl rsa -in id_rsa.key -text -noout</code><br>如果是 DER 格式: <code>openssl rsa -in mykey.key -text -noout -inform der</code><li><p>CSR - Certificate Signing Request, 即证书签名请求, 这个并不是证书, 而是向权威证书颁发机构获得签名证书的申请, 其核心内容是一个公钥 (当然还附带了一些别的信息), 在生成这个申请的时候, 同时也会生成一个私钥, 私钥要自己保管好. 做过 iOS APP 的朋友都应该知道是怎么向苹果申请开发者证书的吧.<br>查看的办法: <code>openssl req -noout -text -in my.csr</code> (如果是 DER 格式的话照旧加上 - inform der, 这里不写了)<li><p>PFX/P12 - predecessor of PKCS#12, 对 * nix 服务器来说, 一般 CRT 和 KEY 是分开存放在不同文件中的, 但 Windows 的 IIS 则将它们存在一个 PFX 文件中,(因此这个文件包含了证书及私钥) 这样会不会不安全？应该不会, PFX 通常会有一个 &quot;提取密码&quot;, 你想把里面的东西读取出来的话, 它就要求你提供提取密码, PFX 使用的时 DER 编码,<br>如何把 PFX 转换为 PEM 编码？ <code>openssl pkcs12 -in for-iis.pfx -out for-iis.pem -nodes</code><br>这个时候会提示你输入提取代码. for-iis.pem 就是可读的文本.<br>生成 pfx 的命令类似这样: <code>openssl pkcs12 -export -in certificate.crt -inkey privateKey.key -out certificate.pfx -certfile CACert.crt</code></ol><p>其中 CACert.crt 是 CA(权威证书颁发机构) 的根证书, 有的话也通过 - certfile 参数一起带进去. 这么看来, PFX 其实是个证书密钥库.<ol><li>JKS - 即 Java Key Storage, 这是 Java 的专利, 跟 OpenSSL 关系不大, 利用 Java 的一个叫 &quot;keytool&quot; 的工具, 可以将 PFX 转为 JKS, 当然了, keytool 也能直接生成 JKS, 不过在此就不多表了.<br><br></ol><h3 id=证书编码的转换>证书编码的转换</h3><p>PEM 转为 DER <code>openssl x509 -in cert.crt -outform der -out cert.der</code><p>DER 转为 PEM <code>openssl x509 -in cert.crt o pinform der -outform pem -out cert.pem</code><p>(提示: 要转换 KEY 文件也类似, 只不过把 x509 换成 rsa, 要转 CSR 的话, 把 x509 换成 req...)<br>获得证书<h3 id=向-ca-权威证书颁发机构申请证书-csr>向 CA 权威证书颁发机构申请证书 CSR</h3><p>用这命令生成一个 csr: <code>openssl req -newkey rsa:2048 -new -nodes -keyout my.key -out my.csr</code><br>把 csr 交给权威证书颁发机构, 权威证书颁发机构对此进行签名, 完成. 保留好 csr, 当权威证书颁发机构颁发的证书过期的时候, 你还可以用同样的 csr 来申请新的证书, key 保持不变.<p>或者生成自签名的证书<br><code>openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem</code><br>在生成证书的过程中会要你填一堆的东西, 其实真正要填的只有 Common Name, 通常填写你服务器的域名, 如 &quot;yourcompany.com&quot;, 或者你服务器的 IP 地址, 其它都可以留空的.<br>生产环境中还是不要使用自签的证书, 否则浏览器会不认, 或者如果你是企业应用的话能够强制让用户的浏览器接受你的自签证书也行. 向权威机构要证书通常是要钱的, 但现在也有免费的, 仅仅需要一个简单的域名验证即可. 有兴趣的话查查 &quot;沃通数字证书&quot;.<br>#####################<h2 id=生成证书请求文件>生成证书请求文件</h2><p>2.1 生成 csr 请求文件<br>2.1.2 生成 key 私钥文件<br>使用以下命令来生成私钥：<code>openssl genrsa -des3 -out www.deedbeef.com.key 2048</code>，生成的私钥保存在当期目录。<br>2.1.3 生成 [根证书]csr 文件<br>使用以下命令来生成私钥：<code>openssl req -new -key www.mydomain.com.key -out www.mydomain.com.csr</code><pre><code>Country Name (2 letter code) [GB]: 输入国家地区代码，如中国的 CN
+</code></pre>
+
+<p>### 二. 生成 CSR 【B 的公钥】</p>
+
+<p>证书签名请求文件（CSR）中包含了公钥和证书的详细信息，将 CSR 发送给 CA 认证后就会得到数字证书或证书链，生成 CSR 文件：</p>
+
+<p><code>openssl req -new -sha256 -key 52os.net.key -out 52os.net.csr</code><br />
+ 按照提示输入：国家、省份、城市、组织名、部门、公共名称、邮件地址等，最后的 extra 信息不要填写，个人用户也可以使用默认或留空，只需注意‘Common Name’是要使用 ssl 证书的域名，根据实际情况，可以写单域名，多个域名，或使用 * 通配域名<br />
+ 验证 CSR 文件信息：</p>
+
+<p>openssl req -noout -text -in  52os.net.csr<br />
+ 确认信息正确就可以提交给 ca 进行认证，CA 会根据你的 CSR 文件进行签名，之后颁发数字证书，该数字证书和私钥就可以部署到服务器了；通常 ca 认证需付费，普通 ssl 证书不贵，也有一些提供免费的证书的 ca，如 startssl、Let's Encrypt 等</p>
+
+<h3 id="如何制作阿里云-csr-文件">如何制作阿里云 CSR 文件?</h3>
+
+<p>三. 自签名<br />
+ 在某些情况下，如内网 https 的应用，不需要付费使用第三方签名，此时就可以使用自签名证书。自签名分两种：<br />
+ 使用自己的私钥签发自己的 csr 生成证书，也可以直接生成私钥和证书<br />
+ 生成 ca，使用 ca 签发<br />
+ 生成 ca 的好处是：客户只要手动信任该 ca 一次，即可信任该 ca 签发的所有证书，不需要为每个证书添加信任</p>
+
+<p>3.1 使用自签名<br />
+ 使用上面生成的私钥签发证书：<br />
+ <code>openssl x509 -req -days 365 -in 52os.net.csr -extensions v3_ca -signkey  52os.net.key  -out 52os.net365.crt</code><br />
+ 或者直接生成私钥和证书：<br />
+ <code>openssl  req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout 52os.net.key -out 52os.net.crt</code><br />
+ 可以使用 chrome 浏览器导出证书并安装到 windows 信任证书中，安装后浏览器地址栏的 https 就会变成绿色。导出方法：访问 https 网站，点击地址栏上有红色叉的锁型图标，点击详细信息，点击查看证书，在弹出的证书窗口中点击详细信息选项卡，点击复制到文件，之后按证书导出向导的提示即可导出</p>
+
+<p>3.2 使用 ca 签名</p>
+
+<p>生成 CA:<br />
+ openssl genrsa -out CA.key 2048<br />
+<code>openssl req -new -x509 -key CA.key -out CA.cer -days 36500 -subj /CN='52os CA'</code><br />
+ 使用 ca 签发证书：<br />
+<code>openssl x509 -req -in 52os.net.csr -extensions v3_usr -CA CA.cer  -CAkey CA.key  -CAcreateserial -out 52os.net.crt</code><br />
+ 为了更好的兼容浏览器，还需：</p>
+
+<p>cat CA.cer &gt;&gt; 52os.net.crt<br />
+ 客户端手动信任 CA.cer 即可，windows 下可以双击安装</p>
+
+<p>参考文章：<br />
+ <a href="http://www.51ean.com/interaction/safety_information_details.html?postId=585" target="_blank">http://www.51ean.com/interaction/safety_information_details.html?postId=585</a><br />
+ <a href="http://blog.csdn.net/tenfyguo/article/details/40922813" target="_blank">http://blog.csdn.net/tenfyguo/article/details/40922813</a><br />
+ <a href="http://www.wosign.com/Basic/index.htm" target="_blank">http://www.wosign.com/Basic/index.htm</a><br />
+ <a href="http://www.cnblogs.com/kyrios/p/tls-and-certificates.html" target="_blank">http://www.cnblogs.com/kyrios/p/tls-and-certificates.html</a></p>
+
+<p>HTTPS:</p>
+
+<ol>
+<li>server 生成 crt.pub<br /></li>
+<li>client 生成 random + key           server  生成对称密钥<br /></li>
+<li>通过对称密钥加密<br />
+<br /></li>
+</ol>
+
+<p>之前没接触过证书加密的话, 对证书相关的这些概念真是感觉挺棘手的, 因为一下子来了一大堆新名词, 看起来像是另一个领域的东西, 而不是我们所熟悉的编程领域的那些东西, 起码我个人感觉如此, 且很长时间都没怎么搞懂. 写这篇文章的目的就是为了理理清这些概念, 搞清楚它们的含义及关联, 还有一些基本操作.</p>
+
+<h3 id="ssl">SSL</h3>
+
+<p>SSL - Secure Sockets Layer, 现在应该叫 &quot;TLS&quot;, 但由于习惯问题, 我们还是叫 &quot;SSL&quot; 比较多. http 协议默认情况下是不加密内容的, 这样就很可能在内容传播的时候被别人监听到, 对于安全性要求较高的场合, 必须要加密, https 就是带加密的 http 协议, 而 https 的加密是基于 SSL 的, 它执行的是一个比较下层的加密, 也就是说, 在加密前, 你的服务器程序在干嘛, 加密后也一样在干嘛, 不用动, 这个加密对用户和开发者来说都是透明的. More:[维基百科]</p>
+
+<p>OpenSSL - 简单地说, OpenSSL 是 SSL 的一个实现, SSL 只是一种规范. 理论上来说, SSL 这种规范是安全的, 目前的技术水平很难破解, 但 SSL 的实现就可能有些漏洞, 如著名的 &quot;心脏出血&quot;.OpenSSL 还提供了一大堆强大的工具软件, 强大到 90% 我们都用不到.</p>
+
+<h3 id="证书-标准"><strong>证书</strong>标准</h3>
+
+<p>X.509 - 这是一种证书标准, 主要定义了证书中应该包含哪些内容. 其详情可以参考 RFC5280,SSL 使用的就是这种证书标准.<br />
+编码格式<br />
+同样的 X.509 证书, 可能有不同的编码格式, 目前有以下两种编码格式.</p>
+
+<h4 id="编码格式">编码格式</h4>
+
+<ol>
+<li><p>文本格式 PEM - Privacy Enhanced Mail, 打开看文本格式, 以 &quot;-----BEGIN...&quot; 开头, &quot;-----END...&quot; 结尾, 内容是 BASE64 编码.<br />
+查看 PEM 格式证书的信息: openssl x509 -in certificate.pem -text -noout<br />
+Apache 和 * NIX 服务器偏向于使用这种编码格式.</p></li>
+
+<li><p>二进制格式 DER - Distinguished Encoding Rules, 打开看是二进制格式, 不可读.<br />
+查看 DER 格式证书的信息: openssl x509 -in certificate.der -inform der -text -noout<br />
+Java 和 Windows 服务器偏向于使用这种编码格式.</p>
+
+<h3 id="文件扩展名">文件扩展名</h3></li>
+</ol>
+
+<p>这是比较误导人的地方, 虽然我们已经知道有 PEM 和 DER 这两种编码格式, 但文件扩展名并不一定就叫 &quot;PEM&quot; 或者 &quot;DER&quot;, 常见的扩展名除了 PEM 和 DER 还有以下这些, 它们除了编码格式可能不同之外, 内容也有差别, 但大多数都能相互转换编码格式.</p>
+
+<ol>
+<li><p>CRT - CRT 应该是 certificate 的三个字母, 其实还是证书的意思, 常见于 * NIX 系统, 有可能是 PEM 编码, 也有可能是 DER 编码, 大多数应该是 PEM 编码, 相信你已经知道怎么辨别.</p></li>
+
+<li><p>CER - 还是 certificate, 还是证书, 常见于 Windows 系统, 同样的, 可能是 PEM 编码, 也可能是 DER 编码, 大多数应该是 DER 编码.</p></li>
+
+<li><p>KEY - 通常用来存放一个公钥或者私钥, 并非 X.509 证书, 编码同样的, 可能是 PEM, 也可能是 DER.<br />
+查看 KEY 的办法: <code>openssl rsa -in id_rsa.key -text -noout</code><br />
+如果是 DER 格式: <code>openssl rsa -in mykey.key -text -noout -inform der</code></p></li>
+
+<li><p>CSR - Certificate Signing Request, 即证书签名请求, 这个并不是证书, 而是向权威证书颁发机构获得签名证书的申请, 其核心内容是一个公钥 (当然还附带了一些别的信息), 在生成这个申请的时候, 同时也会生成一个私钥, 私钥要自己保管好. 做过 iOS APP 的朋友都应该知道是怎么向苹果申请开发者证书的吧.<br />
+查看的办法: <code>openssl req -noout -text -in my.csr</code> (如果是 DER 格式的话照旧加上 - inform der, 这里不写了)</p></li>
+
+<li><p>PFX/P12 - predecessor of PKCS#12, 对 * nix 服务器来说, 一般 CRT 和 KEY 是分开存放在不同文件中的, 但 Windows 的 IIS 则将它们存在一个 PFX 文件中,(因此这个文件包含了证书及私钥) 这样会不会不安全？应该不会, PFX 通常会有一个 &quot;提取密码&quot;, 你想把里面的东西读取出来的话, 它就要求你提供提取密码, PFX 使用的时 DER 编码,<br />
+如何把 PFX 转换为 PEM 编码？ <code>openssl pkcs12 -in for-iis.pfx -out for-iis.pem -nodes</code><br />
+这个时候会提示你输入提取代码. for-iis.pem 就是可读的文本.<br />
+生成 pfx 的命令类似这样: <code>openssl pkcs12 -export -in certificate.crt -inkey privateKey.key -out certificate.pfx -certfile CACert.crt</code></p></li>
+</ol>
+
+<p>其中 CACert.crt 是 CA(权威证书颁发机构) 的根证书, 有的话也通过 - certfile 参数一起带进去. 这么看来, PFX 其实是个证书密钥库.</p>
+
+<ol>
+<li>JKS - 即 Java Key Storage, 这是 Java 的专利, 跟 OpenSSL 关系不大, 利用 Java 的一个叫 &quot;keytool&quot; 的工具, 可以将 PFX 转为 JKS, 当然了, keytool 也能直接生成 JKS, 不过在此就不多表了.<br />
+<br /></li>
+</ol>
+
+<h3 id="证书编码的转换">证书编码的转换</h3>
+
+<p>PEM 转为 DER <code>openssl x509 -in cert.crt -outform der -out cert.der</code></p>
+
+<p>DER 转为 PEM <code>openssl x509 -in cert.crt o pinform der -outform pem -out cert.pem</code></p>
+
+<p>(提示: 要转换 KEY 文件也类似, 只不过把 x509 换成 rsa, 要转 CSR 的话, 把 x509 换成 req...)<br />
+获得证书</p>
+
+<h3 id="向-ca-权威证书颁发机构申请证书-csr">向 CA 权威证书颁发机构申请证书 CSR</h3>
+
+<p>用这命令生成一个 csr: <code>openssl req -newkey rsa:2048 -new -nodes -keyout my.key -out my.csr</code><br />
+把 csr 交给权威证书颁发机构, 权威证书颁发机构对此进行签名, 完成. 保留好 csr, 当权威证书颁发机构颁发的证书过期的时候, 你还可以用同样的 csr 来申请新的证书, key 保持不变.</p>
+
+<p>或者生成自签名的证书<br />
+<code>openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem</code><br />
+在生成证书的过程中会要你填一堆的东西, 其实真正要填的只有 Common Name, 通常填写你服务器的域名, 如 &quot;yourcompany.com&quot;, 或者你服务器的 IP 地址, 其它都可以留空的.<br />
+生产环境中还是不要使用自签的证书, 否则浏览器会不认, 或者如果你是企业应用的话能够强制让用户的浏览器接受你的自签证书也行. 向权威机构要证书通常是要钱的, 但现在也有免费的, 仅仅需要一个简单的域名验证即可. 有兴趣的话查查 &quot;沃通数字证书&quot;.<br />
+#####################</p>
+
+<h2 id="生成证书请求文件">生成证书请求文件</h2>
+
+<p>2.1 生成 csr 请求文件<br />
+2.1.2 生成 key 私钥文件<br />
+  使用以下命令来生成私钥：<code>openssl genrsa -des3 -out www.deedbeef.com.key 2048</code>，生成的私钥保存在当期目录。<br />
+2.1.3 生成 [根证书]csr 文件<br />
+  使用以下命令来生成私钥：<code>openssl req -new -key www.mydomain.com.key -out www.mydomain.com.csr</code></p>
+
+<pre><code>Country Name (2 letter code) [GB]: 输入国家地区代码，如中国的 CN
 State or Province Name (full name) [Berkshire]: 地区省份
 Locality Name (eg, city) [Newbury]: 城市名称
 Organization Name (eg, company) [My Company Ltd]: 公司名称
@@ -10,9 +1452,27 @@ Organizational Unit Name (eg, section) []: 部门名称
 Common Name (eg, your name or your server’s hostname) []: 申请证书域名
 Email Address []: 电子邮箱
 随后可能会提示输入密码，一般无需输入，直接回车即可
-</code></pre><hr><p>之前申请的 StartSSL 免费一年的证书到期了，考虑到我对 SSL 一般仅用于博客登录和后台管理上面，所以不打算续申请，自己创建一个就足够了。<br>本来想使用 Windows 下的 makecert 实用工具创建的，结果折腾了很久导入到 Linux 服务器上，服务器没有正确识别，遂放弃，转而使用 OpenSSL，收集了网上的一些材料，通过下面的方法创建成功：<p>数字证书：<pre><code>证书是持有者的详细信息，证书有公钥。包括名称、公钥信息等; 针对证书的防伪信息叫做签名。
-</code></pre><p>数字签名：<pre><code>签名是使用个人私密和加密算法加密的摘要和报文，是私人性的。而数字证书是由 CA 中心派发的.
-</code></pre><p>1）CA：签证机构 （签发证书的机构） 功用：保证公钥信息安全分发；<br>2）数字证书的格式 (x.509 v3)：<pre><code>   版本号（version）
+</code></pre>
+
+<hr />
+
+<p>之前申请的 StartSSL 免费一年的证书到期了，考虑到我对 SSL 一般仅用于博客登录和后台管理上面，所以不打算续申请，自己创建一个就足够了。<br />
+本来想使用 Windows 下的 makecert 实用工具创建的，结果折腾了很久导入到 Linux 服务器上，服务器没有正确识别，遂放弃，转而使用 OpenSSL，收集了网上的一些材料，通过下面的方法创建成功：</p>
+
+<p>数字证书：</p>
+
+<pre><code>证书是持有者的详细信息，证书有公钥。包括名称、公钥信息等; 针对证书的防伪信息叫做签名。
+</code></pre>
+
+<p>数字签名：</p>
+
+<pre><code>签名是使用个人私密和加密算法加密的摘要和报文，是私人性的。而数字证书是由 CA 中心派发的.
+</code></pre>
+
+<p>1）CA：签证机构 （签发证书的机构）          功用：保证公钥信息安全分发；<br />
+2）数字证书的格式 (x.509 v3)：</p>
+
+<pre><code>   版本号（version）
    序列号 (serial number)：CA 用于惟一标识此证书；
    签名算法标志 (Signature algorithm identifier)
    发行者的名称：即 CA 自己的名称；
@@ -23,26 +1483,156 @@ Email Address []: 电子邮箱
     证书主体的惟一标识：
     扩展信息：
     签名：CA 对此证书的数字签名；（防伪信息）
-</code></pre><ol><li><p>签发机构名 (Issuer)<br>此域用来标识签发证书的 CA 的 X.500 DN(DN-Distinguished Name) 名字。包括:<br>1) 国家 (C) Country Name (2 letter code) [CN]<br>2) 省市 (ST) State or Province Name (full name) [shandong]<br>3) 地区 (L) Locality Name (eg, city) [linyi]<br>4) 组织机构 (O) Organization Name (eg, company) [Company Ltd]<br>5) 单位部门 (OU) Organizational Unit Name (eg, section) [system]<br>6) 通用名 (CN) Common Name (eg, your name or your server’s hostname) [kbook.org]<br>7) 邮箱地址<pre><code>mitmproxy-ca.pem 私钥 + 证书 文本格式
+</code></pre>
+
+<ol>
+<li><p>签发机构名 (Issuer)<br />
+此域用来标识签发证书的 CA 的 X.500 DN(DN-Distinguished Name) 名字。包括:<br />
+1) 国家 (C) Country Name (2 letter code) [CN]<br />
+2) 省市 (ST) State or Province Name (full name) [shandong]<br />
+3) 地区 (L) Locality Name (eg, city) [linyi]<br />
+4) 组织机构 (O) Organization Name (eg, company) [Company Ltd]<br />
+5) 单位部门 (OU) Organizational Unit Name (eg, section) [system]<br />
+6) 通用名 (CN) Common Name (eg, your name or your server’s hostname) [kbook.org]<br />
+7) 邮箱地址</p>
+
+<pre><code>mitmproxy-ca.pem 私钥 + 证书 文本格式
 mitmproxy-ca-cert.pem Unix 平台使用证书 (certificate) 格式 文本格式
 mitmproxy-ca-cert.cer 与 mitmproxy-ca-cert.pem 相同，android 上使用证书 (certificate) 格式 文本格式
 mitmproxy-ca-cert.p12 windows 上使用证书 (certificate) 格式 文本格式
-</code></pre><p>为了安全起见，修改 cakey.pem 私钥文件权限为 600 或 400，也可以使用子 shell 生成 ( umask 077);<br>一、证书制作<h2 id=1-制作-ca-证书>1、制作 CA 证书：</h2><li><p>制作 根证书 CA 的私匙 CA.key (私钥)：<br><code>openssl genrsa -out ca.key 2048</code> ``<br>网上很多是使用了 1024，我这里强度加强到了 2048。<li><p>制作解密后的 CA 私钥（一般无此必要）：<br>此步骤可以跳过 <code>openssl rsa -in ca.key -out ca_decrypted.key</code><li><p>利用 ca.key 私钥 创建根证书 ca.crt (公钥)：<br><code>openssl req -new -x509 -days 36500 -key ca.key -out ca.crt -subj \
-&quot;/C=CN/ST=Shandong/L=Linyi/O=Hangruan/OU=Symantec Corporation&quot;</code><br><code>openssl req -new -x509 -days 36500 -key ca.key -out ca.crt -subj \
-&quot;/C=CN/ST=Jiangsu/L=Yangzhou/O=Your Company Name/OU=Your Root CA&quot;</code><br>-new: 生成新的证书签署请求；<br>-key：私钥文件路径，用于提取公钥；<br>-days N: 证书有效时长，单位为 “天”；<br>-out：输出文件保存位置；<br>-x509：直接输出自签署的证书文件，通常只有构建 CA 时才这么用；<br>这里 / C 表示国家 (Country)，只能是国家字母缩写，如 CN、US 等；/ST 表示州或者省 (State/Provice)；/L 表示城市或者地区 (Locality)；/O 表示组织名 (Organization Name)；/OU 其他显示内容，一般会显示在颁发者这栏。</ol><p>到这里根证书就已经创建完毕了，<h2 id=2-制作生成网站的证书并用-ca-签名认证>2、制作生成网站的证书并用 CA 签名认证</h2><p>下面介绍建立网站 SSL 证书的步骤： 假设网站域名为 hangruan.cn<ol><li>创建 SSL 证书 (私匙)<br><code>openssl genrsa -out server.key 2048</code> <code>openssl genrsa -des3 -out hangruan.pem 2048</code><br><li>制作解密后的证书私钥：<br>此步骤可以跳过：<code>openssl rsa -in hangruan.pem -out hangruan.key</code><br><li>生成签名请求CSR：利用刚才的私匙建立 SSL 证书：<br><code>openssl req -new -key server.key -out server.csr -subj \
-&quot;/C=CN/ST=Shandong/L=Linyi/O=Hangruan/OU=hangruan.cn/CN=hangruan.cn&quot;</code><br><br></ol><p><code>openssl req -new -key server.key -out server.csr -subj \
-&quot;/C=CN/ST=Jiangsu/L=Yangzhou/O=Your Company Name/OU=wangye.org/CN=wangye.org&quot;</code><p>这里需要注意的是后三项，/O 字段内容必须与刚才的 CA 根证书相同；/CN 字段为公用名称 (Common Name)，必须为网站的域名 (不带 www)；/OU 字段最好也与为网站域名，当然选择其他名字也没关系。<br>/CN 也可以使用泛域名如 *.hangruan.com 来生成所有二级域名可用的网站证书。<p>备注: CSR（证书签名请求，你需要发送给 CA，等待 CA 批准）<br><code>openssl req -sha256 -new -key server.pem -out csr.pem</code><br><code>openssl x509 -req -days 365 -in csr.pem -signkey server.pem -out my-certificate.pem</code><pre><code>备注：用一行命令同时生成一对密钥 + 证书 `openssl req -nodes -new -x509 -keyout server.key -out server.cert`
-</code></pre><ol><li>做些准备工作：<br><code>mkdir demoCA
+</code></pre>
+
+<p>为了安全起见，修改 cakey.pem 私钥文件权限为 600 或 400，也可以使用子 shell 生成 ( umask 077);<br />
+一、证书制作</p>
+
+<h2 id="1-制作-ca-证书">1、制作 CA 证书：</h2></li>
+
+<li><p>制作 根证书 CA 的私匙 CA.key (私钥)：<br />
+<code>openssl genrsa -out ca.key 2048</code> ``<br />
+网上很多是使用了 1024，我这里强度加强到了 2048。</p></li>
+
+<li><p>制作解密后的 CA 私钥（一般无此必要）：<br />
+此步骤可以跳过 <code>openssl rsa -in ca.key -out ca_decrypted.key</code></p></li>
+
+<li><p>利用 ca.key 私钥 创建根证书 ca.crt (公钥)：<br />
+<code>openssl req -new -x509 -days 36500 -key ca.key -out ca.crt -subj \
+&quot;/C=CN/ST=Shandong/L=Linyi/O=pytool/OU=Symantec Corporation&quot;
+</code><br />
+<code>openssl req -new -x509 -days 36500 -key ca.key -out ca.crt -subj \
+&quot;/C=CN/ST=Jiangsu/L=Yangzhou/O=Your Company Name/OU=Your Root CA&quot;
+</code><br />
+  -new: 生成新的证书签署请求；<br />
+  -key：私钥文件路径，用于提取公钥；<br />
+  -days N: 证书有效时长，单位为 “天”；<br />
+  -out：输出文件保存位置；<br />
+  -x509：直接输出自签署的证书文件，通常只有构建 CA 时才这么用；<br />
+这里 / C 表示国家 (Country)，只能是国家字母缩写，如 CN、US 等；/ST 表示州或者省 (State/Provice)；/L 表示城市或者地区 (Locality)；/O 表示组织名 (Organization Name)；/OU 其他显示内容，一般会显示在颁发者这栏。</p></li>
+</ol>
+
+<p>到这里根证书就已经创建完毕了，</p>
+
+<h2 id="2-制作生成网站的证书并用-ca-签名认证">2、制作生成网站的证书并用 CA 签名认证</h2>
+
+<p>下面介绍建立网站 SSL 证书的步骤： 假设网站域名为 pytool.cn</p>
+
+<ol>
+<li>创建 SSL 证书  (私匙)<br />
+<code>openssl genrsa -out server.key 2048</code> <code>openssl genrsa -des3 -out pytool.pem 2048</code><br /></li>
+<li>制作解密后的证书私钥：<br />
+此步骤可以跳过：<code>openssl rsa -in pytool.pem -out pytool.key</code><br /></li>
+<li>生成签名请求CSR：利用刚才的私匙建立 SSL 证书：<br />
+<code>openssl req -new -key server.key -out server.csr -subj \
+&quot;/C=CN/ST=Jiangsu/L=Yangzhou/O=Your Company Name/OU=wangye.org/CN=wangye.org&quot;</code><br />
+<br /></li>
+</ol>
+
+<p><code>openssl req -new -key server.key -out server.csr -subj \
+&quot;/C=CN/ST=beijing/L=haidian/O=pytool/OU=pytool.com/CN=pytool.com&quot;</code></p>
+
+<p>这里需要注意的是后三项，<br />
+/O 组织字段内容必须与刚才的 CA 根证书相同,用公司名；<br />
+/OU 单位部门字段最好也为网站域名，当然选择其他名字也没关系。<br />
+/CN 通用名字段为 (Common Name)，必须为网站的域名 (不带 www,也可以使用泛域名*.)；<br />
+/CN 也可以使用泛域名如 *.pytool.com 来生成所有二级域名可用的网站证书。</p>
+
+<p>备注: CSR（证书签名请求，你需要发送给 CA，等待 CA 批准）<br />
+<code>openssl req -sha256 -new -key server.pem -out csr.pem</code><br />
+<code>openssl x509 -req -days 365 -in csr.pem -signkey server.pem -out my-certificate.pem</code></p>
+
+<pre><code>备注：用一行命令同时生成一对密钥 + 证书 `openssl req -nodes -new -x509 -keyout server.key -out server.cert`
+</code></pre>
+
+<ol>
+<li><p>做些准备工作：</p>
+
+<pre><code>mkdir demoCA
 cd demoCA
 mkdir newcerts
 touch index.txt
 echo '01' &gt; serial
-cd ..</code><br>注意 cd ..，利用 ls 命令检查一下是不是有个 demoCA 的目录。<br><li>用 CA 根证书签署 SSL 自建证书 ：<br><code>openssl ca -cert ca.crt -keyfile ca.key -in server.csr -out server.crt</code><br><code>openssl ca -days 1460 -cert ca.crt -keyfile ca.key -in server.csr -out server.crt</code><br><li>最后，把 ca.crt 的内容粘贴到 server.crt 后面。这个比较重要！因为不这样做，可能会有某些浏览器不支持<br><br></ol><p>接下来有一段提示，找到 Sign the certificate? [y/n] 这句，打入 y 并回车，然后出现 out of 1 certificate requests certified, commit? [y/n]，同样 y 回车。<br>好了，现在目录下有两个服务器需要的 SSL 证书及相关文件了，分别是 server.crt 和 server.key，接下来就可以利用它们配置你的服务器软件了。<br>需要注意的是由于是自签名证书，所以客户端需要安装根证书，将刚才第 2 步创建的根证书 ca.crt 下载到客户端，然后双击导入，否则会提示不受信任的证书发布商问题。<br>通常情况下私人或者内部用的话，自建证书已经绰绰有余了，但是如果你的产品面向的是大众，那就花点银子去买正规的 SSL 证书吧，可不能学某售票系统强制要求安装自建的根证书哦。<pre><code>ca.key      CA 私钥
-ca.crt      CA 私钥 -&gt; CA 证书                 [客户端安装 ca.crt]
-server.key  网站私钥                         [服务端 ssl_certificate_key  /etc/nginx/server.key;]
-server.csr  网站 SSL 私钥 -&gt; SSL 证书            [用于生成 server.crt]
+cd ..
+</code></pre>
+
+<p>注意 cd ..，利用 ls 命令检查一下是不是有个 demoCA 的目录。</p></li>
+
+<li><p>用 CA 根证书签署 SSL 自建证书 ：<br />
+<code>openssl ca -cert ca.crt -keyfile ca.key -in server.csr -out server.crt</code><br />
+<code>openssl ca -days 1460 -cert ca.crt -keyfile ca.key -in server.csr -out server.crt</code></p></li>
+
+<li><p>最后，把 ca.crt 的内容粘贴到 server.crt 后面。这个比较重要！因为不这样做，可能会有某些浏览器不支持</p></li>
+</ol>
+
+<p>接下来有一段提示，找到 Sign the certificate? [y/n] 这句，打入 y 并回车，然后出现 out of 1 certificate requests certified, commit? [y/n]，同样 y 回车。<br />
+好了，现在目录下有两个服务器需要的 SSL 证书及相关文件了，分别是 server.crt 和 server.key，接下来就可以利用它们配置你的服务器软件了。<br />
+需要注意的是由于是自签名证书，所以客户端需要安装根证书，将刚才第 2 步创建的根证书 ca.crt 下载到客户端，然后双击导入，否则会提示不受信任的证书发布商问题。<br />
+通常情况下私人或者内部用的话，自建证书已经绰绰有余了，但是如果你的产品面向的是大众，那就花点银子去买正规的 SSL 证书吧，可不能学某售票系统强制要求安装自建的根证书哦。</p>
+
+<pre><code>ca.key      CA 私钥
+ca.crt      CA 私钥 -&gt; CA 证书                      [客户端安装 ca.crt]
+server.key  网站私钥                                [服务端 ssl_certificate_key  /etc/nginx/server.key;]
+server.csr  网站 SSL 私钥 -&gt; SSL 证书               [用于生成 server.crt]
 server.crt  SSL 证书 + CA 证书 + CA 私钥 -&gt; 网站证书  [服务端 ssl_certificate      /etc/nginx/server.crt;]
-</code></pre><p>证书格式转换：<p>#IE 浏览器需要 p12 证书，所以需要签发 p12 证书，用于 IE 签发:<br>openssl pkcs12 -export -clcerts -in client.crt -inkey client.key -out client.p12<p>#IOS 证书签发格式<br>openssl x509 -in client.crt -out client.cer<p>#Android 证书签发格式<br>openssl pkcs12 -export -in client.crt -inkey client.key -out client.pfx<p>#pem 格式证书<br>openssl pkcs12 -export -in ddmdd_a.pfx -out client.pem<h1 id=删除私钥密码>删除私钥密码</h1><p>openssl rsa -in client.key -out client_open.key<p>证书撤销：<p>echo 01 &gt; crlnumber<br>openssl ca -keyfile ca.key -cert ca.crt -revoke client.crt #从 CA 中撤销证书 client.crt<br>openssl ca -gencrl -keyfile ca.key -cert ca.crt -out client.crl #生成或更新撤销列表<p>查看证书信息：<br>openssl x509 -in client.pem -noout -text<p>client 浏览器需要使用的文件: ca.crt,client.crt,client.key,client.pfx<p>server 端使用的文件有: ca.crt, server.crt,server.key<ol><li>配置 Nginx SSL<br><br></ol><p>server {<pre><code>  listen          443 ssl;
+</code></pre>
+
+<p>证书格式转换：</p>
+
+<p>#IE 浏览器需要 p12 证书，所以需要签发 p12 证书，用于 IE 签发:<br />
+openssl pkcs12 -export -clcerts -in client.crt -inkey client.key -out client.p12</p>
+
+<p>#IOS 证书签发格式<br />
+openssl x509 -in client.crt -out client.cer</p>
+
+<p>#Android 证书签发格式<br />
+openssl pkcs12 -export -in client.crt -inkey client.key -out  client.pfx</p>
+
+<p>#pem 格式证书<br />
+openssl pkcs12 -export -in ddmdd_a.pfx -out client.pem</p>
+
+<h1 id="删除私钥密码">删除私钥密码</h1>
+
+<p>openssl rsa -in client.key -out client_open.key</p>
+
+<p>证书撤销：</p>
+
+<p>echo 01 &gt;  crlnumber<br />
+openssl ca -keyfile ca.key -cert ca.crt -revoke  client.crt  #从 CA 中撤销证书 client.crt<br />
+openssl ca -gencrl -keyfile ca.key -cert ca.crt -out client.crl  #生成或更新撤销列表</p>
+
+<p>查看证书信息：<br />
+openssl x509 -in client.pem -noout -text</p>
+
+<p>client 浏览器需要使用的文件: ca.crt,client.crt,client.key,client.pfx</p>
+
+<p>server 端使用的文件有:     ca.crt, server.crt,server.key</p>
+
+<ol>
+<li>配置 Nginx SSL<br />
+<br /></li>
+</ol>
+
+<p>server {</p>
+
+<pre><code>  listen          443 ssl;
   server_name     smsapi.chunbo.com;
   root            /var/www/smsapi.david.com;
 
@@ -69,105 +1659,2201 @@ server.crt  SSL 证书 + CA 证书 + CA 私钥 -&gt; 网站证书  [服务端 ss
       fastcgi_index  index.php;
       fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
   }
-</code></pre><p>}<h2 id=错误处理>错误处理</h2><p>index.txt<br>另外，如果要清空 index.txt 的话，一定要清空到字节 0，里面有一个字节都会导致 openssl ca 错误：<br>wrong number of fields on line 1 (looking for field 6, got 1, '' left)<p>################################################################################<p>7.1. openssl 命令参数<br>7.1.1. 测试加密算法的速度<p>$ openssl speed<br>$ openssl speed rsa<br>$ openssl speed aes<p>7.1.2. req<p>openssl req -new -x509 -days 7300 -key ca.key -out ca.crt<p>7.1.3. x509<p>openssl x509 -req -in client-req.csr -out client.crt -signkey client-key.pem -CA ca.crt -CAkey ca.key -days 365 -CAserial serial<br>验证一下我们生成的文件。<br>openssl x509 -in cacert.pem -text -noout<br>-extfile<br>openssl x509 -req -in careq.pem -extfile openssl.cnf -extensions v3_ca -signkey key.pem -out cacert.pem<p>7.1.4. ca<h1 id=生成-crl-列表>生成 CRL 列表</h1><p>$ openssl ca -gencrl -out exampleca.crl<p>7.1.5. crl<h1 id=查看-crl-列表信息>查看 CRL 列表信息</h1><p>$ openssl crl -in exampleca.crl -text -noout<h1 id=验证-crl-列表签名信息>验证 CRL 列表签名信息</h1><p>$ openssl crl -in exampleca.crl -noout -CAfile cacert.pem<p>7.1.6. pkcs12<p>-clcerts 表示仅导出客户证书。<br>openssl pkcs12 -export -clcerts -in 324.cer -inkey ca.pem -out 324.p12 -name &quot;Email SMIME&quot;<br>转换 PEM 证书文件和私钥到 PKCS#12 文件<br>openssl pkcs12 -export -out certificate.pfx -inkey privateKey.key -in certificate.crt -certfile CACert.crt<p>7.1.7. passwd<p>MD5-based password algorithm<h1 id=openssl-passwd-1-salt-random-phrase-here-your-password-here>openssl passwd -1 -salt 'random-phrase-here' 'your-password-here'</h1><p>$1$random-p$AOw9RDIWQm6tfUo9Ediu/0<p>-crypt standard Unix password algorithm (default)<h1 id=openssl-passwd-crypt-salt-sa-password>openssl passwd -crypt -salt 'sa' 'password'</h1><p>sa3tHJ3/KuYvI<hr><p>7.1.8. digest<p>如何创建一个文件的 MD5 或 SHA1 摘要?<p>摘要创建使用 dgst 选项.<br>7.1.8.1. list-message-digest-commands<p>列出可用摘要<p>$ openssl list-message-digest-commands<br>md2<br>md4<br>md5<br>mdc2<br>rmd160<br>sha<br>sha1<p>7.1.8.2. md5<h1 id=md5-digest>MD5 digest</h1><p>openssl dgst -md5 filename<br>$ openssl dgst -md5 message.txt<br>MD5(message.txt)= d9226d4bd8779baa69db272f89a2e05c<p>7.1.8.3. sha1<h1 id=sha1-digest>SHA1 digest</h1><p>openssl dgst -sha1 filename<br>$ openssl dgst -sha1 /etc/passwd<br>SHA1(/etc/passwd)= 9d883a9d35fd9a6dc81e6a1717a8e2ecfc49cdd8<hr><p>7.1.9. enc<p>使用方法：<p>$ openssl enc 加密算法 -k 密码 -in 输入明文文件 -out 输出密文文件<br>$ openssl enc 加密算法 -k 密码 -in 输出密文文件 -out 输入明文文件<br>7.1.9.1. list-cipher-commands<p>可用的编码 / 解码方案<h1 id=or-get-a-long-list-one-cipher-per-line>or get a long list, one cipher per line</h1><p>openssl list-cipher-commands<h1 id=openssl-list-cipher-commands>openssl list-cipher-commands</h1><p>aes-128-cbc<br>aes-128-ecb<br>aes-192-cbc<br>aes-192-ecb<br>aes-256-cbc<br>aes-256-ecb<br>base64<br>bf<br>bf-cbc<br>bf-cfb<br>bf-ecb<br>bf-ofb<br>cast<br>cast-cbc<br>cast5-cbc<br>cast5-cfb<br>cast5-ecb<br>cast5-ofb<br>des<br>des-cbc<br>des-cfb<br>des-ecb<br>des-ede<br>des-ede-cbc<br>des-ede-cfb<br>des-ede-ofb<br>des-ede3<br>des-ede3-cbc<br>des-ede3-cfb<br>des-ede3-ofb<br>des-ofb<br>des3<br>desx<br>idea<br>idea-cbc<br>idea-cfb<br>idea-ecb<br>idea-ofb<br>rc2<br>rc2-40-cbc<br>rc2-64-cbc<br>rc2-cbc<br>rc2-cfb<br>rc2-ecb<br>rc2-ofb<br>rc4<br>rc4-40<br>rc5<br>rc5-cbc<br>rc5-cfb<br>rc5-ecb<br>rc5-ofb<p>7.1.9.2. base64<p>使用 base64-encode 编码 / 解码<p>使用 enc -base64 选项<p>通过管道操作<br><code>echo &quot;encode me&quot; | openssl enc -base64</code><br>ImVuY29kZSBtZSIgDQo=<br><code>echo -n &quot;encode me&quot; | openssl enc -base64</code><br>LW4gImVuY29kZSBtZSIgDQo=<p>编码<br>openssl enc -base64 -in file.txt<br>openssl enc -base64 -in file.txt -out file.txt.enc<p>使用 -d (解码) 选项来反转操作<p><code>openssl enc -base64 -d -in file.txt.enc</code><br>Hello World!<br><code>openssl enc -base64 -d -in file.txt.enc -out file.txt</code><br><code>echo SGVsbG8gV29ybGQhDQo= | openssl enc -base64 -d</code><br>Hello World!<p>7.1.9.3. des<p>对称加密与解密<p>加密<h1 id=openssl-enc-des-e-a-in-file-txt-out-file-txt-des>openssl enc -des -e -a -in file.txt -out file.txt.des</h1><p>解密<h1 id=openssl-enc-des-d-a-in-file-txt-des-out-file-txt-tmp>openssl enc -des -d -a -in file.txt.des -out file.txt.tmp</h1><p>7.1.9.4. aes<p>加密<br>openssl enc -aes-128-cbc -in filename -out filename.out<br>解密<br>openssl enc -d -aes-128-cbc -in filename.out -out filename<p>7.1.10. rsa<p>产生密钥对:<p>生成私钥<br>openssl genrsa -out private.key 1024<br>根据私钥产生公钥<br>openssl rsa -in private.key -pubout &gt; public.key<p>用公钥加密明文<br>$ openssl rsautl -encrypt -pubin -inkey public.key -in filename -out filename.out<br>用私钥解密<br>$ openssl rsautl -decrypt -inkey private.key -in filename.out -out filename<p>7.1.11. dsa<p>Example 7.1. dsaparam &amp; gendsa<h1 id=create-parameters-in-dsaparam-pem>create parameters in dsaparam.pem</h1><p>openssl dsaparam -out dsaparam.pem 1024<h1 id=create-first-key>create first key</h1><p>openssl gendsa -out key1.pem dsaparam.pem<h1 id=and-second>and second ...</h1><p>openssl gendsa -out key2.pem dsaparam.pem<p>生成私钥<br>openssl dsaparam -out dsaparam.pem 1024<br>openssl gendsa -out private.key dsaparam.pem<br>根据私钥产生公钥<br>openssl dsa -in private.key -pubout -out public.key<p>$ ls<br>dsaparam.pem private.key public.key<p>7.1.12. rc4<h1 id=rc4-文件加密解密>rc4 文件加密解密</h1><p><code>openssl enc -e -rc4 -in in.txt -out out.txt</code> #加密<br><code>openssl enc -d -rc4 -in out.txt -out test.txt</code> #解密<br>使用 -k 指定密钥<br><code>openssl enc -e -rc4 -k passwd -in in.txt -out out.txt</code><br><code>openssl enc -d -rc4 -k passwd -in out.txt -out test.txt</code><p>7.1.13. -config 指定配置文件<h1 id=openssl-req-new-newkey-rsa-2048-config-openssl-cfg-keyout-server-key-nodes-out-certreq-csr>openssl req -new -newkey rsa:2048 -config openssl.cfg -keyout server.key -nodes -out certreq.csr</h1><p>7.1.14. -subj 指定参数<h1 id=openssl-req-new-newkey-rsa-2048-keyout-server-key-nodes-subj-c-cn-o-example-com-ou-it-cn-neo-st-gd-l-shenzhen-out-certreq-csr>openssl req -new -newkey rsa:2048 -keyout server.key -nodes -subj /C=CN/O=example.com/OU=IT/CN=Neo/ST=GD/L=Shenzhen -out certreq.csr</h1><p>生成随机数<br><code>openssl rand 12 -base64</code><br>#SSLsplit<br>openssl genrsa -out ca.key 4096<br>openssl req -new -x509 -days 1826 -key ca.key -out ca.crt<p>修改 OpenSSL 的配置<br>安装好之后，定位一下 OpenSSL 的配置文件 openssl.cnf：<br>locate openssl.cnf<br>/etc/ssl/openssl.cnf<br>/usr/lib/ssl/openssl.cnf<br>certs——存放已颁发的证书<br>newcerts——存放 CA 指令生成的新证书<br>private——存放私钥<br>crl——存放已吊销的整数<br>index.txt——OpenSSL 定义的已签发证书的文本数据库文件，这个文件通常在初始化的时候是空的<br>serial——证书签发时使用的序列号参考文件，该文件的序列号是以 16 进制格式进行存放的，该文件必须提供并且包含一个有效的序列号<h1 id=生成证书之前-需要先生成一个随机数>生成证书之前，需要先生成一个随机数：</h1><p><code>openssl rand -out private/.rand 1000</code><br>rand——生成随机数<br>-out——指定输出文件<br>1000——指定随机数长度<h1 id=生成根证书>生成根证书</h1><h2 id=a-生成根证书私钥-pem-文件>a). 生成根证书私钥 (pem 文件)</h2><p>OpenSSL 通常使用 PEM（Privacy Enbanced Mail）格式来保存私钥，构建私钥的命令如下：<br><code>openssl genrsa -aes256 -out private/cakey.pem 1024</code><br>该命含义如下：<br>genrsa——使用 RSA 算法产生私钥<br>-aes256——使用 256 位密钥的 AES 算法对私钥进行加密<br>-out——输出文件的路径<br>1024——指定私钥长度<h2 id=b-生成根证书签发申请文件-csr-文件>b). 生成根证书签发申请文件 (csr 文件)</h2><p>使用上一步生成的私钥 (pem 文件)，生成证书请求文件 (csr 文件)：<br><code>openssl req -new -key private/cakey.pem -out private/ca.csr -subj &quot;/C=CN/ST=myprovince/L=mycity/O=myorganization/OU=mygroup/CN=myname&quot;</code><br>该命令含义如下：<br>req——执行证书签发命令<br>-new——新证书签发请求<br>-key——指定私钥路径<br>-out——输出的 csr 文件的路径<br>-subj——证书相关的用户信息 (subject 的缩写)<h2 id=c-自签发根证书-cer-文件>c). 自签发根证书 (cer 文件)</h2><p>csr 文件生成以后，可以将其发送给 CA 认证机构进行签发，当然，这里我们使用 OpenSSL 对该证书进行自签发：<br><code>openssl x509 -req -days 365 -sha1 -extensions v3_ca -signkey \
-private/cakey.pem -in private/ca.csr -out certs/ca.cer</code><br>152740_yYK9_1434710.png<br>该命令的含义如下：<br>x509——生成 x509 格式证书<br>-req——输入 csr 文件<br>-days——证书的有效期（天）<br>-sha1——证书摘要采用 sha1 算法<br>-extensions——按照 openssl.cnf 文件中配置的 v3_ca 项添加扩展<br>-signkey——签发证书的私钥<br>-in——要输入的 csr 文件<br>-out——输出的 cer 证书文件<br>之后看一下 certs 文件夹里生成的 ca.cer 证书文件：<br>152922_iD3K_1434710.png<h1 id=用根证书签发-server-端证书>用根证书签发 server 端证书</h1><p>和生成根证书的步骤类似，这里就不再介绍相同的参数了。<h2 id=a-生成服务端私钥>a). 生成服务端私钥</h2><p><code>openssl genrsa -aes256 -out private/server-key.pem 1024</code><h2 id=b-生成证书请求文件>b). 生成证书请求文件</h2><p><code>openssl req -new -key private/server-key.pem -out private/server.csr -subj \
-&quot;/C=CN/ST=myprovince/L=mycity/O=myorganization/OU=mygroup/CN=myname&quot;</code><h2 id=c-使用根证书签发服务端证书>c). 使用根证书签发服务端证书</h2><p><code>openssl x509 -req -days 365 -sha1 -extensions v3_req -CA certs/ca.cer -CAkey private/cakey.pem \
--CAserial ca.srl -CAcreateserial -in private/server.csr -out certs/server.cer</code><br>这里有必要解释一下这几个参数：<br>-CA——指定 CA 证书的路径<br>-CAkey——指定 CA 证书的私钥路径<br>-CAserial——指定证书序列号文件的路径<br>-CAcreateserial——表示创建证书序列号文件 (即上方提到的 serial 文件)，创建的序列号文件默认名称为 - CA，指定的证书名称后加上. srl 后缀<br>注意：这里指定的 - extensions 的值为 v3_req，在 OpenSSL 的配置中，v3_req 配置的 basicConstraints 的值为 CA:FALSE，如图：<br>145405_I71X_1434710.png<br>而前面生成根证书时，使用的 - extensions 值为 v3_ca，v3_ca 中指定的 basicConstraints 的值为 CA:TRUE，表示该证书是颁发给 CA 机构的证书，如图：<br>145718_5CsH_1434710.png<br>在 x509 指令中，有多重方式可以指定一个将要生成证书的序列号，可以使用 set_serial 选项来直接指定证书的序列号，也可以使用 - CAserial 选项来指定一个包含序列号的文件。所谓的序列号是一个包含一个十六进制正整数的文件，在默认情况下，该文件的名称为输入的证书名称加上. srl 后缀，比如输入的证书文件为 ca.cer，那么指令会试图从 ca.srl 文件中获取序列号，可以自己创建一个 ca.srl 文件，也可以通过 - CAcreateserial 选项来生成一个序列号文件。<h1 id=用根证书签发-client-端证书>用根证书签发 client 端证书</h1><p>和签发 server 端的证书的过程类似，只是稍微改下参数而已。<h2 id=a-生成客户端私钥>a). 生成客户端私钥</h2><p><code>openssl genrsa -aes256 -out private/client-key.pem 1024</code><h2 id=b-生成证书请求文件-1>b). 生成证书请求文件</h2><p><code>openssl req -new -key private/client-key.pem -out private/client.csr -subj \
-&quot;/C=CN/ST=myprovince/L=mycity/O=myorganization/OU=mygroup/CN=myname&quot;</code><h2 id=c-使用根证书签发客户端证书>c). 使用根证书签发客户端证书</h2><p><code>openssl x509 -req -days 365 -sha1 -extensions v3_req -CA certs/ca.cer -CAkey private/cakey.pem \
--CAserial ca.srl -in private/client.csr -out certs/client.cer</code><br>需要注意的是，上方签发服务端证书时已经使用 - CAcreateserial 生成过 ca.srl 文件，因此这里不需要带上这个参数了。<p>至此，我们已经使用 OpenSSL 自签发了一个 CA 证书 ca.cer，并用这个 CA 证书签发了 server.cer 和 client.cer 两个子证书了：<br>153323_S39o_1434710.png<h1 id=导出证书>导出证书</h1><h2 id=a-导出客户端证书>a). 导出客户端证书</h2><p>openssl pkcs12 -export -clcerts -name myclient -inkey<br>private/client-key.pem -in certs/client.cer -out certs/client.keystore<br>参数含义如下：<br>pkcs12——用来处理 pkcs#12 格式的证书<br>-export——执行的是导出操作<br>-clcerts——导出的是客户端证书，-cacerts 则表示导出的是 ca 证书<br>-name——导出的证书别名<br>-inkey——证书的私钥路径<br>-in——要导出的证书的路径<br>-out——输出的密钥库文件的路径<h2 id=b-导出服务端证书>b). 导出服务端证书</h2><p>openssl pkcs12 -export -clcerts -name myserver -inkey<br>private/server-key.pem -in certs/server.cer -out certs/server.keystore<h2 id=c-信任证书的导出>c). 信任证书的导出</h2><p>keytool -importcert -trustcacerts -alias www.mydomain.com<br>-file certs/ca.cer -keystore certs/ca-trust.keystore<p>#####################################################################<br><a href=http://netkiller.github.io/cryptography/ target=_blank>Netkiller Cryptography 手札 信息安全与加密</a><br>7.6. Outlook smime x509 证书<br>7.6.1. 快速创建自签名证书<p>以下适合个人使用<p>openssl genrsa -out ca.pem 1024<br>openssl req -new -out neo.csr -key ca.pem<br>openssl x509 -req -in neo.csr -out neo.cer -signkey ca.pem -days 365<br>openssl pkcs12 -export -clcerts -in neo.cer -inkey ca.pem -out neo.p12<p>安装 cer 与 p12 两个证书，然后打开 outlook 测试<p>Example 7.3. 快速创建自签名证书<p>[root@localhost smime]# openssl genrsa -out ca/ca.pem 1024<br>Generating RSA private key, 1024 bit long modulus<br>...............++++++<br>...................++++++<br>e is 65537 (0x10001)<p>[root@localhost smime]# openssl req -new -out ca/ca.csr -key ca/ca.pem<br>You are about to be asked to enter information that will be incorporated<br>into your certificate request.<br>What you are about to enter is what is called a Distinguished Name or a DN.<br>There are quite a few fields but you can leave some blank<br>For some fields there will be a default value,<h2 id=if-you-enter-the-field-will-be-left-blank>If you enter '.', the field will be left blank.</h2><p>Country Name (2 letter code) [XX]:CN<br>State or Province Name (full name) []:GD<br>Locality Name (eg, city) [Default City]:SZ<br>Organization Name (eg, company) [Default Company Ltd]:XXX Ltd<br>Organizational Unit Name (eg, section) []:<br>Common Name (eg, your name or your server's hostname) []:neo<br>Email Address []:neo.chan@live.com<p>Please enter the following 'extra' attributes<br>to be sent with your certificate request<br>A challenge password []:<br>An optional company name []:<p>[root@localhost smime]# openssl x509 -req -in ca/ca.csr -out ca/ca-cert.cer -signkey ca/ca.pem -days 365<br>Signature ok<br>subject=/C=CN/ST=GD/L=SZ/O=XXX Ltd/CN=neo/emailAddress=neo.chan@live.com<br>Getting Private key<p>[root@localhost smime]# openssl pkcs12 -export -clcerts -in ca/ca-cert.cer -inkey ca/ca.pem -out ca/ca.p12<br>Enter Export Password:<br>Verifying - Enter Export Password:<p>更便捷的方法<p>openssl genrsa -out ca.pem 1024<br>openssl req -new -out neo.csr -key ca.pem -subj &quot;/C=CN/ST=GD/L=SZ/O=Internet Widgits Pty Ltd/OU=IT/CN=neo/emailAddress=neo@668x.net&quot;<br>openssl x509 -req -in neo.csr -out neo.cer -signkey ca.pem -days 365<br>openssl pkcs12 -export -in neo.cer -inkey ca.pem -out neo.p12 -name &quot;neo&quot;<p>7.6.2. 企业或集团方案<br>7.6.2.1. 证书环境<p>% mkdir keys<br>% cd keys/<p>建立空文件 index.txt 用来保存以后的证书信息，这是 OpenSSL 的证书数据库：<p>touch index.txt<p>建立一个文件 serial 在文件中输入一个数字，做为以后颁发证书的序列号，颁发证书序列号就从你输入的数字开始递增：<p>echo 01 &gt; serial<p>7.6.2.2. 颁发 CA 证书<p>首先创建 CA 根证书私钥文件，使用 RSA 格式，1024 位：<p>% openssl genrsa -des3 -out ca.key 1024<p>Example 7.4. 创建 CA 根证书<p>% openssl genrsa -des3 -out ca.key 1024<br>Generating RSA private key, 1024 bit long modulus<br>...........................++++++<br>...........................................++++++<br>e is 65537 (0x10001)<br>Enter pass phrase for ca.key:<br>Verifying - Enter pass phrase for ca.key:<p>私钥在建立时需要输入一个密码用来保护私钥文件，私钥文件使用 3DES 加密; 也可以不进行加密，这样不安全，因为一旦 ca 证书遗失，别人就可以随意颁发用户证书：<p>openssl genrsa -out ca.key 1024<p>利用建立 RSA 私钥，为 CA 自己建立一个自签名的证书文件：<p>openssl req -new -x509 -days 365 -key ca.key -out ca.crt<p>生成证书的过程中需要输入证书的信息，<p>Example 7.5. 创建自签名的证书<p>% openssl req -new -x509 -days 365 -key ca.key -out ca.crt<br>Enter pass phrase for ca.key:<br>You are about to be asked to enter information that will be incorporated<br>into your certificate request.<br>What you are about to enter is what is called a Distinguished Name or a DN.<br>There are quite a few fields but you can leave some blank<br>For some fields there will be a default value,<h2 id=if-you-enter-the-field-will-be-left-blank-1>If you enter '.', the field will be left blank.</h2><p>Country Name (2 letter code) [AU]:CN<br>State or Province Name (full name) [Some-State]:GD<br>Locality Name (eg, city) []:Shenzhen<br>Organization Name (eg, company) [Internet Widgits Pty Ltd]:Your Company Ltd<br>Organizational Unit Name (eg, section) []:IT<br>Common Name (e.g. server FQDN or YOUR name) []:Neo Chan<br>Email Address []:neo.chan@live.com<p>7.6.2.3. 颁发客户证书<p>生成客户证书的私钥文件，与生成 CA 根证书文件的方法一样，<p>openssl genrsa -des3 -out client.key 1024<p>OpenSSL 生成客户端证书的时候，不能直接生成证书，而是必须通过证书请求文件来生成，因此现在我们来建立客户端的证书请求文件，生成的过程中一样要输入客户端的信息：<p>openssl req -new -key client.key -out client.csr<p>有了证书请求文件之后，就可以使用 CA 的根证书、根私钥来对请求文件进行签名，生成客户端证书 client.pem 了：<p>openssl x509 -req -in client.csr -out client.crt -signkey client.key -CA ca.crt -CAkey ca.key -days 365 -CAserial serial<p>openssl pkcs12 -export -clcerts -in client.crt -inkey client.key -out client.p12<p>[Note] Note<br>到这里为止，根 CA 为客户端签发证书的过程就结束了。<br>7.6.2.4. 吊销已签发的证书<p>使用 ca 中的 -revoke 命令：<p>openssl ca -revoke client.pem -keyfile ca.key -cert ca.crt<p>证书被吊销之后，还需要发布新的 CRL 文件：<p>openssl ca -gencrl -out ca.crl -keyfile ca.key -cert ca.crt<p>7.7. 证书转换<p>PKCS 全称是 Public-Key Cryptography Standards ，是由 RSA 实验室与其它安全系统开发商为促进公钥密码的发展而制订的一系列标准，PKCS 目前共发布过 15 个标准。 常用的有：<br>PKCS#7 Cryptographic Message Syntax Standard<br>PKCS#10 Certification Request Standard<br>PKCS#12 Personal Information Exchange Syntax Standard<br>X.509 是常见通用的证书格式。所有的证书都符合为 Public Key Infrastructure (PKI) 制定的 ITU-T X509 国际标准。<br>PKCS#7 常用的后缀是： .P7B .P7C .SPC<br>PKCS#12 常用的后缀有： .P12 .PFX<br>X.509 DER 编码 (ASCII) 的后缀是： .DER .CER .CRT<br>X.509 PAM 编码 (Base64) 的后缀是： .PEM .CER .CRT<br>.cer/.crt 是用于存放证书，它是 2 进制形式存放的，不含私钥。<br>.pem 跟 crt/cer 的区别是它以 Ascii 来表示。<br>pfx/p12 用于存放个人证书 / 私钥，他通常包含保护密码，2 进制方式<br>p10 是证书请求<br>p7r 是 CA 对证书请求的回复，只用于导入<br>p7b 以树状展示证书链 (certificate chain)，同时也支持单个证书，不含私钥。<br>7.7.1. CA 证书<p>用 openssl 创建 CA 证书的 RSA 密钥 (PEM 格式)：<p>openssl genrsa -des3 -out ca.key 1024<p>7.7.2. 创建 CA 证书有效期为一年<p>用 openssl 创建 CA 证书 (PEM 格式, 假如有效期为一年)：<p>openssl req -new -x509 -days 365 -key ca.key -out ca.crt -config openssl.cnf<p>openssl 是可以生成 DER 格式的 CA 证书的，最好用 IE 将 PEM 格式的 CA 证书转换成 DER 格式的 CA 证书。<br>7.7.3. x509 转换为 pfx<p>openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt<p>7.7.4. PEM 格式的 ca.key 转换为 Microsoft 可以识别的 pvk 格式<p>pvk -in ca.key -out ca.pvk -nocrypt -topvk<p>7.7.5. PKCS#12 到 PEM 的转换<p>openssl pkcs12 -nocerts -nodes -in cert.p12 -out private.pem<br>验证<br>openssl pkcs12 -clcerts -nokeys -in cert.p12 -out cert.pem<p>7.7.6. 从 PFX 格式文件中提取私钥格式文件 (.key)<p>openssl pkcs12 -in mycert.pfx -nocerts -nodes -out mycert.key<p>7.7.7. 转换 pem 到到 spc<p>openssl crl2pkcs7 -nocrl -certfile venus.pem -outform DER -out venus.spc<p>用 -outform -inform 指定 DER 还是 PAM 格式。例如：<p>openssl x509 -in Cert.pem -inform PEM -out cert.der -outform DER<p>7.7.8. PEM 到 PKCS#12 的转换<p>openssl pkcs12 -export -in Cert.pem -out Cert.p12 -inkey key.pem<p>IIS 证书<p>cd c:\openssl<br>set OPENSSL_CONF=openssl.cnf<br>openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt<p>server.key 和 server.crt 文件是 Apache 的证书文件，生成的 server.pfx 用于导入 IIS<br>7.7.9. How to Convert PFX Certificate to PEM Format for SOAP<p>$ openssl pkcs12 -in test.pfx -out client.pem<br>Enter Import Password:<br>MAC verified OK<br>Enter PEM pass phrase:<br>Verifying - Enter PEM pass phrase:<p>7.7.10. DER 文件（.crt .cer .der）转为 PEM 格式文件<p>转换 DER 文件 (一般后缀名是. crt .cer .der 的文件) 到 PEM 文件<br>openssl x509 -inform der -in certificate.cer -out certificate.pem<br>转换 PEM 文件到 DER 文件<br>openssl x509 -outform der -in certificate.pem -out certificate.der<h2 id=openssl-格式转换>Openssl 格式转换</h2><p>Certificate 和 key 可以存成多种格式, 常见的有 DER , PEM , PFX<p>DER<p>將 certificate 或 key 用 DER ASN.1 编码的原始格式, certificate 就是依照 X.509 的方式编码, key 則是又能分為 PKCS#1 和 PKCS#8<p>PEM<p>把 DER 格式的 certificate 或 key 使用 base64-encoded 编码后在头尾上资料标明档案类型<p>Certificate<p>-----BEGIN PRIVATE KEY-----<br>...<br>-----END PRIVATE KEY-----<p>RSA private key (PKCS#1)<p>-----BEGIN RSA PRIVATE KEY-----<br>-----END RSA PRIVATE KEY-----<p>RSA public key (PKCS#1)<p>-----BEGIN RSA PUBLIC KEY-----<br>...<br>-----END RSA PUBLIC KEY-----<p>RSA private key (PKCS#8, key 沒加密 )<p>-----BEGIN PRIVATE KEY-----<br>...<br>-----END PRIVATE KEY-----<p>RSA public key (PKCS#8)<p>-----BEGIN PUBLIC KEY-----<br>...<br>-----END PUBLIC KEY-----<p>RSA private key (PKCS#8, key 有加密 )<p>-----BEGIN ENCRYPTED PRIVATE KEY-----<br>...<br>-----END ENCRYPTED PRIVATE KEY-----<p>PKCS#7<p>这个格式用来传递签署或加密的资料, 档案里可以包含整个用到的 certificate chain<p>PKCS#12 (PFX)<p>这个格式可以把 private key 和整个 certificate chain 存程一个档案<p>格式转换<p>openssl 预设输入输出的格式都是 PEM, 要转换格式很简单, 搭配 inform, outform 参数就可以了<p>Certificate PEM 转 DER<p>openssl x509 -in cert.pem -outform der -out cert.der<p>Certificate DER 转 PEM<p>openssl x509 -inform der -in cert.der -outform der -out cert.pem<p>RSA key 的转换比较多一些, 有 private/public key, PKCS#1/PKCS#8, DER/PEM, 以下只都是用 PEM 格式, 要转成 DER 只要加入 inform, outform 参数就可以了<p>输出 public key 指令<p>从 certificate 输出<p>openssl x509 -in cert.pem -pubkey -noout &gt; public.pem<p>从 private key 输出<p>openssl rsa -in private.pem -pubout -out public.pem<p>PKCS#1/PKCS#8 转换<br>openssl 有多个指令会产生 private key,genpkey 会产生 PKCS#8 格式 genrsa 会产生 PKCS#1 格式,<br>上面兩个输出 public key 的指令都是 PKCS#8 格式<p>Public key 格式转换, 主要是搭配 RSAPublicKey_in,RSAPublicKey_out, 這兩个参数, rsa command 的 help 沒有显示这两个参数, 说明文件才有<p>Public key: PKCS#8 -&gt; PKCS#1<p>openssl rsa -pubin -in public.pem -RSAPublicKey_out -out public_pkcs1.pem<p>Public key: PKCS#1 -&gt; PKCS#8<p>openssl rsa -RSAPublicKey_in -in public_pkcs1.pem -out public_pkcs8.pem<p>也可以在从 private key 输出時直接设定输出格式<p>openssl rsa -in private.pem -RSAPublicKey_out -out public_pkcs1.pem<p>Private key 格式转换, 主要是用 pkcs8 指令, 搭配 topk8 参数作转换, 若不加密就再加上 nocrypt<p>Private key: PKCS#1 -&gt; PKCS#8<p>openssl pkcs8 -in private_pkcs1.pem -topk8 -nocrypt -out private_pkcs8.pem<p>Private key: PKCS#8 -&gt; PKCS#1<p>openssl pkcs8 -in private_pkcs8.pem -nocrypt -out private_pkcs1.pem<p>用 OpenSSL 0.9.8 可以, 之后的版本用 pkcs8 这个指令输出都是 PKCS#8, 這指令只是用於 0.9.8<p>用 0.9.8 之后的版本直接用 rsa 转换即可<p>openssl rsa -in private_pkcs8.pem -out private_pkcs1.pem<p>从 PKCS#7 输出 certificate<br>目前最常遇到的是 DOCSIS secure upgrade 用的 Code File, 前面會有一段 DER 编码的资料, 包含 1～2 张 CVC<p>openssl pkcs7 -in code.p7b -print_certs -out certs.pem<p>从 PKCS#12(PFS) 输出 certificate 和 private key<p>openssl pkcs12 -in key_cert.pfx -nodes -out key_cert.pem<p>打完指令会要求输入 pfx file 的密码, 若上述指令没加入 nodes, 会再要求输入输出的 private key 要用的密碼<p>把 private key 和 certificate 以及 CA 打包成 PKCS#12<br>者功能我是用来制作 FreeRADIUS client 端, 给 windows 用的懒人包, 输入的 private key (client.key), certificate (client.crt), certificate-chain(cert-chain.crt) 都是用 PEM 格式<p>openssl pkcs12 -export -out client.p12 -inkey client.key -in client.crt -certfile cert-chain.crt<p>打完指令会要求输入 pfx file 的密码, 之後在 windows 下直接开启 client.p12 敲完密码, 下一步到底, 凭证就会放到对的地方了</div><div class=clear></div></div></div></article><div class=clear></div><p class=post-tags><span class="fa fa-tags">Tags:</span>
-<a rel=tag href=../../../tags/nmap>nmap</a><div id=related-posts><div class=related-inner></div></div><section id=comments class=themeform><div id=gitment></div><link rel=stylesheet href=https://imsun.github.io/gitment/style/default.css><script src=https://imsun.github.io/gitment/dist/gitment.browser.js></script><script>var gitment=new Gitment({id:location.pathname,owner:'rinetd',repo:'rinetd.github.io',oauth:{client_id:'89af57db85ca20b7668c',client_secret:'4e57a031d7bd29f740559a907db2fe0efb3bf813',},})
-gitment.render('gitment')</script></section><section id=comments class=themeform></section></div></div><div class="sidebar s1 collapsed" data-position=left data-layout=col-3cm data-sb-id=s1><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>Follow:<ul class=social-links><li><a class=social-tooltip href=mailto: title=Email><i class="fa fa-envelope"></i></a><li><a class=social-tooltip href=//github.com/ title=GitHub><i class="fa fa-github"></i></a><li><a class=social-tooltip title="RSS Feed" aria-label="RSS Feed" href=../../../feed target=_blank style=color:rgba(255,255,255,.7)><i class="fa fa-rss"></i></a></ul></div><ul class="post-nav group"><li class=previous><a href=../../../linux/cmd/linux-md5sum/ rel=prev><i class="fa fa-chevron-left"></i><strong>Previous Post</strong>
-<span>md5sum</span></a></ul><div id=categories-2 class="widget widget_categories"><h3>分类</h3><ul><li class="cat-item cat-item-1"><a href=../../../categories/android/>Android</a>
-<small>(17)</small><li class="cat-item cat-item-1"><a href=../../../categories/devops/>Devops</a>
-<small>(63)</small><li class="cat-item cat-item-1"><a href=../../../categories/docker/>Docker</a>
-<small>(15)</small><li class="cat-item cat-item-1"><a href=../../../categories/golang/>Golang</a>
-<small>(77)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux/>Linux</a>
-<small>(77)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux-%E5%91%BD%E4%BB%A4/>Linux-命令</a>
-<small>(113)</small><li class="cat-item cat-item-1"><a href=../../../categories/windows/>Windows</a>
-<small>(5)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/>前端技术</a>
-<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/>嵌入式</a>
-<small>(22)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B7%A5%E5%85%B7/>工具</a>
-<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/>常用算法</a>
-<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/>数据库</a>
-<small>(36)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/>文本编辑</a>
-<small>(27)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/>正则表达式</a>
-<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/>生活技巧</a>
-<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/>程序员</a>
-<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/>网络安全</a>
-<small>(39)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/>集群监控</a>
-<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/>静态博客</a>
-<small>(14)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%AB%98%E6%95%B0/>高数</a>
-<small>(2)</small></ul></div></div></div><div class="sidebar s2 collapsed" data-position=right data-layout=col-3cm data-sb-id=s2><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>More</div><ul class="post-nav group"><li class=next><a href=../../../linux/cmd/linux-nmap/ rel=next><i class="fa fa-chevron-right"></i><strong>Next post</strong>
-<span>安全工具 Nmap</span></a></ul><div id=tag_cloud-2 class="widget widget_tag_cloud"><h3>标签云</h3><div class="tagcloud post-tags"><a rel=tag href=../../../tags/ansible/ class=tag-link-12 title="1 Posts">ansible<small>(12)</small></a>
-<a rel=tag href=../../../tags/awesome/ class=tag-link-3 title="1 Posts">awesome<small>(3)</small></a>
-<a rel=tag href=../../../tags/centos7/ class=tag-link-2 title="1 Posts">centos7<small>(2)</small></a>
-<a rel=tag href=../../../tags/css/ class=tag-link-18 title="1 Posts">css<small>(18)</small></a>
-<a rel=tag href=../../../tags/curd/ class=tag-link-3 title="1 Posts">curd<small>(3)</small></a>
-<a rel=tag href=../../../tags/curl/ class=tag-link-2 title="1 Posts">curl<small>(2)</small></a>
-<a rel=tag href=../../../tags/docker/ class=tag-link-18 title="1 Posts">docker<small>(18)</small></a>
-<a rel=tag href=../../../tags/drone/ class=tag-link-18 title="1 Posts">drone<small>(18)</small></a>
-<a rel=tag href=../../../tags/emacs/ class=tag-link-12 title="1 Posts">emacs<small>(12)</small></a>
-<a rel=tag href=../../../tags/encode/ class=tag-link-3 title="1 Posts">encode<small>(3)</small></a>
-<a rel=tag href=../../../tags/etcd/ class=tag-link-4 title="1 Posts">etcd<small>(4)</small></a>
-<a rel=tag href=../../../tags/flannel/ class=tag-link-2 title="1 Posts">flannel<small>(2)</small></a>
-<a rel=tag href=../../../tags/git/ class=tag-link-4 title="1 Posts">git<small>(4)</small></a>
-<a rel=tag href=../../../tags/golang/ class=tag-link-84 title="1 Posts">golang<small>(84)</small></a>
-<a rel=tag href=../../../tags/gradle/ class=tag-link-3 title="1 Posts">gradle<small>(3)</small></a>
-<a rel=tag href=../../../tags/haproxy/ class=tag-link-5 title="1 Posts">haproxy<small>(5)</small></a>
-<a rel=tag href=../../../tags/hexo/ class=tag-link-2 title="1 Posts">hexo<small>(2)</small></a>
-<a rel=tag href=../../../tags/html/ class=tag-link-2 title="1 Posts">html<small>(2)</small></a>
-<a rel=tag href=../../../tags/http/ class=tag-link-2 title="1 Posts">http<small>(2)</small></a>
-<a rel=tag href=../../../tags/hugo/ class=tag-link-13 title="1 Posts">hugo<small>(13)</small></a>
-<a rel=tag href=../../../tags/imagemagick/ class=tag-link-2 title="1 Posts">imagemagick<small>(2)</small></a>
-<a rel=tag href=../../../tags/ip/ class=tag-link-3 title="1 Posts">ip<small>(3)</small></a>
-<a rel=tag href=../../../tags/iproute2/ class=tag-link-5 title="1 Posts">iproute2<small>(5)</small></a>
-<a rel=tag href=../../../tags/iptables/ class=tag-link-13 title="1 Posts">iptables<small>(13)</small></a>
-<a rel=tag href=../../../tags/javascript/ class=tag-link-6 title="1 Posts">javascript<small>(6)</small></a>
-<a rel=tag href=../../../tags/jwt/ class=tag-link-3 title="1 Posts">jwt<small>(3)</small></a>
-<a rel=tag href=../../../tags/kubernetes/ class=tag-link-11 title="1 Posts">kubernetes<small>(11)</small></a>
-<a rel=tag href=../../../tags/linux/ class=tag-link-6 title="1 Posts">linux<small>(6)</small></a>
-<a rel=tag href=../../../tags/lvs/ class=tag-link-8 title="1 Posts">lvs<small>(8)</small></a>
-<a rel=tag href=../../../tags/makefile/ class=tag-link-2 title="1 Posts">makefile<small>(2)</small></a>
-<a rel=tag href=../../../tags/mariadb/ class=tag-link-9 title="1 Posts">mariadb<small>(9)</small></a>
-<a rel=tag href=../../../tags/maven/ class=tag-link-2 title="1 Posts">maven<small>(2)</small></a>
-<a rel=tag href=../../../tags/meteor/ class=tag-link-7 title="1 Posts">meteor<small>(7)</small></a>
-<a rel=tag href=../../../tags/ml/ class=tag-link-2 title="1 Posts">ml<small>(2)</small></a>
-<a rel=tag href=../../../tags/mysql/ class=tag-link-50 title="1 Posts">mysql<small>(50)</small></a>
-<a rel=tag href=../../../tags/nginx/ class=tag-link-26 title="1 Posts">nginx<small>(26)</small></a>
-<a rel=tag href=../../../tags/nmap/ class=tag-link-3 title="1 Posts">nmap<small>(3)</small></a>
-<a rel=tag href=../../../tags/npm/ class=tag-link-3 title="1 Posts">npm<small>(3)</small></a>
-<a rel=tag href=../../../tags/oauth2/ class=tag-link-2 title="1 Posts">oauth2<small>(2)</small></a>
-<a rel=tag href=../../../tags/pandoc/ class=tag-link-2 title="1 Posts">pandoc<small>(2)</small></a>
-<a rel=tag href=../../../tags/php/ class=tag-link-3 title="1 Posts">php<small>(3)</small></a>
-<a rel=tag href=../../../tags/powershell/ class=tag-link-2 title="1 Posts">powershell<small>(2)</small></a>
-<a rel=tag href=../../../tags/prometheus/ class=tag-link-8 title="1 Posts">prometheus<small>(8)</small></a>
-<a rel=tag href=../../../tags/python/ class=tag-link-5 title="1 Posts">python<small>(5)</small></a>
-<a rel=tag href=../../../tags/redis/ class=tag-link-2 title="1 Posts">redis<small>(2)</small></a>
-<a rel=tag href=../../../tags/responsive/ class=tag-link-3 title="1 Posts">responsive<small>(3)</small></a>
-<a rel=tag href=../../../tags/restful/ class=tag-link-6 title="1 Posts">restful<small>(6)</small></a>
-<a rel=tag href=../../../tags/rsync/ class=tag-link-2 title="1 Posts">rsync<small>(2)</small></a>
-<a rel=tag href=../../../tags/scrapy/ class=tag-link-8 title="1 Posts">scrapy<small>(8)</small></a>
-<a rel=tag href=../../../tags/scss/ class=tag-link-2 title="1 Posts">scss<small>(2)</small></a>
-<a rel=tag href=../../../tags/sed/ class=tag-link-3 title="1 Posts">sed<small>(3)</small></a>
-<a rel=tag href=../../../tags/seo/ class=tag-link-5 title="1 Posts">seo<small>(5)</small></a>
-<a rel=tag href=../../../tags/shell/ class=tag-link-8 title="1 Posts">shell<small>(8)</small></a>
-<a rel=tag href=../../../tags/ssh/ class=tag-link-3 title="1 Posts">ssh<small>(3)</small></a>
-<a rel=tag href=../../../tags/stm32/ class=tag-link-5 title="1 Posts">stm32<small>(5)</small></a>
-<a rel=tag href=../../../tags/swagger/ class=tag-link-2 title="1 Posts">swagger<small>(2)</small></a>
-<a rel=tag href=../../../tags/swarm/ class=tag-link-2 title="1 Posts">swarm<small>(2)</small></a>
-<a rel=tag href=../../../tags/sysbench/ class=tag-link-2 title="1 Posts">sysbench<small>(2)</small></a>
-<a rel=tag href=../../../tags/sysctl/ class=tag-link-2 title="1 Posts">sysctl<small>(2)</small></a>
-<a rel=tag href=../../../tags/tc/ class=tag-link-2 title="1 Posts">tc<small>(2)</small></a>
-<a rel=tag href=../../../tags/tcpdump/ class=tag-link-2 title="1 Posts">tcpdump<small>(2)</small></a>
-<a rel=tag href=../../../tags/timezone/ class=tag-link-2 title="1 Posts">timezone<small>(2)</small></a>
-<a rel=tag href=../../../tags/tshark/ class=tag-link-2 title="1 Posts">tshark<small>(2)</small></a>
-<a rel=tag href=../../../tags/ubuntu/ class=tag-link-2 title="1 Posts">ubuntu<small>(2)</small></a>
-<a rel=tag href=../../../tags/ulimit/ class=tag-link-2 title="1 Posts">ulimit<small>(2)</small></a>
-<a rel=tag href=../../../tags/vim/ class=tag-link-11 title="1 Posts">vim<small>(11)</small></a>
-<a rel=tag href=../../../tags/webpack3/ class=tag-link-2 title="1 Posts">webpack3<small>(2)</small></a>
-<a rel=tag href=../../../tags/windows/ class=tag-link-2 title="1 Posts">windows<small>(2)</small></a>
-<a rel=tag href=../../../tags/wireshark/ class=tag-link-2 title="1 Posts">wireshark<small>(2)</small></a>
-<a rel=tag href=../../../tags/xidel/ class=tag-link-2 title="1 Posts">xidel<small>(2)</small></a>
-<a rel=tag href=../../../tags/xml/ class=tag-link-2 title="1 Posts">xml<small>(2)</small></a>
-<a rel=tag href=../../../tags/yaml/ class=tag-link-2 title="1 Posts">yaml<small>(2)</small></a>
-<a rel=tag href=../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/ class=tag-link-2 title="1 Posts">微服务<small>(2)</small></a></div></div></div></div>`</div></div></div></div></div><footer id=footer><section class=container id=footer-bottom><div class=container-inner><a id=back-to-top href=#><i class="fa fa-angle-up"></i></a><div class="pad group"><div class="grid one-half"><div id=copyright><p>Copyright (c) 2017. All rights reserved. (版权所有) <a href=http://www.miitbeian.gov.cn/>鲁ICP备17074587号-1</a></div></div><div class="grid one-half last"><ul class=social-links><li><a class=social-tooltip title="On WeiBo" href=http://weibo.com/rinetd target=_blank><i class="fa fa-weibo"></i></a><li><a class=social-tooltip title="On Twitter" href=https://twitter.com/rinetd target=_blank><i class="fa fa-twitter"></i></a><li><a class=social-tooltip title="On GitHub" href=https://github.com/rinetd target=_blank><i class="fa fa-github"></i></a></ul></div></div></div></section></footer><div class=back-to-top id=back-to-top><i class="fa fa-angle-double-up"></i></div><script>var HUParams={"_disabled":[],"SmoothScroll":{"Enabled":true,"Options":{"touchpadSupport":false}},"centerAllImg":"1","timerOnScrollAllBrowsers":"1","extLinksStyle":"1","extLinksTargetExt":"1","extLinksSkipSelectors":{"classes":["btn","button"],"ids":[]},"imgSmartLoadEnabled":"1","imgSmartLoadOpts":{"parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],"opts":{"excludeImg":[".tc-holder-img"],"fadeIn_options":100}},"goldenRatio":"1.618","gridGoldenRatioLimit":"350","sbStickyUserSettings":{"desktop":true,"mobile":true},"isWPMobile":"","menuStickyUserSettings":{"desktop":"stick_up","mobile":"stick_up"},"isDevMode":"","ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1","frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},"userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},"isWelcomeNoteOn":"","welcomeContent":""};</script><script src=https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js></script><script src=https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js></script><script src=../../../front/js/scripts.js></script><script>$(".topbar-toggle-down").click(function(){$("#nav-topbar").css("overflow","visible");});</script><script>window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;ga('create','UA-106129999-2','auto');ga('send','pageview');</script><script async src=//www.google-analytics.com/analytics.js></script><noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height=0 width=0 style=display:none;visibility:hidden></iframe></noscript><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5HM5XM2');</script><script id=baidu_analytics>var _hmt=_hmt||[];(function(){if(window.location.hostname==='localhost')return;var hm=document.createElement("script");hm.async=true;hm.src="https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(hm,s);})();</script>
+</code></pre>
+
+<p>}</p>
+
+<h2 id="错误处理">错误处理</h2>
+
+<p>index.txt<br />
+另外，如果要清空 index.txt 的话，一定要清空到字节 0，里面有一个字节都会导致 openssl ca 错误：<br />
+wrong number of fields on line 1 (looking for field 6, got 1, '' left)</p>
+
+<p>################################################################################</p>
+
+<p>7.1. openssl 命令参数<br />
+7.1.1. 测试加密算法的速度</p>
+
+<p>$ openssl speed<br />
+$ openssl speed rsa<br />
+$ openssl speed aes</p>
+
+<p>7.1.2. req</p>
+
+<p>openssl req -new -x509 -days 7300 -key ca.key -out ca.crt</p>
+
+<p>7.1.3. x509</p>
+
+<p>openssl x509 -req -in client-req.csr -out client.crt -signkey client-key.pem -CA ca.crt -CAkey ca.key -days 365 -CAserial serial<br />
+验证一下我们生成的文件。<br />
+openssl x509 -in cacert.pem -text -noout<br />
+-extfile<br />
+openssl x509 -req -in careq.pem -extfile openssl.cnf -extensions v3_ca -signkey key.pem -out cacert.pem</p>
+
+<p>7.1.4. ca</p>
+
+<h1 id="生成-crl-列表">生成 CRL 列表</h1>
+
+<p>$ openssl ca -gencrl -out exampleca.crl</p>
+
+<p>7.1.5. crl</p>
+
+<h1 id="查看-crl-列表信息">查看 CRL 列表信息</h1>
+
+<p>$ openssl crl -in exampleca.crl -text -noout</p>
+
+<h1 id="验证-crl-列表签名信息">验证 CRL 列表签名信息</h1>
+
+<p>$ openssl crl -in exampleca.crl -noout -CAfile cacert.pem</p>
+
+<p>7.1.6. pkcs12</p>
+
+<p>-clcerts 表示仅导出客户证书。<br />
+openssl pkcs12 -export -clcerts -in 324.cer -inkey ca.pem -out 324.p12 -name &quot;Email SMIME&quot;<br />
+转换 PEM 证书文件和私钥到 PKCS#12 文件<br />
+openssl pkcs12 -export -out certificate.pfx -inkey privateKey.key -in certificate.crt -certfile CACert.crt</p>
+
+<p>7.1.13. -config 指定配置文件</p>
+
+<h1 id="openssl-req-new-newkey-rsa-2048-config-openssl-cfg-keyout-server-key-nodes-out-certreq-csr">openssl req -new -newkey rsa:2048 -config openssl.cfg -keyout server.key -nodes -out certreq.csr</h1>
+
+<p>7.1.14. -subj 指定参数</p>
+
+<h1 id="openssl-req-new-newkey-rsa-2048-keyout-server-key-nodes-subj-c-cn-o-example-com-ou-it-cn-neo-st-gd-l-shenzhen-out-certreq-csr">openssl req -new -newkey rsa:2048 -keyout server.key -nodes -subj /C=CN/O=example.com/OU=IT/CN=Neo/ST=GD/L=Shenzhen -out certreq.csr</h1>
+
+<p>生成随机数<br />
+<code>openssl rand 12 -base64</code><br />
+#SSLsplit<br />
+openssl genrsa -out ca.key 4096<br />
+openssl req -new -x509 -days 1826 -key ca.key -out ca.crt</p>
+
+<p>修改 OpenSSL 的配置<br />
+安装好之后，定位一下 OpenSSL 的配置文件 openssl.cnf：<br />
+locate openssl.cnf<br />
+  /etc/ssl/openssl.cnf<br />
+  /usr/lib/ssl/openssl.cnf<br />
+certs——存放已颁发的证书<br />
+newcerts——存放 CA 指令生成的新证书<br />
+private——存放私钥<br />
+crl——存放已吊销的整数<br />
+index.txt——OpenSSL 定义的已签发证书的文本数据库文件，这个文件通常在初始化的时候是空的<br />
+serial——证书签发时使用的序列号参考文件，该文件的序列号是以 16 进制格式进行存放的，该文件必须提供并且包含一个有效的序列号</p>
+
+<h1 id="生成证书之前-需要先生成一个随机数">生成证书之前，需要先生成一个随机数：</h1>
+
+<p><code>openssl rand -out private/.rand 1000</code><br />
+rand——生成随机数<br />
+-out——指定输出文件<br />
+1000——指定随机数长度</p>
+
+<h1 id="生成根证书">生成根证书</h1>
+
+<h2 id="a-生成根证书私钥-pem-文件">a). 生成根证书私钥 (pem 文件)</h2>
+
+<p>OpenSSL 通常使用 PEM（Privacy Enbanced Mail）格式来保存私钥，构建私钥的命令如下：<br />
+<code>openssl genrsa -aes256 -out private/cakey.pem 1024</code><br />
+该命含义如下：<br />
+genrsa——使用 RSA 算法产生私钥<br />
+-aes256——使用 256 位密钥的 AES 算法对私钥进行加密<br />
+-out——输出文件的路径<br />
+1024——指定私钥长度</p>
+
+<h2 id="b-生成根证书签发申请文件-csr-文件">b). 生成根证书签发申请文件 (csr 文件)</h2>
+
+<p>使用上一步生成的私钥 (pem 文件)，生成证书请求文件 (csr 文件)：<br />
+<code>openssl req -new -key private/cakey.pem -out private/ca.csr -subj &quot;/C=CN/ST=myprovince/L=mycity/O=myorganization/OU=mygroup/CN=myname&quot;
+</code><br />
+该命令含义如下：<br />
+req——执行证书签发命令<br />
+-new——新证书签发请求<br />
+-key——指定私钥路径<br />
+-out——输出的 csr 文件的路径<br />
+-subj——证书相关的用户信息 (subject 的缩写)</p>
+
+<h2 id="c-自签发根证书-cer-文件">c). 自签发根证书 (cer 文件)</h2>
+
+<p>csr 文件生成以后，可以将其发送给 CA 认证机构进行签发，当然，这里我们使用 OpenSSL 对该证书进行自签发：<br />
+<code>openssl x509 -req -days 365 -sha1 -extensions v3_ca -signkey \
+private/cakey.pem -in private/ca.csr -out certs/ca.cer</code><br />
+152740_yYK9_1434710.png<br />
+该命令的含义如下：<br />
+x509——生成 x509 格式证书<br />
+-req——输入 csr 文件<br />
+-days——证书的有效期（天）<br />
+-sha1——证书摘要采用 sha1 算法<br />
+-extensions——按照 openssl.cnf 文件中配置的 v3_ca 项添加扩展<br />
+-signkey——签发证书的私钥<br />
+-in——要输入的 csr 文件<br />
+-out——输出的 cer 证书文件<br />
+之后看一下 certs 文件夹里生成的 ca.cer 证书文件：<br />
+152922_iD3K_1434710.png</p>
+
+<h1 id="用根证书签发-server-端证书">用根证书签发 server 端证书</h1>
+
+<p>和生成根证书的步骤类似，这里就不再介绍相同的参数了。</p>
+
+<h2 id="a-生成服务端私钥">a). 生成服务端私钥</h2>
+
+<p><code>openssl genrsa -aes256 -out private/server-key.pem 1024</code></p>
+
+<h2 id="b-生成证书请求文件">b). 生成证书请求文件</h2>
+
+<p><code>openssl req -new -key private/server-key.pem -out private/server.csr -subj \
+&quot;/C=CN/ST=myprovince/L=mycity/O=myorganization/OU=mygroup/CN=myname&quot;</code></p>
+
+<h2 id="c-使用根证书签发服务端证书">c). 使用根证书签发服务端证书</h2>
+
+<p><code>openssl x509 -req -days 365 -sha1 -extensions v3_req -CA certs/ca.cer -CAkey private/cakey.pem \
+-CAserial ca.srl -CAcreateserial -in private/server.csr -out certs/server.cer</code><br />
+这里有必要解释一下这几个参数：<br />
+-CA——指定 CA 证书的路径<br />
+-CAkey——指定 CA 证书的私钥路径<br />
+-CAserial——指定证书序列号文件的路径<br />
+-CAcreateserial——表示创建证书序列号文件 (即上方提到的 serial 文件)，创建的序列号文件默认名称为 - CA，指定的证书名称后加上. srl 后缀<br />
+注意：这里指定的 - extensions 的值为 v3_req，在 OpenSSL 的配置中，v3_req 配置的 basicConstraints 的值为 CA:FALSE，如图：<br />
+145405_I71X_1434710.png<br />
+而前面生成根证书时，使用的 - extensions 值为 v3_ca，v3_ca 中指定的 basicConstraints 的值为 CA:TRUE，表示该证书是颁发给 CA 机构的证书，如图：<br />
+145718_5CsH_1434710.png<br />
+在 x509 指令中，有多重方式可以指定一个将要生成证书的序列号，可以使用 set_serial 选项来直接指定证书的序列号，也可以使用 - CAserial 选项来指定一个包含序列号的文件。所谓的序列号是一个包含一个十六进制正整数的文件，在默认情况下，该文件的名称为输入的证书名称加上. srl 后缀，比如输入的证书文件为 ca.cer，那么指令会试图从 ca.srl 文件中获取序列号，可以自己创建一个 ca.srl 文件，也可以通过 - CAcreateserial 选项来生成一个序列号文件。</p>
+
+<h1 id="用根证书签发-client-端证书">用根证书签发 client 端证书</h1>
+
+<p>和签发 server 端的证书的过程类似，只是稍微改下参数而已。</p>
+
+<h2 id="a-生成客户端私钥">a). 生成客户端私钥</h2>
+
+<p><code>openssl genrsa -aes256 -out private/client-key.pem 1024</code></p>
+
+<h2 id="b-生成证书请求文件-1">b). 生成证书请求文件</h2>
+
+<p><code>openssl req -new -key private/client-key.pem -out private/client.csr -subj \
+&quot;/C=CN/ST=myprovince/L=mycity/O=myorganization/OU=mygroup/CN=myname&quot;</code></p>
+
+<h2 id="c-使用根证书签发客户端证书">c). 使用根证书签发客户端证书</h2>
+
+<p><code>openssl x509 -req -days 365 -sha1 -extensions v3_req -CA certs/ca.cer -CAkey private/cakey.pem \
+-CAserial ca.srl -in private/client.csr -out certs/client.cer</code><br />
+需要注意的是，上方签发服务端证书时已经使用 - CAcreateserial 生成过 ca.srl 文件，因此这里不需要带上这个参数了。</p>
+
+<p>至此，我们已经使用 OpenSSL 自签发了一个 CA 证书 ca.cer，并用这个 CA 证书签发了 server.cer 和 client.cer 两个子证书了：<br />
+153323_S39o_1434710.png</p>
+
+<h1 id="导出证书">导出证书</h1>
+
+<h2 id="a-导出客户端证书">a). 导出客户端证书</h2>
+
+<p>openssl pkcs12 -export -clcerts -name myclient -inkey <br />
+private/client-key.pem -in certs/client.cer -out certs/client.keystore<br />
+参数含义如下：<br />
+pkcs12——用来处理 pkcs#12 格式的证书<br />
+-export——执行的是导出操作<br />
+-clcerts——导出的是客户端证书，-cacerts 则表示导出的是 ca 证书<br />
+-name——导出的证书别名<br />
+-inkey——证书的私钥路径<br />
+-in——要导出的证书的路径<br />
+-out——输出的密钥库文件的路径</p>
+
+<h2 id="b-导出服务端证书">b). 导出服务端证书</h2>
+
+<p>openssl pkcs12 -export -clcerts -name myserver -inkey <br />
+private/server-key.pem -in certs/server.cer -out certs/server.keystore</p>
+
+<h2 id="c-信任证书的导出">c). 信任证书的导出</h2>
+
+<p>keytool -importcert -trustcacerts -alias www.mydomain.com <br />
+-file certs/ca.cer -keystore certs/ca-trust.keystore</p>
+
+<p>#####################################################################<br />
+<a href="http://netkiller.github.io/cryptography/" target="_blank">Netkiller Cryptography 手札 信息安全与加密</a><br />
+7.6. Outlook smime x509 证书<br />
+7.6.1. 快速创建自签名证书</p>
+
+<p>以下适合个人使用</p>
+
+<p>openssl genrsa -out ca.pem 1024<br />
+openssl req -new -out neo.csr -key ca.pem<br />
+openssl x509 -req -in neo.csr -out neo.cer -signkey ca.pem -days 365<br />
+openssl pkcs12 -export -clcerts -in neo.cer -inkey ca.pem -out neo.p12</p>
+
+<p>安装 cer 与 p12 两个证书，然后打开 outlook 测试</p>
+
+<p>Example 7.3. 快速创建自签名证书</p>
+
+<p>[root@localhost smime]# openssl genrsa -out ca/ca.pem 1024<br />
+Generating RSA private key, 1024 bit long modulus<br />
+...............++++++<br />
+...................++++++<br />
+e is 65537 (0x10001)</p>
+
+<p>[root@localhost smime]# openssl req -new -out ca/ca.csr -key ca/ca.pem<br />
+You are about to be asked to enter information that will be incorporated<br />
+into your certificate request.<br />
+What you are about to enter is what is called a Distinguished Name or a DN.<br />
+There are quite a few fields but you can leave some blank<br />
+For some fields there will be a default value,</p>
+
+<h2 id="if-you-enter-the-field-will-be-left-blank">If you enter '.', the field will be left blank.</h2>
+
+<p>Country Name (2 letter code) [XX]:CN<br />
+State or Province Name (full name) []:GD<br />
+Locality Name (eg, city) [Default City]:SZ<br />
+Organization Name (eg, company) [Default Company Ltd]:XXX Ltd<br />
+Organizational Unit Name (eg, section) []:<br />
+Common Name (eg, your name or your server's hostname) []:neo<br />
+Email Address []:neo.chan@live.com</p>
+
+<p>Please enter the following 'extra' attributes<br />
+to be sent with your certificate request<br />
+A challenge password []:<br />
+An optional company name []:</p>
+
+<p>[root@localhost smime]# openssl x509 -req -in ca/ca.csr -out ca/ca-cert.cer -signkey ca/ca.pem -days 365<br />
+Signature ok<br />
+subject=/C=CN/ST=GD/L=SZ/O=XXX Ltd/CN=neo/emailAddress=neo.chan@live.com<br />
+Getting Private key</p>
+
+<p>[root@localhost smime]# openssl pkcs12 -export -clcerts -in ca/ca-cert.cer -inkey ca/ca.pem -out ca/ca.p12<br />
+Enter Export Password:<br />
+Verifying - Enter Export Password:</p>
+
+<p>更便捷的方法</p>
+
+<p>openssl genrsa -out ca.pem 1024<br />
+openssl req -new -out neo.csr -key ca.pem -subj  &quot;/C=CN/ST=GD/L=SZ/O=Internet Widgits Pty Ltd/OU=IT/CN=neo/emailAddress=neo@668x.net&quot;<br />
+openssl x509 -req -in neo.csr -out neo.cer -signkey ca.pem -days 365<br />
+openssl pkcs12 -export -in neo.cer -inkey ca.pem -out neo.p12 -name &quot;neo&quot;</p>
+
+<p>7.6.2. 企业或集团方案<br />
+7.6.2.1. 证书环境</p>
+
+<p>% mkdir keys<br />
+% cd keys/</p>
+
+<p>建立空文件 index.txt 用来保存以后的证书信息，这是 OpenSSL 的证书数据库：</p>
+
+<p>touch  index.txt</p>
+
+<p>建立一个文件 serial 在文件中输入一个数字，做为以后颁发证书的序列号，颁发证书序列号就从你输入的数字开始递增：</p>
+
+<p>echo 01 &gt; serial</p>
+
+<p>7.6.2.2. 颁发 CA 证书</p>
+
+<p>首先创建 CA 根证书私钥文件，使用 RSA 格式，1024 位：</p>
+
+<p>% openssl genrsa -des3 -out ca.key 1024</p>
+
+<p>Example 7.4. 创建 CA 根证书</p>
+
+<p>% openssl genrsa -des3 -out ca.key 1024<br />
+Generating RSA private key, 1024 bit long modulus<br />
+...........................++++++<br />
+...........................................++++++<br />
+e is 65537 (0x10001)<br />
+Enter pass phrase for ca.key:<br />
+Verifying - Enter pass phrase for ca.key:</p>
+
+<p>私钥在建立时需要输入一个密码用来保护私钥文件，私钥文件使用 3DES 加密; 也可以不进行加密，这样不安全，因为一旦 ca 证书遗失，别人就可以随意颁发用户证书：</p>
+
+<p>openssl genrsa -out ca.key 1024</p>
+
+<p>利用建立 RSA 私钥，为 CA 自己建立一个自签名的证书文件：</p>
+
+<p>openssl req -new -x509 -days 365 -key ca.key -out ca.crt</p>
+
+<p>生成证书的过程中需要输入证书的信息，</p>
+
+<p>Example 7.5. 创建自签名的证书</p>
+
+<p>% openssl req -new -x509 -days 365 -key ca.key -out ca.crt<br />
+Enter pass phrase for ca.key:<br />
+You are about to be asked to enter information that will be incorporated<br />
+into your certificate request.<br />
+What you are about to enter is what is called a Distinguished Name or a DN.<br />
+There are quite a few fields but you can leave some blank<br />
+For some fields there will be a default value,</p>
+
+<h2 id="if-you-enter-the-field-will-be-left-blank-1">If you enter '.', the field will be left blank.</h2>
+
+<p>Country Name (2 letter code) [AU]:CN<br />
+State or Province Name (full name) [Some-State]:GD<br />
+Locality Name (eg, city) []:Shenzhen<br />
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:Your Company Ltd<br />
+Organizational Unit Name (eg, section) []:IT<br />
+Common Name (e.g. server FQDN or YOUR name) []:Neo Chan<br />
+Email Address []:neo.chan@live.com</p>
+
+<p>7.6.2.3. 颁发客户证书</p>
+
+<p>生成客户证书的私钥文件，与生成 CA 根证书文件的方法一样，</p>
+
+<p>openssl genrsa -des3 -out client.key 1024</p>
+
+<p>OpenSSL 生成客户端证书的时候，不能直接生成证书，而是必须通过证书请求文件来生成，因此现在我们来建立客户端的证书请求文件，生成的过程中一样要输入客户端的信息：</p>
+
+<p>openssl req -new -key client.key -out client.csr</p>
+
+<p>有了证书请求文件之后，就可以使用 CA 的根证书、根私钥来对请求文件进行签名，生成客户端证书 client.pem 了：</p>
+
+<p>openssl x509 -req -in client.csr -out client.crt -signkey client.key -CA ca.crt -CAkey ca.key -days 365 -CAserial serial</p>
+
+<p>openssl pkcs12 -export -clcerts -in client.crt -inkey client.key -out client.p12</p>
+
+<p>[Note]  Note<br />
+到这里为止，根 CA 为客户端签发证书的过程就结束了。<br />
+7.6.2.4. 吊销已签发的证书</p>
+
+<p>使用 ca 中的 -revoke 命令：</p>
+
+<p>openssl ca -revoke client.pem -keyfile ca.key -cert ca.crt</p>
+
+<p>证书被吊销之后，还需要发布新的 CRL 文件：</p>
+
+<p>openssl ca -gencrl  -out ca.crl -keyfile ca.key -cert ca.crt</p>
+
+<p>7.7. 证书转换</p>
+
+<p>PKCS 全称是 Public-Key Cryptography Standards ，是由 RSA 实验室与其它安全系统开发商为促进公钥密码的发展而制订的一系列标准，PKCS 目前共发布过 15 个标准。 常用的有：<br />
+PKCS#7 Cryptographic Message Syntax Standard<br />
+PKCS#10 Certification Request Standard<br />
+PKCS#12 Personal Information Exchange Syntax Standard<br />
+X.509 是常见通用的证书格式。所有的证书都符合为 Public Key Infrastructure (PKI) 制定的 ITU-T X509 国际标准。<br />
+PKCS#7 常用的后缀是： .P7B .P7C .SPC<br />
+PKCS#12 常用的后缀有： .P12 .PFX<br />
+X.509 DER 编码 (ASCII) 的后缀是： .DER .CER .CRT<br />
+X.509 PAM 编码 (Base64) 的后缀是： .PEM .CER .CRT<br />
+.cer/.crt 是用于存放证书，它是 2 进制形式存放的，不含私钥。<br />
+.pem 跟 crt/cer 的区别是它以 Ascii 来表示。<br />
+pfx/p12 用于存放个人证书 / 私钥，他通常包含保护密码，2 进制方式<br />
+p10 是证书请求<br />
+p7r 是 CA 对证书请求的回复，只用于导入<br />
+p7b 以树状展示证书链 (certificate chain)，同时也支持单个证书，不含私钥。<br />
+7.7.1. CA 证书</p>
+
+<p>用 openssl 创建 CA 证书的 RSA 密钥 (PEM 格式)：</p>
+
+<p>openssl genrsa -des3 -out ca.key 1024</p>
+
+<p>7.7.2. 创建 CA 证书有效期为一年</p>
+
+<p>用 openssl 创建 CA 证书 (PEM 格式, 假如有效期为一年)：</p>
+
+<p>openssl req -new -x509 -days 365 -key ca.key -out ca.crt -config openssl.cnf</p>
+
+<p>openssl 是可以生成 DER 格式的 CA 证书的，最好用 IE 将 PEM 格式的 CA 证书转换成 DER 格式的 CA 证书。<br />
+7.7.3. x509 转换为 pfx</p>
+
+<p>openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt</p>
+
+<p>7.7.4. PEM 格式的 ca.key 转换为 Microsoft 可以识别的 pvk 格式</p>
+
+<p>pvk -in ca.key -out ca.pvk -nocrypt -topvk</p>
+
+<p>7.7.5. PKCS#12 到 PEM 的转换</p>
+
+<p>openssl pkcs12 -nocerts -nodes -in cert.p12 -out private.pem<br />
+验证<br />
+openssl pkcs12 -clcerts -nokeys -in cert.p12 -out cert.pem</p>
+
+<p>7.7.6. 从 PFX 格式文件中提取私钥格式文件 (.key)</p>
+
+<p>openssl pkcs12 -in mycert.pfx -nocerts -nodes -out mycert.key</p>
+
+<p>7.7.7. 转换 pem 到到 spc</p>
+
+<p>openssl crl2pkcs7 -nocrl -certfile venus.pem  -outform DER -out venus.spc</p>
+
+<p>用 -outform -inform 指定 DER 还是 PAM 格式。例如：</p>
+
+<p>openssl x509 -in Cert.pem -inform PEM -out cert.der -outform DER</p>
+
+<p>7.7.8. PEM 到 PKCS#12 的转换</p>
+
+<p>openssl pkcs12 -export -in Cert.pem -out Cert.p12 -inkey key.pem</p>
+
+<p>IIS 证书</p>
+
+<p>cd c:\openssl<br />
+set OPENSSL_CONF=openssl.cnf<br />
+openssl pkcs12 -export -out server.pfx -inkey server.key -in server.crt</p>
+
+<p>server.key 和 server.crt 文件是 Apache 的证书文件，生成的 server.pfx 用于导入 IIS<br />
+7.7.9. How to Convert PFX Certificate to PEM Format for SOAP</p>
+
+<p>$ openssl pkcs12 -in test.pfx -out client.pem<br />
+Enter Import Password:<br />
+MAC verified OK<br />
+Enter PEM pass phrase:<br />
+Verifying - Enter PEM pass phrase:</p>
+
+<p>7.7.10. DER 文件（.crt .cer .der）转为 PEM 格式文件</p>
+
+<p>转换 DER 文件 (一般后缀名是. crt .cer .der 的文件) 到 PEM 文件<br />
+openssl x509 -inform der -in certificate.cer -out certificate.pem<br />
+转换 PEM 文件到 DER 文件<br />
+openssl x509 -outform der -in certificate.pem -out certificate.der</p>
+
+<h2 id="openssl-格式转换">Openssl 格式转换</h2>
+
+<p>Certificate 和 key 可以存成多种格式, 常见的有 DER , PEM , PFX</p>
+
+<p>DER</p>
+
+<p>將 certificate 或 key 用 DER ASN.1 编码的原始格式, certificate 就是依照 X.509 的方式编码, key 則是又能分為 PKCS#1 和 PKCS#8</p>
+
+<p>PEM</p>
+
+<p>把 DER 格式的 certificate 或 key 使用 base64-encoded 编码后在头尾上资料标明档案类型</p>
+
+<p>Certificate</p>
+
+<p>-----BEGIN PRIVATE KEY-----<br />
+...<br />
+-----END PRIVATE KEY-----</p>
+
+<p>RSA private key (PKCS#1)</p>
+
+<p>-----BEGIN RSA PRIVATE KEY-----<br />
+-----END RSA PRIVATE KEY-----</p>
+
+<p>RSA public key (PKCS#1)</p>
+
+<p>-----BEGIN RSA PUBLIC KEY-----<br />
+...<br />
+-----END RSA PUBLIC KEY-----</p>
+
+<p>RSA private key (PKCS#8, key 沒加密 )</p>
+
+<p>-----BEGIN PRIVATE KEY-----<br />
+...<br />
+-----END PRIVATE KEY-----</p>
+
+<p>RSA public key (PKCS#8)</p>
+
+<p>-----BEGIN PUBLIC KEY-----<br />
+...<br />
+-----END PUBLIC KEY-----</p>
+
+<p>RSA private key (PKCS#8, key 有加密 )</p>
+
+<p>-----BEGIN ENCRYPTED PRIVATE KEY-----<br />
+...<br />
+-----END ENCRYPTED PRIVATE KEY-----</p>
+
+<p>PKCS#7</p>
+
+<p>这个格式用来传递签署或加密的资料, 档案里可以包含整个用到的 certificate chain</p>
+
+<p>PKCS#12 (PFX)</p>
+
+<p>这个格式可以把 private key 和整个 certificate chain 存程一个档案</p>
+
+<p>格式转换</p>
+
+<p>openssl 预设输入输出的格式都是 PEM, 要转换格式很简单, 搭配 inform, outform 参数就可以了</p>
+
+<p>Certificate PEM 转 DER</p>
+
+<p>openssl x509 -in cert.pem -outform der -out cert.der</p>
+
+<p>Certificate DER 转 PEM</p>
+
+<p>openssl x509 -inform der -in cert.der -outform der -out cert.pem</p>
+
+<p>RSA key 的转换比较多一些, 有 private/public key, PKCS#1/PKCS#8, DER/PEM, 以下只都是用 PEM 格式, 要转成 DER 只要加入 inform, outform 参数就可以了</p>
+
+<p>输出 public key 指令</p>
+
+<p>从 certificate 输出</p>
+
+<p>openssl x509 -in cert.pem -pubkey -noout &gt; public.pem</p>
+
+<p>从 private key 输出</p>
+
+<p>openssl rsa -in private.pem -pubout -out public.pem</p>
+
+<p>PKCS#1/PKCS#8 转换<br />
+openssl 有多个指令会产生 private key,genpkey 会产生 PKCS#8 格式 genrsa 会产生 PKCS#1 格式,<br />
+上面兩个输出 public key 的指令都是 PKCS#8 格式</p>
+
+<p>Public key 格式转换, 主要是搭配 RSAPublicKey_in,RSAPublicKey_out, 這兩个参数, rsa command 的 help 沒有显示这两个参数, 说明文件才有</p>
+
+<p>Public key: PKCS#8 -&gt; PKCS#1</p>
+
+<p>openssl rsa -pubin -in public.pem -RSAPublicKey_out -out public_pkcs1.pem</p>
+
+<p>Public key: PKCS#1 -&gt; PKCS#8</p>
+
+<p>openssl rsa  -RSAPublicKey_in -in public_pkcs1.pem  -out public_pkcs8.pem</p>
+
+<p>也可以在从 private key 输出時直接设定输出格式</p>
+
+<p>openssl rsa -in private.pem -RSAPublicKey_out -out public_pkcs1.pem</p>
+
+<p>Private key 格式转换, 主要是用 pkcs8 指令, 搭配 topk8 参数作转换, 若不加密就再加上 nocrypt</p>
+
+<p>Private key: PKCS#1 -&gt; PKCS#8</p>
+
+<p>openssl pkcs8 -in private_pkcs1.pem -topk8 -nocrypt -out private_pkcs8.pem</p>
+
+<p>Private key: PKCS#8 -&gt; PKCS#1</p>
+
+<p>openssl pkcs8 -in private_pkcs8.pem -nocrypt -out private_pkcs1.pem</p>
+
+<p>用 OpenSSL 0.9.8 可以, 之后的版本用 pkcs8 这个指令输出都是 PKCS#8, 這指令只是用於 0.9.8</p>
+
+<p>用 0.9.8 之后的版本直接用 rsa 转换即可</p>
+
+<p>openssl rsa -in private_pkcs8.pem -out private_pkcs1.pem</p>
+
+<p>从 PKCS#7 输出 certificate<br />
+目前最常遇到的是 DOCSIS secure upgrade 用的 Code File, 前面會有一段 DER 编码的资料, 包含 1～2 张 CVC</p>
+
+<p>openssl pkcs7 -in code.p7b -print_certs -out certs.pem</p>
+
+<p>从 PKCS#12(PFS) 输出 certificate 和 private key</p>
+
+<p>openssl pkcs12 -in key_cert.pfx -nodes -out key_cert.pem</p>
+
+<p>打完指令会要求输入 pfx file 的密码, 若上述指令没加入 nodes, 会再要求输入输出的 private key 要用的密碼</p>
+
+<p>把 private key 和 certificate 以及 CA 打包成 PKCS#12<br />
+者功能我是用来制作 FreeRADIUS client 端, 给 windows 用的懒人包, 输入的 private key (client.key), certificate (client.crt), certificate-chain(cert-chain.crt) 都是用 PEM 格式</p>
+
+<p>openssl pkcs12 -export -out client.p12 -inkey client.key -in client.crt -certfile cert-chain.crt</p>
+
+<p>打完指令会要求输入 pfx file 的密码, 之後在 windows 下直接开启 client.p12 敲完密码, 下一步到底, 凭证就会放到对的地方了</p>
+
+                        </div>                      
+                        <div class="clear"></div>
+                    </div>
+                </div>
+            </article>   
+            <div class="clear"></div>
+
+            
+            <p class="post-tags">
+                  <span class="fa fa-tags">Tags:</span>
+                  
+                    <a rel="tag" href="../../../tags/openssl">openssl</a>
+                  
+            </p>
+            
+            <div id="related-posts">
+                <div class="related-inner">
+                </div>
+            </div>
+            
+            
+<section id="comments" class="themeform">
+  
+
+  
+
+  
+  
+
+<div id="gitment"></div>
+<link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+<script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+
+
+<script>
+var gitment = new Gitment({
+  
+  id: location.pathname,
+  owner: 'rinetd',
+  repo: 'rinetd.github.io',
+  oauth: {
+    client_id: '89af57db85ca20b7668c',
+    client_secret: '4e57a031d7bd29f740559a907db2fe0efb3bf813',
+  },
+})
+gitment.render('gitment')
+</script>
+
+  
+
+
+</section>
+
+            
+            <section id="comments" class="themeform">
+                
+            </section>
+        </div>
+</div> <div class="sidebar s1 collapsed" data-position="left" data-layout="col-3cm" data-sb-id="s1">
+    <a class="sidebar-toggle" title="Expand Sidebar">
+        <i class="fas icon-sidebar-toggle"></i>
+    </a>
+    <div class="sidebar-content">
+        <div class="sidebar-top group">
+            <p>Follow:</p>  
+                          
+<ul class="social-links">
+    
+    
+    
+    
+
+    
+    <li>
+        <a class="social-tooltip" href="mailto:" title="Email">
+            <i class="fa fa-envelope"></i></a>
+    </li>
+
+    
+    <li>
+        <a class="social-tooltip"  href="//github.com/" title="GitHub"><i
+                class="fa fa-github"></i></a>
+    </li>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    
+    <li>
+        <a class="social-tooltip" title="RSS Feed"
+            aria-label="RSS Feed"
+            href="../../../feed" target="_blank"
+            style="color:rgba(255,255,255,0.7)">
+            <i class="fa fa-rss"></i>
+        </a>
+    </li>
+
+</ul>
+   
+        </div>
+            <ul class="post-nav group">
+    <li class="previous">
+      
+      <a href="../../../linux/cmd/linux-openssl-encrypt/" rel="prev">
+        <i class="fa fa-chevron-left"></i>
+        <strong>Previous Post</strong>
+        <span>使用 openssl 加密</span>
+      </a>
+      
+  </li>
+</ul>
+
+            
+            <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
+  <ul>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/ai/">Ai</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/algorithm/">Algorithm</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/android/">Android</a>
+        <small>(17)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/ansible/">Ansible</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/beats/">Beats</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/caffe/">Caffe</a>
+        <small>(18)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/camera/">Camera</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/cgo/">Cgo</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/clang/">Clang</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/cmd/">Cmd</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/cpp/">Cpp</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/css/">Css</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/dart/">Dart</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/database/">Database</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/dataset/">Dataset</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/deeplearning/">Deeplearning</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/devops/">Devops</a>
+        <small>(70)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/docker/">Docker</a>
+        <small>(18)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/dts/">Dts</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/elasticsearch/">Elasticsearch</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/english/">English</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/freertos/">Freertos</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/front-end/">Front-End</a>
+        <small>(20)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/golang/">Golang</a>
+        <small>(127)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/hacker/">Hacker</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/hardware/">Hardware</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/hisi/">Hisi</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/jetson/">Jetson</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/js/">Js</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/jumpserver/">Jumpserver</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/kernel/">Kernel</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/linux/">Linux</a>
+        <small>(91)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
+        <small>(120)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/mac/">Mac</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/machinelearn/">Machinelearn</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/machinelearning/">Machinelearning</a>
+        <small>(11)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/macos/">Macos</a>
+        <small>(5)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/math/">Math</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/matplotlib/">Matplotlib</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/mysql/">Mysql</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/ncnn/">Ncnn</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/network/">Network</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/nginx/">Nginx</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/node/">Node</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/numpy/">Numpy</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/opencv/">Opencv</a>
+        <small>(10)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/pandas/">Pandas</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/platform/">Platform</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/post/">Post</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/pyqt/">Pyqt</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/python/">Python</a>
+        <small>(24)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/pytorch/">Pytorch</a>
+        <small>(6)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/rk3288/">Rk3288</a>
+        <small>(23)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/rk3399/">Rk3399</a>
+        <small>(9)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/rtmp/">Rtmp</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/scikit/">Scikit</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/shell/">Shell</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/tool/">Tool</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/weixin/">Weixin</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/windows/">Windows</a>
+        <small>(22)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/work/">Work</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/yolo/">Yolo</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%8D%8F%E8%AE%AE/">协议</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
+        <small>(23)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%B7%A5%E5%85%B7/">工具</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
+        <small>(2)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/">排列组合</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
+        <small>(37)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
+        <small>(30)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
+        <small>(3)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
+        <small>(4)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
+        <small>(1)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
+        <small>(40)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
+        <small>(7)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
+        <small>(15)</small>
+      </li>
+    
+      <li class="cat-item cat-item-1">
+        <a href="../../../categories/%E9%AB%98%E6%95%B0/">高数</a>
+        <small>(2)</small>
+      </li>
+    
+  </ul>
+
+</div>
+
+
+    </div>
+</div> <div class="sidebar s2 collapsed" data-position="right" data-layout="col-3cm" data-sb-id="s2">
+        <a class="sidebar-toggle" title="Expand Sidebar">
+            <i class="fas icon-sidebar-toggle"></i>
+        </a>
+        <div class="sidebar-content">
+            <div class="sidebar-top group">
+                <p>More</p>
+            </div>
+            <ul class="post-nav group">
+    <li class="next">
+      
+      <a href="../../../linux/cmd/linux-md5sum/" rel="next">
+        <i class="fa fa-chevron-right"></i>
+        <strong>Next post</strong>
+        <span>md5sum</span>
+      </a>
+      
+  </li>
+</ul>
+
+            <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
+  <div class="tagcloud post-tags">
+
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ai/" class="tag-link-4" title="1 Posts">ai<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ansible/" class="tag-link-19" title="1 Posts">ansible<small>(19)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/awesome/" class="tag-link-3" title="1 Posts">awesome<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/bfc/" class="tag-link-2" title="1 Posts">bfc<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/c/" class="tag-link-5" title="1 Posts">c<small>(5)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/caffe/" class="tag-link-18" title="1 Posts">caffe<small>(18)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/cgo/" class="tag-link-9" title="1 Posts">cgo<small>(9)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/clang/" class="tag-link-6" title="1 Posts">clang<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/cmd/" class="tag-link-2" title="1 Posts">cmd<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/cpp/" class="tag-link-2" title="1 Posts">cpp<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/css/" class="tag-link-20" title="1 Posts">css<small>(20)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/css3/" class="tag-link-2" title="1 Posts">css3<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/dataset/" class="tag-link-2" title="1 Posts">dataset<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/devops/" class="tag-link-3" title="1 Posts">devops<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/docker/" class="tag-link-21" title="1 Posts">docker<small>(21)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/drone/" class="tag-link-22" title="1 Posts">drone<small>(22)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/dts/" class="tag-link-6" title="1 Posts">dts<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/elasticsearch/" class="tag-link-9" title="1 Posts">elasticsearch<small>(9)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/encode/" class="tag-link-3" title="1 Posts">encode<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/english/" class="tag-link-8" title="1 Posts">english<small>(8)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/es6/" class="tag-link-2" title="1 Posts">es6<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/etcd/" class="tag-link-4" title="1 Posts">etcd<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/flannel/" class="tag-link-2" title="1 Posts">flannel<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/git/" class="tag-link-6" title="1 Posts">git<small>(6)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/github/" class="tag-link-2" title="1 Posts">github<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/golang/" class="tag-link-141" title="1 Posts">golang<small>(141)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/gradle/" class="tag-link-3" title="1 Posts">gradle<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/hardware/" class="tag-link-10" title="1 Posts">hardware<small>(10)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/hexo/" class="tag-link-3" title="1 Posts">hexo<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/html/" class="tag-link-2" title="1 Posts">html<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/http/" class="tag-link-6" title="1 Posts">http<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/hugo/" class="tag-link-14" title="1 Posts">hugo<small>(14)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ip/" class="tag-link-3" title="1 Posts">ip<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/iptables/" class="tag-link-17" title="1 Posts">iptables<small>(17)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/javascript/" class="tag-link-19" title="1 Posts">javascript<small>(19)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/jquery/" class="tag-link-12" title="1 Posts">jquery<small>(12)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/js/" class="tag-link-10" title="1 Posts">js<small>(10)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/jumpserver/" class="tag-link-2" title="1 Posts">jumpserver<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/jwt/" class="tag-link-3" title="1 Posts">jwt<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/kernel/" class="tag-link-6" title="1 Posts">kernel<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/kubernetes/" class="tag-link-11" title="1 Posts">kubernetes<small>(11)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/linux/" class="tag-link-19" title="1 Posts">linux<small>(19)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/machinelearn/" class="tag-link-3" title="1 Posts">machinelearn<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/machinelearning/" class="tag-link-11" title="1 Posts">machinelearning<small>(11)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/macos/" class="tag-link-7" title="1 Posts">macos<small>(7)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/mariadb/" class="tag-link-9" title="1 Posts">mariadb<small>(9)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/math/" class="tag-link-6" title="1 Posts">math<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/matplotlib/" class="tag-link-3" title="1 Posts">matplotlib<small>(3)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/maven/" class="tag-link-2" title="1 Posts">maven<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ml/" class="tag-link-3" title="1 Posts">ml<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/mysql/" class="tag-link-61" title="1 Posts">mysql<small>(61)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/ncnn/" class="tag-link-3" title="1 Posts">ncnn<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/netns/" class="tag-link-2" title="1 Posts">netns<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/network/" class="tag-link-2" title="1 Posts">network<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/nginx/" class="tag-link-28" title="1 Posts">nginx<small>(28)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/nmap/" class="tag-link-2" title="1 Posts">nmap<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/node/" class="tag-link-4" title="1 Posts">node<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/nosql/" class="tag-link-8" title="1 Posts">nosql<small>(8)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/npm/" class="tag-link-3" title="1 Posts">npm<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/numpy/" class="tag-link-4" title="1 Posts">numpy<small>(4)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/oauth2/" class="tag-link-2" title="1 Posts">oauth2<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/opencv/" class="tag-link-10" title="1 Posts">opencv<small>(10)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/openssl/" class="tag-link-3" title="1 Posts">openssl<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/php/" class="tag-link-4" title="1 Posts">php<small>(4)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/post/" class="tag-link-3" title="1 Posts">post<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/prometheus/" class="tag-link-8" title="1 Posts">prometheus<small>(8)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/pyqt/" class="tag-link-4" title="1 Posts">pyqt<small>(4)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/python/" class="tag-link-26" title="1 Posts">python<small>(26)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/pytorch/" class="tag-link-6" title="1 Posts">pytorch<small>(6)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/redis/" class="tag-link-2" title="1 Posts">redis<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/reflect/" class="tag-link-3" title="1 Posts">reflect<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/responsive/" class="tag-link-2" title="1 Posts">responsive<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/restful/" class="tag-link-6" title="1 Posts">restful<small>(6)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/rk3288/" class="tag-link-22" title="1 Posts">rk3288<small>(22)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/rk3399/" class="tag-link-9" title="1 Posts">rk3399<small>(9)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/route/" class="tag-link-2" title="1 Posts">route<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/scikit/" class="tag-link-3" title="1 Posts">scikit<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/scss/" class="tag-link-2" title="1 Posts">scss<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/seo/" class="tag-link-5" title="1 Posts">seo<small>(5)</small></a>
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/shell/" class="tag-link-10" title="1 Posts">shell<small>(10)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/sqlite/" class="tag-link-2" title="1 Posts">sqlite<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/swagger/" class="tag-link-2" title="1 Posts">swagger<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/swarm/" class="tag-link-2" title="1 Posts">swarm<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/sysctl/" class="tag-link-2" title="1 Posts">sysctl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/ulimit/" class="tag-link-2" title="1 Posts">ulimit<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/vim/" class="tag-link-14" title="1 Posts">vim<small>(14)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/windows/" class="tag-link-18" title="1 Posts">windows<small>(18)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
+        
+      
+        
+          <a rel="tag" href="../../../tags/yolo/" class="tag-link-7" title="1 Posts">yolo<small>(7)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+        
+          <a rel="tag" href="../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-2" title="1 Posts">微服务<small>(2)</small></a>
+        
+      
+        
+      
+        
+      
+        
+      
+  </div>
+</div>
+
+
+        </div>
+    </div>`
+
+                    </div>
+                    
+                </div>
+                
+
+            </div>
+
+        </div>
+    </div>
+
+    <footer id="footer">
+    <section class="container" id="footer-bottom">
+      <div class="container-inner">
+        <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
+        <div class="pad group">
+          <div class="grid one-half">
+            <div id="copyright">
+                <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
+                
+            </div>
+            
+          </div>
+          
+          <div class="grid one-half last">
+            <ul class="social-links">
+    <li>
+    <a class="social-tooltip" title="On WeiBo"
+        href="http://weibo.com/rinetd" target="_blank">
+        <i class="fa fa-weibo"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On Twitter"
+        href="https://twitter.com/rinetd" target="_blank">
+        <i class="fa fa-twitter"></i>
+    </a>
+    </li>
+    <li>
+    <a class="social-tooltip" title="On GitHub"
+        href="https://github.com/rinetd" target="_blank">
+        <i class="fa fa-github"></i>
+    </a>
+    </li>
+</ul>
+
+          </div>
+        </div>
+  
+      </div>
+      
+    </section>
+    
+  </footer>
+
+
+<div class="back-to-top" id="back-to-top">
+    <i class="fa fa-angle-double-up"></i>
+</div>
+
+
+
+
+
+<script type='text/javascript'>
+    var HUParams={
+        "_disabled":[],
+        "SmoothScroll":{
+            "Enabled":true,
+            "Options":{"touchpadSupport":false}
+        },
+        "centerAllImg":"1",
+        "timerOnScrollAllBrowsers":"1",
+        "extLinksStyle":"1",
+        "extLinksTargetExt":"1",
+        "extLinksSkipSelectors":{
+            "classes":["btn","button"],"ids":[]
+        },
+        "imgSmartLoadEnabled":"1",
+        "imgSmartLoadOpts":{
+            "parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],
+            "opts":{
+                "excludeImg":[".tc-holder-img"],
+                "fadeIn_options":100
+            }
+        },
+        "goldenRatio":"1.618","gridGoldenRatioLimit":"350",
+        "sbStickyUserSettings":{"desktop":true,"mobile":true},
+        "isWPMobile":"",
+        "menuStickyUserSettings":{
+            "desktop":"stick_up",
+            "mobile":"stick_up"
+        },
+        "isDevMode":"",
+        "ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1",
+            "frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},
+            "userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},
+            "isWelcomeNoteOn":"","welcomeContent":""};
+</script>
+
+
+
+<script src="https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js"></script>
+<script type="text/javascript" src="../../../front/js/scripts.js"></script> 
+
+
+
+
+<script>
+  $(".topbar-toggle-down").click(function(){
+    $("#nav-topbar").css("overflow","visible");
+  });
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-106129999-2', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+    
+    <noscript>
+        <iframe src="//www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5HM5XM2');
+    </script>
+    
+<script id="baidu_analytics">
+  var _hmt = _hmt || [];
+  (function() {
+    if (window.location.hostname === 'localhost') return;
+    var hm = document.createElement("script"); hm.async = true;
+    hm.src = "https://hm.baidu.com/hm.js?e2103759b6030b3c4ac84c63c542e493";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+
+
+
+</body>
+
+</html>
