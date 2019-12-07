@@ -3,7 +3,7 @@
 
 <head>
     
-<title>linux gstreamer gst</title>
+<title>linux gstreamer 多路输出</title>
 <meta charset="utf-8">
 
 <meta name="robots" content="index,nofollow">
@@ -14,7 +14,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="referrer" content="origin-when-cross-origin" />
 
-<meta name="description" content="gstreamer使用进阶 gstreamer, gst-plugins-base, gst-plugins-good, gst-plugins-ugly, gst-plugins-bad apt install gstreamer-rockchip 安装了gstreamer-rockchip库 gstreamer https://blog.csdn.net/csdnhuaong/article/details/78015938 1. gst-launch 1.1 Basics 1.1.1 设置属性 1.1.2 带名称的element 1.1.3 设置p">
+<meta name="description" content="Multiple outputs (tee) This page describes the tee element, which allows audio &amp; video streams to be sent to more than one place. Tee to two local video outputs Here&#39;s a simple example that sends shows video test source twice (using autovideosink) # The two windows may overlay on top of each other gst-launch-1.0 \ videotestsrc ! tee name=t \ t. ! queue ! videoconvert ! autovideosink \ t. !">
 
 <meta name="author" content=rinetd>
 
@@ -91,7 +91,7 @@
             <span class="line line-3"></span>
         </div>
     </div>
-    <div class="nav-text">linux gstreamer gst</div>
+    <div class="nav-text">linux gstreamer 多路输出</div>
     <div class="nav-wrap container">
         <ul class="nav container-inner group mobile-search">
             <li>
@@ -687,7 +687,7 @@
   </nav>
     
   <nav class="nav-container group desktop-menu desktop-sticky " id="nav-topbar" data-menu-id="header-2">
-    <div class="nav-text">linux gstreamer gst</div>
+    <div class="nav-text">linux gstreamer 多路输出</div>
     
     <div class="topbar-toggle-down">
         <i class="fas fa-angle-double-down" aria-hidden="true" data-toggle="down" title="Expand menu"></i>
@@ -1198,543 +1198,76 @@
         <div class="pad group">
             <article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list">
                 <div class="post-inner group">
-                        <h1 class="post-title">linux gstreamer gst</h1>
+                        <h1 class="post-title">linux gstreamer 多路输出</h1>
 
                         <p class="post-byline">
-                          by  · 2019年07月26日 · 3123 Words ·
-                          ~7min reading time |
+                          by  · 2019年07月26日 · 343 Words ·
+                          ~1min reading time |
                           
                           
-                          <a href="https://gitlab.com/rinetd/blog/edit/master/linux/linux-gstreamer-gst.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
+                          <a href="https://gitlab.com/rinetd/blog/edit/master/linux/linux-gstreamer-gst-tee.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
                         </p>
                     <div class="clear"></div>
                     <div class="entry themeform">
                         <div class="entry-inner">
                             
                             </br>
-                            原文链接：<a target="_blank" href="../../linux/linux-gstreamer-gst/"> linux gstreamer gst</a> 
+                            原文链接：<a target="_blank" href="../../linux/linux-gstreamer-gst/"> linux gstreamer 多路输出</a> 
                             </p>
                             
 
-<p><a href="https://blog.csdn.net/jack0106/article/details/5592557" target="_blank">gstreamer使用进阶</a></p>
+<h1 id="multiple-outputs-tee">Multiple outputs (tee)</h1>
 
-<p>gstreamer, gst-plugins-base, gst-plugins-good, gst-plugins-ugly, gst-plugins-bad</p>
+<p>This page describes the <code>tee</code> element, which allows audio &amp; video streams to be sent to more than one place.</p>
 
-<p><code>apt install gstreamer-rockchip</code> 安装了gstreamer-rockchip库</p>
+<h2 id="tee-to-two-local-video-outputs">Tee to two local video outputs</h2>
 
-<p><a href="https://github.com/yjjnls/Notes/tree/master/gstreamer" target="_blank">gstreamer</a><br />
-<a href="https://blog.csdn.net/csdnhuaong/article/details/78015938" target="_blank">https://blog.csdn.net/csdnhuaong/article/details/78015938</a></p>
+<p>Here's a simple example that sends shows video test source twice (using <code>autovideosink</code>)</p>
 
-<ul>
-<li><a href="#1-gst-launch">1. gst-launch</a><br />
-
-<ul>
-<li><a href="#11-basics">1.1 Basics</a><br />
-
-<ul>
-<li><a href="#111-%E8%AE%BE%E7%BD%AE%E5%B1%9E%E6%80%A7">1.1.1 设置属性</a><br /></li>
-<li><a href="#112-%E5%B8%A6%E5%90%8D%E7%A7%B0%E7%9A%84element">1.1.2 带名称的element</a><br /></li>
-<li><a href="#113-%E8%AE%BE%E7%BD%AEpad">1.1.3 设置pad</a><br /></li>
-<li><a href="#114-caps%E8%BF%87%E6%BB%A4">1.1.4 caps过滤</a><br /></li>
-<li><a href="#115-%E6%9F%A5%E7%9C%8Bpipeline%E4%B8%AD%E7%9A%84caps">1.1.5 查看pipeline中的caps</a><br /></li>
-</ul></li>
-<li><a href="#12-examples">1.2. Examples</a><br />
-
-<ul>
-<li><a href="#121-%E7%9B%B4%E6%8E%A5%E6%B5%8F%E8%A7%88%E8%A7%86%E9%A2%91%E6%B5%81">1.2.1 直接浏览视频流</a><br />
-
-<ul>
-<li><a href="#1211-test-video">1.2.1.1 test video</a><br /></li>
-<li><a href="#1212-ipc%E7%A0%81%E6%B5%81">1.2.1.2 ipc码流</a><br />
-
-<ul>
-<li><a href="#12121-playbin">1.2.1.2.1 playbin</a><br /></li>
-<li><a href="#12122-uridecodebin">1.2.1.2.2 uridecodebin</a><br /></li>
-<li><a href="#12123-rtspsrc">1.2.1.2.3 rtspsrc</a><br /></li>
-</ul></li>
-</ul></li>
-<li><a href="#122-%E5%BD%95%E5%88%B6%E8%A7%86%E9%A2%91%E6%B5%81">1.2.2 录制视频流</a><br />
-
-<ul>
-<li><a href="#1221-test-video">1.2.2.1 test video</a><br /></li>
-<li><a href="#1222-ipc">1.2.2.2 ipc</a><br /></li>
-</ul></li>
-<li><a href="#123-rtsp%E6%8E%A8%E6%B5%81">1.2.3 Rtsp推流</a><br />
-
-<ul>
-<li><a href="#1231-file">1.2.3.1 file</a><br /></li>
-<li><a href="#1232-ipc">1.2.3.2 ipc</a><br /></li>
-<li><a href="#1233-receive">1.2.3.3 receive</a><br /></li>
-</ul></li>
-</ul></li>
-</ul></li>
-<li><a href="#extensions">Extensions</a><br /></li>
-<li><a href="#test-server">test server</a><br />
-<br /></li>
-</ul>
-
-<p>rtspsrc: 属性 <a href="https://gstreamer.freedesktop.org/documentation/rtsp/rtspsrc.html" target="_blank">https://gstreamer.freedesktop.org/documentation/rtsp/rtspsrc.html</a></p>
-
-<h3 id="测试">测试</h3>
-
-<p><code>gst-launch fakesrc ! tee name=tee1 .src0,src1 ! .sink0, sink1 aggregator ! fakesink</code><br />
-<code>gst-launch-1.0 videotestsrc ! autovideosink</code><br />
-###<br />
-<code>gst-launch filesrc location=&quot;C:\\tmp\\Kalimba.mp3&quot; ! queue ! tee name=stream !
-queue ! mp3parse ! matroskamux name=mux ! filesink location=&quot;C:\\tmp\\Kalimba_output.mkv&quot; stream. !
-queue ! mp3parse ! ffdec_mp3 ! audioconvert ! queue ! goom ! ffmpegcolorspace ! video/x-raw-yuv,width=640,height=480 ! x264enc ! mux.</code></p>
-
-<p>gst-launch v4l2src ! videoscale ! video/x-raw-yuv,width=400,height=300 !</p>
-
-<pre><code> tee name=tv ! queue ! xvimagesink sync=false tv. ! 
- vp8enc speed=2 ! queue ! oggmux ! filesink location=/dev/null'
+<pre><code># The two windows may overlay on top of each other
+gst-launch-1.0 \
+    videotestsrc ! tee name=t \
+    t. ! queue ! videoconvert ! autovideosink \
+    t. ! queue ! videoconvert ! autovideosink
 </code></pre>
 
-<p>$1 gst-launch  filesrc location=data/video_02.mp4 ! mpf-xml-pipeline-dump location=&quot;dump.xml&quot; ! decodebin name=dec ! tee name=t <br />
-  t. ! mpf-toi name=toi interval=4 duration=2 $3 ! tee name=t2 ! seg.metadata <br />
-  t2. ! seg2.metadata <br />
-  t. ! mpf-segmenter name=seg verbose=2 debug=1 ! fakesink dump=true <br />
-  t. ! mpf-segmenter name=seg2 verbose=2 debug=1 ! fakesink dump=true</p>
+<h2 id="tee-to-two-different-video-outputs">Tee to two different video outputs</h2>
 
-<h1 id="player">Player:</h1>
+<p>Here's an example that sends video to both <code>autovideosink</code> and a TCP server (<code>tcpserversink</code>).<br />
+Note how <code>async=false</code> is required on both sinks, because the encoding step on the TCP branch takes longer, and so the timing will be different.</p>
 
-<p>#</p>
-
-<h1 id="gst-launch-version-filesrc-location-out-video-02-chopped-mp4-decodebin-name-dec-dec-ffmpegcolorspace-ximagesink">gst-launch$VERSION filesrc location=out/video_02_chopped.mp4 ! decodebin name=dec dec. ! ffmpegcolorspace ! ximagesink</h1>
-
-<h3 id="tee-同时保存文件和直播-https-www-cnblogs-com-luckbird-p-gstreamer-appsrc-html">tee <a href="https://www.cnblogs.com/luckbird/p/GStreamer_appsrc.html" target="_blank">同时保存文件和直播</a></h3>
-
-<p>gst-launch-1.0.exe -v --gst-debug-level=4<br />
-flvmux name=mux ! tee name=t ! queue ! filesink name=file location=test.flv<br />
-t. ! queue ! rtmpsink location=&quot;rtmp://live.abc.com/live/........&quot;<br />
-adder name=mix ! queue ! audiorate ! audioconvert ! voaacenc ! mux.audio<br />
-videotestsrc name=screen_src ! queue ! videorate ! x264enc ! mux.video<br />
-audiotestsrc name=send_audio_src ! queue ! audiorate ! mix.<br />
-audiotestsrc wave=5 name=receive_audio_src ! queue ! audiorate ! mix.</p>
-
-<p>命令看起来有点复杂，但其实逻辑挺简单的，看下面这个逻辑图就比较容易理解了</p>
-
-<p><img src="https://images2017.cnblogs.com/blog/19628/201801/19628-20180120170134678-1951369388.png" alt="" /></p>
-
-<p>上面的命令中的推流地址需要替换为你的推流地址，如果没有，可以先把下面这部分内容去掉不推流</p>
-
-<p>t. ! queue ! rtmpsink location=&quot;rtmp://live.abc.com/live/........&quot;</p>
-
-<p>另外这个命令是在 Windows 中的 MINGW64 的 bash 环境里面运行的， 如果在 Windows 的 cmd 环境中运行，把每行最后的  和换行去掉就可以了。</p>
-
-<p>上面命令中用到了几个关键的插件，分别解释一下：</p>
-
-<p>adder： 音频混流，将两路音频混为一路<br />
-voaacenc：音频编码，将原始的音频流编码为 aac 格式<br />
-x264enc：视频编码，将原始的视频流编码为 h264 格式<br />
-flvmux：flv 组装，将视频和音频组装在一起<br />
-tee：分流器，将一路输入变为两路输出，以分别进行后续的处理。一路保存为文件，一路进行推流<br />
-filesink：文件存储，将输入数据存储到指定的文件中<br />
-rtmpsink：推流，将输入数据推流到指定的视频服务器</p>
-
-<h3 id="斗鱼平台同样采用了-rtmp-协议传输直播视频">斗鱼平台同样采用了 RTMP 协议传输直播视频，</h3>
-
-<p>以斗鱼平台为例来说明一下推流到斗鱼的方法。</p>
-
-<p>首先获取斗鱼的 RTMP 推流地址。开启了直播室之后可以获得推流码。注意，斗鱼的推流码是有时限的，取到推流码需要尽快使用以免过期<br />
-把这两个参数组合起来（中间加上/）。修改之后的命令例如：</p>
-
-<p>gst-launch-1.0 -v v4l2src device=/dev/video0 ! 'video/x-raw, width=1024, height=768, framerate=30/1' ! queue ! videoconvert ! omxh264enc ! h264parse ! flvmux ! rtmpsink location='rtmp://send1.douyu.com/live/1372rSOMdcBJ8UHD?wsSecret=96d2k4ecdf267d17b8e8c38b6a4a6efd&amp;wsTime=59f92e2e&amp;wsSeek=off live=1'</p>
-
-<h3 id="gstreamer-rtmp">gstreamer rtmp</h3>
-
-<p>gst-launch-1.0 -v v4l2src device=/dev/video0 ! 'video/x-raw, width=1024, height=768, framerate=30/1' ! queue ! videoconvert ! omxh264enc ! h264parse ! flvmux ! rtmpsink location='rtmp://树莓派的IP地址/live live=1'</p>
-
-<p>gst-launch-1.0 -e rtspsrc location='rtsp://admin:huawei777@192.168.0.108/cam/realmonitor?channel=1&amp;subtype=0' protocols=tcp ! rtph265depay ! h265parse ! mppvideodec ! videoscale ! video/x-raw, width=1920, height=1080 ! mpph264enc ! flvmux ! rtmpsink location='rtmp://0.0.0.0/live live=1'</p>
-
-<p><code>gst-inspect-1.0 |grep rtp</code> # 查看rtsp</p>
-
-<h2 id="h264-编码">h264 编码</h2>
-
-<h3 id="gstreamer-rtsp-保存mp4-h-265-编码">gstreamer rtsp 保存mp4  h.265 编码</h3>
-
-<ol>
-<li>mac安装组件 <code>brew install gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly</code><br /></li>
-<li><code>gst-launch-1.0 -e rtspsrc location='rtsp://admin:huawei777@192.168.0.108/cam/realmonitor?channel=1&amp;subtype=0' protocols=tcp ! rtph265depay ! h265parse ! mp4mux ! filesink location=camera.mp4</code>  保存mp4<br /></li>
-<li><code>gst-launch-1.0 -e rtspsrc location='rtsp://admin:huawei777@192.168.0.108/cam/realmonitor?channel=1&amp;subtype=0' protocols=tcp ! rtph265depay ! h265parse ! mppvideodec ! rkximagesink sync=false</code>     硬件解码播放<br />
-<br /></li>
-</ol>
-
-<h3 id="循环录像问题-265编码">循环录像问题 265编码</h3>
-
-<p><code>gst-launch-1.0 -e rtspsrc location='rtsp://admin:huawei777@192.168.0.108/cam/realmonitor?channel=1&amp;subtype=0' protocols=tcp ! rtph265depay ! h265parse ! splitmuxsink location=video%02d.mp4 max-files=1000 max-size-time=100000</code><br />
-max-files: 最大文件数<br />
-max-size-time: 最大保存时间 单位是ns</p>
-
-<p><code>gst-launch-1.0 -e rtspsrc location='rtsp://admin:huawei777@192.168.0.108/cam/realmonitor?channel=1&amp;subtype=0' protocols=tcp ! rtph265depay ! h265parse ! tee name=t ! queue ! splitmuxsink location=video%02d.mp4 max-files=1000 max-size-time=100000 t. ! queue ! mppvideodec ! rkximagesink sync=false</code><br />
-sync=false 保证无延时</p>
-
-<h3 id="gst-rtst-转mp4">gst rtst 转mp4</h3>
-
-<pre><code class="language-sh">URLA='rtsp://admin:huawei777@192.168.0.108/cam/realmonitor?channel=1&amp;subtype=0'
-RTSPSRC_SETTINGS='ntp-sync=true protocols=GST_RTSP_LOWER_TRANS_TCP ntp-time-source=1'
-GST_DEBUG=3 gst-launch-1.0 -e \
-    rtspsrc location=$URLA $RTSPSRC_SETTINGS \
-    ! queue ! capsfilter caps=&quot;application/x-rtp,media=video&quot; \
-    ! rtph264depay ! h264parse \
-    ! mp4mux ! filesink location=two.mp4 
-
-    gst-launch-1.0 -e rtspsrc location='rtsp://admin:huawei777@192.168.0.108/cam/realmonitor?channel=1&amp;subtype=0' protocols=tcp ! rtph264depay ! h264parse ! mp4mux ! filesink location=camera.mp4
-   gst-launch-1.0 -e rtspsrc location='rtsp://admin:huawei777@192.168.0.108/cam/realmonitor?channel=1&amp;subtype=0' protocols=tcp ! decodebin ! x264enc ! mp4mux ! filesink location=camera.mp4
-    ! decodebin ! x264enc ! mp4mux !
-
-
-gst-launch-1.0 -e rtspsrc location=rtsp://admin:pangani123@192.168.1.240:554/LiveMedia/ch1/Media1 ! rtph264depay ! h264parse ! mp4mux ! filesink location=out.mp4
-
-gst-launch-1.0 -v -e rtspsrc location='rtsp://admin:huawei777@192.168.0.108/cam/realmonitor?channel=1&amp;subtype=0' ! rtph264depay ! h264parse  ! mpegtsmux ! hlssink max-files=5 target-duration=5
-
-
-
-#gst-launch-1.0 -e rtspsrc location=rtsp://admin:moldeoneo@192.168.0.132:10554/udp/av0_1 ! decodebin ! videocrop top=0 left=0 right=0 bottom=0 ! videoconvert ! capsfilter caps=video/x-raw,format=GRAY8 ! videoconvert ! jpegenc quality=50 ! multipartmux boundary=spionisto ! tcpclientsink port=10001
-
-#ffmpeg -v info -rtsp_transport tcp -i rtsp://admin:moldeoneo@192.168.0.148:10544/udp/av0_1 -c:v copy -c:a copy -maxrate 400k -bufsize 1835k -pix_fmt yuv420p -flags -global_header -hls_time 10 -hls_list_size 6 -hls_wrap 10 -start_number 1 /var/www/testhls.m3u8
-
-#gst-launch-1.0 -e rtspsrc location=rtsp://admin:moldeoneo@192.168.0.148:10544/udp/av0_1 ! decodebin ! videocrop top=0 left=0 right=0 bottom=0 ! videoconvert ! capsfilter caps=video/x-raw,format=GRAY8 ! videoconvert ! x264enc ! mp4mux ! filesink location=/var/www/cam148.mp4
-
-#gst-launch-1.0 -e rtspsrc location=rtsp://admin:moldeoneo@192.168.0.148:10544/udp/av0_0 ! decodebin ! videocrop top=0 left=0 right=0 bottom=0 ! videoconvert ! capsfilter caps=video/x-raw,format=GRAY8 ! videoconvert ! autovideosink
-
-gst-launch-1.0 videotestsrc is-live=true ! x264enc ! mpegtsmux ! hlssink playlist-root=http://192.168.0.125/hls location=/var/www/hls/hls.%05d.ts playlist-location=/var/www/hls/playlist.m3u8
+<pre><code>gst-launch-1.0 videotestsrc ! \
+    decodebin ! tee name=t \
+    t. ! queue ! videoconvert ! autovideosink async=false \
+    t. ! queue ! x264enc ! mpegtsmux ! tcpserversink port=7001 host=127.0.0.1 recover-policy=keyframe sync-method=latest-keyframe async=false
 </code></pre>
 
-<h1 id="1-gst-launch">1. gst-launch</h1>
+<p>However, as discussed <a href="http://gstreamer-devel.966125.n4.nabble.com/tee-won-t-go-in-playing-state-td4680128.html" target="_blank">here</a>, <code>async=false</code> can cause issues. Adding <code>tune=zerolatency</code> to the <code>x264enc</code> also resolves the issue, by telling the encoding step not to add a delay, and thus making its branch as quick as the <code>autovideosink</code> one.</p>
 
-<h2 id="1-1-basics">1.1 Basics</h2>
-
-<p>gst-launch将多个<strong>element</strong>连成一个pipeline，用于快速测试、验证功能等。elements之间用感叹号进行连接。</p>
-
-<pre><code>gst-launch-1.0.exe videotestsrc ! autovideosink
+<pre><code>gst-launch-1.0 videotestsrc ! \
+    decodebin ! tee name=t \
+    t. ! queue ! videoconvert ! autovideosink \
+    t. ! queue ! x264enc tune=zerolatency ! mpegtsmux ! tcpserversink port=7001 host=127.0.0.1 recover-policy=keyframe sync-method=latest-keyframe
 </code></pre>
 
-<h3 id="1-1-1-设置属性">1.1.1 设置属性</h3>
+<p>Or, if you'd rather not reduce the quality of x264 encoding, you can increase the queue size:</p>
 
-<p>element可以是有属性的，用“属性=值”的方式设置属性，多个属性用空格分开。可以用gst-inspect工具来查看element的属性。</p>
-
-<pre><code>gst-launch-1.0.exe videotestsrc pattern=11 ! autovideosink
+<pre><code>gst-launch-1.0 videotestsrc ! \
+    decodebin ! tee name=t \
+    t. ! queue max-size-time=3000000000 ! videoconvert ! autovideosink \
+    t. ! queue ! x264enc ! mpegtsmux ! tcpserversink port=7001 host=127.0.0.1 recover-policy=keyframe sync-method=latest-keyframe
 </code></pre>
 
-<h3 id="1-1-2-带名称的element">1.1.2 带名称的element</h3>
+<h2 id="tee-on-inputs">Tee on inputs</h2>
 
-<p>如果在后续要使用之前创建的element，则该element必须要设置名称属性，带名字的element在使用名字时需要在后面加一个点。</p>
+<p>You can also use <code>tee</code> in order to do multiple things with inputs. This example combines two audio visualisations:</p>
 
-<pre><code>gst-launch-0.10 videotestsrc ! ffmpegcolorspace ! tee name=t ! queue ! autovideosink t. ! queue ! autovideosink  
+<pre><code>gst-launch-1.0 filesrc location=$SRC ! decodebin ! tee name=t ! \
+    queue ! audioconvert ! wavescope style=color-lines shade-amount=0x00080402 ! alpha alpha=0.5 ! \
+    videomixer name=m background=black ! videoconvert ! vertigotv ! autovideosink \
+    t. ! queue ! audioconvert ! spacescope style=color-lines shade-amount=0x00080402 ! alpha alpha=0.5 ! m. \
+    t. ! queue ! autoaudiosink
 </code></pre>
-
-<h3 id="1-1-3-设置pad">1.1.3 设置pad</h3>
-
-<p>一个element可能会有多个pad，如果要指定pad进行连接，那么可以在命名element后使用.+pad名字来实现。</p>
-
-<pre><code>gst-launch-0.10.exe souphttpsrc location=http://docs.gstreamer.com/media/sintel_trailer-480p.webm ! matroskademux name=d d.video_00 ! matroskamux ! filesink location=sintel_video.mkv  
-</code></pre>
-
-<p>这个命令使用souphttpsrc在internet上锁定了一个媒体文件，这个文件是webm格式的。我们可以用matroskademux来打开这个文件，因为媒体包含音频和视频，所以我们创建了两个输出Pad，名字分别是video_00和audio_00。我们把video_00和matroskamux element连接起来，把视频流重新打包，最后连接到filesink，这样我们就把流存到了一个名叫sintel_video.mkv的文件。</p>
-
-<h3 id="1-1-4-caps过滤">1.1.4 caps过滤</h3>
-
-<p>除了上述指定pad的方法外，还可以设置caps过滤，设置当前element的输出类型。</p>
-
-<pre><code>gst-launch-0.10 souphttpsrc location=http://docs.gstreamer.com/media/sintel_trailer-480p.webm ! matroskademux ! video/x-vp8 ! matroskamux ! filesink location=sintel_video.mkv  
-</code></pre>
-
-<p>在matroskademux后加一个<strong>video/x-vp8的Caps过滤</strong>，这样就表明在matroskademux中我们仅仅需要能生成这种类型视频的输出Pad。</p>
-
-<h3 id="1-1-5-查看pipeline中的caps">1.1.5 查看pipeline中的caps</h3>
-
-<p><strong>在gst-launch后加 -v 选项，就可以查看pipeline中每个element具体选择了哪些pad</strong></p>
-
-<pre><code>gst-launch-1.0 -v videotestsrc! autovideosink
-</code></pre>
-
-<blockquote>
-<blockquote>
-<p>/GstPipeline:pipeline0/GstVideoTestSrc:videotestsrc0.GstPad:src: caps = video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive</p>
-
-<p>/GstPipeline:pipeline0/GstAutoVideoSink:autovideosink0.GstGhostPad:sink.GstProxyPad:proxypad0: caps = video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive</p>
-
-<p>/GstPipeline:pipeline0/GstAutoVideoSink:autovideosink0/GstD3DVideoSink:autovideosink0-actual-sink-d3dvideo.GstPad:sink: caps = video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive</p>
-
-<p>/GstPipeline:pipeline0/GstAutoVideoSink:autovideosink0.GstGhostPad:sink: caps = video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive</p>
-</blockquote>
-</blockquote>
-
-<hr />
-
-<h2 id="1-2-examples">1.2. Examples</h2>
-
-<h3 id="1-2-1-直接浏览视频流">1.2.1 直接浏览视频流</h3>
-
-<h4 id="1-2-1-1-test-video">1.2.1.1 test video</h4>
-
-<pre><code>gst-launch-1.0 videotestsrc ! autovideosink
-</code></pre>
-
-<h4 id="1-2-1-2-ipc码流">1.2.1.2 ipc码流</h4>
-
-<h5 id="1-2-1-2-1-playbin">1.2.1.2.1 playbin</h5>
-
-<pre><code>gst-launch-1.0 playbin uri=rtsp://172.16.66.66:554/id=1
-</code></pre>
-
-<h5 id="1-2-1-2-2-uridecodebin">1.2.1.2.2 uridecodebin</h5>
-
-<pre><code>gst-launch-1.0 uridecodebin uri=rtsp://172.16.66.66:554/id=1 ! autovideosink
-</code></pre>
-
-<h5 id="1-2-1-2-3-rtspsrc">1.2.1.2.3 rtspsrc</h5>
-
-<pre><code>gst-launch-1.0 rtspsrc location=rtsp://172.16.66.66:554/id=1 ! rtph264depay ! avdec_h264 ! autovideosink
-
-gst-launch-1.0 rtspsrc location=rtsp://172.16.66.66:554/id=1 ! decodebin3 ! autovideosink
-</code></pre>
-
-<ul>
-<li><p>Rtsp浏览MJEPG码流（码流源就是一张张的jpeg）</p>
-
-<pre><code>gst-launch-1.0.exe rtspsrc location=&quot;rtsp://172.16.66.65:554/realtime?id=0;aid=0;agent=onvif&quot; ! rtpjpegdepay ! jpegdec ! autovideosink
-</code></pre></li>
-
-<li><p><strong>rtph264depay</strong> 用于将rtp包解包</p></li>
-
-<li><p><strong>avdec_h264</strong> 将h264码流解码</p></li>
-</ul>
-
-<h3 id="1-2-2-录制视频流">1.2.2 录制视频流</h3>
-
-<p>把视频流编码成H264格式，并转为MPEG-TS传输流。</p>
-
-<h4 id="1-2-2-1-test-video">1.2.2.1 test video</h4>
-
-<pre><code>win
-gst-launch-1.0 -e videotestsrc ! video/x-raw, framerate=25/1, width=640, height=360 ! x264enc ! filesink location=test.ts
-
-linux
-gst-launch-1.0 -e videotestsrc ! video/x-raw, framerate=25/1, width=640, height=360 ! x264enc ! filesink location=/mnt/hgfs/wintmp/wms/test.ts
-</code></pre>
-
-<ul>
-<li><strong>video/x-raw</strong> 设置流的类型，也可以不设置采用默认选择<br /></li>
-<li><strong>x264enc</strong> 将原始码流编码，再保存成文件<br /></li>
-<li><strong>-e</strong> 选项可以在我们关闭pipeline之前强制关闭给视频源发出EOS信号，适用于用CTRL+C或者kill命令来关闭gst-launch<br />
-<br /></li>
-</ul>
-
-<p>也可以加上混合器<strong>mpegtsmux</strong></p>
-
-<pre><code>gst-launch-1.0 -e videotestsrc ! video/x-raw, framerate=25/1, width=640, height=360 ! x264enc ! mpegtsmux ! filesink location=test.ts
-</code></pre>
-
-<h4 id="1-2-2-2-ipc">1.2.2.2 ipc</h4>
-
-<pre><code>win
-gst-launch-1.0 -e rtspsrc location=rtsp://172.16.66.66:554/id=1 ! rtph264depay ! h264parse ! avdec_h264 ! x264enc  ! filesink location=test2.ts
-
-linux
-gst-launch-1.0 -e rtspsrc location=rtsp://172.16.66.66:554/id=1 ! rtph264depay ! h264parse ! avdec_h264 ! x264enc  ! filesink location=/mnt/hgfs/wintmp/wms/test2.ts
-</code></pre>
-
-<ul>
-<li>没有 ! avdec_h264 ! x264enc ,录制的文件无法播放<br /></li>
-<li>h264parse 可以不用<br />
-<br /></li>
-</ul>
-
-<h3 id="1-2-3-rtsp推流">1.2.3 Rtsp推流</h3>
-
-<h4 id="1-2-3-1-file">1.2.3.1 file</h4>
-
-<pre><code>win
-gst-launch-1.0 -v filesrc location=&quot;D:\\tmp\\wms\\build\\build.debug\\local\\x86_64\\test.ts&quot; ! h264parse ! rtph264pay config-interval=1 pt=96 ! udpsink host=127.0.0.1 port=5000
-
-linux
-gst-launch-1.0 -v filesrc location=/mnt/hgfs/wintmp/wms/test.ts ! h264parse ! rtph264pay config-interval=1 pt=96 ! udpsink host=172.16.64.68 port=5000
-</code></pre>
-
-<ul>
-<li><strong>host</strong>为目标ip<br /></li>
-
-<li><p>如果录制文件时用了混合器，则在推流时要用相应的分离，例如<strong>tsdemux</strong></p>
-
-<p>gst-launch-1.0 -v filesrc location=&quot;D:\tmp\wms\build\build.debug\local\x86_64\test.ts&quot; ! tsdemux ! h264parse ! rtph264pay config-interval=1 pt=96 ! udpsink host=127.0.0.1 port=5000</p></li>
-</ul>
-
-<h4 id="1-2-3-2-ipc">1.2.3.2 ipc</h4>
-
-<pre><code>win
-gst-launch-1.0 rtspsrc location=rtsp://172.16.66.66:554/id=1 ! rtph264depay ! h264parse ! rtph264pay config-interval=1 pt=96 ! udpsink host=127.0.0.1 port=5000
-
-linux
-gst-launch-1.0 rtspsrc location=rtsp://172.16.66.66:554/id=1 ! rtph264depay ! h264parse ! rtph264pay config-interval=1 pt=96 ! udpsink host=172.16.64.58 port=5000
-</code></pre>
-
-<h4 id="1-2-3-3-receive">1.2.3.3 receive</h4>
-
-<pre><code>gst-launch-1.0 udpsrc port=5000 ! application/x-rtp, clock-rate=90000,payload=96 ! rtph264depay !  avdec_h264 ! autovideosink
-</code></pre>
-
-<h1 id="extensions">Extensions</h1>
-
-<p><a href="http://blog.csdn.net/sakulafly/article/details/21455637" target="_blank">GStreamer基础教程10——GStreamer工具</a></p>
-
-<p><a href="http://blog.csdn.net/sakulafly/article/details/21748777" target="_blank">GStreamer基础教程14——常用的element</a></p>
-
-<p><a href="http://wiki.oz9aec.net/index.php/Gstreamer_cheat_sheet" target="_blank">Gstreamer cheat sheet</a></p>
-
-<h1 id="test-server">test server</h1>
-
-<p>rtsp-server-test &quot;( videotestsrc pattern=white ! timeoverlay valignment=3 halignment=4 time-mode=2 xpos=0 ypos=0 color=4278190080 font-desc=\&quot;Sans 48\&quot; draw-shadow=false draw-outline=falseoutline-color=4278190080  ! video/x-raw, format=(string)I420, width=(int)320, height=(int)240  ! x264enc bitrate=512 key-int-max=5 ! rtph264pay pt=96 name=pay0  audiotestsrc freq=440 wave=sine ! audio/x-raw, rate=(int)8000, channels=(int)1 ! alawenc ! rtppcmapay pt=97 name=pay1 )&quot;</p>
-
-<p>gst-launch-1.0.exe rtspsrc location=rtsp://127.0.0.1:8553/test ! rtph264depay ! avdec_h264 ! jpegenc ! multifilesink location=&quot;test/%05d.bmp&quot;</p>
-
-<h2 id="additional-gstreamer-commands">Additional Gstreamer commands</h2>
-
-<ol>
-<li><a href="https://github.com/matthew1000/gstreamer-cheat-sheet" target="_blank">GStreamer command-line cheat sheet</a><br /></li>
-<li><a href="http://wiki.oz9aec.net/index.php/Gstreamer_cheat_sheet" target="_blank">Gstreamer cheat sheet (Wiki)</a><br />
-<br />
-<br /></li>
-</ol>
-
-<h2 id="mixing">Mixing</h2>
-
-<ul>
-<li><p>How to mix two test streams (<strong>videobox</strong>, <strong>videomixer</strong>)</p>
-
-<p>gst-launch-1.0 videomixer name=mixer ! gtksink <br />
-  videotestsrc ! videoscale ! video/x-raw,width=960,height=540 ! <br />
-  tee name=t !  queue ! videoconvert ! videobox left=-960 ! videoconvert ! mixer. <br />
-  t. ! queue ! videobox left=0  ! videoconvert ! mixer.</p></li>
-</ul>
-
-<h2 id="join-multiple-video-parts-in-one-video">Join multiple video parts in one video</h2>
-
-<pre><code>gst-launch-1.0 splitmuxsrc location=video*.mp4 ! h264parse ! mp4mux ! filesink location=out.mp4
-</code></pre>
-
-<h3 id="using-ffmpeg">Using FFMPEG</h3>
-
-<pre><code>ffmpeg -f concat -safe 0 -i &lt;(for f in ./*.mp4; do echo &quot;file '$PWD/$f'&quot;; done) -c copy all.mp4
-</code></pre>
-
-<h2 id="networking">Networking</h2>
-
-<h3 id="tcp">TCP</h3>
-
-<h4 id="test-stream-videotestsrc">Test stream (videotestsrc)</h4>
-
-<ul>
-<li><p>send</p>
-
-<p>gst-launch-1.0 videotestsrc ! videoscale ! video/x-raw,width=100,height=100 ! <br />
-  x264enc tune=&quot;zerolatency&quot; ! mpegtsmux ! tcpserversink host=127.0.0.1 port=5000</p></li>
-
-<li><p>receive</p>
-
-<p>gst-launch-1.0 tcpclientsrc port=5000 host=127.0.0.1 ! tsdemux ! <br />
-  h264parse ! avdec_h264 ! videoconvert ! gtksink</p></li>
-</ul>
-
-<h4 id="from-webcamera-v4l2src">From webcamera (v4l2src)</h4>
-
-<ul>
-<li><p>send</p>
-
-<p>gst-launch-1.0 v4l2src ! jpegenc ! tcpserversink host=localhost port=5000</p></li>
-
-<li><p>receive</p>
-
-<p>gst-launch-1.0 tcpclientsrc port=5000 ! jpegdec ! videoconvert ! autovideosink sync=true</p></li>
-</ul>
-
-<h2 id="video-record">Video Record</h2>
-
-<h3 id="rtsp">RTSP</h3>
-
-<h4 id="recording-video-to-multiple-files-duration-1-minute">Recording video to multiple files (duration 1 minute)</h4>
-
-<pre><code>gst-launch-1.0 rtspsrc location=rtsp://... drop-on-latency=true latency=0 ! \
-rtph264depay ! h264parse ! splitmuxsink location=video%02d.mp4 max-size-time=60000000000
-</code></pre>
-
-<h2 id="fps-measurements">FPS measurements</h2>
-
-<h3 id="rtsp-1">RTSP</h3>
-
-<pre><code>gst-launch-1.0 -v rtspsrc location=rtsp://... drop-on-latency=true latency=0 ! \
-decodebin ! videoconvert ! video/x-raw,format=RGB ! videoconvert ! \
-fpsdisplaysink video-sink=fakesink signal-fps-measurements=True
-</code></pre>
-
-<h3 id="jetson">Jetson</h3>
-
-<pre><code>gst-launch-1.0 filesrc location=video.mp4 ! qtdemux name=demux1 demux1.video_0 ! \
-queue ! h264parse ! omxh264dec ! fpsdisplaysink video-sink=fakesink signal-fps-measurements=True
-</code></pre>
-
-<h2 id="format-conversion">Format Conversion</h2>
-
-<h3 id="h264-rgba">H264 -&gt; RGBA</h3>
-
-<h4 id="jetson-1">Jetson</h4>
-
-<pre><code> gst-launch-1.0 -v -e filesrc location=video2560.mp4 ! qtdemux name=demux1 demux1.video_0 ! queue ! \
- h264parse ! omxh264dec ! nvvidconv ! video/x-raw,format=RGBA ! \ 
- fpsdisplaysink video-sink=fakesink signal-fps-measurements=True
-</code></pre>
-
-<h3 id="mpeg-mp4">MPEG -&gt; MP4</h3>
-
-<pre><code> gst-launch-1.0 filesrc location=video.mpeg ! mpegpsdemux ! h264parse ! mp4mux ! filesink location=video.mp4 sync=False -e
-</code></pre>
-
-<h2 id="take-snapshot">Take snapshot</h2>
-
-<h3 id="rtsp-2">RTSP</h3>
-
-<pre><code> gst-launch-1.0 -v rtspsrc location=... drop-on-latency=true latency=0 num-buffers=1 ! \
- decodebin  !  videoconvert ! jpegenc ! multifilesink location=img101.jpg
-</code></pre>
-
-<h2 id="video-processing">Video Processing</h2>
-
-<h3 id="change-width-height-using-videoscale-plugin">Change Width/Height (Using videoscale plugin)</h3>
-
-<ul>
-<li><p>scales video to Full HD (1920x1080)</p>
-
-<p>gst-launch-1.0  filesrc location=video.mp4 ! decodebin ! videoconvert ! videoscale ! <br />
-  video/x-raw,width=1920,height=1080 ! videoconvert ! <br />
-  x264enc tune=zerolatency bitrate=16384 ! filesink location=video.mp4 -e</p></li>
-</ul>
-
-<h3 id="change-fps-of-video-using-videorate-plugin">Change FPS of video (Using videorate plugin)</h3>
-
-<ul>
-<li><p>making video with 15 FPS</p>
-
-<p>gst-launch-1.0  filesrc location=video.mp4 ! decodebin ! videoconvert ! \<br />
-  videorate ! video/x-raw,framerate=15/1 ! videoconvert ! <br />
-  x264enc tune=zerolatency bitrate=16384 ! filesink location=video.mp4</p></li>
-</ul>
-
-<h2 id="streaming-from-youtube">Streaming from Youtube</h2>
-
-<pre><code>gst-launch-1.0 souphttpsrc is-live=true location=&quot;$(youtube-dl -f mp4 -g https://www.youtube.com/watch?v=xjDjIWPwcPU)&quot; \
-! decodebin ! videoconvert ! gtksink sync=false
-</code></pre>
-
-<p><strong>Note</strong>:</p>
-
-<ul>
-<li><a href="https://youtube-dl.org/" target="_blank">youtube-dl</a> allows to get HTTPS URL for youtube video link.<br />
-<br />
-<br /></li>
-</ul>
-
-<h2 id="splitting-sharing-pipeline-https-github-com-matthew1000-gstreamer-cheat-sheet-blob-master-sharing-and-splitting-pipelines-md-summary-of-methods-to-share-and-split-pipelines"><a href="https://github.com/matthew1000/gstreamer-cheat-sheet/blob/master/sharing_and_splitting_pipelines.md#summary-of-methods-to-share-and-split-pipelines" target="_blank">Splitting/Sharing pipeline</a></h2>
 
                         </div>                      
                         <div class="clear"></div>
@@ -1873,10 +1406,10 @@ gitment.render('gitment')
             <ul class="post-nav group">
     <li class="previous">
       
-      <a href="../../linux/linux-gstreamer-gst/" rel="prev">
+      <a href="../../hardware/dts/dts-gpio-resource/" rel="prev">
         <i class="fa fa-chevron-left"></i>
         <strong>Previous Post</strong>
-        <span>linux gstreamer 多路输出</span>
+        <span>dts中gpio resource</span>
       </a>
       
   </li>
@@ -2293,10 +1826,10 @@ gitment.render('gitment')
             <ul class="post-nav group">
     <li class="next">
       
-      <a href="../../hardware/rk3288/rk3288-ec20/" rel="next">
+      <a href="../../linux/linux-gstreamer-gst/" rel="next">
         <i class="fa fa-chevron-right"></i>
         <strong>Next post</strong>
-        <span>rk3288 ec20</span>
+        <span>linux gstreamer gst</span>
       </a>
       
   </li>
