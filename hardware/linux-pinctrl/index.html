@@ -1,1276 +1,6 @@
-<!DOCTYPE html>
-<html lang="zh-CN" class="no-js">
-
-<head>
-    
-<title>linux pinctrl</title>
-<meta charset="utf-8">
-
-<meta name="robots" content="index,nofollow">
-
-
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<meta http-equiv="x-dns-prefetch-control" content="on">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="referrer" content="origin-when-cross-origin" />
-
-<meta name="description" content="原文地址 https://blog.csdn.net/u012830148/article/details/80609337 https://blog.csdn.net/qq_21353001/article/details/88751773 linux内核使用pinctrl子系统实现操作gpio输出高低电平的实现 https://blog.csdn.net/u010299133/article/details/88646412s Pinctrl子系统之一了解基础概念: 1.Linux Pinctrl 子系统简介 在">
-
-<meta name="author" content=rinetd>
-
-
-<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
-
-
-
-
-
-  
-  
-  
-  
-  
-  
-
-  
-
-
-
-
-
-
-
-
-<link rel="canonical" href="../../hardware/linux-pinctrl/" />
-
-<link rel="icon" href="../../public/favicon.ico"/>
-<link rel="shortcut icon" href="../../public/favicon.ico"/>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="../../front/css/main.min.css" >
-
-<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-
-
-
-
-
-
-<link rel="stylesheet" href="//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css" />
-
-</head>
-
-<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
-    <div id="wrapper">
-        <header id="header" class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent">
-    
-  <nav class="nav-container group mobile-menu mobile-sticky " id="nav-mobile" data-menu-id="header-1">
-    <div class="mobile-title-logo-in-header">
-        <p class="site-title">
-            <a class="custom-logo-link" href="" rel="home" title="Pytool | Home ">
-                
-                Pytool
-            </a>
-        </p>
-    </div>
-    <div class="ham__navbar-toggler-two collapsed" title="Menu" aria-expanded="false">
-        <div class="ham__navbar-span-wrapper">
-            <span class="line line-1"></span>
-            <span class="line line-2"></span>
-            <span class="line line-3"></span>
-        </div>
-    </div>
-    <div class="nav-text">linux pinctrl</div>
-    <div class="nav-wrap container">
-        <ul class="nav container-inner group mobile-search">
-            <li>
-                <form method="get" class="searchform themeform" action="https://demo-hueman.presscustomizr.com/">
-                    <div>
-                        <input type="text" class="search" name="s" onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"/>
-                    </div>
-                </form>
-            </li>
-        </ul>
-        <ul id="menu-topbar-menu" class="nav container-inner group">
-        
-            <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
-            <a href=" ">Home</a>
-            </li>
-
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../hardware/">Hardware </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hardware/hisilicon/">Hisilicon</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hardware/kernel/">Kernel</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hardware/rtmp/">Rtmp</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hardware/rk3399/">Rk3399</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hardware/dts/">Dts</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hardware/rk3288/">Rk3288</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../macos/">Macos </a>
-                
-                        
-
-              </li>
-            
-        
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../linux/">Linux </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../linux/cmd/">Cmd</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../linux/shell/">Shell</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../linux/nginx/">Nginx</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../linux/ip/">Ip</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../linux/git/">Git</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../linux/haproxy/">Haproxy</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../linux/lvs/">Lvs</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../ai/">Ai </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../ai/caffe/">Caffe</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../ai/yolo/">Yolo</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../ai/math/">Math</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../ai/ncnn/">Ncnn</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../ai/dataset/">Dataset</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../ai/pytorch/">Pytorch</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../frontend/">Frontend </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../frontend/css/">Css</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../frontend/vue/">Vue</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../devops/">Devops </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/docker/">Docker</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/elk/">Elk</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/ansible/">Ansible</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/prometheus/">Prometheus</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/drone/">Drone</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/kubernetes/">Kubernetes</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/oauth2/">OAuth2</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/etcd/">Etcd</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/apidoc/">Apidoc</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../database/">Database </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../database/mysql/">Mysql</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../database/mongo/">Mongo</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../database/redis/">Redis</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../windows/">Windows </a>
-                
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../language/">Language </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../language/cpp/">Cpp</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../language/python/">Python</a>
-                                
-                                            
-                                                 
-                                        <ul class="sub-menu">
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../language/python/scrapy/">Scrapy</a>
-                                                
-                                            </li>                
-                                            
-                                        </ul>
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../language/clang/">Clang</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../language/golang/">Golang</a>
-                                
-                                            
-                                                 
-                                        <ul class="sub-menu">
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../language/golang/cgo/">Cgo</a>
-                                                
-                                            </li>                
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../language/golang/hugo/">Hugo</a>
-                                                
-                                            </li>                
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../language/golang/sys/">Sys</a>
-                                                
-                                            </li>                
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../language/golang/goher/">Goher</a>
-                                                
-                                            </li>                
-                                            
-                                        </ul>
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../language/java/">Java</a>
-                                
-                                            
-                                                 
-                                        <ul class="sub-menu">
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../language/java/hadoop/">Hadoop</a>
-                                                
-                                            </li>                
-                                            
-                                        </ul>
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../language/awesome/">Awesome</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../language/php/">Php</a>
-                                
-                                            
-                                                 
-                                        <ul class="sub-menu">
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../language/php/magento/">Magento</a>
-                                                
-                                            </li>                
-                                            
-                                        </ul>
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../language/android/">Android</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../hacker/">Hacker </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hacker/01-info-gather/">01-Info-Gather</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hacker/02-spoof/">02-Spoof</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../hacker/shells/">Shells</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../work/">Work </a>
-                
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../weixin/">Weixin </a>
-                
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../edit/">Edit </a>
-                
-                        
-
-              </li>
-            
-        
-        
-        <li class="item ">
-                <a class="text" href="../../series/">series</a>
-        </li>
-        <li class="item ">
-                <a class="text" href="../../categories/">categories</a>
-        </li>
-        <li class="item ">
-                <a class="text" href="../../tags/">tags</a>
-        </li>
-        <li class="item ">
-                <a class="text" href="../../me/">about</a>
-        </li>
-
-        
-        </ul>
-    </div>
-  </nav>
-    
-  <nav class="nav-container group desktop-menu desktop-sticky " id="nav-topbar" data-menu-id="header-2">
-    <div class="nav-text">linux pinctrl</div>
-    
-    <div class="topbar-toggle-down">
-        <i class="fas fa-angle-double-down" aria-hidden="true" data-toggle="down" title="Expand menu"></i>
-        <i class="fas fa-angle-double-up" aria-hidden="true" data-toggle="up" title="Collapse menu"></i>
-    </div>
-
-    
-    <div class="nav-wrap container">
-      <ul id="menu-topbar-menu-1" class="nav container-inner group">
-        <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
-            <a href="../../">Home</a></li>
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../hardware/">Hardware </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hardware/hisilicon/">Hisilicon</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hardware/kernel/">Kernel</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hardware/rtmp/">Rtmp</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hardware/rk3399/">Rk3399</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hardware/dts/">Dts</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hardware/rk3288/">Rk3288</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../macos/">Macos </a>
-                
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../post/">Post </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../post/software/">Software</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../post/english/">English</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../post/seo/">Seo</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../post/life/">Life</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../post/wiki/">Wiki</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../post/basic/">Basic</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../post/reship/">Reship</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../linux/">Linux </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../linux/cmd/">Cmd</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../linux/shell/">Shell</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../linux/nginx/">Nginx</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../linux/ip/">Ip</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../linux/git/">Git</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../linux/haproxy/">Haproxy</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../linux/lvs/">Lvs</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../ai/">Ai </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../ai/caffe/">Caffe</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../ai/yolo/">Yolo</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../ai/math/">Math</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../ai/ncnn/">Ncnn</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../ai/dataset/">Dataset</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../ai/pytorch/">Pytorch</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../frontend/">Frontend </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../frontend/css/">Css</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../frontend/vue/">Vue</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../devops/">Devops </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/docker/">Docker</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/elk/">Elk</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/ansible/">Ansible</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/prometheus/">Prometheus</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/drone/">Drone</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/kubernetes/">Kubernetes</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/oauth2/">OAuth2</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/etcd/">Etcd</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/apidoc/">Apidoc</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../database/">Database </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../database/mysql/">Mysql</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../database/mongo/">Mongo</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../database/redis/">Redis</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../windows/">Windows </a>
-                
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../language/">Language </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../language/cpp/">Cpp</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../language/python/">Python</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../language/clang/">Clang</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../language/golang/">Golang</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../language/java/">Java</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../language/awesome/">Awesome</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../language/php/">Php</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../language/android/">Android</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../hacker/">Hacker </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hacker/01-info-gather/">01-Info-Gather</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hacker/02-spoof/">02-Spoof</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../hacker/shells/">Shells</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../work/">Work </a>
-                
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../weixin/">Weixin </a>
-                
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../edit/">Edit </a>
-                
-                  
-              </li>
-                    
-        
-       
-        
-        <li class="menu-item menu-item-type-post_type menu-item-object-page">
-          <a href="../../series/">series</a>
-        </li>
-        
-        <li class="menu-item menu-item-type-post_type menu-item-object-page">
-          <a href="../../categories/">categories</a>
-        </li>
-        
-        <li class="menu-item menu-item-type-post_type menu-item-object-page">
-          <a href="../../tags/">tags</a>
-        </li>
-        
-        <li class="menu-item menu-item-type-post_type menu-item-object-page">
-          <a href="../../me/">about</a>
-        </li>
-        
-
-        
-      </ul>
-      
-    </div>
-    
-    
-  
-  </nav>
-  
-
-  
-  
-
-</header>
-
-        <div class="container" id="page">
-            <div class="container-inner">
-                <div class="main">
-                    <div class="main-inner group">
-                        <div class="content">
-    
-        <div class="pad group page-title">
-            <ul class="meta-single group">
-                
-                <li><span class="fa fa-folder-open"></span></li>
-                
-                <li class="category">
-                <a href="../../categories/hardware/" rel="category tag">hardware</a>
-                </li>
-                
-            </ul>
-        </div>
-
-        
-        <div class="pad group">
-            <article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list">
-                <div class="post-inner group">
-                        <h1 class="post-title">linux pinctrl</h1>
-
-                        <p class="post-byline">
-                          by  · 2019年05月23日 · 8812 Words ·
-                          ~18min reading time |
-                          
-                          
-                          <a href="https://gitlab.com/rinetd/blog/edit/master/hardware/dts/dts-pinctrl.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
-                        </p>
-                    <div class="clear"></div>
-                    <div class="entry themeform">
-                        <div class="entry-inner">
-                            
-                            </br>
-                            原文链接：<a target="_blank" href="../../hardware/linux-pinctrl/"> linux pinctrl</a> 
-                            </p>
-                            
-
-<p>原文地址 <a href="https://blog.csdn.net/u012830148/article/details/80609337" target="_blank">https://blog.csdn.net/u012830148/article/details/80609337</a><br />
-<a href="https://blog.csdn.net/qq_21353001/article/details/88751773" target="_blank">https://blog.csdn.net/qq_21353001/article/details/88751773</a><br />
-linux内核使用pinctrl子系统实现操作gpio输出高低电平的实现 <a href="https://blog.csdn.net/u010299133/article/details/88646412s" target="_blank">https://blog.csdn.net/u010299133/article/details/88646412s</a></p>
-
-<p>Pinctrl子系统之一了解基础概念:</p>
-
-<h2 id="1-linux-pinctrl-子系统简介">1.Linux Pinctrl 子系统简介</h2>
-
-<p>在许多 soc 内部都包含有 pin 控制器，通过 pin 控制器的寄存器，我们可以配置一个或者一组引脚的功能和特性。在软件方面，Linux 内核提供了 pinctrl 子系统，目的是为了统一各 soc 厂商的 pin 脚管理。</p>
-
-<h2 id="2-linux-pinctrl-子系统提供的功能">2.Linux Pinctrl 子系统提供的功能</h2>
-
-<p>    （1）管理系统中所有的可以控制的 pin，在系统初始化的时候，枚举所有可以控制的 pin，并标识这些 pin。</p>
-
-<p>    （2）管理这些 pin 的复用（ Multiplexing ）。对于 SOC 而言，其引脚除了配置成普通的 GPIO 之外，若干个引脚还可以组成一个 pin group，行程特定的功能。pin control subsystem 要管理所有的 pin group。</p>
-
-<p>    （3）配置这些 pin 的特性。例如使能或关闭引脚上的 pull-up、pull-down 电阻，配置引脚的 driver strength。</p>
-
-<h2 id="3-pinctrl-相关概念">3.pinctrl 相关概念</h2>
-
-<p>普通 driver 调用 pin control subsystem 的主要目标有两个：</p>
-
-<p>    （1）设定该设备的功能复用。</p>
-
-<p>    （2）设定该 device 对应的 pin 的电气特性。</p>
-
-<p>设定设备的功能复用需要了解两个概念，一个是 function，另外一个是 pin group。function 是功能抽象，对应一个 HW 逻辑 block，例如 SPI0. 虽然给定了具体的 function name，我们并不能确定其使用的 pins 的情况。例如为了设计灵活，芯片内部的 SPI0 的功能引出到 pin group{C6，C7，C8，C9}，也可能引出的另外一个 pin group{C22.C23，C24，C25}，但毫无疑问，这两个 pin group 不能同时 active，毕竟芯片内部的 SPI0 的逻辑功能电路只有一个，因此只有给出 function selector 以及 function 的 pin group selector 才能进行 function mux 的设定。</p>
-
-<p>此外，由于电源管理的要求，某个 device 可能处于某个电源管理状态，例如 idle 或者 sleep，这时候，属于 device 的所有 pin 就会需要处于另外的状态。</p>
-
-<p>综合上述的需求，就定义了 pin control state 的概念，也就是说设备可能处于非常多的状态中的一个，device driver 可以切换设备处于的状态。为了方便管理 pin control state 就有了 pin control state holder 的概念，用来管理一个设备的所有的 pin control 状态。</p>
-
-<p>综上所述，普通的 driver 调用 pin control subsystem 的接口就是只有三个步骤：</p>
-
-<p>（1）驱动加载或是运行时，获取 pin control state holder 的句柄</p>
-
-<p>（2）设定 pin control 的状态</p>
-
-<p>（3）驱动卸载或是退出时，释放 pin control state holder 的句柄</p>
-
-<h2 id="4-与-gpio-子系统的关系">4. 与 GPIO 子系统的关系</h2>
-
-<p><img src="https://img-blog.csdn.net/20180607165552719" alt="" /></p>
-
-<p>上图显示了 gpio 子系统和 pinctrl 子系统之间的关系，即 pinctrl 子系统实际上也把 gpio 一起管理起来，所有的 gpio 操作也需要透过 pinctrl 子系统来完成，这样，如果一个 pin 已经被申请为 gpio，再通过 pinctrl 子系统申请为某个 function 时就会返回错误。</p>
-
-<h2 id="5-与统一设备驱动模型的关系">5. 与统一设备驱动模型的关系</h2>
-
-<p>从 &quot;pinctrl 子系统关系图&quot; 中得知，linux kernel 中的统一设备驱动模型也调用了 pinctrl 子系统的功能。linux kernel 中的统一设备驱动模型提供了 driver 和 device 的绑定机制，一旦匹配就会调用 driver 的 probe 函数。</p>
-
-<p>而在调用票 probe 函数之前，驱动模型实际上已经申请过一次 pin 了，（前提是 dts 文件中该驱动节点中有定义名为 “default” 的 pinctrl 配置）。</p>
-
-<p>驱动模型中调用 driver 的 probe 函数的地方:</p>
-
-<pre>static int really_probe(struct device *dev, struct device_driver *drv)
+<!doctype html><html lang=zh-cn class=no-js><title>linux pinctrl</title><meta charset=utf-8><meta name=robots content=index,nofollow><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><meta http-equiv=x-dns-prefetch-control content=on><meta name=viewport content="width=device-width,initial-scale=1"><meta name=referrer content=origin-when-cross-origin><meta name=description content="原文地址 https://blog.csdn.net/u012830148/article/details/80609337 https://blog.csdn.net/qq_21353001/article/details/88751773 linux内核使用pinctrl子系统实现操作gpio输出高低电平的实现 https://blog.csdn.net/u010299133/article/details/88646412s Pinctrl子系统之一了解基础概念: 1.Linux Pinctrl 子系统简介 在"><meta name=author content=rinetd><meta name=google-site-verification content=ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk><link rel=canonical href=../../hardware/linux-pinctrl/><link rel=icon href=../../public/favicon.ico><link rel="shortcut icon" href=../../public/favicon.ico><link rel=stylesheet href=../../front/css/main.min.css><link href=https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css rel=stylesheet><link rel=stylesheet href=//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css><body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome"><div id=wrapper><header id=header class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent"><nav class="nav-container group mobile-menu mobile-sticky" id=nav-mobile data-menu-id=header-1><div class=mobile-title-logo-in-header><p class=site-title><a class=custom-logo-link href rel=home title="Pytool | Home">Pytool</a></div><div class="ham__navbar-toggler-two collapsed" title=Menu aria-expanded=false><div class=ham__navbar-span-wrapper><span class="line line-1"></span><span class="line line-2"></span><span class="line line-3"></span></div></div><div class=nav-text>linux pinctrl</div><div class="nav-wrap container"><ul class="nav container-inner group mobile-search"><li><form class="searchform themeform" action=https://demo-hueman.presscustomizr.com/><div><input class=search name=s onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"></div></form></ul><ul id=menu-topbar-menu class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href>Home</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../macos/>Macos</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../linux/shell/>Shell</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../linux/ip/>Ip</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../linux/git/>Git</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../ai/math/>Math</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../frontend/css/>Css</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/docker/>Docker</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/elk/>Elk</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/drone/>Drone</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../windows/>Windows</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../language/python/>Python</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../language/python/scrapy/>Scrapy</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../language/clang/>Clang</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../language/golang/>Golang</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../language/golang/cgo/>Cgo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../language/golang/hugo/>Hugo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../language/golang/sys/>Sys</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../language/golang/goher/>Goher</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../language/java/>Java</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../language/java/hadoop/>Hadoop</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../language/php/>Php</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../language/php/magento/>Magento</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../language/android/>Android</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../work/>Work</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../weixin/>Weixin</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../edit/>Edit</a><li class=item><a class=text href=../../series/>series</a><li class=item><a class=text href=../../categories/>categories</a><li class=item><a class=text href=../../tags/>tags</a><li class=item><a class=text href=../../me/>about</a></ul></div></nav><nav class="nav-container group desktop-menu desktop-sticky" id=nav-topbar data-menu-id=header-2><div class=nav-text>linux pinctrl</div><div class=topbar-toggle-down><i class="fas fa-angle-double-down" aria-hidden=true data-toggle=down title="Expand menu"></i><i class="fas fa-angle-double-up" aria-hidden=true data-toggle=up title="Collapse menu"></i></div><div class="nav-wrap container"><ul id=menu-topbar-menu-1 class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href=../../>Home</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../macos/>Macos</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../post/>Post</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../post/software/>Software</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../post/english/>English</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../post/seo/>Seo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../post/life/>Life</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../post/wiki/>Wiki</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../post/basic/>Basic</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../post/reship/>Reship</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../linux/shell/>Shell</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../linux/ip/>Ip</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../linux/git/>Git</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../ai/math/>Math</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../frontend/css/>Css</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/docker/>Docker</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/elk/>Elk</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/drone/>Drone</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../windows/>Windows</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../language/python/>Python</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../language/clang/>Clang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../language/golang/>Golang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../language/java/>Java</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../language/php/>Php</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../language/android/>Android</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../work/>Work</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../weixin/>Weixin</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../edit/>Edit</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../series/>series</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../categories/>categories</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../tags/>tags</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../me/>about</a></ul></div></nav></header><div class=container id=page><div class=container-inner><div class=main><div class="main-inner group"><div class=content><div class="pad group page-title"><ul class="meta-single group"><li><span class="fa fa-folder-open"></span><li class=category><a href=../../categories/hardware/ rel="category tag">hardware</a></ul></div><div class="pad group"><article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list"><div class="post-inner group"><h1 class=post-title>linux pinctrl</h1><p class=post-byline>by · 2019年05月23日 · 8812 Words ·
+~18min reading time |
+<a href=https://gitlab.com/rinetd/blog/edit/master/hardware/dts/dts-pinctrl.md target=_blank>Improve on <i class="fa fa-gitlab"></i></a><div class=clear></div><div class="entry themeform"><div class=entry-inner></br>原文链接：<a target=_blank href=../../hardware/linux-pinctrl/> linux pinctrl</a><p>原文地址 <a href=https://blog.csdn.net/u012830148/article/details/80609337 target=_blank>https://blog.csdn.net/u012830148/article/details/80609337</a><br><a href=https://blog.csdn.net/qq_21353001/article/details/88751773 target=_blank>https://blog.csdn.net/qq_21353001/article/details/88751773</a><br>linux内核使用pinctrl子系统实现操作gpio输出高低电平的实现 <a href=https://blog.csdn.net/u010299133/article/details/88646412s target=_blank>https://blog.csdn.net/u010299133/article/details/88646412s</a><p>Pinctrl子系统之一了解基础概念:<h2 id=1-linux-pinctrl-子系统简介>1.Linux Pinctrl 子系统简介</h2><p>在许多 soc 内部都包含有 pin 控制器，通过 pin 控制器的寄存器，我们可以配置一个或者一组引脚的功能和特性。在软件方面，Linux 内核提供了 pinctrl 子系统，目的是为了统一各 soc 厂商的 pin 脚管理。<h2 id=2-linux-pinctrl-子系统提供的功能>2.Linux Pinctrl 子系统提供的功能</h2><p>    （1）管理系统中所有的可以控制的 pin，在系统初始化的时候，枚举所有可以控制的 pin，并标识这些 pin。<p>    （2）管理这些 pin 的复用（ Multiplexing ）。对于 SOC 而言，其引脚除了配置成普通的 GPIO 之外，若干个引脚还可以组成一个 pin group，行程特定的功能。pin control subsystem 要管理所有的 pin group。<p>    （3）配置这些 pin 的特性。例如使能或关闭引脚上的 pull-up、pull-down 电阻，配置引脚的 driver strength。<h2 id=3-pinctrl-相关概念>3.pinctrl 相关概念</h2><p>普通 driver 调用 pin control subsystem 的主要目标有两个：<p>    （1）设定该设备的功能复用。<p>    （2）设定该 device 对应的 pin 的电气特性。<p>设定设备的功能复用需要了解两个概念，一个是 function，另外一个是 pin group。function 是功能抽象，对应一个 HW 逻辑 block，例如 SPI0. 虽然给定了具体的 function name，我们并不能确定其使用的 pins 的情况。例如为了设计灵活，芯片内部的 SPI0 的功能引出到 pin group{C6，C7，C8，C9}，也可能引出的另外一个 pin group{C22.C23，C24，C25}，但毫无疑问，这两个 pin group 不能同时 active，毕竟芯片内部的 SPI0 的逻辑功能电路只有一个，因此只有给出 function selector 以及 function 的 pin group selector 才能进行 function mux 的设定。<p>此外，由于电源管理的要求，某个 device 可能处于某个电源管理状态，例如 idle 或者 sleep，这时候，属于 device 的所有 pin 就会需要处于另外的状态。<p>综合上述的需求，就定义了 pin control state 的概念，也就是说设备可能处于非常多的状态中的一个，device driver 可以切换设备处于的状态。为了方便管理 pin control state 就有了 pin control state holder 的概念，用来管理一个设备的所有的 pin control 状态。<p>综上所述，普通的 driver 调用 pin control subsystem 的接口就是只有三个步骤：<p>（1）驱动加载或是运行时，获取 pin control state holder 的句柄<p>（2）设定 pin control 的状态<p>（3）驱动卸载或是退出时，释放 pin control state holder 的句柄<h2 id=4-与-gpio-子系统的关系>4. 与 GPIO 子系统的关系</h2><p><img src=https://img-blog.csdn.net/20180607165552719 alt><p>上图显示了 gpio 子系统和 pinctrl 子系统之间的关系，即 pinctrl 子系统实际上也把 gpio 一起管理起来，所有的 gpio 操作也需要透过 pinctrl 子系统来完成，这样，如果一个 pin 已经被申请为 gpio，再通过 pinctrl 子系统申请为某个 function 时就会返回错误。<h2 id=5-与统一设备驱动模型的关系>5. 与统一设备驱动模型的关系</h2><p>从 &quot;pinctrl 子系统关系图&quot; 中得知，linux kernel 中的统一设备驱动模型也调用了 pinctrl 子系统的功能。linux kernel 中的统一设备驱动模型提供了 driver 和 device 的绑定机制，一旦匹配就会调用 driver 的 probe 函数。<p>而在调用票 probe 函数之前，驱动模型实际上已经申请过一次 pin 了，（前提是 dts 文件中该驱动节点中有定义名为 “default” 的 pinctrl 配置）。<p>驱动模型中调用 driver 的 probe 函数的地方:<pre>static int really_probe(struct device *dev, struct device_driver *drv)
 {
     int ret = 0;
         ......
@@ -1327,19 +57,13 @@ static int really_probe(struct device *dev, struct device_driver *drv)
     pr_debug("bus: '%s': %s: bound device %s to driver %s\n",
         .....
 }
-</pre>
-
-<p>pinctrl_bind_pins 函数定义:</p>
-
-<pre>#define PINCTRL_STATE_DEFAULT "default"
+</pre><p>pinctrl_bind_pins 函数定义:<pre>#define PINCTRL_STATE_DEFAULT "default"
 #define PINCTRL_STATE_IDLE "idle"
 #define PINCTRL_STATE_SLEEP "sleep"
 #define PINCTRL_STATE_DEFAULT "default"
 #define PINCTRL_STATE_IDLE "idle"
 #define PINCTRL_STATE_SLEEP "sleep"
-</pre>
-
-<pre>int pinctrl_bind_pins(struct device *dev)
+</pre><pre>int pinctrl_bind_pins(struct device *dev)
 {
     int ret;
     dev->pins = devm_kzalloc(dev, sizeof(*(dev->pins)), GFP_KERNEL);
@@ -1394,23 +118,11 @@ int pinctrl_bind_pins(struct device *dev)
     }
     
     return 0;
-</pre>
-
-<p>从驱动模型的实现中，不难看出在驱动 probe 前，就已经申请到 default 的 pin 配置了，当然 pinctrl 的计数已经 + 1 了。</p>
-
-<p>Driver 的 probe 函数可以通过 devm_pinctrl_get 获得 pinctrl 的句柄，再自行调用 pinctrl_select_state 设置 pin state。</p>
-
-<h2 id="6-与-device-tree-的关系">6. 与 device tree 的关系</h2>
-
-<p>在 device tree source 文件中可以在驱动节点中定义该驱动需要用到的 pin 配置。</p>
-
-<pre>device-node-name{
+</pre><p>从驱动模型的实现中，不难看出在驱动 probe 前，就已经申请到 default 的 pin 配置了，当然 pinctrl 的计数已经 + 1 了。<p>Driver 的 probe 函数可以通过 devm_pinctrl_get 获得 pinctrl 的句柄，再自行调用 pinctrl_select_state 设置 pin state。<h2 id=6-与-device-tree-的关系>6. 与 device tree 的关系</h2><p>在 device tree source 文件中可以在驱动节点中定义该驱动需要用到的 pin 配置。<pre>device-node-name{
    //定义该device自己的属性
 device-node-name{
    //定义该device自己的属性
-</pre>
-
-<pre>    pinctrl-names= "sleep","default","idle";
+</pre><pre>    pinctrl-names= "sleep","default","idle";
     pinctrl-0 = &xxx_State_sleep;
     pinctrl-1 = &xxx_state_default;
     pinctrl-2 = &xxx_state_idle;
@@ -1420,11 +132,7 @@ device-node-name{
     pinctrl-1 = &xxx_state_default;
     pinctrl-2 = &xxx_state_idle;
 }
-</pre>
-
-<p>pinctrl-0 pinctrl-1 pinctrl-2 ..... 表示了该设备的一个个状态，这里我们定义了三个 pinctrl-0 pinctrl-1 pinctrl-2，数字 0、1、2 就是 pinctrl-names 中对应的字符串数组的 index。其中 pinctrl-0 就是 “sleep” 状态，pinctrl-1 就是 “default” 状态，pinctrl-2 就是 “idle” 状态。而 xxx_state_sleep,xxx_state_default,xxx_state_idel 就是驱动具体的 pin 配置项了，需要在 pinctrl 设备节点处定义:</p>
-
-<pre>pinctrl@e01b0000{
+</pre><p>pinctrl-0 pinctrl-1 pinctrl-2 ..... 表示了该设备的一个个状态，这里我们定义了三个 pinctrl-0 pinctrl-1 pinctrl-2，数字 0、1、2 就是 pinctrl-names 中对应的字符串数组的 index。其中 pinctrl-0 就是 “sleep” 状态，pinctrl-1 就是 “default” 状态，pinctrl-2 就是 “idle” 状态。而 xxx_state_sleep,xxx_state_default,xxx_state_idel 就是驱动具体的 pin 配置项了，需要在 pinctrl 设备节点处定义:<pre>pinctrl@e01b0000{
       pinctrl-names = "default";
       pinctrl-0 = <&state_default>;
       state_default:pinctrl_default{
@@ -1449,15 +157,7 @@ pinctrl@e01b0000{
          };
        };
 
-</pre>
-
-<p>Pinctrl 子系统在加载时，会调用 pinctrl_dt_to_map 函数将 dts 文件中有关 pinctrl 的配置项解析出来，并根据 dts 各驱动节点对 pinctrl 的引用关系，将 phandle 挂到各个驱动的 device tree 子节点，各个驱动就可以通过自己的 dev 句柄获得 pinctrl 的配置了。</p>
-
-<h2 id="7-与主控驱动的关系">7. 与主控驱动的关系</h2>
-
-<p>在 kernel 的 machine driver 中，需要将主控的 pinctrl 相关硬件操作形象成一个符合 linux pinctrl 子系统规范的结构 pinctrl_desc，并调用 pinctrl_register 注册到 pinctrl 子系统中，这样 pinctrl 子系统就可以将上层行为转换成具体的硬件操作了：</p>
-
-<pre>struct pinctrl_desc {
+</pre><p>Pinctrl 子系统在加载时，会调用 pinctrl_dt_to_map 函数将 dts 文件中有关 pinctrl 的配置项解析出来，并根据 dts 各驱动节点对 pinctrl 的引用关系，将 phandle 挂到各个驱动的 device tree 子节点，各个驱动就可以通过自己的 dev 句柄获得 pinctrl 的配置了。<h2 id=7-与主控驱动的关系>7. 与主控驱动的关系</h2><p>在 kernel 的 machine driver 中，需要将主控的 pinctrl 相关硬件操作形象成一个符合 linux pinctrl 子系统规范的结构 pinctrl_desc，并调用 pinctrl_register 注册到 pinctrl 子系统中，这样 pinctrl 子系统就可以将上层行为转换成具体的硬件操作了：<pre>struct pinctrl_desc {
     const char *name;
     struct pinctrl_pin_desc const *pins; //描述每个pin的信息为何。
     unsigned int npins; //表示可以控制多少个pin。pins和npins这两个成员就确定了一个pin controller所能控制的引脚信息。
@@ -1475,11 +175,7 @@ struct pinctrl_desc {
     const struct pinconf_ops *confops; //用来配置引脚特性（如pull-up/pull-down）
     struct module *owner;
 };
-</pre>
-
-<p>pctlops 成员 callback 函数说明：</p>
-
-<pre>struct pinctrl_ops {
+</pre><p>pctlops 成员 callback 函数说明：<pre>struct pinctrl_ops {
     int (*get_groups_count) (struct pinctrl_dev *pctldev);  //该pin controller支持多少个pin group
     const char *(*get_group_name) (struct pinctrl_dev *pctldev,//给定一个selector（index），获取指定的pin group的name
                        unsigned selector);
@@ -1511,11 +207,7 @@ struct pinctrl_ops {
     void (*dt_free_map) (struct pinctrl_dev *pctldev,     //dt_node_to_map的逆函数。
                  struct pinctrl_map *map, unsigned num_maps);
 };
-</pre>
-
-<p>pmxops 成员 callback 函数说明:</p>
-
-<pre>struct pinmux_ops {
+</pre><p>pmxops 成员 callback 函数说明:<pre>struct pinmux_ops {
     int (*request) (struct pinctrl_dev *pctldev, unsigned offset);//pinctrl子系统进行具体的复用设定之前需要调用该函数，主要用来请底层的driver判断某个引脚的复用设定是否ok
     int (*free) (struct pinctrl_dev *pctldev, unsigned offset);//request的逆函数，调用request函数请求占用了某些pin的资源，调用free可以释放这些资源。
     int (*get_functions_count) (struct pinctrl_dev *pctldev);//返回pin controller支持的function的数目。
@@ -1565,11 +257,7 @@ struct pinmux_ops {
                    unsigned offset,
                    bool input);
 };
-</pre>
-
-<p>confops 成员的 callback 函数说明：</p>
-
-<pre>struct pinconf_ops {
+</pre><p>confops 成员的 callback 函数说明：<pre>struct pinconf_ops {
 #ifdef CONFIG_GENERIC_PINCONF
     bool is_generic;
 #endif
@@ -1643,17 +331,7 @@ struct pinconf_ops {
                         struct seq_file *s,
                         unsigned long config);
 };
-</pre>
-
-<h2 id="7-dts-文件中的-pinctrl-关键词表">7.dts 文件中的 pinctrl 关键词表</h2>
-
-<h3 id="7-1-pin-命名表">7.1 pin 命名表</h3>
-
-<p>    pin 的命名遵循 IC spec 上的命名，以下命名表以每个 pin 默认的功能命名，但实际使用中各个 pin 的功能会随着配置发生变化。</p>
-
-<p>    在 dts 中使用关键词 “actions，pins”（不同厂商不同，这是炬芯的）后跟名字数组来定义需要使用哪些 pin，如：</p>
-
-<pre>i2c0_over_uart0_pull_up{
+</pre><h2 id=7-dts-文件中的-pinctrl-关键词表>7.dts 文件中的 pinctrl 关键词表</h2><h3 id=7-1-pin-命名表>7.1 pin 命名表</h3><p>    pin 的命名遵循 IC spec 上的命名，以下命名表以每个 pin 默认的功能命名，但实际使用中各个 pin 的功能会随着配置发生变化。<p>    在 dts 中使用关键词 “actions，pins”（不同厂商不同，这是炬芯的）后跟名字数组来定义需要使用哪些 pin，如：<pre>i2c0_over_uart0_pull_up{
         actions,pins = “P_UART0_RX”，“P_UART0_TX”；
         actions，pull = <2>;
 }
@@ -1661,37 +339,7 @@ i2c0_over_uart0_pull_up{
         actions,pins = “P_UART0_RX”，“P_UART0_TX”；
         actions，pull = <2>;
 }
-</pre>
-
-<h3 id="7-2-mux-group-function-表">7.2 MUX Group-Function 表</h3>
-
-<h3 id="7-2-1-mux-group-命名表">  7.2.1 Mux Group 命名表</h3>
-
-<p>    pin group 按照寄存器的名字和 bit 来命名。比如：MFP_CTL1 bit22:21, 定义了 10 个 pin 的 mux：P_LVDS_OEP,P_LVDS_OEN,P_LVDS_ODP,P_LVDS_ODN,P_LVDS_OCP,P_LVDS_OCN,P_LVDS_OBP,P_LVDS_OBN,P_LVDS_OAP,P_LVDS_OAN。该 pin group 的名字为 mfp1_22_21.</p>
-
-<p>    有些 mfp 寄存器的 cell 中，设置某一个值会将多个 pin 配置为不同的功能。那么这个 cell 中的 pin 就不能归为同一个 pin group。需按情况拆解开，那么拆解开的 pin group 的名字还会加上一些后缀。</p>
-
-<p>    比如：根据 IC SPEC，mfp1 bit[31:29] 可控制 3 根 pin：P_KS_IN0,P_KS_IN1,P_KS_IN2. 该 cell 的 0x11 选项会将这 2 跟 pin 分别定义为 pwm0，pwm1，pwm4.</p>
-
-<p>那么就将其分拆为 3 个 group：分别为 “mfp1_31_29_ks_in2”、“mfp1_31_29_ks_in2”、“mfp1_31_29_ks_in0”。这几个 mfp cell 分割以后，他们之间仍然存在硬件上的互斥关系，比如将 mfp1_31_29_ks_in2 的 function 选为 pwm0，mfp1_31_29_ks_in1 的 function 选为 pwm1，可以工作。但是将 mfp1_31_29_ks_in2 的 function 选为 pwm0，mfp1_31_29_ks_in1 的 function 选为 jtag，就会返回错误。</p>
-
-<p>    在 pin group 的命名表中还会看到 “xxx_dummy” 的命名，这种 pin group 在 pinmux 设置中可能会用到。这些 pin group 只有一种 mux 功能，所以在 mfp 寄存器中不会表示，但是这些 pin 可能和 gpio 复用，申请这些 pin 有助于发现它和 gpio 存在的潜在复用错误。</p>
-
-<p>在 dts 中使用关键词 “actions，groups” 后跟 mux Group 名字数组来定义需要使用哪些 Mux group，如：</p>
-
-<p>sd0_mfp_cmd_clk{</p>
-
-<p>     actions,groups = &quot;mfp2_8_7&quot;,&quot;mfp2_6_5&quot;;</p>
-
-<p>     actions,function = &quot;sd0&quot;;</p>
-
-<p>};</p>
-
-<h3 id="7-2-2mux-group-function">7.2.2MUX Group-function</h3>
-
-<p>    Mux Group 所控制的 pin，可以通过设置 Mux Function 的方式改变 IC 内部连通性，使得同一组 pin 用作不同的功能，例如：</p>
-
-<pre>sd0_mfp_cmd_clk{
+</pre><h3 id=7-2-mux-group-function-表>7.2 MUX Group-Function 表</h3><h3 id=7-2-1-mux-group-命名表>  7.2.1 Mux Group 命名表</h3><p>    pin group 按照寄存器的名字和 bit 来命名。比如：MFP_CTL1 bit22:21, 定义了 10 个 pin 的 mux：P_LVDS_OEP,P_LVDS_OEN,P_LVDS_ODP,P_LVDS_ODN,P_LVDS_OCP,P_LVDS_OCN,P_LVDS_OBP,P_LVDS_OBN,P_LVDS_OAP,P_LVDS_OAN。该 pin group 的名字为 mfp1_22_21.<p>    有些 mfp 寄存器的 cell 中，设置某一个值会将多个 pin 配置为不同的功能。那么这个 cell 中的 pin 就不能归为同一个 pin group。需按情况拆解开，那么拆解开的 pin group 的名字还会加上一些后缀。<p>    比如：根据 IC SPEC，mfp1 bit[31:29] 可控制 3 根 pin：P_KS_IN0,P_KS_IN1,P_KS_IN2. 该 cell 的 0x11 选项会将这 2 跟 pin 分别定义为 pwm0，pwm1，pwm4.<p>那么就将其分拆为 3 个 group：分别为 “mfp1_31_29_ks_in2”、“mfp1_31_29_ks_in2”、“mfp1_31_29_ks_in0”。这几个 mfp cell 分割以后，他们之间仍然存在硬件上的互斥关系，比如将 mfp1_31_29_ks_in2 的 function 选为 pwm0，mfp1_31_29_ks_in1 的 function 选为 pwm1，可以工作。但是将 mfp1_31_29_ks_in2 的 function 选为 pwm0，mfp1_31_29_ks_in1 的 function 选为 jtag，就会返回错误。<p>    在 pin group 的命名表中还会看到 “xxx_dummy” 的命名，这种 pin group 在 pinmux 设置中可能会用到。这些 pin group 只有一种 mux 功能，所以在 mfp 寄存器中不会表示，但是这些 pin 可能和 gpio 复用，申请这些 pin 有助于发现它和 gpio 存在的潜在复用错误。<p>在 dts 中使用关键词 “actions，groups” 后跟 mux Group 名字数组来定义需要使用哪些 Mux group，如：<p>sd0_mfp_cmd_clk{<p>     actions,groups = &quot;mfp2_8_7&quot;,&quot;mfp2_6_5&quot;;<p>     actions,function = &quot;sd0&quot;;<p>};<h3 id=7-2-2mux-group-function>7.2.2MUX Group-function</h3><p>    Mux Group 所控制的 pin，可以通过设置 Mux Function 的方式改变 IC 内部连通性，使得同一组 pin 用作不同的功能，例如：<pre>sd0_mfp_cmd_clk{
     actions,groups ="mfp2_8_7","mfp2_6_5";
     actions,function = "jtag";
 };
@@ -1699,17 +347,7 @@ sd0_mfp_cmd_clk{
     actions,groups ="mfp2_8_7","mfp2_6_5";
     actions,function = "jtag";
 };
-</pre>
-
-<h3 id="7-2-3-drive-group">7.2.3 Drive Group</h3>
-
-<p>paddrv 使用的配置值完全等同于 IC spec 中关于 PAD_DRVx 寄存器的定义。</p>
-
-<p>对于某些 pin 可以设置 pin 的驱动能力（即供电能力），可以通过配置 driver group 的等级对 pin 的驱动能力进行配置。</p>
-
-<p>在 dts 中使用关键词 “actions，paddrv” 后跟驱动能力等级来定义 “actions，groups” 指定 drive group 所代表的 pin 组使用哪种驱动能力，如：</p>
-
-<pre>sd0_d0_d3_cmd_clk_paddrv{
+</pre><h3 id=7-2-3-drive-group>7.2.3 Drive Group</h3><p>paddrv 使用的配置值完全等同于 IC spec 中关于 PAD_DRVx 寄存器的定义。<p>对于某些 pin 可以设置 pin 的驱动能力（即供电能力），可以通过配置 driver group 的等级对 pin 的驱动能力进行配置。<p>在 dts 中使用关键词 “actions，paddrv” 后跟驱动能力等级来定义 “actions，groups” 指定 drive group 所代表的 pin 组使用哪种驱动能力，如：<pre>sd0_d0_d3_cmd_clk_paddrv{
  actions,groups="paddrv1_19_18","paddrv1_17_16";
  actions,paddrv = "1" /*level 1, range :0 ~ 3*/
 }
@@ -1717,15 +355,7 @@ sd0_d0_d3_cmd_clk_paddrv{
  actions,groups="paddrv1_19_18","paddrv1_17_16";
  actions,paddrv = "1" /*level 1, range :0 ~ 3*/
 }
-</pre>
-
-<p>表示 “paddrv1_19_18” 所代表的 P_SD0_CMD 和 paddrv1_17_16 所代表的 P_SD0_CLK, 使用驱动能力 1 来提升数据传输稳定性。</p>
-
-<h3 id="7-2-4-pin-pull-up-down">7.2.4 Pin Pull Up/Down</h3>
-
-<p>在 dts 中使用关键词 “actions，pull” 后跟上下拉数据定义 “actions，pin” 指定的 pin 组使用哪种上下拉，如：</p>
-
-<pre>sd0_pull_d0_d3_cmd{
+</pre><p>表示 “paddrv1_19_18” 所代表的 P_SD0_CMD 和 paddrv1_17_16 所代表的 P_SD0_CLK, 使用驱动能力 1 来提升数据传输稳定性。<h3 id=7-2-4-pin-pull-up-down>7.2.4 Pin Pull Up/Down</h3><p>在 dts 中使用关键词 “actions，pull” 后跟上下拉数据定义 “actions，pin” 指定的 pin 组使用哪种上下拉，如：<pre>sd0_pull_d0_d3_cmd{
    actions,pins = "P_SD0_CMD","P_SD0_CLK";
    actions,pull = <1>; 
 };
@@ -1733,29 +363,7 @@ sd0_pull_d0_d3_cmd{
    actions,pins = "P_SD0_CMD","P_SD0_CLK";
    actions,pull = <1>; 
 };
-</pre>
-
-<p>表示将 P_SD0_CMD 和 P_SD0_CLK 这两个 pin 下拉。</p>
-
-<p>actions，pull = <0>, 表示上下拉功能关闭</p>
-
-<p>actions，pull = <1>, 表示下拉</p>
-
-<p>actions，pull = <2>, 表示上拉</p>
-
-<h3 id="7-2-5-gpio-pin">7.2.5 GPIO-PIN</h3>
-
-<p>pin 除了可以复用作各种功能外，还可以配置成 GPIO 使用，pinctrl 子系统将 GPIO 子系统也管理起来了，因此申请 GPIO 的时候会去检查该 gpio 所对应的 pin 是否已经被其他驱动申请作其他功能了。如果已经被申请则申请时会报错，反之亦然。</p>
-
-<h2 id="8-使用-dts-描述-pinctrl-配置">8 使用 dts 描述 pinctrl 配置</h2>
-
-<h3 id="8-1dts-中-pinctrl-配置方法">8.1dts 中 pinctrl 配置方法</h3>
-
-<p>所有的 pinctrl-state 都定义在 pin controller device 节点中：</p>
-
-<p>在 kernel/arch/arm64/boot/dts/s700_pinctrl.dtsi 中</p>
-
-<pre>/ {
+</pre><p>表示将 P_SD0_CMD 和 P_SD0_CLK 这两个 pin 下拉。<p>actions，pull = <0>, 表示上下拉功能关闭<p>actions，pull = <1>, 表示下拉<p>actions，pull = <2>, 表示上拉<h3 id=7-2-5-gpio-pin>7.2.5 GPIO-PIN</h3><p>pin 除了可以复用作各种功能外，还可以配置成 GPIO 使用，pinctrl 子系统将 GPIO 子系统也管理起来了，因此申请 GPIO 的时候会去检查该 gpio 所对应的 pin 是否已经被其他驱动申请作其他功能了。如果已经被申请则申请时会报错，反之亦然。<h2 id=8-使用-dts-描述-pinctrl-配置>8 使用 dts 描述 pinctrl 配置</h2><h3 id=8-1dts-中-pinctrl-配置方法>8.1dts 中 pinctrl 配置方法</h3><p>所有的 pinctrl-state 都定义在 pin controller device 节点中：<p>在 kernel/arch/arm64/boot/dts/s700_pinctrl.dtsi 中<pre>/ {
         pinctrl@e01b0000 {
                 compatible = "actions,s700-pinctrl";
                 reg = <0 0xe01b0000 0 0x1000>;
@@ -1779,17 +387,7 @@ sd0_pull_d0_d3_cmd{
                 state_default: pinctrl_default {
                 };
 
-</pre>
-
-<p>而个驱动引用定义在 pin controller device 节点中的子节点，即 pinctrl-state 节点。</p>
-
-<p>各驱动使用如下方法引用 pinctrl-state 节点：</p>
-
-<p>pinctrl-N：描述该设备需要使用的 pin 的一个状态（pin state），相当于上述的 state。N 的数值必须从 0 开始顺序递增。pinctrl-N 属性的值为 pin configuration nodes 的 phandle。pinctrl-N 属性引用的 pin configuration nodes 必须是 pin controller device node 的直接子节点。</p>
-
-<p>pinctrl-names：为每个 pin state 定义一个名字。每个名字顺序对应一个 pin state。比如 pinctrl-0 的名字为 “default”，pinctrl-1 的名字对应“idle”。若不能指定 pinctrl-names 属性，这样的话，pin state 的名字就是该属性的“N” 字符。比如 pinctrl-0 的名字为字符“0”</p>
-
-<pre>mmc@e0330000{
+</pre><p>而个驱动引用定义在 pin controller device 节点中的子节点，即 pinctrl-state 节点。<p>各驱动使用如下方法引用 pinctrl-state 节点：<p>pinctrl-N：描述该设备需要使用的 pin 的一个状态（pin state），相当于上述的 state。N 的数值必须从 0 开始顺序递增。pinctrl-N 属性的值为 pin configuration nodes 的 phandle。pinctrl-N 属性引用的 pin configuration nodes 必须是 pin controller device node 的直接子节点。<p>pinctrl-names：为每个 pin state 定义一个名字。每个名字顺序对应一个 pin state。比如 pinctrl-0 的名字为 “default”，pinctrl-1 的名字对应“idle”。若不能指定 pinctrl-names 属性，这样的话，pin state 的名字就是该属性的“N” 字符。比如 pinctrl-0 的名字为字符“0”<pre>mmc@e0330000{
       pinctrl-names = "pinctrl_mmc0","share_uart2_5";  
       pinctrl-0 = <&mm0_pinctrl_state>;
       pinctrl-1 = <&mmc_share_uart_state>;
@@ -1799,1831 +397,247 @@ mmc@e0330000{
       pinctrl-0 = <&mm0_pinctrl_state>;
       pinctrl-1 = <&mmc_share_uart_state>;
 }
-</pre>
-
-<p>上面的例子中，mmc 驱动定义的 pinctrl-state 有两个，其中 mmc0_state_default 是定义 pin controller device  node 下的直接子节点，表示 sd0 的 pin group 作为 sd 功能使用，而 mmc_share_uart_state 则表示作为 serial 功能使用，其中 mmc_state_default 对应的 pinctrl-names 属性为 default，而 mmc_share_uart_state 对应的 pinctrl-names 属性为 share_uart2_5。</p>
-
-<h3 id="8-2-pin-mapping-database-的建立">8.2 pin mapping database 的建立</h3>
-
-<p>pin controller device 节点配置好后，内核是如何获取到 pin mapping database 并使用的呢？</p>
-
-<p>通过查看 pinctrl 子系统代码，了解到 pin mapping database 建立有两种情况：</p>
-
-<p>一种情况是主控驱动调用 pinctrl_register 注册 machine 的 struct pinctrl_desc 结构到 pinctrl 子系统时，由 pinctrl_register 调用 pinctrl_get 创建。</p>
-
-<p>    另一种就是各驱动在加载时由统一设备驱动模型在 driver 和 device 绑定时调用 devm_pinctrl_get 转而调用 pinctrl_get 创建。</p>
-
-<p>下一篇中通过代码来具体分析 pinctrl_get。</p>
-
-<p>###Linux内核中的pinctrl子系统应用实例</p>
-
-<p>由于近期在做一个项目用到了pinctrl子系统，但是对pinctrl子系统了解又不是很多，所以遇到了麻烦，但是找度娘发现很少有同行对pinctrl的具体用法做出说明，所以只能自己去搞了，在经过一段时间对Linux内核源码的折腾，最终搞定，并将我所应用的实例给展示一下，希望对大家有所帮助。</p>
-
-<p>关于pinctrl是什么，为什么要用pinctrl，源码深度剖析我在这就不赘述了，有位博友总结的非常好，大家可以参考<a href="http://www.wowotech.net/sort/gpio_subsystem。" target="_blank">http://www.wowotech.net/sort/gpio_subsystem。</a></p>
-
-<p>下面我介绍一下如何去使用内核中的pinctrl子系统以device tree设备树为例，当你需要控制某些pin的时候，你首先要在devicetree中去按照pinctrl的规则去描述它，然后才能在driver中去使用：</p>
-
-<p>案例1：</p>
-
-<p>xxx这个设备要用到gpg0_1这个pin的TE_DECON_INT功能，并分别将这两个状态取了个名字turnon_tes和turnoff_tes.这个名字是随便起的。重点是看pinctrl-0和pinctrl-1，根据示例，它们分别引用了disp_teson和disp_tesoff这两个节点。</p>
-
-<p>xxx {</p>
-
-<pre><code>....
+</pre><p>上面的例子中，mmc 驱动定义的 pinctrl-state 有两个，其中 mmc0_state_default 是定义 pin controller device  node 下的直接子节点，表示 sd0 的 pin group 作为 sd 功能使用，而 mmc_share_uart_state 则表示作为 serial 功能使用，其中 mmc_state_default 对应的 pinctrl-names 属性为 default，而 mmc_share_uart_state 对应的 pinctrl-names 属性为 share_uart2_5。<h3 id=8-2-pin-mapping-database-的建立>8.2 pin mapping database 的建立</h3><p>pin controller device 节点配置好后，内核是如何获取到 pin mapping database 并使用的呢？<p>通过查看 pinctrl 子系统代码，了解到 pin mapping database 建立有两种情况：<p>一种情况是主控驱动调用 pinctrl_register 注册 machine 的 struct pinctrl_desc 结构到 pinctrl 子系统时，由 pinctrl_register 调用 pinctrl_get 创建。<p>    另一种就是各驱动在加载时由统一设备驱动模型在 driver 和 device 绑定时调用 devm_pinctrl_get 转而调用 pinctrl_get 创建。<p>下一篇中通过代码来具体分析 pinctrl_get。<p>###Linux内核中的pinctrl子系统应用实例<p>由于近期在做一个项目用到了pinctrl子系统，但是对pinctrl子系统了解又不是很多，所以遇到了麻烦，但是找度娘发现很少有同行对pinctrl的具体用法做出说明，所以只能自己去搞了，在经过一段时间对Linux内核源码的折腾，最终搞定，并将我所应用的实例给展示一下，希望对大家有所帮助。<p>关于pinctrl是什么，为什么要用pinctrl，源码深度剖析我在这就不赘述了，有位博友总结的非常好，大家可以参考<a href=http://www.wowotech.net/sort/gpio_subsystem。 target=_blank>http://www.wowotech.net/sort/gpio_subsystem。</a><p>下面我介绍一下如何去使用内核中的pinctrl子系统以device tree设备树为例，当你需要控制某些pin的时候，你首先要在devicetree中去按照pinctrl的规则去描述它，然后才能在driver中去使用：<p>案例1：<p>xxx这个设备要用到gpg0_1这个pin的TE_DECON_INT功能，并分别将这两个状态取了个名字turnon_tes和turnoff_tes.这个名字是随便起的。重点是看pinctrl-0和pinctrl-1，根据示例，它们分别引用了disp_teson和disp_tesoff这两个节点。<p>xxx {<pre><code>....
 pinctrl-names = &quot;turnon_tes&quot;, &quot;turnoff_tes&quot;;
 pinctrl-0 = &lt;&amp;disp_teson&gt;;
 pinctrl-1 = &lt;&amp;disp_tesoff&gt;;
-</code></pre>
-
-<p>};<br />
-两个重要的属性必须有：pins 和 pin-function分别是pin的名字和要把pin配置成什么功能，还有gpg0属于pinctrl_2,所以这个地方引用的是pinctrl_2而不是其他。</p>
-
-<p>&amp;disp_teson_pinctrl {                           //#define disp_teson_pinctrl    pinctrl_2</p>
-
-<pre><code>disp_teson: disp_teson {
+</code></pre><p>};<br>两个重要的属性必须有：pins 和 pin-function分别是pin的名字和要把pin配置成什么功能，还有gpg0属于pinctrl_2,所以这个地方引用的是pinctrl_2而不是其他。<p>&amp;disp_teson_pinctrl { //#define disp_teson_pinctrl pinctrl_2<pre><code>disp_teson: disp_teson {
     samsung,pins = disp_teson_pin;          //#define disp_teson_pin    &quot;gpg0-1&quot;
     samsung,pin-function = &lt;disp_teson_con&gt;;//#define disp_teson_con    2 -- 对应0x2 = TEDECON_INT
 };
-</code></pre>
-
-<p>};<br />
-&amp;disp_tesoff_pinctrl {</p>
-
-<pre><code>disp_tesoff: disp_tesoff {
+</code></pre><p>};<br>&amp;disp_tesoff_pinctrl {<pre><code>disp_tesoff: disp_tesoff {
     samsung,pins = disp_tesoff_pin;          //#define disp_teson_pin        &quot;gpg0-1&quot;
     samsung,pin-function = &lt;disp_tesoff_con&gt;;//#define disp_teson_con         0
 };
-</code></pre>
-
-<p>};</p>
-
-<p>那么driver如何去操作这个pin呢？首先需要大家熟悉几个内核的API：</p>
-
-<ol>
-<li>获取一个pinctrl句柄，参数是dev是包含这个pin的device结构体即xxx这个设备的device<br />
-<br />
-<br /></li>
-</ol>
-
-<p>/**</p>
-
-<ul>
-<li>struct devm_pinctrl_get() - Resource managed pinctrl_get()<br /></li>
-<li>@dev: the device to obtain the handle for<br />
-*<br /></li>
-<li>If there is a need to explicitly destroy the returned struct pinctrl,<br /></li>
-<li>devm_pinctrl_put() should be used, rather than plain pinctrl_put().<br />
-*/<br />
-struct pinctrl *devm_pinctrl_get(struct device *dev)<br />
-<br />
-<br /></li>
-</ul>
-
-<ol>
-<li>获取这个pin对应pin_state（引脚状态-turnon_tes/turnoff_tes）<br />
-/**<br />
-
-<ul>
-<li>pinctrl_lookup_state() - retrieves a state handle from a pinctrl handle<br /></li>
-<li>@p: the pinctrl handle to retrieve the state from<br /></li>
-<li>@name: the state name to retrieve<br />
-*/<br />
-struct pinctrl_state *pinctrl_lookup_state(struct pinctrl *p, const char *name)<br /></li>
-</ul></li>
-<li>设置引脚为为某个stata -- turnon_tes/turnoff_tes<br />
-<br /></li>
-</ol>
-
-<p>/**</p>
-
-<ul>
-<li>pinctrl_select_state() - select/activate/program a pinctrl state to HW<br /></li>
-<li>@p: the pinctrl handle for the device that requests configuration<br /></li>
-<li>@state: the state handle to select/activate/program<br />
-*/<br />
-int pinctrl_select_state(struct pinctrl *p, struct pinctrl_state *state)<br />
-具体操作：<br />
-<br />
-<br /></li>
-</ul>
-
-<p>/* 获取pin control state holder 的句柄 <em>/<br />
-pinctrl = devm_pinctrl_get(dev);<br />
-/</em> 得到名字为turnon_tes和turnoff_tes对应的pin state */<br />
-struct pinctrl_state * turnon_tes = pinctrl_lookup_state(pinctrl, &quot;turnon_tes&quot;);<br />
-struct pinctrl_state * turnoff_tes = pinctrl_lookup_state(pinctrl, &quot;turnoff_tes&quot;);<br />
-/* 设置名字为turnon_tes这个pinctrl对应引脚（gpg0-1）的pin state，即gpg0_1对应的寄存器位域设置为2 */<br />
-pinctrl_select_state(pinctrl, turnon_tes)。<br />
-经过以上操作，gpg_1引脚对应的con寄存器的对应的位域被配置成2，即0x2 = TE_DECON_INT功能。同意，根据此方法也可以设置turnoff_tes的状态。</p>
-
-<p>案例2 -- 一个背光灯device需要使用pwm的输出pin：<br />
-device tree：<br />
-背光系统中要用到gpd2_4这个pin的TOUT_0功能和gpd4_3这个pin的输出功能并输出1，需要在backlight这个node中做以下描述，这两个pin只有一个状态（pwm-on），同样，这个名字也是可以随便起的。bl_pwm_ctrl和bl_pwm_en_ctrl分别是对这两个pin的描述。</p>
-
-<p>backlight {</p>
-
-<pre><code>...
+</code></pre><p>};<p>那么driver如何去操作这个pin呢？首先需要大家熟悉几个内核的API：<ol><li>获取一个pinctrl句柄，参数是dev是包含这个pin的device结构体即xxx这个设备的device<br><br><br></ol><p>/**<ul><li>struct devm_pinctrl_get() - Resource managed pinctrl_get()<br><li>@dev: the device to obtain the handle for<br>*<br><li>If there is a need to explicitly destroy the returned struct pinctrl,<br><li>devm_pinctrl_put() should be used, rather than plain pinctrl_put().<br>*/<br>struct pinctrl *devm_pinctrl_get(struct device *dev)<br><br><br></ul><ol><li>获取这个pin对应pin_state（引脚状态-turnon_tes/turnoff_tes）<br>/**<br><ul><li>pinctrl_lookup_state() - retrieves a state handle from a pinctrl handle<br><li>@p: the pinctrl handle to retrieve the state from<br><li>@name: the state name to retrieve<br>*/<br>struct pinctrl_state *pinctrl_lookup_state(struct pinctrl *p, const char *name)<br></ul><li>设置引脚为为某个stata -- turnon_tes/turnoff_tes<br><br></ol><p>/**<ul><li>pinctrl_select_state() - select/activate/program a pinctrl state to HW<br><li>@p: the pinctrl handle for the device that requests configuration<br><li>@state: the state handle to select/activate/program<br>*/<br>int pinctrl_select_state(struct pinctrl *p, struct pinctrl_state *state)<br>具体操作：<br><br><br></ul><p>/* 获取pin control state holder 的句柄 <em>/<br>pinctrl = devm_pinctrl_get(dev);<br>/</em> 得到名字为turnon_tes和turnoff_tes对应的pin state */<br>struct pinctrl_state * turnon_tes = pinctrl_lookup_state(pinctrl, &quot;turnon_tes&quot;);<br>struct pinctrl_state * turnoff_tes = pinctrl_lookup_state(pinctrl, &quot;turnoff_tes&quot;);<br>/* 设置名字为turnon_tes这个pinctrl对应引脚（gpg0-1）的pin state，即gpg0_1对应的寄存器位域设置为2 */<br>pinctrl_select_state(pinctrl, turnon_tes)。<br>经过以上操作，gpg_1引脚对应的con寄存器的对应的位域被配置成2，即0x2 = TE_DECON_INT功能。同意，根据此方法也可以设置turnoff_tes的状态。<p>案例2 -- 一个背光灯device需要使用pwm的输出pin：<br>device tree：<br>背光系统中要用到gpd2_4这个pin的TOUT_0功能和gpd4_3这个pin的输出功能并输出1，需要在backlight这个node中做以下描述，这两个pin只有一个状态（pwm-on），同样，这个名字也是可以随便起的。bl_pwm_ctrl和bl_pwm_en_ctrl分别是对这两个pin的描述。<p>backlight {<pre><code>...
 ...
 pinctrl-names = &quot;pwm-on&quot;;
 pinctrl-0 = &lt;&amp;bl_pwm_ctrl @bl_pwm_en_ctrl&gt;;
-</code></pre>
-
-<p>}；<br />
-/* 这个和上面一样，就不多说了 */<br />
-&amp;bl_pwm_ctrl_pinctrl{                                     //#define bl_pwm_ctrl_pinctrl   pinctrl_2</p>
-
-<pre><code>bl_pwm_ctrl: bl_pwm_ctrl {
+</code></pre><p>}；<br>/* 这个和上面一样，就不多说了 */<br>&amp;bl_pwm_ctrl_pinctrl{ //#define bl_pwm_ctrl_pinctrl pinctrl_2<pre><code>bl_pwm_ctrl: bl_pwm_ctrl {
     samsung,pins = bl_pwm_ctrl_pin;           //#define bl_pwm_ctrl_pin   &quot;gpd2-4&quot;
     samsung,pin-function = &lt;bl_pwm_ctrl_con&gt;; //#define bl_pwm_ctrl_con     2
     samsung,pin-pud = &lt;bl_pwm_ctrl_pull&gt;;     //#define bl_pwm_ctrl_pull        3
     samsung,pin-drv = &lt;bl_pwm_ctrl_drv&gt;;      //#define bl_pwm_ctrl_drv     0
 };
-</code></pre>
-
-<p>};<br />
-这个描述比上面多了个pin-val，因为这个引脚不仅要配置成输出功能，还要输出1，所以pin-val = 1。<br />
-&amp;bl_pwm_en_ctrl_pinctrl{</p>
-
-<pre><code>bl_pwm_en_ctrl: bl_pwm_en_ctrl {
+</code></pre><p>};<br>这个描述比上面多了个pin-val，因为这个引脚不仅要配置成输出功能，还要输出1，所以pin-val = 1。<br>&amp;bl_pwm_en_ctrl_pinctrl{<pre><code>bl_pwm_en_ctrl: bl_pwm_en_ctrl {
     samsung,pins = bl_pwm_en_ctrl_pin;           //#define bl_pwm_en_ctrl_pin     &quot;gpd4-3&quot;
     samsung,pin-function = &lt;bl_pwm_en_ctrl_con&gt;; //#define bl_pwm_en_ctrl_con      1
     samsung,pin-val = &lt;1&gt;;
     samsung,pin-pud = &lt;bl_pwm_en_ctrl_pull&gt;;
     samsung,pin-drv = &lt;bl_pwm_en_ctrl_drv&gt;;
 };
-</code></pre>
-
-<p>};<br />
-driver的操作：<br />
-在backlight的driver的probe中：</p>
-
-<pre><code class="language-c">struct pinctrl * p = devm_pinctrl_get(&amp;pdev-&gt;dev);
+</code></pre><p>};<br>driver的操作：<br>在backlight的driver的probe中：<pre><code class=language-c>struct pinctrl * p = devm_pinctrl_get(&amp;pdev-&gt;dev);
 struct pinctrl_state * default_state = pinctrl_lookup_state(p, &quot;pwm-on&quot;);
 pinctrl_select_state(p, default_state);
-</code></pre>
-
-<p>执行完以上操作，可以发现gpd2_4引脚被配置成了TOUT_0功能，gpd4_3引脚被配置成为了输出功能，并且输出1（高电平）。<br />
-以上就是pinctrl子系统的应用实例。如果有解释不太正确的地方请指教。<br />
- ————————————————<br />
-版权声明：本文为CSDN博主「hanp_linux」的原创文章，遵循CC 4.0 by-sa版权协议，转载请附上原文出处链接及本声明。<br />
-原文链接：<a href="https://blog.csdn.net/hanp_linux/article/details/72818437" target="_blank">https://blog.csdn.net/hanp_linux/article/details/72818437</a></p>
-
-                        </div>                      
-                        <div class="clear"></div>
-                    </div>
-                </div>
-            </article>   
-            <div class="clear"></div>
-
-            
-            <p class="post-tags">
-                  <span class="fa fa-tags">Tags:</span>
-                  
-                    <a rel="tag" href="../../tags/hardware">hardware</a>
-                  
-            </p>
-            
-            <div id="related-posts">
-                <div class="related-inner">
-                </div>
-            </div>
-            
-            
-<section id="comments" class="themeform">
-  
-
-  
-
-  
-  
-  
-
-
-</section>
-
-            
-            <section id="comments" class="themeform">
-                
-            </section>
-        </div>
-</div> <div class="sidebar s1 collapsed" data-position="left" data-layout="col-3cm" data-sb-id="s1">
-    <a class="sidebar-toggle" title="Expand Sidebar">
-        <i class="fas icon-sidebar-toggle"></i>
-    </a>
-    <div class="sidebar-content">
-        <div class="sidebar-top group">
-            <p>Follow:</p>  
-                          
-<ul class="social-links">
-    
-    
-    
-    
-
-    
-    <li>
-        <a class="social-tooltip" href="mailto:" title="Email">
-            <i class="fa fa-envelope"></i></a>
-    </li>
-
-    
-    <li>
-        <a class="social-tooltip"  href="//github.com/" title="GitHub"><i
-                class="fa fa-github"></i></a>
-    </li>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-    <li>
-        <a class="social-tooltip" title="RSS Feed"
-            aria-label="RSS Feed"
-            href="../../feed" target="_blank"
-            style="color:rgba(255,255,255,0.7)">
-            <i class="fa fa-rss"></i>
-        </a>
-    </li>
-
-</ul>
-   
-        </div>
-            <ul class="post-nav group">
-    <li class="previous">
-      
-      <a href="../../language/clang/c-void/" rel="prev">
-        <i class="fa fa-chevron-left"></i>
-        <strong>Previous Post</strong>
-        <span>c void</span>
-      </a>
-      
-  </li>
-</ul>
-
-            
-            <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
-  <ul>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/ai/">Ai</a>
-        <small>(7)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/algorithm/">Algorithm</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/android/">Android</a>
-        <small>(17)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/ansible/">Ansible</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/beats/">Beats</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/busybox/">Busybox</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/caffe/">Caffe</a>
-        <small>(21)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/cgo/">Cgo</a>
-        <small>(10)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/clang/">Clang</a>
-        <small>(19)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/cmd/">Cmd</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/cpp/">Cpp</a>
-        <small>(6)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/cross_compile/">Cross_compile</a>
-        <small>(8)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/css/">Css</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/dart/">Dart</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/database/">Database</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/dataset/">Dataset</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/deeplearning/">Deeplearning</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/devops/">Devops</a>
-        <small>(70)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/docker/">Docker</a>
-        <small>(18)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/dts/">Dts</a>
-        <small>(5)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/elasticsearch/">Elasticsearch</a>
-        <small>(9)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/english/">English</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/freertos/">Freertos</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/front-end/">Front-End</a>
-        <small>(20)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/golang/">Golang</a>
-        <small>(134)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/hacker/">Hacker</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/hardware/">Hardware</a>
-        <small>(14)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/hi3559/">Hi3559</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/hisi/">Hisi</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/hisilicon/">Hisilicon</a>
-        <small>(44)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/jetson/">Jetson</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/js/">Js</a>
-        <small>(9)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/jumpserver/">Jumpserver</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/kernel/">Kernel</a>
-        <small>(14)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/linux/">Linux</a>
-        <small>(93)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
-        <small>(120)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/mac/">Mac</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/machinelearn/">Machinelearn</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/machinelearning/">Machinelearning</a>
-        <small>(11)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/macos/">Macos</a>
-        <small>(12)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/math/">Math</a>
-        <small>(7)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/matplotlib/">Matplotlib</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/mpp/">Mpp</a>
-        <small>(9)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/mysql/">Mysql</a>
-        <small>(10)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/ncnn/">Ncnn</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/network/">Network</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/nginx/">Nginx</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/nnie/">Nnie</a>
-        <small>(11)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/node/">Node</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/numpy/">Numpy</a>
-        <small>(4)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/opencv/">Opencv</a>
-        <small>(10)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/pandas/">Pandas</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/platform/">Platform</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/post/">Post</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/pyqt/">Pyqt</a>
-        <small>(8)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/python/">Python</a>
-        <small>(30)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/pytorch/">Pytorch</a>
-        <small>(6)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/raspi/">Raspi</a>
-        <small>(4)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/rk3288/">Rk3288</a>
-        <small>(23)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/rk3399/">Rk3399</a>
-        <small>(9)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/rtmp/">Rtmp</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/scikit/">Scikit</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/shell/">Shell</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/tool/">Tool</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/weixin/">Weixin</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/windows/">Windows</a>
-        <small>(22)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/work/">Work</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/yolo/">Yolo</a>
-        <small>(12)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E5%8D%8F%E8%AE%AE/">协议</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
-        <small>(23)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E5%B7%A5%E5%85%B7/">工具</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/">排列组合</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(37)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
-        <small>(30)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
-        <small>(4)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
-        <small>(40)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
-        <small>(7)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(15)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../categories/%E9%AB%98%E6%95%B0/">高数</a>
-        <small>(2)</small>
-      </li>
-    
-  </ul>
-
-</div>
-
-
-    </div>
-</div> <div class="sidebar s2 collapsed" data-position="right" data-layout="col-3cm" data-sb-id="s2">
-        <a class="sidebar-toggle" title="Expand Sidebar">
-            <i class="fas icon-sidebar-toggle"></i>
-        </a>
-        <div class="sidebar-content">
-            <div class="sidebar-top group">
-                <p>More</p>
-            </div>
-            <ul class="post-nav group">
-    <li class="next">
-      
-      <a href="../../language/clang/gcc/" rel="next">
-        <i class="fa fa-chevron-right"></i>
-        <strong>Next post</strong>
-        <span>gcc</span>
-      </a>
-      
-  </li>
-</ul>
-
-            <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
-  <div class="tagcloud post-tags">
-
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/ai/" class="tag-link-7" title="1 Posts">ai<small>(7)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/ansible/" class="tag-link-19" title="1 Posts">ansible<small>(19)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/awesome/" class="tag-link-3" title="1 Posts">awesome<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/bfc/" class="tag-link-2" title="1 Posts">bfc<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/c/" class="tag-link-5" title="1 Posts">c<small>(5)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/caffe/" class="tag-link-21" title="1 Posts">caffe<small>(21)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/cgo/" class="tag-link-10" title="1 Posts">cgo<small>(10)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/clang/" class="tag-link-19" title="1 Posts">clang<small>(19)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/cmd/" class="tag-link-2" title="1 Posts">cmd<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/cpp/" class="tag-link-6" title="1 Posts">cpp<small>(6)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/cross_compile/" class="tag-link-8" title="1 Posts">cross_compile<small>(8)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/css/" class="tag-link-20" title="1 Posts">css<small>(20)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/css3/" class="tag-link-2" title="1 Posts">css3<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/dataset/" class="tag-link-2" title="1 Posts">dataset<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/devops/" class="tag-link-3" title="1 Posts">devops<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/docker/" class="tag-link-21" title="1 Posts">docker<small>(21)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/drone/" class="tag-link-22" title="1 Posts">drone<small>(22)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/dts/" class="tag-link-6" title="1 Posts">dts<small>(6)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/elasticsearch/" class="tag-link-9" title="1 Posts">elasticsearch<small>(9)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/encode/" class="tag-link-3" title="1 Posts">encode<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/english/" class="tag-link-8" title="1 Posts">english<small>(8)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/es6/" class="tag-link-2" title="1 Posts">es6<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/etcd/" class="tag-link-4" title="1 Posts">etcd<small>(4)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/flannel/" class="tag-link-2" title="1 Posts">flannel<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/git/" class="tag-link-6" title="1 Posts">git<small>(6)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/github/" class="tag-link-2" title="1 Posts">github<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/golang/" class="tag-link-148" title="1 Posts">golang<small>(148)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/gradle/" class="tag-link-3" title="1 Posts">gradle<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/hardware/" class="tag-link-14" title="1 Posts">hardware<small>(14)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/hexo/" class="tag-link-3" title="1 Posts">hexo<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/hisilicon/" class="tag-link-44" title="1 Posts">hisilicon<small>(44)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/html/" class="tag-link-2" title="1 Posts">html<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/http/" class="tag-link-6" title="1 Posts">http<small>(6)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/hugo/" class="tag-link-14" title="1 Posts">hugo<small>(14)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/ip/" class="tag-link-3" title="1 Posts">ip<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/iptables/" class="tag-link-17" title="1 Posts">iptables<small>(17)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/javascript/" class="tag-link-19" title="1 Posts">javascript<small>(19)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/jetson/" class="tag-link-3" title="1 Posts">jetson<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/jquery/" class="tag-link-12" title="1 Posts">jquery<small>(12)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/js/" class="tag-link-10" title="1 Posts">js<small>(10)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/jumpserver/" class="tag-link-2" title="1 Posts">jumpserver<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/jwt/" class="tag-link-3" title="1 Posts">jwt<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/kernel/" class="tag-link-14" title="1 Posts">kernel<small>(14)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/kubernetes/" class="tag-link-11" title="1 Posts">kubernetes<small>(11)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/linux/" class="tag-link-21" title="1 Posts">linux<small>(21)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/machinelearn/" class="tag-link-3" title="1 Posts">machinelearn<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/machinelearning/" class="tag-link-11" title="1 Posts">machinelearning<small>(11)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/macos/" class="tag-link-14" title="1 Posts">macos<small>(14)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/mariadb/" class="tag-link-9" title="1 Posts">mariadb<small>(9)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/math/" class="tag-link-7" title="1 Posts">math<small>(7)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/matplotlib/" class="tag-link-3" title="1 Posts">matplotlib<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/maven/" class="tag-link-2" title="1 Posts">maven<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/ml/" class="tag-link-3" title="1 Posts">ml<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/mpp/" class="tag-link-9" title="1 Posts">mpp<small>(9)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/mysql/" class="tag-link-61" title="1 Posts">mysql<small>(61)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/ncnn/" class="tag-link-3" title="1 Posts">ncnn<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/netns/" class="tag-link-2" title="1 Posts">netns<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/network/" class="tag-link-2" title="1 Posts">network<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/nginx/" class="tag-link-28" title="1 Posts">nginx<small>(28)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/nmap/" class="tag-link-2" title="1 Posts">nmap<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/nnie/" class="tag-link-11" title="1 Posts">nnie<small>(11)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/node/" class="tag-link-4" title="1 Posts">node<small>(4)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/nosql/" class="tag-link-8" title="1 Posts">nosql<small>(8)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/npm/" class="tag-link-3" title="1 Posts">npm<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/numpy/" class="tag-link-4" title="1 Posts">numpy<small>(4)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/oauth2/" class="tag-link-2" title="1 Posts">oauth2<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/opencv/" class="tag-link-10" title="1 Posts">opencv<small>(10)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/openssl/" class="tag-link-3" title="1 Posts">openssl<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/php/" class="tag-link-4" title="1 Posts">php<small>(4)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/post/" class="tag-link-4" title="1 Posts">post<small>(4)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/prometheus/" class="tag-link-8" title="1 Posts">prometheus<small>(8)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/pyqt/" class="tag-link-8" title="1 Posts">pyqt<small>(8)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/python/" class="tag-link-32" title="1 Posts">python<small>(32)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/pytorch/" class="tag-link-6" title="1 Posts">pytorch<small>(6)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/raspi/" class="tag-link-4" title="1 Posts">raspi<small>(4)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/redis/" class="tag-link-2" title="1 Posts">redis<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/reflect/" class="tag-link-3" title="1 Posts">reflect<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/responsive/" class="tag-link-2" title="1 Posts">responsive<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/restful/" class="tag-link-6" title="1 Posts">restful<small>(6)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/rk3288/" class="tag-link-22" title="1 Posts">rk3288<small>(22)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/rk3399/" class="tag-link-9" title="1 Posts">rk3399<small>(9)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/route/" class="tag-link-2" title="1 Posts">route<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/rtmp/" class="tag-link-2" title="1 Posts">rtmp<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/scikit/" class="tag-link-3" title="1 Posts">scikit<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/scss/" class="tag-link-2" title="1 Posts">scss<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/seo/" class="tag-link-5" title="1 Posts">seo<small>(5)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/shell/" class="tag-link-10" title="1 Posts">shell<small>(10)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/sqlite/" class="tag-link-2" title="1 Posts">sqlite<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/swagger/" class="tag-link-2" title="1 Posts">swagger<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/swarm/" class="tag-link-2" title="1 Posts">swarm<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/sysctl/" class="tag-link-2" title="1 Posts">sysctl<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/ulimit/" class="tag-link-2" title="1 Posts">ulimit<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/vim/" class="tag-link-14" title="1 Posts">vim<small>(14)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/windows/" class="tag-link-18" title="1 Posts">windows<small>(18)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../tags/yolo/" class="tag-link-12" title="1 Posts">yolo<small>(12)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-2" title="1 Posts">微服务<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-  </div>
-</div>
-
-
-        </div>
-    </div>`
-
-                    </div>
-                    
-                </div>
-                
-
-            </div>
-
-        </div>
-    </div>
-
-    
-
-
-
-
-<script type='text/javascript'>
-  var HUParams={
-      "_disabled":[],
-      "SmoothScroll":{
-          "Enabled":true,
-          "Options":{"touchpadSupport":false}
-      },
-      "centerAllImg":"1",
-      "timerOnScrollAllBrowsers":"1",
-      "extLinksStyle":"1",
-      "extLinksTargetExt":"1",
-      "extLinksSkipSelectors":{
-          "classes":["btn","button"],"ids":[]
-      },
-      "imgSmartLoadEnabled":"1",
-      "imgSmartLoadOpts":{
-          "parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],
-          "opts":{
-              "excludeImg":[".tc-holder-img"],
-              "fadeIn_options":100
-          }
-      },
-      "goldenRatio":"1.618","gridGoldenRatioLimit":"350",
-      "sbStickyUserSettings":{"desktop":true,"mobile":true},
-      "isWPMobile":"",
-      "menuStickyUserSettings":{
-          "desktop":"stick_up",
-          "mobile":"stick_up"
-      },
-      "isDevMode":"",
-      "ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1",
-          "frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},
-          "userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},
-          "isWelcomeNoteOn":"","welcomeContent":""};
-</script>
-
-
-
-<script src="https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js"></script>
-<script src="https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js"></script>
-<script type="text/javascript" src="../../front/js/scripts.js"></script> 
-
-
-
-
-
-<footer id="footer">
-    <section class="container" id="footer-bottom">
-      <div class="container-inner">
-        <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
-        <div class="pad group">
-          <div class="grid one-half">
-            <div id="copyright">
-                <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
-                
-            </div>
-            
-          </div>
-          
-          <div class="grid one-half last">
-            <ul class="social-links">
-    <li>
-    <a class="social-tooltip" title="On WeiBo"
-        href="http://weibo.com/rinetd" target="_blank">
-        <i class="fa fa-weibo"></i>
-    </a>
-    </li>
-    <li>
-    <a class="social-tooltip" title="On Twitter"
-        href="https://twitter.com/rinetd" target="_blank">
-        <i class="fa fa-twitter"></i>
-    </a>
-    </li>
-    <li>
-    <a class="social-tooltip" title="On GitHub"
-        href="https://github.com/rinetd" target="_blank">
-        <i class="fa fa-github"></i>
-    </a>
-    </li>
-</ul>
-
-          </div>
-        </div>
-  
-      </div>
-      
-    </section>
-    
-  </footer>
-
-
-<div class="back-to-top" id="back-to-top">
-    <i class="fa fa-angle-double-up"></i>
-</div>
-
-
-
-
-
-<script>
-  $(".topbar-toggle-down").click(function(){
-    $("#nav-topbar").css("overflow","visible");
-  });
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
-                style="display:none;visibility:hidden"></iframe>
-    </noscript>
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-5HM5XM2');
-    </script>
-    
-
-
-
-
-
-</body>
-
-</html>
+</code></pre><p>执行完以上操作，可以发现gpd2_4引脚被配置成了TOUT_0功能，gpd4_3引脚被配置成为了输出功能，并且输出1（高电平）。<br>以上就是pinctrl子系统的应用实例。如果有解释不太正确的地方请指教。<br>————————————————<br>版权声明：本文为CSDN博主「hanp_linux」的原创文章，遵循CC 4.0 by-sa版权协议，转载请附上原文出处链接及本声明。<br>原文链接：<a href=https://blog.csdn.net/hanp_linux/article/details/72818437 target=_blank>https://blog.csdn.net/hanp_linux/article/details/72818437</a></div><div class=clear></div></div></div></article><div class=clear></div><p class=post-tags><span class="fa fa-tags">Tags:</span>
+<a rel=tag href=../../tags/hardware>hardware</a><div id=related-posts><div class=related-inner></div></div><section id=comments class=themeform></section><section id=comments class=themeform></section></div></div><div class="sidebar s1 collapsed" data-position=left data-layout=col-3cm data-sb-id=s1><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>Follow:<ul class=social-links><li><a class=social-tooltip href=mailto: title=Email><i class="fa fa-envelope"></i></a><li><a class=social-tooltip href=//github.com/ title=GitHub><i class="fa fa-github"></i></a><li><a class=social-tooltip title="RSS Feed" aria-label="RSS Feed" href=../../feed target=_blank style=color:#ffffffb2><i class="fa fa-rss"></i></a></ul></div><ul class="post-nav group"><li class=previous><a href=../../language/clang/c-void/ rel=prev><i class="fa fa-chevron-left"></i><strong>Previous Post</strong>
+<span>c void</span></a></ul><div id=categories-2 class="widget widget_categories"><h3>分类</h3><ul><li class="cat-item cat-item-1"><a href=../../categories/ai/>Ai</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../categories/algorithm/>Algorithm</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/android/>Android</a>
+<small>(17)</small><li class="cat-item cat-item-1"><a href=../../categories/ansible/>Ansible</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/beats/>Beats</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/busybox/>Busybox</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/caffe/>Caffe</a>
+<small>(21)</small><li class="cat-item cat-item-1"><a href=../../categories/cgo/>Cgo</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../categories/clang/>Clang</a>
+<small>(19)</small><li class="cat-item cat-item-1"><a href=../../categories/cmd/>Cmd</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/cpp/>Cpp</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../categories/cross_compile/>Cross_compile</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../categories/css/>Css</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/dart/>Dart</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/database/>Database</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/dataset/>Dataset</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/deeplearning/>Deeplearning</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/devops/>Devops</a>
+<small>(70)</small><li class="cat-item cat-item-1"><a href=../../categories/docker/>Docker</a>
+<small>(18)</small><li class="cat-item cat-item-1"><a href=../../categories/dts/>Dts</a>
+<small>(5)</small><li class="cat-item cat-item-1"><a href=../../categories/elasticsearch/>Elasticsearch</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../categories/english/>English</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/freertos/>Freertos</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/front-end/>Front-End</a>
+<small>(20)</small><li class="cat-item cat-item-1"><a href=../../categories/golang/>Golang</a>
+<small>(134)</small><li class="cat-item cat-item-1"><a href=../../categories/hacker/>Hacker</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/hardware/>Hardware</a>
+<small>(14)</small><li class="cat-item cat-item-1"><a href=../../categories/hi3559/>Hi3559</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/hisi/>Hisi</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/hisilicon/>Hisilicon</a>
+<small>(44)</small><li class="cat-item cat-item-1"><a href=../../categories/jetson/>Jetson</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/js/>Js</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../categories/jumpserver/>Jumpserver</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/kernel/>Kernel</a>
+<small>(14)</small><li class="cat-item cat-item-1"><a href=../../categories/linux/>Linux</a>
+<small>(93)</small><li class="cat-item cat-item-1"><a href=../../categories/linux-%E5%91%BD%E4%BB%A4/>Linux-命令</a>
+<small>(120)</small><li class="cat-item cat-item-1"><a href=../../categories/mac/>Mac</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/machinelearn/>Machinelearn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/machinelearning/>Machinelearning</a>
+<small>(11)</small><li class="cat-item cat-item-1"><a href=../../categories/macos/>Macos</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../categories/math/>Math</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../categories/matplotlib/>Matplotlib</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/mpp/>Mpp</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../categories/mysql/>Mysql</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../categories/ncnn/>Ncnn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/network/>Network</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/nginx/>Nginx</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/nnie/>Nnie</a>
+<small>(11)</small><li class="cat-item cat-item-1"><a href=../../categories/node/>Node</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/numpy/>Numpy</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../categories/opencv/>Opencv</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../categories/pandas/>Pandas</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/platform/>Platform</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/post/>Post</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/pyqt/>Pyqt</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../categories/python/>Python</a>
+<small>(30)</small><li class="cat-item cat-item-1"><a href=../../categories/pytorch/>Pytorch</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../categories/raspi/>Raspi</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../categories/rk3288/>Rk3288</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../categories/rk3399/>Rk3399</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../categories/rtmp/>Rtmp</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/scikit/>Scikit</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/shell/>Shell</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/tool/>Tool</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/weixin/>Weixin</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/windows/>Windows</a>
+<small>(22)</small><li class="cat-item cat-item-1"><a href=../../categories/work/>Work</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/yolo/>Yolo</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/>前端技术</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/%E5%8D%8F%E8%AE%AE/>协议</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/>嵌入式</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../categories/%E5%B7%A5%E5%85%B7/>工具</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/>常用算法</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/>微服务</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/>排列组合</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/>数据库</a>
+<small>(37)</small><li class="cat-item cat-item-1"><a href=../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/>文本编辑</a>
+<small>(30)</small><li class="cat-item cat-item-1"><a href=../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/>正则表达式</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/>生活技巧</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/>程序员</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/>网络安全</a>
+<small>(40)</small><li class="cat-item cat-item-1"><a href=../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/>集群监控</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/>静态博客</a>
+<small>(15)</small><li class="cat-item cat-item-1"><a href=../../categories/%E9%AB%98%E6%95%B0/>高数</a>
+<small>(2)</small></ul></div></div></div><div class="sidebar s2 collapsed" data-position=right data-layout=col-3cm data-sb-id=s2><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>More</div><ul class="post-nav group"><li class=next><a href=../../language/clang/gcc/ rel=next><i class="fa fa-chevron-right"></i><strong>Next post</strong>
+<span>gcc</span></a></ul><div id=tag_cloud-2 class="widget widget_tag_cloud"><h3>标签云</h3><div class="tagcloud post-tags"><a rel=tag href=../../tags/ai/ class=tag-link-7 title="1 Posts">ai<small>(7)</small></a>
+<a rel=tag href=../../tags/ansible/ class=tag-link-19 title="1 Posts">ansible<small>(19)</small></a>
+<a rel=tag href=../../tags/awesome/ class=tag-link-3 title="1 Posts">awesome<small>(3)</small></a>
+<a rel=tag href=../../tags/bfc/ class=tag-link-2 title="1 Posts">bfc<small>(2)</small></a>
+<a rel=tag href=../../tags/c/ class=tag-link-5 title="1 Posts">c<small>(5)</small></a>
+<a rel=tag href=../../tags/caffe/ class=tag-link-21 title="1 Posts">caffe<small>(21)</small></a>
+<a rel=tag href=../../tags/centos7/ class=tag-link-2 title="1 Posts">centos7<small>(2)</small></a>
+<a rel=tag href=../../tags/cgo/ class=tag-link-10 title="1 Posts">cgo<small>(10)</small></a>
+<a rel=tag href=../../tags/clang/ class=tag-link-19 title="1 Posts">clang<small>(19)</small></a>
+<a rel=tag href=../../tags/cmd/ class=tag-link-2 title="1 Posts">cmd<small>(2)</small></a>
+<a rel=tag href=../../tags/cpp/ class=tag-link-6 title="1 Posts">cpp<small>(6)</small></a>
+<a rel=tag href=../../tags/cross_compile/ class=tag-link-8 title="1 Posts">cross_compile<small>(8)</small></a>
+<a rel=tag href=../../tags/css/ class=tag-link-20 title="1 Posts">css<small>(20)</small></a>
+<a rel=tag href=../../tags/css3/ class=tag-link-2 title="1 Posts">css3<small>(2)</small></a>
+<a rel=tag href=../../tags/curd/ class=tag-link-3 title="1 Posts">curd<small>(3)</small></a>
+<a rel=tag href=../../tags/curl/ class=tag-link-2 title="1 Posts">curl<small>(2)</small></a>
+<a rel=tag href=../../tags/dataset/ class=tag-link-2 title="1 Posts">dataset<small>(2)</small></a>
+<a rel=tag href=../../tags/devops/ class=tag-link-3 title="1 Posts">devops<small>(3)</small></a>
+<a rel=tag href=../../tags/docker/ class=tag-link-21 title="1 Posts">docker<small>(21)</small></a>
+<a rel=tag href=../../tags/drone/ class=tag-link-22 title="1 Posts">drone<small>(22)</small></a>
+<a rel=tag href=../../tags/dts/ class=tag-link-6 title="1 Posts">dts<small>(6)</small></a>
+<a rel=tag href=../../tags/elasticsearch/ class=tag-link-9 title="1 Posts">elasticsearch<small>(9)</small></a>
+<a rel=tag href=../../tags/emacs/ class=tag-link-12 title="1 Posts">emacs<small>(12)</small></a>
+<a rel=tag href=../../tags/encode/ class=tag-link-3 title="1 Posts">encode<small>(3)</small></a>
+<a rel=tag href=../../tags/english/ class=tag-link-8 title="1 Posts">english<small>(8)</small></a>
+<a rel=tag href=../../tags/es6/ class=tag-link-2 title="1 Posts">es6<small>(2)</small></a>
+<a rel=tag href=../../tags/etcd/ class=tag-link-4 title="1 Posts">etcd<small>(4)</small></a>
+<a rel=tag href=../../tags/flannel/ class=tag-link-2 title="1 Posts">flannel<small>(2)</small></a>
+<a rel=tag href=../../tags/git/ class=tag-link-6 title="1 Posts">git<small>(6)</small></a>
+<a rel=tag href=../../tags/github/ class=tag-link-2 title="1 Posts">github<small>(2)</small></a>
+<a rel=tag href=../../tags/golang/ class=tag-link-148 title="1 Posts">golang<small>(148)</small></a>
+<a rel=tag href=../../tags/gradle/ class=tag-link-3 title="1 Posts">gradle<small>(3)</small></a>
+<a rel=tag href=../../tags/haproxy/ class=tag-link-5 title="1 Posts">haproxy<small>(5)</small></a>
+<a rel=tag href=../../tags/hardware/ class=tag-link-14 title="1 Posts">hardware<small>(14)</small></a>
+<a rel=tag href=../../tags/hexo/ class=tag-link-3 title="1 Posts">hexo<small>(3)</small></a>
+<a rel=tag href=../../tags/hisilicon/ class=tag-link-44 title="1 Posts">hisilicon<small>(44)</small></a>
+<a rel=tag href=../../tags/html/ class=tag-link-2 title="1 Posts">html<small>(2)</small></a>
+<a rel=tag href=../../tags/http/ class=tag-link-6 title="1 Posts">http<small>(6)</small></a>
+<a rel=tag href=../../tags/hugo/ class=tag-link-14 title="1 Posts">hugo<small>(14)</small></a>
+<a rel=tag href=../../tags/imagemagick/ class=tag-link-2 title="1 Posts">imagemagick<small>(2)</small></a>
+<a rel=tag href=../../tags/ip/ class=tag-link-3 title="1 Posts">ip<small>(3)</small></a>
+<a rel=tag href=../../tags/iproute2/ class=tag-link-5 title="1 Posts">iproute2<small>(5)</small></a>
+<a rel=tag href=../../tags/iptables/ class=tag-link-17 title="1 Posts">iptables<small>(17)</small></a>
+<a rel=tag href=../../tags/javascript/ class=tag-link-19 title="1 Posts">javascript<small>(19)</small></a>
+<a rel=tag href=../../tags/jetson/ class=tag-link-3 title="1 Posts">jetson<small>(3)</small></a>
+<a rel=tag href=../../tags/jquery/ class=tag-link-12 title="1 Posts">jquery<small>(12)</small></a>
+<a rel=tag href=../../tags/js/ class=tag-link-10 title="1 Posts">js<small>(10)</small></a>
+<a rel=tag href=../../tags/jumpserver/ class=tag-link-2 title="1 Posts">jumpserver<small>(2)</small></a>
+<a rel=tag href=../../tags/jwt/ class=tag-link-3 title="1 Posts">jwt<small>(3)</small></a>
+<a rel=tag href=../../tags/kernel/ class=tag-link-14 title="1 Posts">kernel<small>(14)</small></a>
+<a rel=tag href=../../tags/kubernetes/ class=tag-link-11 title="1 Posts">kubernetes<small>(11)</small></a>
+<a rel=tag href=../../tags/linux/ class=tag-link-21 title="1 Posts">linux<small>(21)</small></a>
+<a rel=tag href=../../tags/lvs/ class=tag-link-8 title="1 Posts">lvs<small>(8)</small></a>
+<a rel=tag href=../../tags/machinelearn/ class=tag-link-3 title="1 Posts">machinelearn<small>(3)</small></a>
+<a rel=tag href=../../tags/machinelearning/ class=tag-link-11 title="1 Posts">machinelearning<small>(11)</small></a>
+<a rel=tag href=../../tags/macos/ class=tag-link-14 title="1 Posts">macos<small>(14)</small></a>
+<a rel=tag href=../../tags/makefile/ class=tag-link-2 title="1 Posts">makefile<small>(2)</small></a>
+<a rel=tag href=../../tags/mariadb/ class=tag-link-9 title="1 Posts">mariadb<small>(9)</small></a>
+<a rel=tag href=../../tags/math/ class=tag-link-7 title="1 Posts">math<small>(7)</small></a>
+<a rel=tag href=../../tags/matplotlib/ class=tag-link-3 title="1 Posts">matplotlib<small>(3)</small></a>
+<a rel=tag href=../../tags/maven/ class=tag-link-2 title="1 Posts">maven<small>(2)</small></a>
+<a rel=tag href=../../tags/meteor/ class=tag-link-7 title="1 Posts">meteor<small>(7)</small></a>
+<a rel=tag href=../../tags/ml/ class=tag-link-3 title="1 Posts">ml<small>(3)</small></a>
+<a rel=tag href=../../tags/mpp/ class=tag-link-9 title="1 Posts">mpp<small>(9)</small></a>
+<a rel=tag href=../../tags/mysql/ class=tag-link-61 title="1 Posts">mysql<small>(61)</small></a>
+<a rel=tag href=../../tags/ncnn/ class=tag-link-3 title="1 Posts">ncnn<small>(3)</small></a>
+<a rel=tag href=../../tags/netns/ class=tag-link-2 title="1 Posts">netns<small>(2)</small></a>
+<a rel=tag href=../../tags/network/ class=tag-link-2 title="1 Posts">network<small>(2)</small></a>
+<a rel=tag href=../../tags/nginx/ class=tag-link-28 title="1 Posts">nginx<small>(28)</small></a>
+<a rel=tag href=../../tags/nmap/ class=tag-link-2 title="1 Posts">nmap<small>(2)</small></a>
+<a rel=tag href=../../tags/nnie/ class=tag-link-11 title="1 Posts">nnie<small>(11)</small></a>
+<a rel=tag href=../../tags/node/ class=tag-link-4 title="1 Posts">node<small>(4)</small></a>
+<a rel=tag href=../../tags/nosql/ class=tag-link-8 title="1 Posts">nosql<small>(8)</small></a>
+<a rel=tag href=../../tags/npm/ class=tag-link-3 title="1 Posts">npm<small>(3)</small></a>
+<a rel=tag href=../../tags/numpy/ class=tag-link-4 title="1 Posts">numpy<small>(4)</small></a>
+<a rel=tag href=../../tags/oauth2/ class=tag-link-2 title="1 Posts">oauth2<small>(2)</small></a>
+<a rel=tag href=../../tags/opencv/ class=tag-link-10 title="1 Posts">opencv<small>(10)</small></a>
+<a rel=tag href=../../tags/openssl/ class=tag-link-3 title="1 Posts">openssl<small>(3)</small></a>
+<a rel=tag href=../../tags/pandoc/ class=tag-link-2 title="1 Posts">pandoc<small>(2)</small></a>
+<a rel=tag href=../../tags/php/ class=tag-link-4 title="1 Posts">php<small>(4)</small></a>
+<a rel=tag href=../../tags/post/ class=tag-link-4 title="1 Posts">post<small>(4)</small></a>
+<a rel=tag href=../../tags/powershell/ class=tag-link-2 title="1 Posts">powershell<small>(2)</small></a>
+<a rel=tag href=../../tags/prometheus/ class=tag-link-8 title="1 Posts">prometheus<small>(8)</small></a>
+<a rel=tag href=../../tags/pyqt/ class=tag-link-8 title="1 Posts">pyqt<small>(8)</small></a>
+<a rel=tag href=../../tags/python/ class=tag-link-32 title="1 Posts">python<small>(32)</small></a>
+<a rel=tag href=../../tags/pytorch/ class=tag-link-6 title="1 Posts">pytorch<small>(6)</small></a>
+<a rel=tag href=../../tags/raspi/ class=tag-link-4 title="1 Posts">raspi<small>(4)</small></a>
+<a rel=tag href=../../tags/redis/ class=tag-link-2 title="1 Posts">redis<small>(2)</small></a>
+<a rel=tag href=../../tags/reflect/ class=tag-link-3 title="1 Posts">reflect<small>(3)</small></a>
+<a rel=tag href=../../tags/responsive/ class=tag-link-2 title="1 Posts">responsive<small>(2)</small></a>
+<a rel=tag href=../../tags/restful/ class=tag-link-6 title="1 Posts">restful<small>(6)</small></a>
+<a rel=tag href=../../tags/rk3288/ class=tag-link-22 title="1 Posts">rk3288<small>(22)</small></a>
+<a rel=tag href=../../tags/rk3399/ class=tag-link-9 title="1 Posts">rk3399<small>(9)</small></a>
+<a rel=tag href=../../tags/route/ class=tag-link-2 title="1 Posts">route<small>(2)</small></a>
+<a rel=tag href=../../tags/rsync/ class=tag-link-2 title="1 Posts">rsync<small>(2)</small></a>
+<a rel=tag href=../../tags/rtmp/ class=tag-link-2 title="1 Posts">rtmp<small>(2)</small></a>
+<a rel=tag href=../../tags/scikit/ class=tag-link-3 title="1 Posts">scikit<small>(3)</small></a>
+<a rel=tag href=../../tags/scrapy/ class=tag-link-8 title="1 Posts">scrapy<small>(8)</small></a>
+<a rel=tag href=../../tags/scss/ class=tag-link-2 title="1 Posts">scss<small>(2)</small></a>
+<a rel=tag href=../../tags/sed/ class=tag-link-3 title="1 Posts">sed<small>(3)</small></a>
+<a rel=tag href=../../tags/seo/ class=tag-link-5 title="1 Posts">seo<small>(5)</small></a>
+<a rel=tag href=../../tags/shell/ class=tag-link-10 title="1 Posts">shell<small>(10)</small></a>
+<a rel=tag href=../../tags/sqlite/ class=tag-link-2 title="1 Posts">sqlite<small>(2)</small></a>
+<a rel=tag href=../../tags/ssh/ class=tag-link-3 title="1 Posts">ssh<small>(3)</small></a>
+<a rel=tag href=../../tags/stm32/ class=tag-link-5 title="1 Posts">stm32<small>(5)</small></a>
+<a rel=tag href=../../tags/swagger/ class=tag-link-2 title="1 Posts">swagger<small>(2)</small></a>
+<a rel=tag href=../../tags/swarm/ class=tag-link-2 title="1 Posts">swarm<small>(2)</small></a>
+<a rel=tag href=../../tags/sysbench/ class=tag-link-2 title="1 Posts">sysbench<small>(2)</small></a>
+<a rel=tag href=../../tags/sysctl/ class=tag-link-2 title="1 Posts">sysctl<small>(2)</small></a>
+<a rel=tag href=../../tags/systemctl/ class=tag-link-2 title="1 Posts">systemctl<small>(2)</small></a>
+<a rel=tag href=../../tags/tc/ class=tag-link-2 title="1 Posts">tc<small>(2)</small></a>
+<a rel=tag href=../../tags/tcpdump/ class=tag-link-2 title="1 Posts">tcpdump<small>(2)</small></a>
+<a rel=tag href=../../tags/timezone/ class=tag-link-2 title="1 Posts">timezone<small>(2)</small></a>
+<a rel=tag href=../../tags/tshark/ class=tag-link-2 title="1 Posts">tshark<small>(2)</small></a>
+<a rel=tag href=../../tags/ubuntu/ class=tag-link-2 title="1 Posts">ubuntu<small>(2)</small></a>
+<a rel=tag href=../../tags/ulimit/ class=tag-link-2 title="1 Posts">ulimit<small>(2)</small></a>
+<a rel=tag href=../../tags/vim/ class=tag-link-14 title="1 Posts">vim<small>(14)</small></a>
+<a rel=tag href=../../tags/webpack3/ class=tag-link-2 title="1 Posts">webpack3<small>(2)</small></a>
+<a rel=tag href=../../tags/windows/ class=tag-link-18 title="1 Posts">windows<small>(18)</small></a>
+<a rel=tag href=../../tags/wireshark/ class=tag-link-2 title="1 Posts">wireshark<small>(2)</small></a>
+<a rel=tag href=../../tags/xidel/ class=tag-link-2 title="1 Posts">xidel<small>(2)</small></a>
+<a rel=tag href=../../tags/xml/ class=tag-link-2 title="1 Posts">xml<small>(2)</small></a>
+<a rel=tag href=../../tags/yaml/ class=tag-link-2 title="1 Posts">yaml<small>(2)</small></a>
+<a rel=tag href=../../tags/yolo/ class=tag-link-12 title="1 Posts">yolo<small>(12)</small></a>
+<a rel=tag href=../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/ class=tag-link-2 title="1 Posts">微服务<small>(2)</small></a></div></div></div></div>`</div></div></div></div></div><script>var HUParams={"_disabled":[],"SmoothScroll":{"Enabled":true,"Options":{"touchpadSupport":false}},"centerAllImg":"1","timerOnScrollAllBrowsers":"1","extLinksStyle":"1","extLinksTargetExt":"1","extLinksSkipSelectors":{"classes":["btn","button"],"ids":[]},"imgSmartLoadEnabled":"1","imgSmartLoadOpts":{"parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],"opts":{"excludeImg":[".tc-holder-img"],"fadeIn_options":100}},"goldenRatio":"1.618","gridGoldenRatioLimit":"350","sbStickyUserSettings":{"desktop":true,"mobile":true},"isWPMobile":"","menuStickyUserSettings":{"desktop":"stick_up","mobile":"stick_up"},"isDevMode":"","ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1","frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},"userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},"isWelcomeNoteOn":"","welcomeContent":""};</script><script src=https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js></script><script src=https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js></script><script src=../../front/js/scripts.js></script><footer id=footer><section class=container id=footer-bottom><div class=container-inner><a id=back-to-top href=#><i class="fa fa-angle-up"></i></a><div class="pad group"><div class="grid one-half"><div id=copyright><p>Copyright (c) 2017. All rights reserved. (版权所有) <a href=http://www.miitbeian.gov.cn/>鲁ICP备17074587号-1</a></div></div><div class="grid one-half last"><ul class=social-links><li><a class=social-tooltip title="On WeiBo" href=http://weibo.com/rinetd target=_blank><i class="fa fa-weibo"></i></a><li><a class=social-tooltip title="On Twitter" href=https://twitter.com/rinetd target=_blank><i class="fa fa-twitter"></i></a><li><a class=social-tooltip title="On GitHub" href=https://github.com/rinetd target=_blank><i class="fa fa-github"></i></a></ul></div></div></div></section></footer><div class=back-to-top id=back-to-top><i class="fa fa-angle-double-up"></i></div><script>$(".topbar-toggle-down").click(function(){$("#nav-topbar").css("overflow","visible");});</script><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height=0 width=0 style=display:none;visibility:hidden></iframe></noscript><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5HM5XM2');</script>

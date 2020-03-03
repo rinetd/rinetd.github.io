@@ -1,1271 +1,19 @@
-<!DOCTYPE html>
-<html lang="zh-CN" class="no-js">
-
-<head>
-    
-<title>Linux电源管理-Linux Regulator Framework代码分析</title>
-<meta charset="utf-8">
-
-<meta name="robots" content="index,nofollow">
-
-
-<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-<meta http-equiv="x-dns-prefetch-control" content="on">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="referrer" content="origin-when-cross-origin" />
-
-<meta name="description" content="Linux 内核 regulator 机制 Linux电源管理-Linux Regulator Framework代码分析 本文链接：https://blog.csdn.net/longwang">
-
-<meta name="author" content=rinetd>
-
-
-<meta name="google-site-verification" content="ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk" />
-
-
-
-
-
-  
-  
-  
-  
-  
-  
-
-  
-
-
-
-
-
-
-
-
-<link rel="canonical" href="../../../linux/kernel/linux-kernel-regulator/" />
-
-<link rel="icon" href="../../../public/favicon.ico"/>
-<link rel="shortcut icon" href="../../../public/favicon.ico"/>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<link rel="stylesheet" href="../../../front/css/main.min.css" >
-
-<link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-
-
-
-
-
-
-<link rel="stylesheet" href="//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css" />
-
-</head>
-
-<body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome">
-    <div id="wrapper">
-        <header id="header" class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent">
-    
-  <nav class="nav-container group mobile-menu mobile-sticky " id="nav-mobile" data-menu-id="header-1">
-    <div class="mobile-title-logo-in-header">
-        <p class="site-title">
-            <a class="custom-logo-link" href="" rel="home" title="Pytool | Home ">
-                
-                Pytool
-            </a>
-        </p>
-    </div>
-    <div class="ham__navbar-toggler-two collapsed" title="Menu" aria-expanded="false">
-        <div class="ham__navbar-span-wrapper">
-            <span class="line line-1"></span>
-            <span class="line line-2"></span>
-            <span class="line line-3"></span>
-        </div>
-    </div>
-    <div class="nav-text">Linux电源管理-Linux Regulator Framework代码分析</div>
-    <div class="nav-wrap container">
-        <ul class="nav container-inner group mobile-search">
-            <li>
-                <form method="get" class="searchform themeform" action="https://demo-hueman.presscustomizr.com/">
-                    <div>
-                        <input type="text" class="search" name="s" onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"/>
-                    </div>
-                </form>
-            </li>
-        </ul>
-        <ul id="menu-topbar-menu" class="nav container-inner group">
-        
-            <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
-            <a href=" ">Home</a>
-            </li>
-
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../hardware/">Hardware </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hardware/hisilicon/">Hisilicon</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hardware/kernel/">Kernel</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hardware/rtmp/">Rtmp</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hardware/rk3399/">Rk3399</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hardware/dts/">Dts</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hardware/rk3288/">Rk3288</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../macos/">Macos </a>
-                
-                        
-
-              </li>
-            
-        
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../linux/">Linux </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../linux/cmd/">Cmd</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../linux/shell/">Shell</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../linux/nginx/">Nginx</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../linux/ip/">Ip</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../linux/git/">Git</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../linux/haproxy/">Haproxy</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../linux/lvs/">Lvs</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../ai/">Ai </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../ai/caffe/">Caffe</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../ai/yolo/">Yolo</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../ai/math/">Math</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../ai/ncnn/">Ncnn</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../ai/dataset/">Dataset</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../ai/pytorch/">Pytorch</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../frontend/">Frontend </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../frontend/css/">Css</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../frontend/vue/">Vue</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../devops/">Devops </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/docker/">Docker</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/elk/">Elk</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/ansible/">Ansible</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/prometheus/">Prometheus</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/drone/">Drone</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/kubernetes/">Kubernetes</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/oauth2/">OAuth2</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/etcd/">Etcd</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/apidoc/">Apidoc</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../database/">Database </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../database/mysql/">Mysql</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../database/mongo/">Mongo</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../database/redis/">Redis</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../windows/">Windows </a>
-                
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../language/">Language </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../language/cpp/">Cpp</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../language/python/">Python</a>
-                                
-                                            
-                                                 
-                                        <ul class="sub-menu">
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../../language/python/scrapy/">Scrapy</a>
-                                                
-                                            </li>                
-                                            
-                                        </ul>
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../language/clang/">Clang</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../language/golang/">Golang</a>
-                                
-                                            
-                                                 
-                                        <ul class="sub-menu">
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../../language/golang/cgo/">Cgo</a>
-                                                
-                                            </li>                
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../../language/golang/hugo/">Hugo</a>
-                                                
-                                            </li>                
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../../language/golang/sys/">Sys</a>
-                                                
-                                            </li>                
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../../language/golang/goher/">Goher</a>
-                                                
-                                            </li>                
-                                            
-                                        </ul>
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../language/java/">Java</a>
-                                
-                                            
-                                                 
-                                        <ul class="sub-menu">
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../../language/java/hadoop/">Hadoop</a>
-                                                
-                                            </li>                
-                                            
-                                        </ul>
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../language/awesome/">Awesome</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../language/php/">Php</a>
-                                
-                                            
-                                                 
-                                        <ul class="sub-menu">
-                                            
-                                                <li class="menu-item menu-item-type-custom menu-item-object-custom ">
-                                                <a href="../../../language/php/magento/">Magento</a>
-                                                
-                                            </li>                
-                                            
-                                        </ul>
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../language/android/">Android</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../hacker/">Hacker </a>
-                
-                                 
-                            <ul class="sub-menu">
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hacker/01-info-gather/">01-Info-Gather</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hacker/02-spoof/">02-Spoof</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                                <li class="menu-item menu-item-type-post_type menu-item-object-page">
-                                <a href="../../../hacker/shells/">Shells</a>
-                                
-                                            
-                                        
-                                </li>                
-                            
-                            </ul>
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../work/">Work </a>
-                
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../weixin/">Weixin </a>
-                
-                        
-
-              </li>
-            
-        
-            
-                <li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children">
-                
-                <a  href="../../../edit/">Edit </a>
-                
-                        
-
-              </li>
-            
-        
-        
-        <li class="item ">
-                <a class="text" href="../../../series/">series</a>
-        </li>
-        <li class="item ">
-                <a class="text" href="../../../categories/">categories</a>
-        </li>
-        <li class="item ">
-                <a class="text" href="../../../tags/">tags</a>
-        </li>
-        <li class="item ">
-                <a class="text" href="../../../me/">about</a>
-        </li>
-
-        
-        </ul>
-    </div>
-  </nav>
-    
-  <nav class="nav-container group desktop-menu desktop-sticky " id="nav-topbar" data-menu-id="header-2">
-    <div class="nav-text">Linux电源管理-Linux Regulator Framework代码分析</div>
-    
-    <div class="topbar-toggle-down">
-        <i class="fas fa-angle-double-down" aria-hidden="true" data-toggle="down" title="Expand menu"></i>
-        <i class="fas fa-angle-double-up" aria-hidden="true" data-toggle="up" title="Collapse menu"></i>
-    </div>
-
-    
-    <div class="nav-wrap container">
-      <ul id="menu-topbar-menu-1" class="nav container-inner group">
-        <li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home ">
-            <a href="../../../">Home</a></li>
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../hardware/">Hardware </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hardware/hisilicon/">Hisilicon</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hardware/kernel/">Kernel</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hardware/rtmp/">Rtmp</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hardware/rk3399/">Rk3399</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hardware/dts/">Dts</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hardware/rk3288/">Rk3288</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/">车联网</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hardware/android-%E5%BA%95%E5%B1%82/">Android-底层</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../macos/">Macos </a>
-                
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../post/">Post </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../post/software/">Software</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../post/english/">English</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../post/seo/">Seo</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../post/life/">Life</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../post/wiki/">Wiki</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../post/basic/">Basic</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../post/reship/">Reship</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../linux/">Linux </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../linux/cmd/">Cmd</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../linux/shell/">Shell</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../linux/nginx/">Nginx</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../linux/ip/">Ip</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../linux/git/">Git</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../linux/haproxy/">Haproxy</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../linux/lvs/">Lvs</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../ai/">Ai </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../ai/caffe/">Caffe</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../ai/yolo/">Yolo</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../ai/math/">Math</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../ai/ncnn/">Ncnn</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../ai/dataset/">Dataset</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../ai/pytorch/">Pytorch</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../frontend/">Frontend </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../frontend/css/">Css</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../frontend/vue/">Vue</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../devops/">Devops </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/docker/">Docker</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/elk/">Elk</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/ansible/">Ansible</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/prometheus/">Prometheus</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/drone/">Drone</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/kubernetes/">Kubernetes</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/oauth2/">OAuth2</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/etcd/">Etcd</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/apidoc/">Apidoc</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/">系统监控</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../database/">Database </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../database/mysql/">Mysql</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../database/mongo/">Mongo</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../database/redis/">Redis</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../windows/">Windows </a>
-                
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../language/">Language </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../language/cpp/">Cpp</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../language/python/">Python</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../language/clang/">Clang</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../language/golang/">Golang</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../language/java/">Java</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../language/awesome/">Awesome</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../language/php/">Php</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../language/android/">Android</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../hacker/">Hacker </a>
-                
-                           
-                    <ul class="sub-menu">
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/">01_端口扫描</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/">00_端口转发(隧道)</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hacker/01-info-gather/">01-Info-Gather</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hacker/02-spoof/">02-Spoof</a>
-                          
-                        </li>                
-                        
-                        <li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag">
-                          <a href="../../../hacker/shells/">Shells</a>
-                          
-                        </li>                
-                      
-                    </ul>
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../work/">Work </a>
-                
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../weixin/">Weixin </a>
-                
-                  
-              </li>
-                    
-        
-            
-              
-                  <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children">
-                <a href="../../../edit/">Edit </a>
-                
-                  
-              </li>
-                    
-        
-       
-        
-        <li class="menu-item menu-item-type-post_type menu-item-object-page">
-          <a href="../../../series/">series</a>
-        </li>
-        
-        <li class="menu-item menu-item-type-post_type menu-item-object-page">
-          <a href="../../../categories/">categories</a>
-        </li>
-        
-        <li class="menu-item menu-item-type-post_type menu-item-object-page">
-          <a href="../../../tags/">tags</a>
-        </li>
-        
-        <li class="menu-item menu-item-type-post_type menu-item-object-page">
-          <a href="../../../me/">about</a>
-        </li>
-        
-
-        
-      </ul>
-      
-    </div>
-    
-    
-  
-  </nav>
-  
-
-  
-  
-
-</header>
-
-        <div class="container" id="page">
-            <div class="container-inner">
-                <div class="main">
-                    <div class="main-inner group">
-                        <div class="content">
-    
-        <div class="pad group page-title">
-            <ul class="meta-single group">
-                
-                <li><span class="fa fa-folder-open"></span></li>
-                
-                <li class="category">
-                <a href="../../../categories/kernel/" rel="category tag">kernel</a>
-                </li>
-                
-            </ul>
-        </div>
-
-        
-        <div class="pad group">
-            <article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list">
-                <div class="post-inner group">
-                        <h1 class="post-title">Linux电源管理-Linux Regulator Framework代码分析</h1>
-
-                        <p class="post-byline">
-                          by  · 2019年08月30日 · 4162 Words ·
-                          ~9min reading time |
-                          
-                          
-                          <a href="https://gitlab.com/rinetd/blog/edit/master/hardware/kernel/linux-kernel-regulator.md" target="_blank">Improve on <i class="fa fa-gitlab"></i></a>
-                        </p>
-                    <div class="clear"></div>
-                    <div class="entry themeform">
-                        <div class="entry-inner">
-                            
-                            </br>
-                            原文链接：<a target="_blank" href="../../../linux/kernel/linux-kernel-regulator/"> Linux电源管理-Linux Regulator Framework代码分析</a> 
-                            </p>
-                            <p><a href="https://blog.csdn.net/weixin_41177620/article/details/90735319" target="_blank">Linux 内核 regulator 机制</a></p>
-
-<p>Linux电源管理-Linux Regulator Framework代码分析<br />
-本文链接：<a href="https://blog.csdn.net/longwang155069/article/details/53161468" target="_blank">https://blog.csdn.net/longwang155069/article/details/53161468</a><br />
-示例分析<br />
-在内核kernel/drivers/regulator/dummy.c文件中构造了一个虚拟的regulator，参考此文件编写一个虚拟的regulator driver。<br />
-#include <linux/module.h><br />
-#include <linux/kernel.h><br />
-#include <linux/err.h><br />
-#include <linux/export.h><br />
-#include <linux/platform_device.h><br />
-#include <linux/regulator/driver.h><br />
-#include <linux/regulator/machine.h></p>
-
-<p>static struct regulator_dev *dummy_regulator_rdev;<br />
-static  struct regulator_consumer_supply relate={</p>
-
-<pre><code>.dev_name = &quot;reg-consumer&quot;,
+<!doctype html><html lang=zh-cn class=no-js><title>Linux电源管理-Linux Regulator Framework代码分析</title><meta charset=utf-8><meta name=robots content=index,nofollow><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><meta http-equiv=x-dns-prefetch-control content=on><meta name=viewport content="width=device-width,initial-scale=1"><meta name=referrer content=origin-when-cross-origin><meta name=description content="Linux 内核 regulator 机制 Linux电源管理-Linux Regulator Framework代码分析 本文链接：https://blog.csdn.net/longwang"><meta name=author content=rinetd><meta name=google-site-verification content=ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk><link rel=canonical href=../../../linux/kernel/linux-kernel-regulator/><link rel=icon href=../../../public/favicon.ico><link rel="shortcut icon" href=../../../public/favicon.ico><link rel=stylesheet href=../../../front/css/main.min.css><link href=https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css rel=stylesheet><link rel=stylesheet href=//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css><body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome"><div id=wrapper><header id=header class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent"><nav class="nav-container group mobile-menu mobile-sticky" id=nav-mobile data-menu-id=header-1><div class=mobile-title-logo-in-header><p class=site-title><a class=custom-logo-link href rel=home title="Pytool | Home">Pytool</a></div><div class="ham__navbar-toggler-two collapsed" title=Menu aria-expanded=false><div class=ham__navbar-span-wrapper><span class="line line-1"></span><span class="line line-2"></span><span class="line line-3"></span></div></div><div class=nav-text>Linux电源管理-Linux Regulator Framework代码分析</div><div class="nav-wrap container"><ul class="nav container-inner group mobile-search"><li><form class="searchform themeform" action=https://demo-hueman.presscustomizr.com/><div><input class=search name=s onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"></div></form></ul><ul id=menu-topbar-menu class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href>Home</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../macos/>Macos</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/shell/>Shell</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/math/>Math</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../windows/>Windows</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/python/>Python</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/python/scrapy/>Scrapy</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/clang/>Clang</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/golang/>Golang</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/cgo/>Cgo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/hugo/>Hugo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/sys/>Sys</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/goher/>Goher</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/java/>Java</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/java/hadoop/>Hadoop</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/php/>Php</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/php/magento/>Magento</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/android/>Android</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../work/>Work</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../weixin/>Weixin</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../edit/>Edit</a><li class=item><a class=text href=../../../series/>series</a><li class=item><a class=text href=../../../categories/>categories</a><li class=item><a class=text href=../../../tags/>tags</a><li class=item><a class=text href=../../../me/>about</a></ul></div></nav><nav class="nav-container group desktop-menu desktop-sticky" id=nav-topbar data-menu-id=header-2><div class=nav-text>Linux电源管理-Linux Regulator Framework代码分析</div><div class=topbar-toggle-down><i class="fas fa-angle-double-down" aria-hidden=true data-toggle=down title="Expand menu"></i><i class="fas fa-angle-double-up" aria-hidden=true data-toggle=up title="Collapse menu"></i></div><div class="nav-wrap container"><ul id=menu-topbar-menu-1 class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href=../../../>Home</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../macos/>Macos</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../post/>Post</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/software/>Software</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/english/>English</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/seo/>Seo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/life/>Life</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/wiki/>Wiki</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/basic/>Basic</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/reship/>Reship</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/shell/>Shell</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/math/>Math</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../windows/>Windows</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/python/>Python</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/clang/>Clang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/golang/>Golang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/java/>Java</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/php/>Php</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/android/>Android</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../work/>Work</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../weixin/>Weixin</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../edit/>Edit</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../series/>series</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../categories/>categories</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../tags/>tags</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../me/>about</a></ul></div></nav></header><div class=container id=page><div class=container-inner><div class=main><div class="main-inner group"><div class=content><div class="pad group page-title"><ul class="meta-single group"><li><span class="fa fa-folder-open"></span><li class=category><a href=../../../categories/kernel/ rel="category tag">kernel</a></ul></div><div class="pad group"><article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list"><div class="post-inner group"><h1 class=post-title>Linux电源管理-Linux Regulator Framework代码分析</h1><p class=post-byline>by · 2019年08月30日 · 4162 Words ·
+~9min reading time |
+<a href=https://gitlab.com/rinetd/blog/edit/master/hardware/kernel/linux-kernel-regulator.md target=_blank>Improve on <i class="fa fa-gitlab"></i></a><div class=clear></div><div class="entry themeform"><div class=entry-inner></br>原文链接：<a target=_blank href=../../../linux/kernel/linux-kernel-regulator/> Linux电源管理-Linux Regulator Framework代码分析</a><p><a href=https://blog.csdn.net/weixin_41177620/article/details/90735319 target=_blank>Linux 内核 regulator 机制</a><p>Linux电源管理-Linux Regulator Framework代码分析<br>本文链接：<a href=https://blog.csdn.net/longwang155069/article/details/53161468 target=_blank>https://blog.csdn.net/longwang155069/article/details/53161468</a><br>示例分析<br>在内核kernel/drivers/regulator/dummy.c文件中构造了一个虚拟的regulator，参考此文件编写一个虚拟的regulator driver。<br>#include <linux/module.h><br>#include <linux/kernel.h><br>#include <linux/err.h><br>#include <linux/export.h><br>#include <linux/platform_device.h><br>#include <linux/regulator/driver.h><br>#include <linux/regulator/machine.h><p>static struct regulator_dev *dummy_regulator_rdev;<br>static struct regulator_consumer_supply relate={<pre><code>.dev_name = &quot;reg-consumer&quot;,
 .supply = &quot;VCC&quot;,
-</code></pre>
-
-<p>};</p>
-
-<p>static struct regulator_init_data dummy_initdata = {</p>
-
-<pre><code>.constraints = {
+</code></pre><p>};<p>static struct regulator_init_data dummy_initdata = {<pre><code>.constraints = {
     .name =&quot;my_regulator_constrains&quot;,
     .always_on = 1,
 },
 .num_consumer_supplies = 1,
 .consumer_supplies = &amp;relate,
-</code></pre>
-
-<p>};</p>
-
-<p>static struct regulator_ops dummy_ops;</p>
-
-<p>static struct regulator_desc dummy_desc = {</p>
-
-<pre><code>.name = &quot;regulator-driver&quot;,
+</code></pre><p>};<p>static struct regulator_ops dummy_ops;<p>static struct regulator_desc dummy_desc = {<pre><code>.name = &quot;regulator-driver&quot;,
 .id = -1,
 .type = REGULATOR_VOLTAGE,
 .owner = THIS_MODULE,
 .ops = &amp;dummy_ops,
-</code></pre>
-
-<p>};</p>
-
-<p>static int regulator_driver_probe(struct platform_device *pdev)<br />
-{</p>
-
-<pre><code>struct regulator_config config = { };
+</code></pre><p>};<p>static int regulator_driver_probe(struct platform_device *pdev)<br>{<pre><code>struct regulator_config config = { };
 int ret;
 
 config.dev = &amp;pdev-&gt;dev;
@@ -1279,27 +27,12 @@ if (IS_ERR(dummy_regulator_rdev)) {
 }
 
 return 0;
-</code></pre>
-
-<p>}</p>
-
-<p>static struct platform_driver regulator_driver = {</p>
-
-<pre><code>.probe      = regulator_driver_probe,
+</code></pre><p>}<p>static struct platform_driver regulator_driver = {<pre><code>.probe      = regulator_driver_probe,
 .driver     = {
     .name       = &quot;reg-driver&quot;,
     .owner      = THIS_MODULE,
 },
-</code></pre>
-
-<p>};</p>
-
-<p>static struct platform_device *regulator_pdev;</p>
-
-<p>static int regulator_driver_init(void)<br />
-{</p>
-
-<pre><code>int ret;
+</code></pre><p>};<p>static struct platform_device *regulator_pdev;<p>static int regulator_driver_init(void)<br>{<pre><code>int ret;
 
 regulator_pdev = platform_device_alloc(&quot;reg-driver&quot;, -1);
 if (!regulator_pdev) {
@@ -1322,77 +55,26 @@ if (ret != 0) {
 }
 
 return 0;
-</code></pre>
-
-<p>}</p>
-
-<p>static void regulator_driver_exit(void)<br />
-{</p>
-
-<pre><code>printk(KERN_EMERG &quot;regulator: regulator_consumer_exit\n&quot;);
+</code></pre><p>}<p>static void regulator_driver_exit(void)<br>{<pre><code>printk(KERN_EMERG &quot;regulator: regulator_consumer_exit\n&quot;);
 
 regulator_unregister(dummy_regulator_rdev);
 platform_device_unregister(regulator_pdev);
 platform_driver_unregister(&amp;regulator_driver);
-</code></pre>
-
-<p>}</p>
-
-<p>module_init(regulator_driver_init);<br />
-module_exit(regulator_driver_exit);<br />
-MODULE_LICENSE(&quot;GPL&quot;);<br />
-此函数通过分配一个名字为&quot;reg-driver&quot;的platform device，同时注册一个名字为&quot;reg-driver&quot;的platform driver，这时候probe函数就会调用。在probe函数中通过调用regulator_register函数注册一个regulator。在注册的时候需要设置regulator的静态配置regulator_desc和动态配置regulator_config。</p>
-
-<p>regulator的作用就是管理consumer设备，给consumer设备提供voltage, current。所以必须实现一个consumer设备，代码如下：<br />
-#include <linux/module.h><br />
-#include <linux/kernel.h><br />
-#include <linux/err.h><br />
-#include <linux/export.h><br />
-#include <linux/platform_device.h><br />
-#include <linux/regulator/consumer.h></p>
-
-<p>static struct regulator* my_regulator;</p>
-
-<p>static int regulator_consumer_probe(struct platform_device *pdev)<br />
-{</p>
-
-<pre><code>int ret;
+</code></pre><p>}<p>module_init(regulator_driver_init);<br>module_exit(regulator_driver_exit);<br>MODULE_LICENSE(&quot;GPL&quot;);<br>此函数通过分配一个名字为&quot;reg-driver&quot;的platform device，同时注册一个名字为&quot;reg-driver&quot;的platform driver，这时候probe函数就会调用。在probe函数中通过调用regulator_register函数注册一个regulator。在注册的时候需要设置regulator的静态配置regulator_desc和动态配置regulator_config。<p>regulator的作用就是管理consumer设备，给consumer设备提供voltage, current。所以必须实现一个consumer设备，代码如下：<br>#include <linux/module.h><br>#include <linux/kernel.h><br>#include <linux/err.h><br>#include <linux/export.h><br>#include <linux/platform_device.h><br>#include <linux/regulator/consumer.h><p>static struct regulator* my_regulator;<p>static int regulator_consumer_probe(struct platform_device *pdev)<br>{<pre><code>int ret;
 printk(KERN_EMERG &quot;regulator: regulator_consumer_probe\n&quot;);
 my_regulator = regulator_get(&amp;pdev-&gt;dev,&quot;VCC&quot;);
 ret = regulator_enable(my_regulator);
 return 0;
-</code></pre>
-
-<p>}</p>
-
-<p>static int regulator_consumer_remove(struct platform_device *pdev)<br />
-{</p>
-
-<pre><code>printk(KERN_EMERG &quot;regulator: regulator_consumer_remove\n&quot;);
+</code></pre><p>}<p>static int regulator_consumer_remove(struct platform_device *pdev)<br>{<pre><code>printk(KERN_EMERG &quot;regulator: regulator_consumer_remove\n&quot;);
 regulator_put(my_regulator);
 return 0;
-</code></pre>
-
-<p>}</p>
-
-<p>static struct platform_driver regulator_consumer_driver = {</p>
-
-<pre><code>.probe      = regulator_consumer_probe,
+</code></pre><p>}<p>static struct platform_driver regulator_consumer_driver = {<pre><code>.probe      = regulator_consumer_probe,
 .remove     = regulator_consumer_remove,
 .driver     = {
     .name       = &quot;reg-consumer&quot;,
     .owner      = THIS_MODULE,
 },
-</code></pre>
-
-<p>};</p>
-
-<p>static struct platform_device *regulator_consumer;</p>
-
-<p>static int regulator_consumer_init(void)<br />
-{</p>
-
-<pre><code>int ret;
+</code></pre><p>};<p>static struct platform_device *regulator_consumer;<p>static int regulator_consumer_init(void)<br>{<pre><code>int ret;
 printk(KERN_EMERG &quot;regulator: regulator_consumer_init\n&quot;);
 
 regulator_consumer = platform_device_alloc(&quot;reg-consumer&quot;, -1);
@@ -1415,251 +97,45 @@ if (ret != 0) {
 }
 
 return ret;
-</code></pre>
-
-<p>}</p>
-
-<p>static void regulator_consumer_exit(void)<br />
-{</p>
-
-<pre><code>printk(KERN_EMERG &quot;regulator: regulator_consumer_exit\n&quot;);
+</code></pre><p>}<p>static void regulator_consumer_exit(void)<br>{<pre><code>printk(KERN_EMERG &quot;regulator: regulator_consumer_exit\n&quot;);
 
 platform_device_unregister(regulator_consumer);
 platform_driver_unregister(&amp;regulator_consumer_driver);
-</code></pre>
-
-<p>}</p>
-
-<p>module_init(regulator_consumer_init);<br />
-module_exit(regulator_consumer_exit);<br />
-MODULE_LICENSE(&quot;GPL&quot;);<br />
-因为没有真实的consumer设备，所以创建一个虚拟的platform设备&quot;reg-consumer&quot;，在probe函数中通过regulator_get就可以获得regulator设备。<br />
-测试结果</p>
-
-<ol>
-<li> 先安装regulator.ko文件，安装此文件后会在/sys/devices/platform/下生成一个&quot;reg-driver&quot;的设备。<br />
-test:/sys/devices/platform/reg-driver # ls -l<br />
-total 0<br />
-lrwxrwxrwx 1 root root    0 2012-01-01 13:13 driver -&gt; ../../../bus/platform/drivers/reg-driver<br />
--rw-r--r-- 1 root root 4096 2012-01-01 13:13 driver_override<br />
--r--r--r-- 1 root root 4096 2012-01-01 13:13 modalias<br />
-drwxr-xr-x 2 root root    0 2012-01-01 13:13 power<br />
-drwxr-xr-x 3 root root    0 2012-01-01 13:13 regulator<br />
-lrwxrwxrwx 1 root root    0 2012-01-01 13:13 subsystem -&gt; ../../../bus/platform<br />
--rw-r--r-- 1 root root 4096 2012-01-01 13:13 uevent<br /></li>
-<li> 在/sys/class/regulator下会生成一个regulator.27的目录，因为手机中已经有了26个regulator。<br />
-test:/sys/class/regulator/regulator.27 # ls<br />
-device num_users subsystem          suspend_mem_state     type<br />
-name   power     suspend_disk_state suspend_standby_state uevent<br /></li>
-<li> 通过查看name可知是注册的regulator_init_data中的name<br />
-test:/sys/class/regulator/regulator.27 # cat name<br />
-my_regulator_constrains<br /></li>
-<li> 这时候再次插入consumer.ko文件，会在/sys/devices/platform文件下创建一个&quot;reg-consumer&quot;的设备<br />
-test:/sys/devices/platform/reg-consumer # ls -l<br />
-total 0<br />
-lrwxrwxrwx 1 root root    0 2012-01-01 13:29 driver -&gt; ../../../bus/platform/drivers/reg-consumer<br />
--rw-r--r-- 1 root root 4096 2012-01-01 13:29 driver_override<br />
--r--r--r-- 1 root root 4096 2012-01-01 13:29 modalias<br />
-drwxr-xr-x 2 root root    0 2012-01-01 13:29 power<br />
-lrwxrwxrwx 1 root root    0 2012-01-01 13:29 subsystem -&gt; ../../../bus/platform<br />
--rw-r--r-- 1 root root 4096 2012-01-01 13:29 uevent<br /></li>
-<li> 再次到/sys/class/regulator/regulator.27文件下，会发现多了一个文件&quot;reg-consumer-VCC&quot;<br />
-test:/sys/class/regulator/regulator.27 # ls<br />
-device    power            suspend_disk_state    type<br />
-name      reg-consumer-VCC suspend_mem_state     uevent<br />
-num_users subsystem        suspend_standby_state<br /></li>
-<li> 在/sys/kernel/debug/regulator/regulator_summary文件中记录系统regulator和consumer之间的关系。<br />
-test:/sys/kernel/debug/regulator # cat regulator_summary<br />
-regulator                      use open bypass voltage current     min     max<br />
--------------------------------------------------------------------------------<br />
-....<br />
-my_regulator_constrains          0    1      0     0mV     0mA    98mV   987mV<br />
-reg-consumer                                                    0mV     0mV<br /></li>
-
-<li><p> 在/sys/kernel/debug/regulator/my_regulator_constrains下有该regulator的统计信息<br />
-test:/sys/kernel/debug/regulator/my_regulator_constrains # ls -l<br />
-total 0<br />
--r--r--r-- 1 root root 0 2012-01-01 13:13 bypass_count<br />
--r--r--r-- 1 root root 0 2012-01-01 13:13 open_count<br />
-drwxr-xr-x 2 root root 0 2012-01-01 13:28 reg-consumer-VCC<br />
--r--r--r-- 1 root root 0 2012-01-01 13:13 use_count<br />
-代码分析<br />
-基于上述的测试结果，首先分析整个regulator的注册过程，已经regulator和consumer之间关系的匹配过程。<br />
-regulator_register分析<br />
-struct regulator_dev *regulator_register(const struct regulator_desc *regulator_desc,const struct regulator_config *config)<br />
-{<br />
-const struct regulation_constraints *constraints = NULL;<br />
-const struct regulator_init_data *init_data;<br />
-static atomic_t regulator_no = ATOMIC_INIT(0);<br />
-struct regulator_dev *rdev;<br />
-struct device *dev;<br />
-int ret, i;<br />
-const char *supply = NULL;</p>
-
-<p>if (regulator_desc == NULL || config == NULL)</p>
-
-<pre><code>return ERR_PTR(-EINVAL);
-</code></pre>
-
-<p>dev = config-&gt;dev;<br />
-WARN_ON(!dev);</p>
-
-<p>if (regulator_desc-&gt;name == NULL || regulator_desc-&gt;ops == NULL)</p>
-
-<pre><code>return ERR_PTR(-EINVAL);
-</code></pre>
-
-<p>if (regulator_desc-&gt;type != REGULATOR_VOLTAGE &amp;&amp;</p>
-
-<pre><code>regulator_desc-&gt;type != REGULATOR_CURRENT)
+</code></pre><p>}<p>module_init(regulator_consumer_init);<br>module_exit(regulator_consumer_exit);<br>MODULE_LICENSE(&quot;GPL&quot;);<br>因为没有真实的consumer设备，所以创建一个虚拟的platform设备&quot;reg-consumer&quot;，在probe函数中通过regulator_get就可以获得regulator设备。<br>测试结果<ol><li> 先安装regulator.ko文件，安装此文件后会在/sys/devices/platform/下生成一个&quot;reg-driver&quot;的设备。<br>test:/sys/devices/platform/reg-driver # ls -l<br>total 0<br>lrwxrwxrwx 1 root root 0 2012-01-01 13:13 driver -&gt; ../../../bus/platform/drivers/reg-driver<br>-rw-r--r-- 1 root root 4096 2012-01-01 13:13 driver_override<br>-r--r--r-- 1 root root 4096 2012-01-01 13:13 modalias<br>drwxr-xr-x 2 root root 0 2012-01-01 13:13 power<br>drwxr-xr-x 3 root root 0 2012-01-01 13:13 regulator<br>lrwxrwxrwx 1 root root 0 2012-01-01 13:13 subsystem -&gt; ../../../bus/platform<br>-rw-r--r-- 1 root root 4096 2012-01-01 13:13 uevent<br><li> 在/sys/class/regulator下会生成一个regulator.27的目录，因为手机中已经有了26个regulator。<br>test:/sys/class/regulator/regulator.27 # ls<br>device num_users subsystem suspend_mem_state type<br>name power suspend_disk_state suspend_standby_state uevent<br><li> 通过查看name可知是注册的regulator_init_data中的name<br>test:/sys/class/regulator/regulator.27 # cat name<br>my_regulator_constrains<br><li> 这时候再次插入consumer.ko文件，会在/sys/devices/platform文件下创建一个&quot;reg-consumer&quot;的设备<br>test:/sys/devices/platform/reg-consumer # ls -l<br>total 0<br>lrwxrwxrwx 1 root root 0 2012-01-01 13:29 driver -&gt; ../../../bus/platform/drivers/reg-consumer<br>-rw-r--r-- 1 root root 4096 2012-01-01 13:29 driver_override<br>-r--r--r-- 1 root root 4096 2012-01-01 13:29 modalias<br>drwxr-xr-x 2 root root 0 2012-01-01 13:29 power<br>lrwxrwxrwx 1 root root 0 2012-01-01 13:29 subsystem -&gt; ../../../bus/platform<br>-rw-r--r-- 1 root root 4096 2012-01-01 13:29 uevent<br><li> 再次到/sys/class/regulator/regulator.27文件下，会发现多了一个文件&quot;reg-consumer-VCC&quot;<br>test:/sys/class/regulator/regulator.27 # ls<br>device power suspend_disk_state type<br>name reg-consumer-VCC suspend_mem_state uevent<br>num_users subsystem suspend_standby_state<br><li> 在/sys/kernel/debug/regulator/regulator_summary文件中记录系统regulator和consumer之间的关系。<br>test:/sys/kernel/debug/regulator # cat regulator_summary<br>regulator use open bypass voltage current min max<br>-------------------------------------------------------------------------------<br>....<br>my_regulator_constrains 0 1 0 0mV 0mA 98mV 987mV<br>reg-consumer 0mV 0mV<br><li><p> 在/sys/kernel/debug/regulator/my_regulator_constrains下有该regulator的统计信息<br>test:/sys/kernel/debug/regulator/my_regulator_constrains # ls -l<br>total 0<br>-r--r--r-- 1 root root 0 2012-01-01 13:13 bypass_count<br>-r--r--r-- 1 root root 0 2012-01-01 13:13 open_count<br>drwxr-xr-x 2 root root 0 2012-01-01 13:28 reg-consumer-VCC<br>-r--r--r-- 1 root root 0 2012-01-01 13:13 use_count<br>代码分析<br>基于上述的测试结果，首先分析整个regulator的注册过程，已经regulator和consumer之间关系的匹配过程。<br>regulator_register分析<br>struct regulator_dev *regulator_register(const struct regulator_desc *regulator_desc,const struct regulator_config *config)<br>{<br>const struct regulation_constraints *constraints = NULL;<br>const struct regulator_init_data *init_data;<br>static atomic_t regulator_no = ATOMIC_INIT(0);<br>struct regulator_dev *rdev;<br>struct device *dev;<br>int ret, i;<br>const char *supply = NULL;<p>if (regulator_desc == NULL || config == NULL)<pre><code>return ERR_PTR(-EINVAL);
+</code></pre><p>dev = config-&gt;dev;<br>WARN_ON(!dev);<p>if (regulator_desc-&gt;name == NULL || regulator_desc-&gt;ops == NULL)<pre><code>return ERR_PTR(-EINVAL);
+</code></pre><p>if (regulator_desc-&gt;type != REGULATOR_VOLTAGE &amp;&amp;<pre><code>regulator_desc-&gt;type != REGULATOR_CURRENT)
 return ERR_PTR(-EINVAL);
-</code></pre>
-
-<p>/* Only one of each should be implemented */<br />
-WARN_ON(regulator_desc-&gt;ops-&gt;get_voltage &amp;&amp;</p>
-
-<pre><code>regulator_desc-&gt;ops-&gt;get_voltage_sel);
-</code></pre>
-
-<p>WARN_ON(regulator_desc-&gt;ops-&gt;set_voltage &amp;&amp;</p>
-
-<pre><code>regulator_desc-&gt;ops-&gt;set_voltage_sel);
-</code></pre>
-
-<p>/* If we're using selectors we must implement list_voltage. */<br />
-if (regulator_desc-&gt;ops-&gt;get_voltage_sel &amp;&amp;</p>
-
-<pre><code>!regulator_desc-&gt;ops-&gt;list_voltage) {
+</code></pre><p>/* Only one of each should be implemented */<br>WARN_ON(regulator_desc-&gt;ops-&gt;get_voltage &amp;&amp;<pre><code>regulator_desc-&gt;ops-&gt;get_voltage_sel);
+</code></pre><p>WARN_ON(regulator_desc-&gt;ops-&gt;set_voltage &amp;&amp;<pre><code>regulator_desc-&gt;ops-&gt;set_voltage_sel);
+</code></pre><p>/* If we're using selectors we must implement list_voltage. */<br>if (regulator_desc-&gt;ops-&gt;get_voltage_sel &amp;&amp;<pre><code>!regulator_desc-&gt;ops-&gt;list_voltage) {
 return ERR_PTR(-EINVAL);
-</code></pre>
-
-<p>}<br />
-if (regulator_desc-&gt;ops-&gt;set_voltage_sel &amp;&amp;</p>
-
-<pre><code>!regulator_desc-&gt;ops-&gt;list_voltage) {
+</code></pre><p>}<br>if (regulator_desc-&gt;ops-&gt;set_voltage_sel &amp;&amp;<pre><code>!regulator_desc-&gt;ops-&gt;list_voltage) {
 return ERR_PTR(-EINVAL);
-</code></pre>
-
-<p>}</p>
-
-<p>rdev = kzalloc(sizeof(struct regulator_dev), GFP_KERNEL);<br />
-if (rdev == NULL)</p>
-
-<pre><code>return ERR_PTR(-ENOMEM);
-</code></pre>
-
-<p>init_data = regulator_of_get_init_data(dev, regulator_desc,</p>
-
-<pre><code>                   &amp;rdev-&gt;dev.of_node);
-</code></pre>
-
-<p>if (!init_data) {</p>
-
-<pre><code>init_data = config-&gt;init_data;
+</code></pre><p>}<p>rdev = kzalloc(sizeof(struct regulator_dev), GFP_KERNEL);<br>if (rdev == NULL)<pre><code>return ERR_PTR(-ENOMEM);
+</code></pre><p>init_data = regulator_of_get_init_data(dev, regulator_desc,<pre><code>                   &amp;rdev-&gt;dev.of_node);
+</code></pre><p>if (!init_data) {<pre><code>init_data = config-&gt;init_data;
 rdev-&gt;dev.of_node = of_node_get(config-&gt;of_node);
-</code></pre>
-
-<p>}</p>
-
-<p>mutex_lock(&amp;regulator_list_mutex);</p>
-
-<p>mutex_init(&amp;rdev-&gt;mutex);<br />
-rdev-&gt;reg_data = config-&gt;driver_data;<br />
-rdev-&gt;owner = regulator_desc-&gt;owner;<br />
-rdev-&gt;desc = regulator_desc;<br />
-if (config-&gt;regmap)</p>
-
-<pre><code>rdev-&gt;regmap = config-&gt;regmap;
-</code></pre>
-
-<p>else if (dev_get_regmap(dev, NULL))</p>
-
-<pre><code>rdev-&gt;regmap = dev_get_regmap(dev, NULL);
-</code></pre>
-
-<p>else if (dev-&gt;parent)</p>
-
-<pre><code>rdev-&gt;regmap = dev_get_regmap(dev-&gt;parent, NULL);
-</code></pre>
-
-<p>INIT_LIST_HEAD(&amp;rdev-&gt;consumer_list);<br />
-INIT_LIST_HEAD(&amp;rdev-&gt;list);<br />
-BLOCKING_INIT_NOTIFIER_HEAD(&amp;rdev-&gt;notifier);<br />
-INIT_DELAYED_WORK(&amp;rdev-&gt;disable_work, regulator_disable_work);</p>
-
-<p>/* preform any regulator specific init */<br />
-if (init_data &amp;&amp; init_data-&gt;regulator_init) {</p>
-
-<pre><code>ret = init_data-&gt;regulator_init(rdev-&gt;reg_data);
+</code></pre><p>}<p>mutex_lock(&amp;regulator_list_mutex);<p>mutex_init(&amp;rdev-&gt;mutex);<br>rdev-&gt;reg_data = config-&gt;driver_data;<br>rdev-&gt;owner = regulator_desc-&gt;owner;<br>rdev-&gt;desc = regulator_desc;<br>if (config-&gt;regmap)<pre><code>rdev-&gt;regmap = config-&gt;regmap;
+</code></pre><p>else if (dev_get_regmap(dev, NULL))<pre><code>rdev-&gt;regmap = dev_get_regmap(dev, NULL);
+</code></pre><p>else if (dev-&gt;parent)<pre><code>rdev-&gt;regmap = dev_get_regmap(dev-&gt;parent, NULL);
+</code></pre><p>INIT_LIST_HEAD(&amp;rdev-&gt;consumer_list);<br>INIT_LIST_HEAD(&amp;rdev-&gt;list);<br>BLOCKING_INIT_NOTIFIER_HEAD(&amp;rdev-&gt;notifier);<br>INIT_DELAYED_WORK(&amp;rdev-&gt;disable_work, regulator_disable_work);<p>/* preform any regulator specific init */<br>if (init_data &amp;&amp; init_data-&gt;regulator_init) {<pre><code>ret = init_data-&gt;regulator_init(rdev-&gt;reg_data);
 if (ret &lt; 0)
     goto clean;
-</code></pre>
-
-<p>}</p>
-
-<p>/* register with sysfs */<br />
-rdev-&gt;dev.class = &amp;regulator_class;<br />
-rdev-&gt;dev.parent = dev;<br />
-dev_set_name(&amp;rdev-&gt;dev, &quot;regulator.%d&quot;,</p>
-
-<pre><code>     atomic_inc_return(&amp;regulator_no) - 1);
-</code></pre>
-
-<p>ret = device_register(&amp;rdev-&gt;dev);<br />
-if (ret != 0) {</p>
-
-<pre><code>put_device(&amp;rdev-&gt;dev);
+</code></pre><p>}<p>/* register with sysfs */<br>rdev-&gt;dev.class = &amp;regulator_class;<br>rdev-&gt;dev.parent = dev;<br>dev_set_name(&amp;rdev-&gt;dev, &quot;regulator.%d&quot;,<pre><code>     atomic_inc_return(&amp;regulator_no) - 1);
+</code></pre><p>ret = device_register(&amp;rdev-&gt;dev);<br>if (ret != 0) {<pre><code>put_device(&amp;rdev-&gt;dev);
 goto clean;
-</code></pre>
-
-<p>}</p>
-
-<p>dev_set_drvdata(&amp;rdev-&gt;dev, rdev);</p>
-
-<p>if (config-&gt;ena_gpio &amp;&amp; gpio_is_valid(config-&gt;ena_gpio)) {</p>
-
-<pre><code>ret = regulator_ena_gpio_request(rdev, config);
+</code></pre><p>}<p>dev_set_drvdata(&amp;rdev-&gt;dev, rdev);<p>if (config-&gt;ena_gpio &amp;&amp; gpio_is_valid(config-&gt;ena_gpio)) {<pre><code>ret = regulator_ena_gpio_request(rdev, config);
 if (ret != 0) {
     rdev_err(rdev, &quot;Failed to request enable GPIO%d: %d\n&quot;,
          config-&gt;ena_gpio, ret);
     goto wash;
 }
-</code></pre>
-
-<p>}</p>
-
-<p>/* set regulator constraints */<br />
-if (init_data)</p>
-
-<pre><code>constraints = &amp;init_data-&gt;constraints;
-</code></pre>
-
-<p>ret = set_machine_constraints(rdev, constraints);<br />
-if (ret &lt; 0)</p>
-
-<pre><code>goto scrub;
-</code></pre>
-
-<p>/* add attributes supported by this regulator */<br />
-ret = add_regulator_attributes(rdev);<br />
-if (ret &lt; 0)</p>
-
-<pre><code>goto scrub;
-</code></pre>
-
-<p>if (init_data &amp;&amp; init_data-&gt;supply_regulator)</p>
-
-<pre><code>supply = init_data-&gt;supply_regulator;
-</code></pre>
-
-<p>else if (regulator_desc-&gt;supply_name)</p>
-
-<pre><code>supply = regulator_desc-&gt;supply_name;
-</code></pre>
-
-<p>if (supply) {</p>
-
-<pre><code>struct regulator_dev *r;
+</code></pre><p>}<p>/* set regulator constraints */<br>if (init_data)<pre><code>constraints = &amp;init_data-&gt;constraints;
+</code></pre><p>ret = set_machine_constraints(rdev, constraints);<br>if (ret &lt; 0)<pre><code>goto scrub;
+</code></pre><p>/* add attributes supported by this regulator */<br>ret = add_regulator_attributes(rdev);<br>if (ret &lt; 0)<pre><code>goto scrub;
+</code></pre><p>if (init_data &amp;&amp; init_data-&gt;supply_regulator)<pre><code>supply = init_data-&gt;supply_regulator;
+</code></pre><p>else if (regulator_desc-&gt;supply_name)<pre><code>supply = regulator_desc-&gt;supply_name;
+</code></pre><p>if (supply) {<pre><code>struct regulator_dev *r;
 
 r = regulator_dev_lookup(dev, supply, &amp;ret);
 
@@ -1686,14 +162,7 @@ if (_regulator_is_enabled(rdev)) {
     if (ret &lt; 0)
         goto scrub;
 }
-</code></pre>
-
-<p>}</p></li>
-</ol>
-
-<p>add_dev:</p>
-
-<pre><code>/* add consumers devices */
+</code></pre><p>}</ol><p>add_dev:<pre><code>/* add consumers devices */
 if (init_data) {
     for (i = 0; i &lt; init_data-&gt;num_consumer_supplies; i++) {
         ret = set_consumer_device_supply(rdev,
@@ -1710,83 +179,26 @@ if (init_data) {
 list_add(&amp;rdev-&gt;list, &amp;regulator_list);
 
 rdev_init_debugfs(rdev);
-</code></pre>
-
-<p>out:</p>
-
-<pre><code>mutex_unlock(&amp;regulator_list_mutex);
+</code></pre><p>out:<pre><code>mutex_unlock(&amp;regulator_list_mutex);
 return rdev;
-</code></pre>
-
-<p>unset_supplies:</p>
-
-<pre><code>unset_regulator_supplies(rdev);
-</code></pre>
-
-<p>scrub:</p>
-
-<pre><code>if (rdev-&gt;supply)
+</code></pre><p>unset_supplies:<pre><code>unset_regulator_supplies(rdev);
+</code></pre><p>scrub:<pre><code>if (rdev-&gt;supply)
     _regulator_put(rdev-&gt;supply);
 regulator_ena_gpio_free(rdev);
 kfree(rdev-&gt;constraints);
-</code></pre>
-
-<p>wash:</p>
-
-<pre><code>device_unregister(&amp;rdev-&gt;dev);
+</code></pre><p>wash:<pre><code>device_unregister(&amp;rdev-&gt;dev);
 /* device core frees rdev */
 rdev = ERR_PTR(ret);
 goto out;
-</code></pre>
-
-<p>clean:</p>
-
-<pre><code>kfree(rdev);
+</code></pre><p>clean:<pre><code>kfree(rdev);
 rdev = ERR_PTR(ret);
 goto out;
-</code></pre>
-
-<p>}<br />
-代码有点长，只关注重点部分。</p>
-
-<ol>
-<li>  对传入的静态参数regulator_desc和动态参数config做合法性判断。<br /></li>
-<li>  分配regulator_dev结构rdev，解析machine信息，也就是regulator的板级信息，如果解析不到，就使用config中的init_data。<br /></li>
-<li>  初始化reg_data， owner，desc，rehmap，以及consumer_list，list等变量。<br /></li>
-<li>  调用device_register函数将regulator注册到系统中。这样就会在devices/platform和class/regulator下存在相应的设备。<br /></li>
-<li>  设置regulator的约束信息，比如设置电压，电流等，最终会通过regulator中的regulator_ops函数设置。<br /></li>
-<li>  添加regulator的设备属性。<br /></li>
-<li>  判断regulator是否存在级联关系，处理级联关系。<br /></li>
-
-<li><p>  添加consumer设备，通过init_data中的num_consumer_supplies个数，添加consumer的信息。<br />
-static int set_consumer_device_supply(struct regulator_dev *rdev,</p>
-
-<pre><code>              const char *consumer_dev_name,
+</code></pre><p>}<br>代码有点长，只关注重点部分。<ol><li>  对传入的静态参数regulator_desc和动态参数config做合法性判断。<br><li>  分配regulator_dev结构rdev，解析machine信息，也就是regulator的板级信息，如果解析不到，就使用config中的init_data。<br><li>  初始化reg_data， owner，desc，rehmap，以及consumer_list，list等变量。<br><li>  调用device_register函数将regulator注册到系统中。这样就会在devices/platform和class/regulator下存在相应的设备。<br><li>  设置regulator的约束信息，比如设置电压，电流等，最终会通过regulator中的regulator_ops函数设置。<br><li>  添加regulator的设备属性。<br><li>  判断regulator是否存在级联关系，处理级联关系。<br><li><p>  添加consumer设备，通过init_data中的num_consumer_supplies个数，添加consumer的信息。<br>static int set_consumer_device_supply(struct regulator_dev *rdev,<pre><code>              const char *consumer_dev_name,
               const char *supply)
-</code></pre>
-
-<p>{<br />
-struct regulator_map *node;<br />
-int has_dev;</p>
-
-<p>if (supply == NULL)</p>
-
-<pre><code>return -EINVAL;
-</code></pre>
-
-<p>if (consumer_dev_name != NULL)</p>
-
-<pre><code>has_dev = 1;
-</code></pre>
-
-<p>else</p>
-
-<pre><code>has_dev = 0;
-</code></pre>
-
-<p>list_for_each_entry(node, &amp;regulator_map_list, list) {</p>
-
-<pre><code>if (node-&gt;dev_name &amp;&amp; consumer_dev_name) {
+</code></pre><p>{<br>struct regulator_map *node;<br>int has_dev;<p>if (supply == NULL)<pre><code>return -EINVAL;
+</code></pre><p>if (consumer_dev_name != NULL)<pre><code>has_dev = 1;
+</code></pre><p>else<pre><code>has_dev = 0;
+</code></pre><p>list_for_each_entry(node, &amp;regulator_map_list, list) {<pre><code>if (node-&gt;dev_name &amp;&amp; consumer_dev_name) {
     if (strcmp(node-&gt;dev_name, consumer_dev_name) != 0)
         continue;
 } else if (node-&gt;dev_name || consumer_dev_name) {
@@ -1803,128 +215,22 @@ pr_debug(&quot;%s: %s/%s is '%s' supply; fail %s/%s\n&quot;,
      supply,
      dev_name(&amp;rdev-&gt;dev), rdev_get_name(rdev));
 return -EBUSY;
-</code></pre>
-
-<p>}</p>
-
-<p>node = kzalloc(sizeof(struct regulator_map), GFP_KERNEL);<br />
-if (node == NULL)</p>
-
-<pre><code>return -ENOMEM;
-</code></pre>
-
-<p>node-&gt;regulator = rdev;<br />
-node-&gt;supply = supply;</p>
-
-<p>if (has_dev) {</p>
-
-<pre><code>node-&gt;dev_name = kstrdup(consumer_dev_name, GFP_KERNEL);
+</code></pre><p>}<p>node = kzalloc(sizeof(struct regulator_map), GFP_KERNEL);<br>if (node == NULL)<pre><code>return -ENOMEM;
+</code></pre><p>node-&gt;regulator = rdev;<br>node-&gt;supply = supply;<p>if (has_dev) {<pre><code>node-&gt;dev_name = kstrdup(consumer_dev_name, GFP_KERNEL);
 if (node-&gt;dev_name == NULL) {
     kfree(node);
     return -ENOMEM;
 }
-</code></pre>
-
-<p>}</p>
-
-<p>list_add(&amp;node-&gt;list, &amp;regulator_map_list);<br />
-return 0;<br />
-}<br />
-此函数先在regulator_map_list链表中通过consumer_dev_name和supply查找是否存在，如果存在返回EBUSY。否则重新分配一个regulator_map变量，使用传入的参数初始化，然后将此regulator_map加入到regulator_map_list链表中。</p></li>
-
-<li><p>  然后将此regulator_dev加入到regulator_list中。</p></li>
-
-<li><p>  在debugfs下创建regulator的属性。<br />
-regulator_get分析<br />
-在consumer函数中，会通过regulator_get函数得到该consumer的regulator。接下来分析是如何得到consumer的regulator。<br />
-static struct regulator *_regulator_get(struct device *dev, const char *id,</p>
-
-<pre><code>            bool exclusive, bool allow_dummy)
-</code></pre>
-
-<p>{<br />
-struct regulator_dev *rdev;<br />
-struct regulator *regulator = ERR_PTR(-EPROBE_DEFER);<br />
-const char *devname = NULL;<br />
-int ret;</p>
-
-<p>if (id == NULL) {</p>
-
-<pre><code>pr_err(&quot;get() with no identifier\n&quot;);
+</code></pre><p>}<p>list_add(&amp;node-&gt;list, &amp;regulator_map_list);<br>return 0;<br>}<br>此函数先在regulator_map_list链表中通过consumer_dev_name和supply查找是否存在，如果存在返回EBUSY。否则重新分配一个regulator_map变量，使用传入的参数初始化，然后将此regulator_map加入到regulator_map_list链表中。<li><p>  然后将此regulator_dev加入到regulator_list中。<li><p>  在debugfs下创建regulator的属性。<br>regulator_get分析<br>在consumer函数中，会通过regulator_get函数得到该consumer的regulator。接下来分析是如何得到consumer的regulator。<br>static struct regulator *_regulator_get(struct device *dev, const char *id,<pre><code>            bool exclusive, bool allow_dummy)
+</code></pre><p>{<br>struct regulator_dev *rdev;<br>struct regulator *regulator = ERR_PTR(-EPROBE_DEFER);<br>const char *devname = NULL;<br>int ret;<p>if (id == NULL) {<pre><code>pr_err(&quot;get() with no identifier\n&quot;);
 return ERR_PTR(-EINVAL);
-</code></pre>
-
-<p>}</p>
-
-<p>if (dev)</p>
-
-<pre><code>devname = dev_name(dev);
-</code></pre>
-
-<p>if (have_full_constraints())</p>
-
-<pre><code>ret = -ENODEV;
-</code></pre>
-
-<p>else</p>
-
-<pre><code>ret = -EPROBE_DEFER;
-</code></pre>
-
-<p>mutex_lock(&amp;regulator_list_mutex);</p>
-
-<p>rdev = regulator_dev_lookup(dev, id, &amp;ret);<br />
-if (rdev)</p>
-
-<pre><code>goto found;
-</code></pre>
-
-<p>regulator = ERR_PTR(ret);</p>
-
-<p>/*</p>
-
-<ul>
-<li>If we have return value from dev_lookup fail, we do not expect to<br /></li>
-<li>succeed, so, quit with appropriate error value<br />
-*/<br />
-if (ret &amp;&amp; ret != -ENODEV)<br />
-goto out;<br />
-<br /></li>
-</ul>
-
-<p>if (!devname)</p>
-
-<pre><code>devname = &quot;deviceless&quot;;
-</code></pre>
-
-<p>/*</p>
-
-<ul>
-<li>Assume that a regulator is physically present and enabled<br /></li>
-
-<li><p>even if it isn't hooked up and just provide a dummy.<br />
-*/<br />
-if (have_full_constraints() &amp;&amp; allow_dummy) {<br />
-pr_warn(&quot;%s supply %s not found, using dummy regulator\n&quot;,</p>
-
-<pre><code>devname, id);
-</code></pre>
-
-<p>rdev = dummy_regulator_rdev;<br />
-goto found;<br />
-/* Don't log an error when called from regulator_get_optional() */<br />
-} else if (!have_full_constraints() || exclusive) {<br />
-dev_warn(dev, &quot;dummy supplies not allowed\n&quot;);<br />
-}</p></li>
-</ul>
-
-<p>mutex_unlock(&amp;regulator_list_mutex);<br />
-return regulator;</p></li>
-</ol>
-
-<p>found:</p>
-
-<pre><code>if (rdev-&gt;exclusive) {
+</code></pre><p>}<p>if (dev)<pre><code>devname = dev_name(dev);
+</code></pre><p>if (have_full_constraints())<pre><code>ret = -ENODEV;
+</code></pre><p>else<pre><code>ret = -EPROBE_DEFER;
+</code></pre><p>mutex_lock(&amp;regulator_list_mutex);<p>rdev = regulator_dev_lookup(dev, id, &amp;ret);<br>if (rdev)<pre><code>goto found;
+</code></pre><p>regulator = ERR_PTR(ret);<p>/*<ul><li>If we have return value from dev_lookup fail, we do not expect to<br><li>succeed, so, quit with appropriate error value<br>*/<br>if (ret &amp;&amp; ret != -ENODEV)<br>goto out;<br><br></ul><p>if (!devname)<pre><code>devname = &quot;deviceless&quot;;
+</code></pre><p>/*<ul><li>Assume that a regulator is physically present and enabled<br><li><p>even if it isn't hooked up and just provide a dummy.<br>*/<br>if (have_full_constraints() &amp;&amp; allow_dummy) {<br>pr_warn(&quot;%s supply %s not found, using dummy regulator\n&quot;,<pre><code>devname, id);
+</code></pre><p>rdev = dummy_regulator_rdev;<br>goto found;<br>/* Don't log an error when called from regulator_get_optional() */<br>} else if (!have_full_constraints() || exclusive) {<br>dev_warn(dev, &quot;dummy supplies not allowed\n&quot;);<br>}</ul><p>mutex_unlock(&amp;regulator_list_mutex);<br>return regulator;</ol><p>found:<pre><code>if (rdev-&gt;exclusive) {
     regulator = ERR_PTR(-EPERM);
     goto out;
 }
@@ -1954,40 +260,12 @@ if (exclusive) {
     else
         rdev-&gt;use_count = 0;
 }
-</code></pre>
-
-<p>out:</p>
-
-<pre><code>mutex_unlock(&amp;regulator_list_mutex);
+</code></pre><p>out:<pre><code>mutex_unlock(&amp;regulator_list_mutex);
 
 return regulator;
-</code></pre>
-
-<p>}</p>
-
-<ol>
-<li>  调用regulator_dev_lookup函数，通过参数“id”查找对应的regulator_rdev。<br /></li>
-
-<li><p>  找到之后跳到found标号处，创建regulator结构。设置统计参数。<br />
-此函数的重点就是查找regulator_dev的过程。<br />
-static struct regulator_dev *regulator_dev_lookup(struct device *dev,</p>
-
-<pre><code>                  const char *supply,
+</code></pre><p>}<ol><li>  调用regulator_dev_lookup函数，通过参数“id”查找对应的regulator_rdev。<br><li><p>  找到之后跳到found标号处，创建regulator结构。设置统计参数。<br>此函数的重点就是查找regulator_dev的过程。<br>static struct regulator_dev *regulator_dev_lookup(struct device *dev,<pre><code>                  const char *supply,
                   int *ret)
-</code></pre>
-
-<p>{<br />
-struct regulator_dev *r;<br />
-struct device_node *node;<br />
-struct regulator_map *map;<br />
-const char *devname = NULL;</p>
-
-<p>regulator_supply_alias(&amp;dev, &amp;supply);</p>
-
-<p>/* first do a dt based lookup */<br />
-if (dev &amp;&amp; dev-&gt;of_node) {</p>
-
-<pre><code>node = of_get_regulator(dev, supply);
+</code></pre><p>{<br>struct regulator_dev *r;<br>struct device_node *node;<br>struct regulator_map *map;<br>const char *devname = NULL;<p>regulator_supply_alias(&amp;dev, &amp;supply);<p>/* first do a dt based lookup */<br>if (dev &amp;&amp; dev-&gt;of_node) {<pre><code>node = of_get_regulator(dev, supply);
 if (node) {
     list_for_each_entry(r, &amp;regulator_list, list)
         if (r-&gt;dev.parent &amp;&amp;
@@ -2004,1708 +282,225 @@ if (node) {
      */
     *ret = -ENODEV;
 }
-</code></pre>
-
-<p>}</p>
-
-<p>/* if not found, try doing it non-dt way */<br />
-if (dev)</p>
-
-<pre><code>devname = dev_name(dev);
-</code></pre>
-
-<p>list_for_each_entry(r, &amp;regulator_list, list)</p>
-
-<pre><code>if (strcmp(rdev_get_name(r), supply) == 0)
+</code></pre><p>}<p>/* if not found, try doing it non-dt way */<br>if (dev)<pre><code>devname = dev_name(dev);
+</code></pre><p>list_for_each_entry(r, &amp;regulator_list, list)<pre><code>if (strcmp(rdev_get_name(r), supply) == 0)
     return r;
-</code></pre>
-
-<p>list_for_each_entry(map, &amp;regulator_map_list, list) {</p>
-
-<pre><code>/* If the mapping has a device set up it must match */
+</code></pre><p>list_for_each_entry(map, &amp;regulator_map_list, list) {<pre><code>/* If the mapping has a device set up it must match */
 if (map-&gt;dev_name &amp;&amp;
     (!devname || strcmp(map-&gt;dev_name, devname)))
     continue;
 
 if (strcmp(map-&gt;supply, supply) == 0)
     return map-&gt;regulator;
-</code></pre>
-
-<p>}</p>
-
-<p>return NULL;<br />
-}</p></li>
-
-<li><p>  首先会在dt中查找，如果查找不到就使用no-dt的方法。</p></li>
-
-<li><p>  在regulator_list中通过比较&quot;supply&quot;和rdev-&gt;constraints-&gt;name或者rdev-&gt;desc-&gt;name的名字比较。其中supply等于&quot;VCC&quot;，而rdev-&gt;constraints-&gt;name的名字是&quot;my_regulator_constrains&quot;，显然是不匹配的。</p></li>
-
-<li><p>  最后会在regulator_map_list中通过在regulator_register中注册的dev_name和supply匹配，最终会找到注册的regulator_dev。</p></li>
-</ol>
-
-<p>最终的注册查找可以用如下图概述：</p>
-
-<p>当然了一个regulator可以存在多个consumer设备的，具体情况具体分析。详细信息可以查看文档Documentation/power/regulator/machine.txt<br />
-————————————————<br />
-版权声明：本文为CSDN博主「Loopers」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。<br />
-原文链接：<a href="https://blog.csdn.net/longwang155069/article/details/53161468" target="_blank">https://blog.csdn.net/longwang155069/article/details/53161468</a></p>
-
-                        </div>                      
-                        <div class="clear"></div>
-                    </div>
-                </div>
-            </article>   
-            <div class="clear"></div>
-
-            
-            <p class="post-tags">
-                  <span class="fa fa-tags">Tags:</span>
-                  
-                    <a rel="tag" href="../../../tags/kernel">kernel</a>
-                  
-            </p>
-            
-            <div id="related-posts">
-                <div class="related-inner">
-                </div>
-            </div>
-            
-            
-<section id="comments" class="themeform">
-  
-
-  
-
-  
-  
-  
-
-
-</section>
-
-            
-            <section id="comments" class="themeform">
-                
-            </section>
-        </div>
-</div> <div class="sidebar s1 collapsed" data-position="left" data-layout="col-3cm" data-sb-id="s1">
-    <a class="sidebar-toggle" title="Expand Sidebar">
-        <i class="fas icon-sidebar-toggle"></i>
-    </a>
-    <div class="sidebar-content">
-        <div class="sidebar-top group">
-            <p>Follow:</p>  
-                          
-<ul class="social-links">
-    
-    
-    
-    
-
-    
-    <li>
-        <a class="social-tooltip" href="mailto:" title="Email">
-            <i class="fa fa-envelope"></i></a>
-    </li>
-
-    
-    <li>
-        <a class="social-tooltip"  href="//github.com/" title="GitHub"><i
-                class="fa fa-github"></i></a>
-    </li>
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    
-    <li>
-        <a class="social-tooltip" title="RSS Feed"
-            aria-label="RSS Feed"
-            href="../../../feed" target="_blank"
-            style="color:rgba(255,255,255,0.7)">
-            <i class="fa fa-rss"></i>
-        </a>
-    </li>
-
-</ul>
-   
-        </div>
-            <ul class="post-nav group">
-    <li class="previous">
-      
-      <a href="../../../hardware/rk3399/opencv-gstreamer/" rel="prev">
-        <i class="fa fa-chevron-left"></i>
-        <strong>Previous Post</strong>
-        <span>Use OpenCV with Gstreamer</span>
-      </a>
-      
-  </li>
-</ul>
-
-            
-            <div id="categories-2" class="widget widget_categories"><h3>分类</h3>
-  <ul>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/ai/">Ai</a>
-        <small>(7)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/algorithm/">Algorithm</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/android/">Android</a>
-        <small>(17)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/ansible/">Ansible</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/beats/">Beats</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/busybox/">Busybox</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/caffe/">Caffe</a>
-        <small>(21)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/cgo/">Cgo</a>
-        <small>(10)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/clang/">Clang</a>
-        <small>(19)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/cmd/">Cmd</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/cpp/">Cpp</a>
-        <small>(6)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/cross_compile/">Cross_compile</a>
-        <small>(8)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/css/">Css</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/dart/">Dart</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/database/">Database</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/dataset/">Dataset</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/deeplearning/">Deeplearning</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/devops/">Devops</a>
-        <small>(70)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/docker/">Docker</a>
-        <small>(18)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/dts/">Dts</a>
-        <small>(5)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/elasticsearch/">Elasticsearch</a>
-        <small>(9)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/english/">English</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/freertos/">Freertos</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/front-end/">Front-End</a>
-        <small>(20)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/golang/">Golang</a>
-        <small>(134)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/hacker/">Hacker</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/hardware/">Hardware</a>
-        <small>(14)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/hi3559/">Hi3559</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/hisi/">Hisi</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/hisilicon/">Hisilicon</a>
-        <small>(44)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/jetson/">Jetson</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/js/">Js</a>
-        <small>(9)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/jumpserver/">Jumpserver</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/kernel/">Kernel</a>
-        <small>(14)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/linux/">Linux</a>
-        <small>(93)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/linux-%E5%91%BD%E4%BB%A4/">Linux-命令</a>
-        <small>(120)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/mac/">Mac</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/machinelearn/">Machinelearn</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/machinelearning/">Machinelearning</a>
-        <small>(11)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/macos/">Macos</a>
-        <small>(12)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/math/">Math</a>
-        <small>(7)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/matplotlib/">Matplotlib</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/mpp/">Mpp</a>
-        <small>(9)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/mysql/">Mysql</a>
-        <small>(10)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/ncnn/">Ncnn</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/network/">Network</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/nginx/">Nginx</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/nnie/">Nnie</a>
-        <small>(11)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/node/">Node</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/numpy/">Numpy</a>
-        <small>(4)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/opencv/">Opencv</a>
-        <small>(10)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/pandas/">Pandas</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/platform/">Platform</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/post/">Post</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/pyqt/">Pyqt</a>
-        <small>(8)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/python/">Python</a>
-        <small>(30)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/pytorch/">Pytorch</a>
-        <small>(6)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/raspi/">Raspi</a>
-        <small>(4)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/rk3288/">Rk3288</a>
-        <small>(23)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/rk3399/">Rk3399</a>
-        <small>(9)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/rtmp/">Rtmp</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/scikit/">Scikit</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/shell/">Shell</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/tool/">Tool</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/weixin/">Weixin</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/windows/">Windows</a>
-        <small>(22)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/work/">Work</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/yolo/">Yolo</a>
-        <small>(12)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/">前端技术</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E5%8D%8F%E8%AE%AE/">协议</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/">嵌入式</a>
-        <small>(23)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E5%B7%A5%E5%85%B7/">工具</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/">常用算法</a>
-        <small>(2)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/">微服务</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/">排列组合</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/">数据库</a>
-        <small>(37)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/">文本编辑</a>
-        <small>(30)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/">正则表达式</a>
-        <small>(3)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/">生活技巧</a>
-        <small>(4)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/">程序员</a>
-        <small>(1)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/">网络安全</a>
-        <small>(40)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/">集群监控</a>
-        <small>(7)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/">静态博客</a>
-        <small>(15)</small>
-      </li>
-    
-      <li class="cat-item cat-item-1">
-        <a href="../../../categories/%E9%AB%98%E6%95%B0/">高数</a>
-        <small>(2)</small>
-      </li>
-    
-  </ul>
-
-</div>
-
-
-    </div>
-</div> <div class="sidebar s2 collapsed" data-position="right" data-layout="col-3cm" data-sb-id="s2">
-        <a class="sidebar-toggle" title="Expand Sidebar">
-            <i class="fas icon-sidebar-toggle"></i>
-        </a>
-        <div class="sidebar-content">
-            <div class="sidebar-top group">
-                <p>More</p>
-            </div>
-            <ul class="post-nav group">
-    <li class="next">
-      
-      <a href="../../../linux/linux-genext2fs-rootfs-ramdisk/" rel="next">
-        <i class="fa fa-chevron-right"></i>
-        <strong>Next post</strong>
-        <span>linux genext2fs rootfs ramdisk</span>
-      </a>
-      
-  </li>
-</ul>
-
-            <div id="tag_cloud-2" class="widget widget_tag_cloud"><h3>标签云</h3>
-  <div class="tagcloud post-tags">
-
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/ai/" class="tag-link-7" title="1 Posts">ai<small>(7)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/ansible/" class="tag-link-19" title="1 Posts">ansible<small>(19)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/awesome/" class="tag-link-3" title="1 Posts">awesome<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/bfc/" class="tag-link-2" title="1 Posts">bfc<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/c/" class="tag-link-5" title="1 Posts">c<small>(5)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/caffe/" class="tag-link-21" title="1 Posts">caffe<small>(21)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/centos7/" class="tag-link-2" title="1 Posts">centos7<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/cgo/" class="tag-link-10" title="1 Posts">cgo<small>(10)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/clang/" class="tag-link-19" title="1 Posts">clang<small>(19)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/cmd/" class="tag-link-2" title="1 Posts">cmd<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/cpp/" class="tag-link-6" title="1 Posts">cpp<small>(6)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/cross_compile/" class="tag-link-8" title="1 Posts">cross_compile<small>(8)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/css/" class="tag-link-20" title="1 Posts">css<small>(20)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/css3/" class="tag-link-2" title="1 Posts">css3<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/curd/" class="tag-link-3" title="1 Posts">curd<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/curl/" class="tag-link-2" title="1 Posts">curl<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/dataset/" class="tag-link-2" title="1 Posts">dataset<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/devops/" class="tag-link-3" title="1 Posts">devops<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/docker/" class="tag-link-21" title="1 Posts">docker<small>(21)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/drone/" class="tag-link-22" title="1 Posts">drone<small>(22)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/dts/" class="tag-link-6" title="1 Posts">dts<small>(6)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/elasticsearch/" class="tag-link-9" title="1 Posts">elasticsearch<small>(9)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/emacs/" class="tag-link-12" title="1 Posts">emacs<small>(12)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/encode/" class="tag-link-3" title="1 Posts">encode<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/english/" class="tag-link-8" title="1 Posts">english<small>(8)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/es6/" class="tag-link-2" title="1 Posts">es6<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/etcd/" class="tag-link-4" title="1 Posts">etcd<small>(4)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/flannel/" class="tag-link-2" title="1 Posts">flannel<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/git/" class="tag-link-6" title="1 Posts">git<small>(6)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/github/" class="tag-link-2" title="1 Posts">github<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/golang/" class="tag-link-148" title="1 Posts">golang<small>(148)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/gradle/" class="tag-link-3" title="1 Posts">gradle<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/haproxy/" class="tag-link-5" title="1 Posts">haproxy<small>(5)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/hardware/" class="tag-link-14" title="1 Posts">hardware<small>(14)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/hexo/" class="tag-link-3" title="1 Posts">hexo<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/hisilicon/" class="tag-link-44" title="1 Posts">hisilicon<small>(44)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/html/" class="tag-link-2" title="1 Posts">html<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/http/" class="tag-link-6" title="1 Posts">http<small>(6)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/hugo/" class="tag-link-14" title="1 Posts">hugo<small>(14)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/imagemagick/" class="tag-link-2" title="1 Posts">imagemagick<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/ip/" class="tag-link-3" title="1 Posts">ip<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/iproute2/" class="tag-link-5" title="1 Posts">iproute2<small>(5)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/iptables/" class="tag-link-17" title="1 Posts">iptables<small>(17)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/javascript/" class="tag-link-19" title="1 Posts">javascript<small>(19)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/jetson/" class="tag-link-3" title="1 Posts">jetson<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/jquery/" class="tag-link-12" title="1 Posts">jquery<small>(12)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/js/" class="tag-link-10" title="1 Posts">js<small>(10)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/jumpserver/" class="tag-link-2" title="1 Posts">jumpserver<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/jwt/" class="tag-link-3" title="1 Posts">jwt<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/kernel/" class="tag-link-14" title="1 Posts">kernel<small>(14)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/kubernetes/" class="tag-link-11" title="1 Posts">kubernetes<small>(11)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/linux/" class="tag-link-21" title="1 Posts">linux<small>(21)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/lvs/" class="tag-link-8" title="1 Posts">lvs<small>(8)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/machinelearn/" class="tag-link-3" title="1 Posts">machinelearn<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/machinelearning/" class="tag-link-11" title="1 Posts">machinelearning<small>(11)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/macos/" class="tag-link-14" title="1 Posts">macos<small>(14)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/makefile/" class="tag-link-2" title="1 Posts">makefile<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/mariadb/" class="tag-link-9" title="1 Posts">mariadb<small>(9)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/math/" class="tag-link-7" title="1 Posts">math<small>(7)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/matplotlib/" class="tag-link-3" title="1 Posts">matplotlib<small>(3)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/maven/" class="tag-link-2" title="1 Posts">maven<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/meteor/" class="tag-link-7" title="1 Posts">meteor<small>(7)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/ml/" class="tag-link-3" title="1 Posts">ml<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/mpp/" class="tag-link-9" title="1 Posts">mpp<small>(9)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/mysql/" class="tag-link-61" title="1 Posts">mysql<small>(61)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/ncnn/" class="tag-link-3" title="1 Posts">ncnn<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/netns/" class="tag-link-2" title="1 Posts">netns<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/network/" class="tag-link-2" title="1 Posts">network<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/nginx/" class="tag-link-28" title="1 Posts">nginx<small>(28)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/nmap/" class="tag-link-2" title="1 Posts">nmap<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/nnie/" class="tag-link-11" title="1 Posts">nnie<small>(11)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/node/" class="tag-link-4" title="1 Posts">node<small>(4)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/nosql/" class="tag-link-8" title="1 Posts">nosql<small>(8)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/npm/" class="tag-link-3" title="1 Posts">npm<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/numpy/" class="tag-link-4" title="1 Posts">numpy<small>(4)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/oauth2/" class="tag-link-2" title="1 Posts">oauth2<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/opencv/" class="tag-link-10" title="1 Posts">opencv<small>(10)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/openssl/" class="tag-link-3" title="1 Posts">openssl<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/pandoc/" class="tag-link-2" title="1 Posts">pandoc<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/php/" class="tag-link-4" title="1 Posts">php<small>(4)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/post/" class="tag-link-4" title="1 Posts">post<small>(4)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/powershell/" class="tag-link-2" title="1 Posts">powershell<small>(2)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/prometheus/" class="tag-link-8" title="1 Posts">prometheus<small>(8)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/pyqt/" class="tag-link-8" title="1 Posts">pyqt<small>(8)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/python/" class="tag-link-32" title="1 Posts">python<small>(32)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/pytorch/" class="tag-link-6" title="1 Posts">pytorch<small>(6)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/raspi/" class="tag-link-4" title="1 Posts">raspi<small>(4)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/redis/" class="tag-link-2" title="1 Posts">redis<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/reflect/" class="tag-link-3" title="1 Posts">reflect<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/responsive/" class="tag-link-2" title="1 Posts">responsive<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/restful/" class="tag-link-6" title="1 Posts">restful<small>(6)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/rk3288/" class="tag-link-22" title="1 Posts">rk3288<small>(22)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/rk3399/" class="tag-link-9" title="1 Posts">rk3399<small>(9)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/route/" class="tag-link-2" title="1 Posts">route<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/rsync/" class="tag-link-2" title="1 Posts">rsync<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/rtmp/" class="tag-link-2" title="1 Posts">rtmp<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/scikit/" class="tag-link-3" title="1 Posts">scikit<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/scrapy/" class="tag-link-8" title="1 Posts">scrapy<small>(8)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/scss/" class="tag-link-2" title="1 Posts">scss<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/sed/" class="tag-link-3" title="1 Posts">sed<small>(3)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/seo/" class="tag-link-5" title="1 Posts">seo<small>(5)</small></a>
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/shell/" class="tag-link-10" title="1 Posts">shell<small>(10)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/sqlite/" class="tag-link-2" title="1 Posts">sqlite<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/ssh/" class="tag-link-3" title="1 Posts">ssh<small>(3)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/stm32/" class="tag-link-5" title="1 Posts">stm32<small>(5)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/swagger/" class="tag-link-2" title="1 Posts">swagger<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/swarm/" class="tag-link-2" title="1 Posts">swarm<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/sysbench/" class="tag-link-2" title="1 Posts">sysbench<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/sysctl/" class="tag-link-2" title="1 Posts">sysctl<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/systemctl/" class="tag-link-2" title="1 Posts">systemctl<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/tc/" class="tag-link-2" title="1 Posts">tc<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/tcpdump/" class="tag-link-2" title="1 Posts">tcpdump<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/timezone/" class="tag-link-2" title="1 Posts">timezone<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/tshark/" class="tag-link-2" title="1 Posts">tshark<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/ubuntu/" class="tag-link-2" title="1 Posts">ubuntu<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/ulimit/" class="tag-link-2" title="1 Posts">ulimit<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/vim/" class="tag-link-14" title="1 Posts">vim<small>(14)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/webpack3/" class="tag-link-2" title="1 Posts">webpack3<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/windows/" class="tag-link-18" title="1 Posts">windows<small>(18)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/wireshark/" class="tag-link-2" title="1 Posts">wireshark<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/xidel/" class="tag-link-2" title="1 Posts">xidel<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/xml/" class="tag-link-2" title="1 Posts">xml<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/yaml/" class="tag-link-2" title="1 Posts">yaml<small>(2)</small></a>
-        
-      
-        
-          <a rel="tag" href="../../../tags/yolo/" class="tag-link-12" title="1 Posts">yolo<small>(12)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-        
-          <a rel="tag" href="../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/" class="tag-link-2" title="1 Posts">微服务<small>(2)</small></a>
-        
-      
-        
-      
-        
-      
-        
-      
-  </div>
-</div>
-
-
-        </div>
-    </div>`
-
-                    </div>
-                    
-                </div>
-                
-
-            </div>
-
-        </div>
-    </div>
-
-    
-
-
-
-
-<script type='text/javascript'>
-  var HUParams={
-      "_disabled":[],
-      "SmoothScroll":{
-          "Enabled":true,
-          "Options":{"touchpadSupport":false}
-      },
-      "centerAllImg":"1",
-      "timerOnScrollAllBrowsers":"1",
-      "extLinksStyle":"1",
-      "extLinksTargetExt":"1",
-      "extLinksSkipSelectors":{
-          "classes":["btn","button"],"ids":[]
-      },
-      "imgSmartLoadEnabled":"1",
-      "imgSmartLoadOpts":{
-          "parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],
-          "opts":{
-              "excludeImg":[".tc-holder-img"],
-              "fadeIn_options":100
-          }
-      },
-      "goldenRatio":"1.618","gridGoldenRatioLimit":"350",
-      "sbStickyUserSettings":{"desktop":true,"mobile":true},
-      "isWPMobile":"",
-      "menuStickyUserSettings":{
-          "desktop":"stick_up",
-          "mobile":"stick_up"
-      },
-      "isDevMode":"",
-      "ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1",
-          "frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},
-          "userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},
-          "isWelcomeNoteOn":"","welcomeContent":""};
-</script>
-
-
-
-<script src="https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js"></script>
-<script src="https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js"></script>
-<script type="text/javascript" src="../../../front/js/scripts.js"></script> 
-
-
-
-
-
-<footer id="footer">
-    <section class="container" id="footer-bottom">
-      <div class="container-inner">
-        <a id="back-to-top" href="#"><i class="fa fa-angle-up"></i></a>
-        <div class="pad group">
-          <div class="grid one-half">
-            <div id="copyright">
-                <p>Copyright (c) 2017. All rights reserved. (版权所有) <a href='http://www.miitbeian.gov.cn/'>鲁ICP备17074587号-1</a></p>
-                
-            </div>
-            
-          </div>
-          
-          <div class="grid one-half last">
-            <ul class="social-links">
-    <li>
-    <a class="social-tooltip" title="On WeiBo"
-        href="http://weibo.com/rinetd" target="_blank">
-        <i class="fa fa-weibo"></i>
-    </a>
-    </li>
-    <li>
-    <a class="social-tooltip" title="On Twitter"
-        href="https://twitter.com/rinetd" target="_blank">
-        <i class="fa fa-twitter"></i>
-    </a>
-    </li>
-    <li>
-    <a class="social-tooltip" title="On GitHub"
-        href="https://github.com/rinetd" target="_blank">
-        <i class="fa fa-github"></i>
-    </a>
-    </li>
-</ul>
-
-          </div>
-        </div>
-  
-      </div>
-      
-    </section>
-    
-  </footer>
-
-
-<div class="back-to-top" id="back-to-top">
-    <i class="fa fa-angle-double-up"></i>
-</div>
-
-
-
-
-
-<script>
-  $(".topbar-toggle-down").click(function(){
-    $("#nav-topbar").css("overflow","visible");
-  });
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-    <noscript>
-        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height="0" width="0"
-                style="display:none;visibility:hidden"></iframe>
-    </noscript>
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-5HM5XM2');
-    </script>
-    
-
-
-
-
-
-</body>
-
-</html>
+</code></pre><p>}<p>return NULL;<br>}<li><p>  首先会在dt中查找，如果查找不到就使用no-dt的方法。<li><p>  在regulator_list中通过比较&quot;supply&quot;和rdev-&gt;constraints-&gt;name或者rdev-&gt;desc-&gt;name的名字比较。其中supply等于&quot;VCC&quot;，而rdev-&gt;constraints-&gt;name的名字是&quot;my_regulator_constrains&quot;，显然是不匹配的。<li><p>  最后会在regulator_map_list中通过在regulator_register中注册的dev_name和supply匹配，最终会找到注册的regulator_dev。</ol><p>最终的注册查找可以用如下图概述：<p>当然了一个regulator可以存在多个consumer设备的，具体情况具体分析。详细信息可以查看文档Documentation/power/regulator/machine.txt<br>————————————————<br>版权声明：本文为CSDN博主「Loopers」的原创文章，遵循 CC 4.0 BY-SA 版权协议，转载请附上原文出处链接及本声明。<br>原文链接：<a href=https://blog.csdn.net/longwang155069/article/details/53161468 target=_blank>https://blog.csdn.net/longwang155069/article/details/53161468</a></div><div class=clear></div></div></div></article><div class=clear></div><p class=post-tags><span class="fa fa-tags">Tags:</span>
+<a rel=tag href=../../../tags/kernel>kernel</a><div id=related-posts><div class=related-inner></div></div><section id=comments class=themeform></section><section id=comments class=themeform></section></div></div><div class="sidebar s1 collapsed" data-position=left data-layout=col-3cm data-sb-id=s1><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>Follow:<ul class=social-links><li><a class=social-tooltip href=mailto: title=Email><i class="fa fa-envelope"></i></a><li><a class=social-tooltip href=//github.com/ title=GitHub><i class="fa fa-github"></i></a><li><a class=social-tooltip title="RSS Feed" aria-label="RSS Feed" href=../../../feed target=_blank style=color:#ffffffb2><i class="fa fa-rss"></i></a></ul></div><ul class="post-nav group"><li class=previous><a href=../../../hardware/rk3399/opencv-gstreamer/ rel=prev><i class="fa fa-chevron-left"></i><strong>Previous Post</strong>
+<span>Use OpenCV with Gstreamer</span></a></ul><div id=categories-2 class="widget widget_categories"><h3>分类</h3><ul><li class="cat-item cat-item-1"><a href=../../../categories/ai/>Ai</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/algorithm/>Algorithm</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/android/>Android</a>
+<small>(17)</small><li class="cat-item cat-item-1"><a href=../../../categories/ansible/>Ansible</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/beats/>Beats</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/busybox/>Busybox</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/caffe/>Caffe</a>
+<small>(21)</small><li class="cat-item cat-item-1"><a href=../../../categories/cgo/>Cgo</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../categories/clang/>Clang</a>
+<small>(19)</small><li class="cat-item cat-item-1"><a href=../../../categories/cmd/>Cmd</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/cpp/>Cpp</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../../categories/cross_compile/>Cross_compile</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../../categories/css/>Css</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/dart/>Dart</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/database/>Database</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/dataset/>Dataset</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/deeplearning/>Deeplearning</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/devops/>Devops</a>
+<small>(70)</small><li class="cat-item cat-item-1"><a href=../../../categories/docker/>Docker</a>
+<small>(18)</small><li class="cat-item cat-item-1"><a href=../../../categories/dts/>Dts</a>
+<small>(5)</small><li class="cat-item cat-item-1"><a href=../../../categories/elasticsearch/>Elasticsearch</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/english/>English</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/freertos/>Freertos</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/front-end/>Front-End</a>
+<small>(20)</small><li class="cat-item cat-item-1"><a href=../../../categories/golang/>Golang</a>
+<small>(134)</small><li class="cat-item cat-item-1"><a href=../../../categories/hacker/>Hacker</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hardware/>Hardware</a>
+<small>(14)</small><li class="cat-item cat-item-1"><a href=../../../categories/hi3559/>Hi3559</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hisi/>Hisi</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hisilicon/>Hisilicon</a>
+<small>(44)</small><li class="cat-item cat-item-1"><a href=../../../categories/jetson/>Jetson</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/js/>Js</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/jumpserver/>Jumpserver</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/kernel/>Kernel</a>
+<small>(14)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux/>Linux</a>
+<small>(93)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux-%E5%91%BD%E4%BB%A4/>Linux-命令</a>
+<small>(120)</small><li class="cat-item cat-item-1"><a href=../../../categories/mac/>Mac</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/machinelearn/>Machinelearn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/machinelearning/>Machinelearning</a>
+<small>(11)</small><li class="cat-item cat-item-1"><a href=../../../categories/macos/>Macos</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../../categories/math/>Math</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/matplotlib/>Matplotlib</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/mpp/>Mpp</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/mysql/>Mysql</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../categories/ncnn/>Ncnn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/network/>Network</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/nginx/>Nginx</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/nnie/>Nnie</a>
+<small>(11)</small><li class="cat-item cat-item-1"><a href=../../../categories/node/>Node</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/numpy/>Numpy</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/opencv/>Opencv</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../categories/pandas/>Pandas</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/platform/>Platform</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/post/>Post</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/pyqt/>Pyqt</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../../categories/python/>Python</a>
+<small>(30)</small><li class="cat-item cat-item-1"><a href=../../../categories/pytorch/>Pytorch</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../../categories/raspi/>Raspi</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/rk3288/>Rk3288</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../../categories/rk3399/>Rk3399</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/rtmp/>Rtmp</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/scikit/>Scikit</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/shell/>Shell</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/tool/>Tool</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/weixin/>Weixin</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/windows/>Windows</a>
+<small>(22)</small><li class="cat-item cat-item-1"><a href=../../../categories/work/>Work</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/yolo/>Yolo</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/>前端技术</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%8D%8F%E8%AE%AE/>协议</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/>嵌入式</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B7%A5%E5%85%B7/>工具</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/>常用算法</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/>微服务</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/>排列组合</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/>数据库</a>
+<small>(37)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/>文本编辑</a>
+<small>(30)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/>正则表达式</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/>生活技巧</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/>程序员</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/>网络安全</a>
+<small>(40)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/>集群监控</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/>静态博客</a>
+<small>(15)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%AB%98%E6%95%B0/>高数</a>
+<small>(2)</small></ul></div></div></div><div class="sidebar s2 collapsed" data-position=right data-layout=col-3cm data-sb-id=s2><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>More</div><ul class="post-nav group"><li class=next><a href=../../../linux/linux-genext2fs-rootfs-ramdisk/ rel=next><i class="fa fa-chevron-right"></i><strong>Next post</strong>
+<span>linux genext2fs rootfs ramdisk</span></a></ul><div id=tag_cloud-2 class="widget widget_tag_cloud"><h3>标签云</h3><div class="tagcloud post-tags"><a rel=tag href=../../../tags/ai/ class=tag-link-7 title="1 Posts">ai<small>(7)</small></a>
+<a rel=tag href=../../../tags/ansible/ class=tag-link-19 title="1 Posts">ansible<small>(19)</small></a>
+<a rel=tag href=../../../tags/awesome/ class=tag-link-3 title="1 Posts">awesome<small>(3)</small></a>
+<a rel=tag href=../../../tags/bfc/ class=tag-link-2 title="1 Posts">bfc<small>(2)</small></a>
+<a rel=tag href=../../../tags/c/ class=tag-link-5 title="1 Posts">c<small>(5)</small></a>
+<a rel=tag href=../../../tags/caffe/ class=tag-link-21 title="1 Posts">caffe<small>(21)</small></a>
+<a rel=tag href=../../../tags/centos7/ class=tag-link-2 title="1 Posts">centos7<small>(2)</small></a>
+<a rel=tag href=../../../tags/cgo/ class=tag-link-10 title="1 Posts">cgo<small>(10)</small></a>
+<a rel=tag href=../../../tags/clang/ class=tag-link-19 title="1 Posts">clang<small>(19)</small></a>
+<a rel=tag href=../../../tags/cmd/ class=tag-link-2 title="1 Posts">cmd<small>(2)</small></a>
+<a rel=tag href=../../../tags/cpp/ class=tag-link-6 title="1 Posts">cpp<small>(6)</small></a>
+<a rel=tag href=../../../tags/cross_compile/ class=tag-link-8 title="1 Posts">cross_compile<small>(8)</small></a>
+<a rel=tag href=../../../tags/css/ class=tag-link-20 title="1 Posts">css<small>(20)</small></a>
+<a rel=tag href=../../../tags/css3/ class=tag-link-2 title="1 Posts">css3<small>(2)</small></a>
+<a rel=tag href=../../../tags/curd/ class=tag-link-3 title="1 Posts">curd<small>(3)</small></a>
+<a rel=tag href=../../../tags/curl/ class=tag-link-2 title="1 Posts">curl<small>(2)</small></a>
+<a rel=tag href=../../../tags/dataset/ class=tag-link-2 title="1 Posts">dataset<small>(2)</small></a>
+<a rel=tag href=../../../tags/devops/ class=tag-link-3 title="1 Posts">devops<small>(3)</small></a>
+<a rel=tag href=../../../tags/docker/ class=tag-link-21 title="1 Posts">docker<small>(21)</small></a>
+<a rel=tag href=../../../tags/drone/ class=tag-link-22 title="1 Posts">drone<small>(22)</small></a>
+<a rel=tag href=../../../tags/dts/ class=tag-link-6 title="1 Posts">dts<small>(6)</small></a>
+<a rel=tag href=../../../tags/elasticsearch/ class=tag-link-9 title="1 Posts">elasticsearch<small>(9)</small></a>
+<a rel=tag href=../../../tags/emacs/ class=tag-link-12 title="1 Posts">emacs<small>(12)</small></a>
+<a rel=tag href=../../../tags/encode/ class=tag-link-3 title="1 Posts">encode<small>(3)</small></a>
+<a rel=tag href=../../../tags/english/ class=tag-link-8 title="1 Posts">english<small>(8)</small></a>
+<a rel=tag href=../../../tags/es6/ class=tag-link-2 title="1 Posts">es6<small>(2)</small></a>
+<a rel=tag href=../../../tags/etcd/ class=tag-link-4 title="1 Posts">etcd<small>(4)</small></a>
+<a rel=tag href=../../../tags/flannel/ class=tag-link-2 title="1 Posts">flannel<small>(2)</small></a>
+<a rel=tag href=../../../tags/git/ class=tag-link-6 title="1 Posts">git<small>(6)</small></a>
+<a rel=tag href=../../../tags/github/ class=tag-link-2 title="1 Posts">github<small>(2)</small></a>
+<a rel=tag href=../../../tags/golang/ class=tag-link-148 title="1 Posts">golang<small>(148)</small></a>
+<a rel=tag href=../../../tags/gradle/ class=tag-link-3 title="1 Posts">gradle<small>(3)</small></a>
+<a rel=tag href=../../../tags/haproxy/ class=tag-link-5 title="1 Posts">haproxy<small>(5)</small></a>
+<a rel=tag href=../../../tags/hardware/ class=tag-link-14 title="1 Posts">hardware<small>(14)</small></a>
+<a rel=tag href=../../../tags/hexo/ class=tag-link-3 title="1 Posts">hexo<small>(3)</small></a>
+<a rel=tag href=../../../tags/hisilicon/ class=tag-link-44 title="1 Posts">hisilicon<small>(44)</small></a>
+<a rel=tag href=../../../tags/html/ class=tag-link-2 title="1 Posts">html<small>(2)</small></a>
+<a rel=tag href=../../../tags/http/ class=tag-link-6 title="1 Posts">http<small>(6)</small></a>
+<a rel=tag href=../../../tags/hugo/ class=tag-link-14 title="1 Posts">hugo<small>(14)</small></a>
+<a rel=tag href=../../../tags/imagemagick/ class=tag-link-2 title="1 Posts">imagemagick<small>(2)</small></a>
+<a rel=tag href=../../../tags/ip/ class=tag-link-3 title="1 Posts">ip<small>(3)</small></a>
+<a rel=tag href=../../../tags/iproute2/ class=tag-link-5 title="1 Posts">iproute2<small>(5)</small></a>
+<a rel=tag href=../../../tags/iptables/ class=tag-link-17 title="1 Posts">iptables<small>(17)</small></a>
+<a rel=tag href=../../../tags/javascript/ class=tag-link-19 title="1 Posts">javascript<small>(19)</small></a>
+<a rel=tag href=../../../tags/jetson/ class=tag-link-3 title="1 Posts">jetson<small>(3)</small></a>
+<a rel=tag href=../../../tags/jquery/ class=tag-link-12 title="1 Posts">jquery<small>(12)</small></a>
+<a rel=tag href=../../../tags/js/ class=tag-link-10 title="1 Posts">js<small>(10)</small></a>
+<a rel=tag href=../../../tags/jumpserver/ class=tag-link-2 title="1 Posts">jumpserver<small>(2)</small></a>
+<a rel=tag href=../../../tags/jwt/ class=tag-link-3 title="1 Posts">jwt<small>(3)</small></a>
+<a rel=tag href=../../../tags/kernel/ class=tag-link-14 title="1 Posts">kernel<small>(14)</small></a>
+<a rel=tag href=../../../tags/kubernetes/ class=tag-link-11 title="1 Posts">kubernetes<small>(11)</small></a>
+<a rel=tag href=../../../tags/linux/ class=tag-link-21 title="1 Posts">linux<small>(21)</small></a>
+<a rel=tag href=../../../tags/lvs/ class=tag-link-8 title="1 Posts">lvs<small>(8)</small></a>
+<a rel=tag href=../../../tags/machinelearn/ class=tag-link-3 title="1 Posts">machinelearn<small>(3)</small></a>
+<a rel=tag href=../../../tags/machinelearning/ class=tag-link-11 title="1 Posts">machinelearning<small>(11)</small></a>
+<a rel=tag href=../../../tags/macos/ class=tag-link-14 title="1 Posts">macos<small>(14)</small></a>
+<a rel=tag href=../../../tags/makefile/ class=tag-link-2 title="1 Posts">makefile<small>(2)</small></a>
+<a rel=tag href=../../../tags/mariadb/ class=tag-link-9 title="1 Posts">mariadb<small>(9)</small></a>
+<a rel=tag href=../../../tags/math/ class=tag-link-7 title="1 Posts">math<small>(7)</small></a>
+<a rel=tag href=../../../tags/matplotlib/ class=tag-link-3 title="1 Posts">matplotlib<small>(3)</small></a>
+<a rel=tag href=../../../tags/maven/ class=tag-link-2 title="1 Posts">maven<small>(2)</small></a>
+<a rel=tag href=../../../tags/meteor/ class=tag-link-7 title="1 Posts">meteor<small>(7)</small></a>
+<a rel=tag href=../../../tags/ml/ class=tag-link-3 title="1 Posts">ml<small>(3)</small></a>
+<a rel=tag href=../../../tags/mpp/ class=tag-link-9 title="1 Posts">mpp<small>(9)</small></a>
+<a rel=tag href=../../../tags/mysql/ class=tag-link-61 title="1 Posts">mysql<small>(61)</small></a>
+<a rel=tag href=../../../tags/ncnn/ class=tag-link-3 title="1 Posts">ncnn<small>(3)</small></a>
+<a rel=tag href=../../../tags/netns/ class=tag-link-2 title="1 Posts">netns<small>(2)</small></a>
+<a rel=tag href=../../../tags/network/ class=tag-link-2 title="1 Posts">network<small>(2)</small></a>
+<a rel=tag href=../../../tags/nginx/ class=tag-link-28 title="1 Posts">nginx<small>(28)</small></a>
+<a rel=tag href=../../../tags/nmap/ class=tag-link-2 title="1 Posts">nmap<small>(2)</small></a>
+<a rel=tag href=../../../tags/nnie/ class=tag-link-11 title="1 Posts">nnie<small>(11)</small></a>
+<a rel=tag href=../../../tags/node/ class=tag-link-4 title="1 Posts">node<small>(4)</small></a>
+<a rel=tag href=../../../tags/nosql/ class=tag-link-8 title="1 Posts">nosql<small>(8)</small></a>
+<a rel=tag href=../../../tags/npm/ class=tag-link-3 title="1 Posts">npm<small>(3)</small></a>
+<a rel=tag href=../../../tags/numpy/ class=tag-link-4 title="1 Posts">numpy<small>(4)</small></a>
+<a rel=tag href=../../../tags/oauth2/ class=tag-link-2 title="1 Posts">oauth2<small>(2)</small></a>
+<a rel=tag href=../../../tags/opencv/ class=tag-link-10 title="1 Posts">opencv<small>(10)</small></a>
+<a rel=tag href=../../../tags/openssl/ class=tag-link-3 title="1 Posts">openssl<small>(3)</small></a>
+<a rel=tag href=../../../tags/pandoc/ class=tag-link-2 title="1 Posts">pandoc<small>(2)</small></a>
+<a rel=tag href=../../../tags/php/ class=tag-link-4 title="1 Posts">php<small>(4)</small></a>
+<a rel=tag href=../../../tags/post/ class=tag-link-4 title="1 Posts">post<small>(4)</small></a>
+<a rel=tag href=../../../tags/powershell/ class=tag-link-2 title="1 Posts">powershell<small>(2)</small></a>
+<a rel=tag href=../../../tags/prometheus/ class=tag-link-8 title="1 Posts">prometheus<small>(8)</small></a>
+<a rel=tag href=../../../tags/pyqt/ class=tag-link-8 title="1 Posts">pyqt<small>(8)</small></a>
+<a rel=tag href=../../../tags/python/ class=tag-link-32 title="1 Posts">python<small>(32)</small></a>
+<a rel=tag href=../../../tags/pytorch/ class=tag-link-6 title="1 Posts">pytorch<small>(6)</small></a>
+<a rel=tag href=../../../tags/raspi/ class=tag-link-4 title="1 Posts">raspi<small>(4)</small></a>
+<a rel=tag href=../../../tags/redis/ class=tag-link-2 title="1 Posts">redis<small>(2)</small></a>
+<a rel=tag href=../../../tags/reflect/ class=tag-link-3 title="1 Posts">reflect<small>(3)</small></a>
+<a rel=tag href=../../../tags/responsive/ class=tag-link-2 title="1 Posts">responsive<small>(2)</small></a>
+<a rel=tag href=../../../tags/restful/ class=tag-link-6 title="1 Posts">restful<small>(6)</small></a>
+<a rel=tag href=../../../tags/rk3288/ class=tag-link-22 title="1 Posts">rk3288<small>(22)</small></a>
+<a rel=tag href=../../../tags/rk3399/ class=tag-link-9 title="1 Posts">rk3399<small>(9)</small></a>
+<a rel=tag href=../../../tags/route/ class=tag-link-2 title="1 Posts">route<small>(2)</small></a>
+<a rel=tag href=../../../tags/rsync/ class=tag-link-2 title="1 Posts">rsync<small>(2)</small></a>
+<a rel=tag href=../../../tags/rtmp/ class=tag-link-2 title="1 Posts">rtmp<small>(2)</small></a>
+<a rel=tag href=../../../tags/scikit/ class=tag-link-3 title="1 Posts">scikit<small>(3)</small></a>
+<a rel=tag href=../../../tags/scrapy/ class=tag-link-8 title="1 Posts">scrapy<small>(8)</small></a>
+<a rel=tag href=../../../tags/scss/ class=tag-link-2 title="1 Posts">scss<small>(2)</small></a>
+<a rel=tag href=../../../tags/sed/ class=tag-link-3 title="1 Posts">sed<small>(3)</small></a>
+<a rel=tag href=../../../tags/seo/ class=tag-link-5 title="1 Posts">seo<small>(5)</small></a>
+<a rel=tag href=../../../tags/shell/ class=tag-link-10 title="1 Posts">shell<small>(10)</small></a>
+<a rel=tag href=../../../tags/sqlite/ class=tag-link-2 title="1 Posts">sqlite<small>(2)</small></a>
+<a rel=tag href=../../../tags/ssh/ class=tag-link-3 title="1 Posts">ssh<small>(3)</small></a>
+<a rel=tag href=../../../tags/stm32/ class=tag-link-5 title="1 Posts">stm32<small>(5)</small></a>
+<a rel=tag href=../../../tags/swagger/ class=tag-link-2 title="1 Posts">swagger<small>(2)</small></a>
+<a rel=tag href=../../../tags/swarm/ class=tag-link-2 title="1 Posts">swarm<small>(2)</small></a>
+<a rel=tag href=../../../tags/sysbench/ class=tag-link-2 title="1 Posts">sysbench<small>(2)</small></a>
+<a rel=tag href=../../../tags/sysctl/ class=tag-link-2 title="1 Posts">sysctl<small>(2)</small></a>
+<a rel=tag href=../../../tags/systemctl/ class=tag-link-2 title="1 Posts">systemctl<small>(2)</small></a>
+<a rel=tag href=../../../tags/tc/ class=tag-link-2 title="1 Posts">tc<small>(2)</small></a>
+<a rel=tag href=../../../tags/tcpdump/ class=tag-link-2 title="1 Posts">tcpdump<small>(2)</small></a>
+<a rel=tag href=../../../tags/timezone/ class=tag-link-2 title="1 Posts">timezone<small>(2)</small></a>
+<a rel=tag href=../../../tags/tshark/ class=tag-link-2 title="1 Posts">tshark<small>(2)</small></a>
+<a rel=tag href=../../../tags/ubuntu/ class=tag-link-2 title="1 Posts">ubuntu<small>(2)</small></a>
+<a rel=tag href=../../../tags/ulimit/ class=tag-link-2 title="1 Posts">ulimit<small>(2)</small></a>
+<a rel=tag href=../../../tags/vim/ class=tag-link-14 title="1 Posts">vim<small>(14)</small></a>
+<a rel=tag href=../../../tags/webpack3/ class=tag-link-2 title="1 Posts">webpack3<small>(2)</small></a>
+<a rel=tag href=../../../tags/windows/ class=tag-link-18 title="1 Posts">windows<small>(18)</small></a>
+<a rel=tag href=../../../tags/wireshark/ class=tag-link-2 title="1 Posts">wireshark<small>(2)</small></a>
+<a rel=tag href=../../../tags/xidel/ class=tag-link-2 title="1 Posts">xidel<small>(2)</small></a>
+<a rel=tag href=../../../tags/xml/ class=tag-link-2 title="1 Posts">xml<small>(2)</small></a>
+<a rel=tag href=../../../tags/yaml/ class=tag-link-2 title="1 Posts">yaml<small>(2)</small></a>
+<a rel=tag href=../../../tags/yolo/ class=tag-link-12 title="1 Posts">yolo<small>(12)</small></a>
+<a rel=tag href=../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/ class=tag-link-2 title="1 Posts">微服务<small>(2)</small></a></div></div></div></div>`</div></div></div></div></div><script>var HUParams={"_disabled":[],"SmoothScroll":{"Enabled":true,"Options":{"touchpadSupport":false}},"centerAllImg":"1","timerOnScrollAllBrowsers":"1","extLinksStyle":"1","extLinksTargetExt":"1","extLinksSkipSelectors":{"classes":["btn","button"],"ids":[]},"imgSmartLoadEnabled":"1","imgSmartLoadOpts":{"parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],"opts":{"excludeImg":[".tc-holder-img"],"fadeIn_options":100}},"goldenRatio":"1.618","gridGoldenRatioLimit":"350","sbStickyUserSettings":{"desktop":true,"mobile":true},"isWPMobile":"","menuStickyUserSettings":{"desktop":"stick_up","mobile":"stick_up"},"isDevMode":"","ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1","frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},"userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},"isWelcomeNoteOn":"","welcomeContent":""};</script><script src=https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js></script><script src=https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js></script><script src=../../../front/js/scripts.js></script><footer id=footer><section class=container id=footer-bottom><div class=container-inner><a id=back-to-top href=#><i class="fa fa-angle-up"></i></a><div class="pad group"><div class="grid one-half"><div id=copyright><p>Copyright (c) 2017. All rights reserved. (版权所有) <a href=http://www.miitbeian.gov.cn/>鲁ICP备17074587号-1</a></div></div><div class="grid one-half last"><ul class=social-links><li><a class=social-tooltip title="On WeiBo" href=http://weibo.com/rinetd target=_blank><i class="fa fa-weibo"></i></a><li><a class=social-tooltip title="On Twitter" href=https://twitter.com/rinetd target=_blank><i class="fa fa-twitter"></i></a><li><a class=social-tooltip title="On GitHub" href=https://github.com/rinetd target=_blank><i class="fa fa-github"></i></a></ul></div></div></div></section></footer><div class=back-to-top id=back-to-top><i class="fa fa-angle-double-up"></i></div><script>$(".topbar-toggle-down").click(function(){$("#nav-topbar").css("overflow","visible");});</script><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height=0 width=0 style=display:none;visibility:hidden></iframe></noscript><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5HM5XM2');</script>
