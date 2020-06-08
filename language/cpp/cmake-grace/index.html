@@ -1,0 +1,631 @@
+<!doctype html><html lang=zh-cn class=no-js><title>CMake---优雅地构建软件项目实践</title><meta charset=utf-8><meta name=robots content=index,nofollow><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><meta http-equiv=x-dns-prefetch-control content=on><meta name=viewport content="width=device-width,initial-scale=1"><meta name=referrer content=origin-when-cross-origin><meta name=description content=首先说明的是本篇文章不从cmake的整个语法上去讲述，而是从一个实际项目的构建上入手，去了解如何优雅的去构建一个软件项目，搭建一个C/C&#43;&#43;><meta name=author content=rinetd><meta name=google-site-verification content=ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk><link rel=canonical href=../../../language/cpp/cmake-grace/><link rel=icon href=../../../public/favicon.ico><link rel="shortcut icon" href=../../../public/favicon.ico><link rel=stylesheet href=../../../front/css/main.min.css><link href=https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css rel=stylesheet><link rel=stylesheet href=//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css><body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome"><div id=wrapper><header id=header class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent"><nav class="nav-container group mobile-menu mobile-sticky" id=nav-mobile data-menu-id=header-1><div class=mobile-title-logo-in-header><p class=site-title><a class=custom-logo-link href rel=home title="Pytool | Home">Pytool</a></div><div class="ham__navbar-toggler-two collapsed" title=Menu aria-expanded=false><div class=ham__navbar-span-wrapper><span class="line line-1"></span><span class="line line-2"></span><span class="line line-3"></span></div></div><div class=nav-text>CMake---优雅地构建软件项目实践</div><div class="nav-wrap container"><ul class="nav container-inner group mobile-search"><li><form class="searchform themeform" action=https://demo-hueman.presscustomizr.com/><div><input class=search name=s onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"></div></form></ul><ul id=menu-topbar-menu class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href>Home</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/shell/>Shell</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../macos/>Macos</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/math/>Math</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../windows/>Windows</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/clang/>Clang</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/python/>Python</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/python/scrapy/>Scrapy</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/golang/>Golang</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/cgo/>Cgo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/hugo/>Hugo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/sys/>Sys</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/goher/>Goher</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/java/>Java</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/java/hadoop/>Hadoop</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/php/>Php</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/php/magento/>Magento</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/android/>Android</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../work/>Work</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../weixin/>Weixin</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../edit/>Edit</a><li class=item><a class=text href=../../../series/>series</a><li class=item><a class=text href=../../../categories/>categories</a><li class=item><a class=text href=../../../tags/>tags</a><li class=item><a class=text href=../../../me/>about</a></ul></div></nav><nav class="nav-container group desktop-menu desktop-sticky" id=nav-topbar data-menu-id=header-2><div class=nav-text>CMake---优雅地构建软件项目实践</div><div class=topbar-toggle-down><i class="fas fa-angle-double-down" aria-hidden=true data-toggle=down title="Expand menu"></i><i class="fas fa-angle-double-up" aria-hidden=true data-toggle=up title="Collapse menu"></i></div><div class="nav-wrap container"><ul id=menu-topbar-menu-1 class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href=../../../>Home</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/shell/>Shell</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../macos/>Macos</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../post/>Post</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/english/>English</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/seo/>Seo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/life/>Life</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/wiki/>Wiki</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/software/>Software</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/basic/>Basic</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/reship/>Reship</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/math/>Math</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../windows/>Windows</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/clang/>Clang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/python/>Python</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/golang/>Golang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/java/>Java</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/php/>Php</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/android/>Android</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../work/>Work</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../weixin/>Weixin</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../edit/>Edit</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../series/>series</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../categories/>categories</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../tags/>tags</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../me/>about</a></ul></div></nav></header><div class=container id=page><div class=container-inner><div class=main><div class="main-inner group"><div class=content><div class="pad group page-title"><ul class="meta-single group"><li><span class="fa fa-folder-open"></span><li class=category><a href=../../../categories/cpp/ rel="category tag">cpp</a></ul></div><div class="pad group"><article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list"><div class="post-inner group"><h1 class=post-title>CMake---优雅地构建软件项目实践</h1><p class=post-byline>by · 2020年06月07日 · 7894 Words ·
+~16min reading time |
+<a href=https://gitlab.com/rinetd/blog/edit/master/language/cpp/cmake-grace.md target=_blank>Improve on <i class="fa fa-gitlab"></i></a><div class=clear></div><div class="entry themeform"><div class=entry-inner></br>原文链接：<a target=_blank href=../../../language/cpp/cmake-grace/> CMake---优雅地构建软件项目实践</a><p>首先说明的是本篇文章不从cmake的整个语法上去讲述，而是从一个实际项目的构建上入手，去了解如何优雅的去构建一个软件项目，搭建一个<code>C/C++</code>软件项目基本的依赖组件，最后形成一个构建<code>C/C++</code>软件项目的模板，方便后面新项目的重复使用。相信对我们日常的软件项目构建都会有很好的收获。废话不都说，开始。<h2 id=1-我们需要知道的基础>1 我们需要知道的基础</h2><p>首先熟悉cmake的一些基操，我们就可以信手捏来的、优雅去构建一个项目，避免踩到不必要的坑。涉及到的有：<ul><li>cmake的变量作用域？<br><li>cmake中的数据结构？<br><li>宏函数与函数？<br><li>如何去构建动静态库和找到这些库？<br><li>如何去实现支持多平台的项目构建？<br><li>如何去构建一个应用？<br><li>如何实现项目的最后install？<br><li>如何很友好的去展示构建过程的各种级别信息？<br><li>如何适配cmake-gui，采用友好的ccmake或者cmake-gui实现构建？<br><br></ul><p>这里概括性说明下常用的cmake知识，总的来说cmake的作用就是让我们找到依赖的头文件和库文件，去编译源文件、链接目标文件(静态库也是目标文件的一个集合)，最后生成可执行文件或动/静态库：<ul><li><p><code>INCLUDE_DIRECTORIES</code> 将给定的目录添加到编译器用于搜索包含文件(如头文件)的目录中，相对路径被解释为相对于当前源目录。注意目录仅是被添加到当前CMakeLists文件，作用于当前CMakeLists文件相关的库、可执行文件或者<code>子模块</code>编译，对于两个不同CMakeLists.cmake并列的作用是无效的。区别于<code>TARGET_INCLUDE_DIRECTORIES</code>，这个命令的作用只是作用于指定的目标，为指定的目标添加搜索路径。类似的还有<code>TARGET_LINK_LIBRARIES</code>命令(添加需要链接的库文件目录)。<li><p><code>PROJECT_SOURCE_DIR</code>: 无疑只要是有包含最新PROJECT()命令声明的CMakeLists.txt，则都是相对当该CMakeLists.txt路径。<li><p><code>CMAKE_SOURCE_DIR</code>: 构建整个项目时，可能你依赖的第三方项目，这个变量的值就是最顶层CMakeLists.txt的路径。<li><p>在 <code>find_path</code> 和 <code>find_library</code>以及 <code>find_package</code> 时，会搜索一些默认的路径。当我们将一些lib安装在非默认搜索路径时，cmake就没法搜索到了，可设置：<ul><li>SET(CMAKE_INCLUDE_PATH &quot;include_path&quot;) // find_path，查找头文件<br><li>SET(CMAKE_LIBRARY_PATH &quot;lib_path&quot;) // find_library，查找库文件<br><li>SET(CMAKE_MODULE_PATH &quot;module_path&quot;) // find_package<br><br></ul><li><p>寻找3rdparty也不一定需要自己去编写FindXX.cmake，也可以直接用include(xxx.cmake)结合<code>find_file</code>命令实现寻找依赖库，find_file寻找到的结果存放到CACHE变量，示例：</ul><pre><code class=language-language-cmake># Once done, this will define                                                      
+#                                                                                  
+#  NANOMSG_INCLUDE_DIR - the NANOMSG include directory                             
+#  NANOMSG_LIBRARY_DIR - the SPDLOG library directory                                                                                                                                          
+#  NANOMSG_LIBS - link these to use NANOMSG                                        
+#                                                                                  
+#  SPDLOG_INCLUDE_DIR - the SPDLOG include directory                               
+#  SPDLOG_LIBRARY_DIR - the SPDLOG library directory                               
+#  SPDLG_LIBS - link these to use SPDLOG                                           
+
+MACRO(LOAD_LIBNANOMSG os arch)                                                     
+    SET(3RDPARTY_DIR ${PROJECT_SOURCE_DIR}/3rdparty/target/${${os}}_${${arch}}) 
+    MESSAGE(STATUS &quot;3RDPARTY_DIR: ${3RDPARTY_DIR}&quot;)                                
+    FIND_FILE(NANOMSG_INCLUDE_DIR include ${3RDPARTY_DIR} NO_DEFAULT_PATH)         
+    FIND_FILE(NANOMSG_LIBRARY_DIR lib ${3RDPARTY_DIR} NO_DEFAULT_PATH)             
+
+    SET(NANOMSG_LIBS                                                               
+        nanomsg                                                                    
+        pthread                                                                    
+        anl          
+        PARENT_SCOPE
+    )                                                                              
+    IF(NANOMSG_INCLUDE_DIR)                                                        
+        MESSAGE(STATUS &quot;NANOMSG_LIBS : ${NANOMSG_LIBS}&quot;)                           
+    ELSE()                                                                         
+        MESSAGE(FATAL_ERROR &quot;NANOMSG_LIBS not found!&quot;)                             
+    ENDIF()                                                                        
+ENDMACRO()复制代码
+</code></pre><ul><li>条件控制切换示例：<br><br></ul><pre><code class=language-language-cmake># set target
+if (NOT YOUR_TARGET_OS)
+    set(YOUR_TARGET_OS linux)
+endif()
+
+if (NOT YOUR_TARGET_ARCH)
+    set(YOUR_TARGET_ARCH x86_64)
+endif()
+
+if (NOT YOUR_BUILD_TYPE)
+    set (YOUR_BUILD_TYPE Release)
+endif()
+
+......
+
+if(${YOUR_TARGET_ARCH} MATCHES &quot;(arm*)|(aarch64)&quot;)
+    ......
+elseif(${YOUR_TARGET_ARCH} MATCHES x86*)
+    ......复制代码
+</code></pre><ul><li>交叉编译: <code>CMAKE_TOOLCHAIN_FILE</code>变量，<br><br></ul><pre><code class=language-language-cmake>MESSAGE(STATUS &quot;Configure Cross Compiler&quot;)
+
+IF(NOT TOOLCHAIN_ROOTDIR)                                                       
+    MESSAGE(STATUS &quot;Cross-Compiler defaut root path: $ENV{HOME}/Softwares/arm-himix200-linux&quot;)
+    SET(TOOLCHAIN_ROOTDIR &quot;$ENV{HOME}/Softwares/arm-himix200-linux&quot;)            
+ENDIF()                                                                         
+
+SET(CMAKE_SYSTEM_NAME Linux)                                                    
+SET(CMAKE_SYSTEM_PROCESSOR arm)                                                 
+
+SET(CMAKE_C_COMPILER       ${TOOLCHAIN_ROOTDIR}/bin/arm-himix200-linux-gcc)        
+SET(CMAKE_CXX_COMPILER     ${TOOLCHAIN_ROOTDIR}/bin/arm-himix200-linux-g++)        
+
+# set searching rules for cross-compiler                                        
+SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)                                    
+SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)                                     
+SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)                                     
+
+SET(YOUR_TARGET_OS linux)                                                       
+SET(YOUR_TARGET_ARCH armv7-a) 
+
+SET(CMAKE_CXX_FLAGS &quot;-std=c++11 -march=armv7-a -mfloat-abi=softfp -mfpu=neon-vfpv4 ${CMAKE_CXX_FLAGS}&quot;)复制代码
+</code></pre><ul><li><code>AUX_SOURCE_DIRECTORY</code> 不会递归包含子目录，仅包含指定的dir目录<br><li><code>ADD_SUBDIRECTORY</code>子模块的编译，可以将子文件夹中或者指定外部文件夹下CMakeLists.txt执行相关编译工作。<br><li><code>ADD_LIBRARY</code>编译一个动/静态库或者模块，设定的名字需在整个工程中是独一无二的，而且在整个同一个工程中，跟父子文件夹路径无关，我们便可以通过<code>TARGET_LINK_LIBRARIES</code>依赖该模块。<br><li><code>ADD_DEFINITIONS(-DTEST -DFOO=&quot;foo&quot;)</code>添加<code>FOO</code>和<code>TEST</code>宏定义。<br><br></ul><h2 id=2-我们要优雅做到的构建>2 我们要优雅做到的构建</h2><p>对于一个较大的软件项目，我们会依赖很多第三方的项目，包括源码依赖或者库依赖，然后完整的构建自己的软件项目，则需要去构建依赖项目或者找到我们所需要库；另外，软件项目会考虑到可移植性，即能够在不同的平台上也能够很好友的去构建项目以及将项目转移到另一个开发环境时能够快速的开始构建。<p>除了上面所说的，我们还需要考虑我们实际软件项目的架构结构，源码结构，可以让开发人员更清晰的、更快速的了解整个项目。<p>除此之外，C/C++ 程序员长期以来手动管理依赖，即手动查找、安装依赖，再配置构建工具（如 cmake）使用依赖。 cmake 还提供了一系列 find_package 方法帮助简化配置依赖， cmake 还支持多项目/模块管理，如果依赖源码同时被 cmake 管理构建，那么情况会简单很多，这种方式称为源码级依赖管理。 随着代码管理工具 git 出现并被广泛使用，git submodule 提供了一种不错的源码级依赖管理办法。<p>综上，优雅的构建软件项目，我们实现：<ul><li>软件项目源码依赖第三方项目<br><li>软件项目库依赖第三方项目<br><li>软件项目结构清晰<br><li>软件项目构建在转换新环境下快速实现构建<br><li>软件项目构建过程中的信息友好展示<br><li>软件项目构建完成后打包发布<br><li>软件项目支持跨平台构建<br><li>软件项目支持交叉构建<br><li>git submodule &amp; cmake管理/构建源码级依赖<br><br></ul><p>另外，我们还实现一个可复用的C/C++最小开发框架（这个到后续文章中讲述）：<ul><li>支持日志记录<br><li>支持任务池/线程池<br><li>支持常用相关基础操作组件<br><ul><li>时间日期操作<br><li>文件读写操作<br></ul><li>支持valgrind内存泄露检查工具<br><li>支持静态代码检查<br><li>支持项目文档自动化<br><li>.....<br><br></ul><h2 id=3-优雅的软件项目结构模板>3 优雅的软件项目结构模板</h2><h3 id=3-1-模板一>3.1 模板一</h3><p>一个独立的应用，应用模块之间是相互联系的，彼此难以分开，这样简单的将所有源文件放一起，头文件放一起，这个对于不是很复杂的应用是很快速的去开始构建和源文件修改操作：<pre><code class=language-language-txt>.
+├── 3rdparty
+├── cmake
+├── include
+├── src
+├── doc
+├── tests
+├── benchmarks
+├── docker
+├── CMakeLists.txt复制代码
+</code></pre><h3 id=3-2-模板二>3.2 模板二</h3><p>源文件与头文件分功能模块存放，这种方式是比较简单，但是如果成为其他项目的3rdparty，则需要在安装上将头文件分离出来，不能很方便的被其他项目直接引用，个人觉得适用于App类项目，而非SDK项目(比如nanomsg这个开源消息中间件库就是将头文件和源文件放一起，但是作为SDK供外部链接就不是很直接、很方便了，需要做install操作之后才可以或者是将头文件搜索范围设置到依赖项目的src级别，且src目录下模块分类很明确)：<pre><code class=language-language-txt>├── 3rdparty
+    ├── submodule # 存放源码依赖
+    ├── target # 存放库依赖
+    ├── CMakeLists.txt
+    ├── cmake # 存放 find_package cmake文件
+├── cmake
+├── platforms
+│   └── linux
+│       └── arm.toolchain.cmake
+├── src
+    ├── moudle1
+        ├── source &amp; include file 
+    ├── moudle2
+        ├── source &amp; include file
+    ├── ......
+├── doc
+├── tests
+├── samples
+├── benchmarks
+├── docker
+├── CMakeLists.txt复制代码
+</code></pre><h3 id=3-3-模板三>3.3 模板三</h3><p>该软件项目可以分为很多模块，各个模块可以互相独立，也可以组合在一起，典型的如opencv项目，当然这个也适用于应用项目，但是应用项目的话目录结构太深，开发编辑上稍有不便：<pre><code class=language-language-txt>├── 3rdparty
+├── cmake
+├── platforms
+│   └── linux
+│       └── arm.toolchain.cmake
+├── include  该目录只是各功能模块头文件的一个汇总包含 
+├── modules
+    ├── moudle1
+        ├── src
+        ├── include
+    ├── moudle2
+    ├── ......
+├── doc
+├── tests
+├── samples
+├── benchmarks
+├── docker
+├── CMakeLists.txt复制代码
+</code></pre><h2 id=4-优雅的软件项目结构模板cmake实现>4 优雅的软件项目结构模板CMake实现</h2><p>这里我们只去实现模板二，其他模板大同小异。如上面模板章节所述，我们<h3 id=4-1-目录结构确定>4.1 目录结构确定</h3><pre><code class=language-language-bash>.
+├── 3rdparty                # 第三方库源码依赖和库依赖存放位置
+│   ├── CMakeLists.txt      # 第三方库源码依赖编译CMakeLists文件
+│   ├── spdlog              # 源码依赖示例项目spdlog(github可搜索)
+│   └── target              # 库依赖存放目录
+│       ├── linux_armv7-a   # 以平台和架构命名区分
+│       │   ├── include     # 头文件存放目录
+│       │   └── lib         # 库文件存放目录
+│       └── linux_x86-64
+│           ├── include
+│           └── lib
+├── cmake                   # 存放项目相关的cmakem模块文件
+│   ├── load_3rdparty.cmake
+│   ├── messagecolor.cmake
+│   ├── toolchain_options.cmake
+│   └── utils.cmake
+├── CMakeLists.txt          # 项目根目录CMakeLists文件，cmake入口文件
+├── conf                    # 项目配置文件存放目录
+├── doc                     # 项目文档存放目录
+├── platforms               # 项目平台性相关内容存放目录，包括交叉编译
+│   └── linux
+│       └── arm.himix200.cmake
+├── README.md               # 项目说明
+├── scripts                 # 相关脚本存放目录，包括持续集成和部署相关
+├── src                     # 项目源码目录
+│   ├── CMakeLists.txt
+│   ├── common
+│   ├── logger
+│   └── main
+└── tests                   # 测试示例源码存放目录
+    ├── CMakeLists.txt
+    └── test_logger.cpp复制代码
+</code></pre><h3 id=4-2-项目版本的管理>4.2 项目版本的管理</h3><p>不管是SDK或者是APP项目，都会有一个版本，用来记录软件发布的每个节点。软件版本可以方便用户或者自己清楚的知道每个版本都有哪些内容的更新，可以对版本做出使用的选择或者解决版本中遇到的bug。实现版本的管理，需要能够在编译过程中清楚的体现当前版本号，在软件中也能够获取版本号。这里版本编号的管理使用常见的<code>major.minor(.patch)</code>格式，major是最大的版本编号，minor为其次，patch对应着小版本里的补丁级别。当有极大的更新时，会增加major的版号，而当有大更新，但不至于更新major时，会更新minor的版号，若更新比较小，例如只是bug fixing，则会更新patch的版号。版本号格式示例：<code>v1.0</code> 、<code>v1.2.2</code>等。<p>在优雅的构建软件模板中，我们将版本信息放置于<code>src/common/version.hpp</code>文件中：<blockquote><p>注：所有的文件路径都是相对项目根目录而言。</blockquote><pre><code class=language-language-c>#pragma once                                                                       
+
+// for cmake
+// 用于在CMakeLists文件中解析用
+// 0.1.0                                                                 
+#define HELLO_APP_VER_MAJOR 0                                                      
+#define HELLO_APP_VER_MINOR 1                                                      
+#define HELLO_APP_VER_PATCH 0                                                      
+
+#define HELLO_APP_VERSION (HELLO_APP_VER_MAJOR * 10000 + HELLO_APP_VER_MINOR * 100 + HELLO_APP_VER_PATCH)
+
+// for source code
+// 用于在项目源码中获取版本号字符串
+// v0.1.0                                                           
+#define _HELLO_APP_STR(s) #s                                                       
+#define HELLO_PROJECT_VERSION(major, minor, patch) &quot;v&quot; _HELLO_APP_STR(major.minor.patch)复制代码
+</code></pre><p>在CMakeLists模块文件中我们去解析该文件获取版本号到CMake变量中，在<code>cmake/utils.cmake</code>添加宏函数：<pre><code class=language-language-cmake>FUNCTION(hello_app_extract_version)                                 
+    FILE(READ &quot;${CMAKE_CURRENT_LIST_DIR}/src/common/version.hpp&quot; file_contents) 
+    STRING(REGEX MATCH &quot;HELLO_APP_VER_MAJOR ([0-9]+)&quot; _  &quot;${file_contents}&quot;)       
+    IF(NOT CMAKE_MATCH_COUNT EQUAL 1)                                           
+        MESSAGE(FATAL_ERROR &quot;Could not extract major version number from version.hpp&quot;)
+    ENDIF()                                                                     
+    SET(ver_major ${CMAKE_MATCH_1})                                             
+
+    STRING(REGEX MATCH &quot;HELLO_APP_VER_MINOR ([0-9]+)&quot; _  &quot;${file_contents}&quot;)       
+    IF(NOT CMAKE_MATCH_COUNT EQUAL 1)                                           
+        MESSAGE(FATAL_ERROR &quot;Could not extract minor version number from version.hpp&quot;)
+    ENDIF()                                                                     
+    SET(ver_minor ${CMAKE_MATCH_1})                                             
+    STRING(REGEX MATCH &quot;HELLO_APP_VER_PATCH ([0-9]+)&quot; _  &quot;${file_contents}&quot;)       
+    IF(NOT CMAKE_MATCH_COUNT EQUAL 1)                                           
+        MESSAGE(FATAL_ERROR &quot;Could not extract patch version number from version.hpp&quot;)
+    ENDIF()                                                                     
+    SET(ver_patch ${CMAKE_MATCH_1})                                             
+
+    SET(HELLO_APP_VERSION_MAJOR ${ver_major} PARENT_SCOPE)                      
+    SET (HELLO_APP_VERSION &quot;${ver_major}.${ver_minor}.${ver_patch}&quot; PARENT_SCOPE)
+ENDFUNCTION()复制代码
+</code></pre><p>在根目录CMakeLists中调用版本宏：<pre><code class=language-language-cmake>CMAKE_MINIMUM_REQUIRED(VERSION 3.4)                                             
+
+#--------------------------------------------                                   
+# Project setting                                                               
+#--------------------------------------------                                   
+INCLUDE(cmake/utils.cmake)                                                      
+HELLO_APP_EXTRACT_VERSION()                                                     
+
+PROJECT(HelloApp VERSION ${HELLO_APP_VERSION} LANGUAGES CXX)                    
+
+MESSAGE(INFO &quot;--------------------------------&quot;)                                
+MESSAGE(STATUS &quot;Build HelloApp: ${HELLO_APP_VERSION}&quot;)复制代码
+</code></pre><p>在后面的动静态库生成中就可以设定SOVERSION了，如：<pre><code class=language-language-cmake>SET_TARGET_PROPERTIES(MyLib PROPERTIES VERSION ${HELLO_APP_VERSION}
+                                          SOVERSION ${HELLO_APP_VERSION_MAJOR})复制代码
+</code></pre><p>这样就会生成一个<code>liMyLibr.so =&gt; liMyLib.so.0 =&gt; libMyLib.so.0.1.1</code>的库和相关软链接。不过这个操作谨慎使用，因为在android平台jni依赖带版本的库是无法找到的。<h3 id=4-3-第三方库库依赖>4.3 第三方库库依赖</h3><p>第三方库依赖需要我们自己写库和头文件查找函数，三方库存放位置以平台和架构作为区分，目录结构随着工程的创建就基本不会改变了。库发现宏函数如下示例：<pre><code class=language-language-cmake># Once done, this will define                                                                                                                                                                  
+#                                                                               
+#  SPDLOG_INCLUDE_DIR - the SPDLOG include directory                            
+#  SPDLOG_LIBRARY_DIR - the SPDLOG library directory                            
+#  SPDLG_LIBS - link these to use SPDLOG                                        
+#                                                                               
+#  ......                                                                       
+
+MACRO(LOAD_LIBSPDLOG os arch)                                                   
+    SET(3RDPARTY_DIR ${PROJECT_SOURCE_DIR}/3rdparty/target/${${os}}_${${arch}}) 
+    MESSAGE(STATUS &quot;3RDPARTY_DIR: ${3RDPARTY_DIR}&quot;)                             
+    FIND_FILE(SPDLOG_INCLUDE_DIR include ${3RDPARTY_DIR} NO_DEFAULT_PATH)          
+    FIND_FILE(SPDLOG_LIBRARY_DIR lib ${3RDPARTY_DIR} NO_DEFAULT_PATH)           
+
+    SET(SPDLOG_LIBS                                                             
+        spdlog          
+        pthread
+        #PARENT_SCOPE no parent                                                 
+    )                                                                           
+    IF(SPDLOG_INCLUDE_DIR)                                                      
+        SET(SPDLOG_LIBRARY_DIR &quot;${SPDLOG_LIBRARY_DIR}/spdlog&quot;)                  
+        MESSAGE(STATUS &quot;SPDLOG_INCLUDE_DIR : ${SPDLOG_INCLUDE_DIR}&quot;)            
+        MESSAGE(STATUS &quot;SPDLOG_LIBRARY_DIR : ${SPDLOG_LIBRARY_DIR}&quot;)            
+        MESSAGE(STATUS &quot;SPDLOG_LIBS : ${SPDLOG_LIBS}&quot;)                          
+    ELSE()                                                                      
+        MESSAGE(FATAL_ERROR &quot;SPDLOG_LIBS not found!&quot;)                           
+    ENDIF()                                                                     
+ENDMACRO()复制代码
+</code></pre><blockquote><p>注意：如<code>SPDLOG_LIBS</code>变量如果宏函数在根目录CMakeLists中调用，所以变量作用域可以作用到所有子目录，如果不是在根目录调用，则需要设置<code>PARENT_SCOPE</code>属性。</blockquote><p>在主CMakeLists中调用宏函数实现三方库的信息导入：<pre><code class=language-language-cmake>INCLUDE(cmake/load_3rdparty.cmake)                                              
+
+IF(NOT YOUR_TARGET_OS)                                                          
+    SET(YOUR_TARGET_OS linux)                                                   
+ENDIF()                                                                         
+IF(NOT YOUR_TARGET_ARCH)                                                        
+    SET(YOUR_TARGET_ARCH x86-64)                                                
+ENDIF()                                                                         
+MESSAGE(STATUS &quot;Your target os : ${YOUR_TARGET_OS}&quot;)                            
+MESSAGE(STATUS &quot;Your target arch : ${YOUR_TARGET_ARCH}&quot;)                        
+
+LOAD_LIBSPDLOG(YOUR_TARGET_OS YOUR_TARGET_ARCH)复制代码
+</code></pre><h3 id=4-4-第三方库源码依赖>4.4 第三方库源码依赖</h3><p>如果你想依赖第三方项目源码，一起编译，则我们可以通过<code>git submodule</code>来管理第三方源码，实现源码依赖和它的版本管理。当然你可以不用git submodule，直接将源码手动放入<code>3rdparty</code>目录中。<p>添加一个git submodule:<pre><code class=language-language-bash># url为git项目地址
+# path为项目存放目录，可以多级目录，目录名一般为项目名称
+# git add &lt;url.git&gt; &lt;path&gt;
+# 示例，执行后，会直接拉取项目源码到3rdparty/spdlog目录下，并创建.gitmodule在仓库根目录下
+$ git submodule add  https://github.com/gabime/spdlog.git 3rdparty/spdlog复制代码
+</code></pre><p>还可以做到带指定分支进行添加操作：<pre><code class=language-language-bash># 注意：命令需要在项目根目录下执行，第一次会直接拉取源码，不用update
+$ git submodule add -b v1.x   https://github.com/gabime/spdlog.git 3rdparty/spdlog
+$ git submodule update --remote 复制代码
+</code></pre><p>最后的<code>.gitmodules</code>文件为：<pre><code class=language-language-.gitmodules>[submodule &quot;3rdparty/spdlog&quot;]
+    path = 3rdparty/spdlog                                                   
+    url = https://github.com/gabime/spdlog.git 
+    branch = v1.x复制代码
+</code></pre><p>实现三方项目源码编译（首先你依赖的三方项目源码是支持CMake构建方式的），在<code>3rdparty/CMakeLists.txt</code>中编写：<pre><code class=language-language-cmake>CMAKE_MINIMUM_REQUIRED(VERSION 3.4)                                             
+PROJECT(HiApp3rdparty)
+
+ADD_SUBDIRECTORY(spdlog) 复制代码
+</code></pre><p>在根目录CMakeLists.txt中包含3rdparty中CMakeLists.txt，就可以编译第三方库了:<pre><code class=language-language-cmake>ADD_SUBDIRECTORY(3rdparty)复制代码
+</code></pre><p>通过<code>TARGET_LINK_LIBRARIES</code>就可以指定第三方项目名称实现链接。<h3 id=4-5-功能模块添加>4.5 功能模块添加</h3><h3 id=4-5-1-功能模块编译>4.5.1 功能模块编译</h3><p>比如我们要添加一个日志模块，实现对<code>spdlog</code>项目的一个二次封装，更好的在自己的项目中使用，那么我们建立<code>src/logger</code>目录，里面新建<code>logger.hpp</code>、<code>logger.cpp</code>和<code>CMakeLists.txt</code>三个文件，其中CMakeLists.txt内容是对该日志模块实现编译：<pre><code class=language-language-cmake>CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
+
+AUX_SOURCE_DIRECTORY(. CURRENT_DIR_SRCS)                                        
+ADD_LIBRARY(module_logger ${CURRENT_DIR_SRCS})   
+# SPDLOG_LIBS 为spdlog项目库名称
+TARGET_LINK_LIBRARIES(module_logger ${SPDLOG_LIBS}) 复制代码
+</code></pre><p>然后在<code>src/CMakeLists.txt</code>中包含该日志模块的编译：<pre><code class=language-language-cmake>ADD_SUBDIRECTORY(logger)复制代码
+</code></pre><p>在根目录<code>CMakeLists.txt</code>中包含子目录<code>src</code>，从而实现功能模块的构建：<pre><code class=language-language-cmake>ADD_SUBDIRECTORY(src)复制代码
+</code></pre><blockquote><p>注： 为了演示，库依赖和源码依赖都是用的spdlog，这里实现日志模块的话需要选择其中一种方式。</blockquote><h3 id=4-5-2-可执行文件编译>4.5.2 可执行文件编译</h3><p>如果我们需要实现可执行文件对日志模块的调用，我们可以添加<code>src/main/main.cpp</code>文件，在<code>src/CMakeLists.txt</code>中添加对可执行文件的编译：<pre><code class=language-language-cmake># main app                                                                      
+SET(SRC_LIST ./main/main.cpp)                                                   
+
+ADD_EXECUTABLE(HiApp ${SRC_LIST})
+# 配置可执行文件输出目录
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)                           
+TARGET_LINK_LIBRARIES(HelloApp module_logger)     复制代码
+</code></pre><p>当然，如果使用<code>c++11</code>的特性，我们可以专门创建一个cmake文件<code>cmake/toolchain_options.cmake</code>来配置编译选项，在其中配置<code>c++11</code>编译选项，并在主CMakeLists.txt中包含该cmake文件：<pre><code class=language-language-cmake># compiler configuration            
+# 从cmake3.1版本开始才支持CMAKE_CXX_STANDARD配置项
+IF(CMAKE_VERSION VERSION_LESS &quot;3.1&quot;)                                            
+    IF(CMAKE_CXX_COMPILER_ID STREQUAL &quot;GNU&quot;)                                    
+        SET(CMAKE_CXX_FLAGS &quot;${CMAKE_CXX_FLAGS} -std=gnu++11&quot;)                  
+    ENDIF()                                                                     
+ELSE()                                                                          
+    SET(CMAKE_CXX_STANDARD 11)                                                  
+ENDIF() 复制代码
+</code></pre><h3 id=4-6-测试样例添加>4.6 测试样例添加</h3><p>测试样例放于<code>tests</code>目录，并在该目录下建立CMakeLists.txt文件用于构建所有测试demo，并在主CMakeLists.txt下包含<code>tests</code>目录：<pre><code class=language-language-cmake>CMAKE_MINIMUM_REQUIRED(VERSION 3.4)
+
+PROJECT(Tests)                                                                  
+
+INCLUDE_DIRECTORIES(                                                            
+    ${SPDLOG_INCLUDE_DIR}                                                       
+    ${CMAKE_SOURCE_DIR}/src                                                     
+)                                                                               
+
+LINK_DIRECTORIES(                                                               
+    ${SPDLOG_LIBRARY_DIR}                                                       
+)                                                                               
+
+FILE(GLOB APP_SOURCES *.cpp)                                                    
+FOREACH(testsourcefile ${APP_SOURCES})                                          
+    STRING(REGEX MATCH &quot;[^/]+$&quot; testsourcefilewithoutpath ${testsourcefile})    
+    STRING(REPLACE &quot;.cpp&quot; &quot;&quot; testname ${testsourcefilewithoutpath})             
+    ADD_EXECUTABLE( ${testname} ${testsourcefile})                              
+    SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin/tests)                   
+    TARGET_LINK_LIBRARIES(${testname}                                           
+        ${SPDLOG_LIBS}                                                          
+        module_logger                                                           
+        )                                                                       
+ENDFOREACH(testsourcefile ${APP_SOURCES})复制代码
+</code></pre><p>然后就可以在<code>tests</code>目录下添加测试程序了，比如<code>test_logger.cpp</code>或者更多的测试demo，<code>tests/CMakeLists.txt</code>会自动将<code>tests</code>目录下所有源文件逐个进行可执行文件生成构建。整个测试样例的构建就完成了。<h3 id=4-7-交叉编译配置>4.7 交叉编译配置</h3><p>CMake给我们提供了交叉编译的变量设置，即<code>CMAKE_TOOLCHAIN_FILE</code>这个变量，只要我们指定交叉编译的cmake配置文件，那么cmake会导入该配置文件的中编译器配置，编译选项配置等。我们设计的交叉编译工具链配置文件存放目录在<code>platforms/</code>下，这里我们使用华为海思的一个编译工具，我们按类别命名，创建一个工具栏cmake配置文件<code>platforms/linux/arm.himix200.cmake</code>:<pre><code class=language-language-cmake>MESSAGE(STATUS &quot;Configure Cross Compiler&quot;) 
+SET(CMAKE_SYSTEM_NAME Linux)                                                    
+SET(CMAKE_SYSTEM_PROCESSOR arm)                                                 
+
+SET(CMAKE_C_COMPILER       arm-himix200-linux-gcc)                              
+SET(CMAKE_CXX_COMPILER     arm-himix200-linux-g++)                              
+
+# set searching rules for cross-compiler                                        
+SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)                                    
+SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)                                     
+SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)                                     
+
+SET(YOUR_TARGET_OS linux)                                                       
+SET(YOUR_TARGET_ARCH armv7-a)                                                   
+
+SET(CMAKE_SKIP_BUILD_RPATH TRUE)                                                
+SET(CMAKE_SKIP_RPATH TRUE)                                                      
+
+# set ${CMAKE_C_FLAGS} and ${CMAKE_CXX_FLAGS}flag for cross-compiled process       
+#SET(CROSS_COMPILATION_ARM himix200)                                            
+#SET(CROSS_COMPILATION_ARCHITECTURE armv7-a)                                    
+
+# set g++ param                                                                 
+# -fopenmp link libgomp                                                         
+SET(CMAKE_CXX_FLAGS &quot;-std=c++11 -march=armv7-a -mfloat-abi=softfp -mfpu=neon-vfpv4 \
+    -ffunction-sections \                                                       
+    -fdata-sections -O2 -fstack-protector-strong -lm -ldl -lstdc++\             
+    ${CMAKE_CXX_FLAGS}&quot;)复制代码
+</code></pre><blockquote><p>注意：交叉编译工具链是需要在编译主机上安装好的。另外第三方库库依赖也需要对应编译出工具链版本（源码依赖除外）。</blockquote><p>命令行执行交叉编译：<pre><code class=language-language-bash>$ mkdir build
+$ cd build
+$ cmake .. -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm.himix200.cmake
+$ make -j复制代码
+</code></pre><p>这样就实现了交叉编译，你也可以配置其他的交叉编译工具链。<h3 id=4-8-其他>4.8 其他</h3><h4 id=4-8-1-cmake-message命令颜色凸显>4.8.1 cmake message命令颜色凸显</h4><p>我们还可以自定义初始化cmake构建的<code>message</code>命令打印颜色，可以方便快速的凸显出错误信息，我们可以创建一个文件<code>cmake/messagecolor.cmake</code>：<pre><code class=language-language-cmake>IF(NOT WIN32)                                
+    STRING(ASCII 27 Esc)                                                        
+    SET(ColourReset &quot;${Esc}[m&quot;)                                                 
+    SET(ColourBold  &quot;${Esc}[1m&quot;)                                                
+    SET(Red         &quot;${Esc}[31m&quot;)                                               
+    SET(Green       &quot;${Esc}[32m&quot;)                                               
+    SET(Yellow      &quot;${Esc}[33m&quot;)                                               
+    SET(Blue        &quot;${Esc}[34m&quot;)                                               
+    SET(MAGENTA     &quot;${Esc}[35m&quot;)                                               
+    SET(Cyan        &quot;${Esc}[36m&quot;)                                               
+    SET(White       &quot;${Esc}[37m&quot;)                                               
+    SET(BoldRed     &quot;${Esc}[1;31m&quot;)                                             
+    SET(BoldGreen   &quot;${Esc}[1;32m&quot;)                                             
+    SET(BoldYellow  &quot;${Esc}[1;33m&quot;)                                             
+    SET(BOLDBLUE    &quot;${Esc}[1;34m&quot;)                                             
+    SET(BOLDMAGENTA &quot;${Esc}[1;35m&quot;)                                             
+    SET(BoldCyan    &quot;${Esc}[1;36m&quot;)                                             
+    SET(BOLDWHITE   &quot;${Esc}[1;37m&quot;)                                             
+ENDIF()                                                                         
+
+FUNCTION(message)                                                               
+    LIST(GET ARGV 0 MessageType)                                                
+    IF(MessageType STREQUAL FATAL_ERROR OR MessageType STREQUAL SEND_ERROR)        
+        LIST(REMOVE_AT ARGV 0)                                                  
+        _message(${MessageType} &quot;${BoldRed}${ARGV}${ColourReset}&quot;)              
+    ELSEIF(MessageType STREQUAL WARNING)                                        
+        LIST(REMOVE_AT ARGV 0)                                                  
+        _message(${MessageType}                                                 
+        &quot;${BoldYellow}${ARGV}${ColourReset}&quot;)                                   
+    ELSEIF(MessageType STREQUAL AUTHOR_WARNING)                                 
+        LIST(REMOVE_AT ARGV 0)                                                  
+        _message(${MessageType} &quot;${BoldCyan}${ARGV}${ColourReset}&quot;)             
+    ELSEIF(MessageType STREQUAL STATUS)                                         
+        LIST(REMOVE_AT ARGV 0)                                                  
+        _message(${MessageType} &quot;${Green}${ARGV}${ColourReset}&quot;)                
+    ELSEIF(MessageType STREQUAL INFO)                                           
+        LIST(REMOVE_AT ARGV 0)                                                  
+        _message(&quot;${Blue}${ARGV}${ColourReset}&quot;)                                
+    ELSE()                                                                      
+        _message(&quot;${ARGV}&quot;)                                                     
+ENDIF()   复制代码
+</code></pre><p>在主CMakeLists.txt中导入该cmake文件，则可以改变message命令各个级别打印的颜色显示。<h4 id=4-8-2-debug与release构建>4.8.2 Debug与Release构建</h4><p>为了方便debug，我们在开发过程中一般是编译<code>Debug</code>版本的库或者应用，可以利用gdb调试很轻松的就可以发现错误具体所在。在主cmake文件中我们只需要加如下设置即可：<pre><code class=language-language-cmake>IF(NOT CMAKE_BUILD_TYPE)                                                        
+    SET(CMAKE_BUILD_TYPE &quot;Debug&quot; CACHE STRING &quot;Choose Release or Debug&quot; FORCE)  
+ENDIF()                                                                         
+
+MESSAGE(STATUS &quot;Build type: &quot; ${CMAKE_BUILD_TYPE})复制代码
+</code></pre><p>在执行cmake命令的时候可以设置<code>CMAKE_BUILD_TYPE</code>变量值切换<code>Debug</code>或者<code>Release</code>版本编译：<pre><code class=language-language-bash>$ cmake .. -DCMAKE_BUILD_TYPE=Release复制代码
+</code></pre><h4 id=4-8-3-构建后安装>4.8.3 构建后安装</h4><p>对于SDK项目，我们需要对外提供头文件和编译完成后的库文件，就需要用到cmake提供的<code>install</code>命令了。<p>我们安装需求是：<ul><li><code>src</code>目录下的每个模块头文件都能够安装，并按原目录存放安装<br><li>库文件安装放于<code>lib</code>目录下<br><li>可执行文件包括测试文件放于<code>bin</code>目录<br><br></ul><p>首先模块头文件的安装实现均在<code>src/{module}/CMakeLists.txt</code>中实现，这里是安装目录，并过滤掉<code>.cpp</code>或者<code>.c</code>文件以及<code>CMakeLists.txt</code>文件，以<code>logger</code>模块为例：<pre><code class=language-language-cmake>INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+    FILES_MATCHING 
+    PATTERN &quot;*.h&quot;
+    PATTERN &quot;*.hpp&quot;
+    PATTERN &quot;CMakeLists.txt&quot; EXCLUDE
+    )复制代码
+</code></pre><blockquote><p>注意：在UNIX系统上，<code>CMAKE_INSTALL_PREFIX</code>变量默认指向<code>/usr/local</code>，在Windows系统上，默认指向<code>c:/Program Files/${PROJECT_NAME}</code>。</blockquote><p>然后是库文件的安装，也相关<code>ADD_LIBRARY</code>命令调用后中实现：<pre><code class=language-language-cmake>INSTALL(TARGETS module_logger
+    ARCHIVE DESTINATION lib                                                     
+    LIBRARY DESTINATION lib                                                     
+    RUNTIME DESTINATION bin)复制代码
+</code></pre><p>最后是可执行文件的安装，跟安装库是一样的，添加到<code>ADD_EXECUTABLE</code>命令调用的后面，只是因为是可执行文件，属于<code>RUNTIME</code>类型，cmake会自动安装到我们设置的bin目录，这里以<code>HelloApp</code>为例：<pre><code class=language-language-cmake>INSTALL(TARGETS HelloApp
+    ARCHIVE DESTINATION lib                                                     
+    LIBRARY DESTINATION lib                                                     
+    RUNTIME DESTINATION bin)复制代码
+</code></pre><p>执行安装命令：<pre><code class=language-language-bash>$ make install DESTDIR=$PWD/install复制代码
+</code></pre><p>则会在相对当前目录<code>install/usr/local</code>目录下生成：<pre><code class=language-language-txt>.
+├── bin
+│   ├── HelloApp
+│   └── test_logger
+├── include
+│   ├── common
+│   │   ├── common.hpp
+│   │   └── version.hpp
+│   └── logger
+│       └── logger.hpp
+└── lib
+    └── libmodule_logger.a复制代码
+</code></pre><p>至此，安装完成。<h2 id=5-总结>5 总结</h2><p>“工欲善其事，必先利其器”，把基础筑好，在软件开发过程中也是很重要的，就如项目中需求明确一样，本篇文章我把<code>C/C++</code>项目开发的整体框架形成一个模板，不断总结改进，方便后续类似项目的快速开发。本篇文章也主要实现项目构建方面的内容，下一篇准备实现一个基本<code>C/C++</code>框架所必须的基础模块，包括日志模块、线程池、常用基础功能函数模块、配置导入模块、单元测试、内存泄露检查等。如有问题或者改进，一起来交流学习，最后欢迎大家关注我的公众号<code>小白AI</code>，不打广告，不为了写而写，只为了分享自己的学习过程^_^。<p>整个构建模板源码可以在我的github上找到，欢迎star： <a href=https://github.com/yicm/CMakeCppProjectTemplate target=_blank>github.com/yicm/CMakeC…</a><h2 id=6-参考资料>6 参考资料</h2><ul><li><a href=http://www.oolap.com/cxx-dependency-management-old target=_blank>www.oolap.com/cxx-depende…</a><br><li><a href=http://www.yeolar.com/note/2014/12/16/cmake-how-to-find-libraries/ target=_blank>www.yeolar.com/note/2014/1…</a><br></ul></div><div class=clear></div></div></div></article><div class=clear></div><p class=post-tags><span class="fa fa-tags">Tags:</span>
+<a rel=tag href=../../../tags/cpp>cpp</a><div id=related-posts><div class=related-inner></div></div><section id=comments class=themeform></section><section id=comments class=themeform></section></div></div><div class="sidebar s1 collapsed" data-position=left data-layout=col-3cm data-sb-id=s1><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>Follow:<ul class=social-links><li><a class=social-tooltip href=mailto: title=Email><i class="fa fa-envelope"></i></a><li><a class=social-tooltip href=//github.com/ title=GitHub><i class="fa fa-github"></i></a><li><a class=social-tooltip title="RSS Feed" aria-label="RSS Feed" href=../../../feed target=_blank style=color:#ffffffb2><i class="fa fa-rss"></i></a></ul></div><ul class="post-nav group"><li class=previous><a href=../../../language/clang/linux-time-elapsed/ rel=prev><i class="fa fa-chevron-left"></i><strong>Previous Post</strong>
+<span>linux time elapsed</span></a></ul><div id=categories-2 class="widget widget_categories"><h3>分类</h3><ul><li class="cat-item cat-item-1"><a href=../../../categories/ai/>Ai</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/algorithm/>Algorithm</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/android/>Android</a>
+<small>(17)</small><li class="cat-item cat-item-1"><a href=../../../categories/ansible/>Ansible</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/beats/>Beats</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/busybox/>Busybox</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/caffe/>Caffe</a>
+<small>(21)</small><li class="cat-item cat-item-1"><a href=../../../categories/cgo/>Cgo</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../categories/clang/>Clang</a>
+<small>(28)</small><li class="cat-item cat-item-1"><a href=../../../categories/cmd/>Cmd</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/cpp/>Cpp</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/cross_compile/>Cross_compile</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/css/>Css</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/dart/>Dart</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/database/>Database</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/dataset/>Dataset</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/deeplearning/>Deeplearning</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/devops/>Devops</a>
+<small>(70)</small><li class="cat-item cat-item-1"><a href=../../../categories/docker/>Docker</a>
+<small>(18)</small><li class="cat-item cat-item-1"><a href=../../../categories/dts/>Dts</a>
+<small>(5)</small><li class="cat-item cat-item-1"><a href=../../../categories/elasticsearch/>Elasticsearch</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/english/>English</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/freertos/>Freertos</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/front-end/>Front-End</a>
+<small>(20)</small><li class="cat-item cat-item-1"><a href=../../../categories/golang/>Golang</a>
+<small>(135)</small><li class="cat-item cat-item-1"><a href=../../../categories/hacker/>Hacker</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hardware/>Hardware</a>
+<small>(14)</small><li class="cat-item cat-item-1"><a href=../../../categories/hi3559/>Hi3559</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hisi/>Hisi</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hisilicon/>Hisilicon</a>
+<small>(55)</small><li class="cat-item cat-item-1"><a href=../../../categories/jetson/>Jetson</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/js/>Js</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/jumpserver/>Jumpserver</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/kernel/>Kernel</a>
+<small>(14)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux/>Linux</a>
+<small>(94)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux-%E5%91%BD%E4%BB%A4/>Linux-命令</a>
+<small>(120)</small><li class="cat-item cat-item-1"><a href=../../../categories/mac/>Mac</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/machinelearn/>Machinelearn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/machinelearning/>Machinelearning</a>
+<small>(11)</small><li class="cat-item cat-item-1"><a href=../../../categories/macos/>Macos</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../../categories/math/>Math</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/matplotlib/>Matplotlib</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/mpp/>Mpp</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../../categories/mysql/>Mysql</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../categories/ncnn/>Ncnn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/network/>Network</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/nginx/>Nginx</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/nnie/>Nnie</a>
+<small>(13)</small><li class="cat-item cat-item-1"><a href=../../../categories/node/>Node</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/numpy/>Numpy</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/opencv/>Opencv</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../categories/pandas/>Pandas</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/platform/>Platform</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/post/>Post</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/pyqt/>Pyqt</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../../categories/python/>Python</a>
+<small>(31)</small><li class="cat-item cat-item-1"><a href=../../../categories/pytorch/>Pytorch</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../../categories/raspi/>Raspi</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/rk3288/>Rk3288</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../../categories/rk3399/>Rk3399</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/rtmp/>Rtmp</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/scikit/>Scikit</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/shell/>Shell</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/socket/>Socket</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/stm32/>Stm32</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../../categories/stm8/>Stm8</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../../categories/weixin/>Weixin</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/windows/>Windows</a>
+<small>(22)</small><li class="cat-item cat-item-1"><a href=../../../categories/work/>Work</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/yolo/>Yolo</a>
+<small>(13)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/>前端技术</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%8D%8F%E8%AE%AE/>协议</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/>嵌入式</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B7%A5%E5%85%B7/>工具</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/>常用算法</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/>微服务</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/>排列组合</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/>数据库</a>
+<small>(37)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/>文本编辑</a>
+<small>(30)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/>正则表达式</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/>生活技巧</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/>程序员</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/>网络安全</a>
+<small>(40)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/>集群监控</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/>静态博客</a>
+<small>(15)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%AB%98%E6%95%B0/>高数</a>
+<small>(2)</small></ul></div></div></div><div class="sidebar s2 collapsed" data-position=right data-layout=col-3cm data-sb-id=s2><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>More</div><ul class="post-nav group"><li class=next></ul><div id=tag_cloud-2 class="widget widget_tag_cloud"><h3>标签云</h3><div class="tagcloud post-tags"><a rel=tag href=../../../tags/ai/ class=tag-link-7 title="1 Posts">ai<small>(7)</small></a>
+<a rel=tag href=../../../tags/ansible/ class=tag-link-19 title="1 Posts">ansible<small>(19)</small></a>
+<a rel=tag href=../../../tags/awesome/ class=tag-link-3 title="1 Posts">awesome<small>(3)</small></a>
+<a rel=tag href=../../../tags/bfc/ class=tag-link-2 title="1 Posts">bfc<small>(2)</small></a>
+<a rel=tag href=../../../tags/c/ class=tag-link-5 title="1 Posts">c<small>(5)</small></a>
+<a rel=tag href=../../../tags/caffe/ class=tag-link-21 title="1 Posts">caffe<small>(21)</small></a>
+<a rel=tag href=../../../tags/centos7/ class=tag-link-2 title="1 Posts">centos7<small>(2)</small></a>
+<a rel=tag href=../../../tags/cgo/ class=tag-link-10 title="1 Posts">cgo<small>(10)</small></a>
+<a rel=tag href=../../../tags/clang/ class=tag-link-28 title="1 Posts">clang<small>(28)</small></a>
+<a rel=tag href=../../../tags/cmd/ class=tag-link-2 title="1 Posts">cmd<small>(2)</small></a>
+<a rel=tag href=../../../tags/cpp/ class=tag-link-7 title="1 Posts">cpp<small>(7)</small></a>
+<a rel=tag href=../../../tags/cross_compile/ class=tag-link-9 title="1 Posts">cross_compile<small>(9)</small></a>
+<a rel=tag href=../../../tags/css/ class=tag-link-20 title="1 Posts">css<small>(20)</small></a>
+<a rel=tag href=../../../tags/css3/ class=tag-link-2 title="1 Posts">css3<small>(2)</small></a>
+<a rel=tag href=../../../tags/curd/ class=tag-link-3 title="1 Posts">curd<small>(3)</small></a>
+<a rel=tag href=../../../tags/curl/ class=tag-link-2 title="1 Posts">curl<small>(2)</small></a>
+<a rel=tag href=../../../tags/dataset/ class=tag-link-2 title="1 Posts">dataset<small>(2)</small></a>
+<a rel=tag href=../../../tags/devops/ class=tag-link-3 title="1 Posts">devops<small>(3)</small></a>
+<a rel=tag href=../../../tags/docker/ class=tag-link-21 title="1 Posts">docker<small>(21)</small></a>
+<a rel=tag href=../../../tags/drone/ class=tag-link-22 title="1 Posts">drone<small>(22)</small></a>
+<a rel=tag href=../../../tags/dts/ class=tag-link-6 title="1 Posts">dts<small>(6)</small></a>
+<a rel=tag href=../../../tags/elasticsearch/ class=tag-link-9 title="1 Posts">elasticsearch<small>(9)</small></a>
+<a rel=tag href=../../../tags/emacs/ class=tag-link-12 title="1 Posts">emacs<small>(12)</small></a>
+<a rel=tag href=../../../tags/encode/ class=tag-link-3 title="1 Posts">encode<small>(3)</small></a>
+<a rel=tag href=../../../tags/english/ class=tag-link-8 title="1 Posts">english<small>(8)</small></a>
+<a rel=tag href=../../../tags/es6/ class=tag-link-2 title="1 Posts">es6<small>(2)</small></a>
+<a rel=tag href=../../../tags/etcd/ class=tag-link-4 title="1 Posts">etcd<small>(4)</small></a>
+<a rel=tag href=../../../tags/flannel/ class=tag-link-2 title="1 Posts">flannel<small>(2)</small></a>
+<a rel=tag href=../../../tags/git/ class=tag-link-6 title="1 Posts">git<small>(6)</small></a>
+<a rel=tag href=../../../tags/github/ class=tag-link-2 title="1 Posts">github<small>(2)</small></a>
+<a rel=tag href=../../../tags/golang/ class=tag-link-149 title="1 Posts">golang<small>(149)</small></a>
+<a rel=tag href=../../../tags/gradle/ class=tag-link-3 title="1 Posts">gradle<small>(3)</small></a>
+<a rel=tag href=../../../tags/haproxy/ class=tag-link-5 title="1 Posts">haproxy<small>(5)</small></a>
+<a rel=tag href=../../../tags/hardware/ class=tag-link-14 title="1 Posts">hardware<small>(14)</small></a>
+<a rel=tag href=../../../tags/hexo/ class=tag-link-3 title="1 Posts">hexo<small>(3)</small></a>
+<a rel=tag href=../../../tags/hisilicon/ class=tag-link-55 title="1 Posts">hisilicon<small>(55)</small></a>
+<a rel=tag href=../../../tags/html/ class=tag-link-2 title="1 Posts">html<small>(2)</small></a>
+<a rel=tag href=../../../tags/http/ class=tag-link-6 title="1 Posts">http<small>(6)</small></a>
+<a rel=tag href=../../../tags/hugo/ class=tag-link-14 title="1 Posts">hugo<small>(14)</small></a>
+<a rel=tag href=../../../tags/imagemagick/ class=tag-link-2 title="1 Posts">imagemagick<small>(2)</small></a>
+<a rel=tag href=../../../tags/ip/ class=tag-link-3 title="1 Posts">ip<small>(3)</small></a>
+<a rel=tag href=../../../tags/iproute2/ class=tag-link-5 title="1 Posts">iproute2<small>(5)</small></a>
+<a rel=tag href=../../../tags/iptables/ class=tag-link-17 title="1 Posts">iptables<small>(17)</small></a>
+<a rel=tag href=../../../tags/javascript/ class=tag-link-19 title="1 Posts">javascript<small>(19)</small></a>
+<a rel=tag href=../../../tags/jetson/ class=tag-link-3 title="1 Posts">jetson<small>(3)</small></a>
+<a rel=tag href=../../../tags/jquery/ class=tag-link-12 title="1 Posts">jquery<small>(12)</small></a>
+<a rel=tag href=../../../tags/js/ class=tag-link-10 title="1 Posts">js<small>(10)</small></a>
+<a rel=tag href=../../../tags/jumpserver/ class=tag-link-2 title="1 Posts">jumpserver<small>(2)</small></a>
+<a rel=tag href=../../../tags/jwt/ class=tag-link-3 title="1 Posts">jwt<small>(3)</small></a>
+<a rel=tag href=../../../tags/kernel/ class=tag-link-14 title="1 Posts">kernel<small>(14)</small></a>
+<a rel=tag href=../../../tags/kubernetes/ class=tag-link-11 title="1 Posts">kubernetes<small>(11)</small></a>
+<a rel=tag href=../../../tags/linux/ class=tag-link-22 title="1 Posts">linux<small>(22)</small></a>
+<a rel=tag href=../../../tags/lvs/ class=tag-link-8 title="1 Posts">lvs<small>(8)</small></a>
+<a rel=tag href=../../../tags/machinelearn/ class=tag-link-3 title="1 Posts">machinelearn<small>(3)</small></a>
+<a rel=tag href=../../../tags/machinelearning/ class=tag-link-11 title="1 Posts">machinelearning<small>(11)</small></a>
+<a rel=tag href=../../../tags/macos/ class=tag-link-14 title="1 Posts">macos<small>(14)</small></a>
+<a rel=tag href=../../../tags/makefile/ class=tag-link-2 title="1 Posts">makefile<small>(2)</small></a>
+<a rel=tag href=../../../tags/mariadb/ class=tag-link-9 title="1 Posts">mariadb<small>(9)</small></a>
+<a rel=tag href=../../../tags/math/ class=tag-link-7 title="1 Posts">math<small>(7)</small></a>
+<a rel=tag href=../../../tags/matplotlib/ class=tag-link-3 title="1 Posts">matplotlib<small>(3)</small></a>
+<a rel=tag href=../../../tags/maven/ class=tag-link-2 title="1 Posts">maven<small>(2)</small></a>
+<a rel=tag href=../../../tags/meteor/ class=tag-link-7 title="1 Posts">meteor<small>(7)</small></a>
+<a rel=tag href=../../../tags/ml/ class=tag-link-3 title="1 Posts">ml<small>(3)</small></a>
+<a rel=tag href=../../../tags/mpp/ class=tag-link-12 title="1 Posts">mpp<small>(12)</small></a>
+<a rel=tag href=../../../tags/mysql/ class=tag-link-61 title="1 Posts">mysql<small>(61)</small></a>
+<a rel=tag href=../../../tags/ncnn/ class=tag-link-3 title="1 Posts">ncnn<small>(3)</small></a>
+<a rel=tag href=../../../tags/netns/ class=tag-link-2 title="1 Posts">netns<small>(2)</small></a>
+<a rel=tag href=../../../tags/network/ class=tag-link-2 title="1 Posts">network<small>(2)</small></a>
+<a rel=tag href=../../../tags/nginx/ class=tag-link-28 title="1 Posts">nginx<small>(28)</small></a>
+<a rel=tag href=../../../tags/nmap/ class=tag-link-2 title="1 Posts">nmap<small>(2)</small></a>
+<a rel=tag href=../../../tags/nnie/ class=tag-link-13 title="1 Posts">nnie<small>(13)</small></a>
+<a rel=tag href=../../../tags/node/ class=tag-link-4 title="1 Posts">node<small>(4)</small></a>
+<a rel=tag href=../../../tags/nosql/ class=tag-link-8 title="1 Posts">nosql<small>(8)</small></a>
+<a rel=tag href=../../../tags/npm/ class=tag-link-3 title="1 Posts">npm<small>(3)</small></a>
+<a rel=tag href=../../../tags/numpy/ class=tag-link-4 title="1 Posts">numpy<small>(4)</small></a>
+<a rel=tag href=../../../tags/oauth2/ class=tag-link-2 title="1 Posts">oauth2<small>(2)</small></a>
+<a rel=tag href=../../../tags/opencv/ class=tag-link-10 title="1 Posts">opencv<small>(10)</small></a>
+<a rel=tag href=../../../tags/openssl/ class=tag-link-3 title="1 Posts">openssl<small>(3)</small></a>
+<a rel=tag href=../../../tags/pandoc/ class=tag-link-2 title="1 Posts">pandoc<small>(2)</small></a>
+<a rel=tag href=../../../tags/php/ class=tag-link-4 title="1 Posts">php<small>(4)</small></a>
+<a rel=tag href=../../../tags/post/ class=tag-link-4 title="1 Posts">post<small>(4)</small></a>
+<a rel=tag href=../../../tags/powershell/ class=tag-link-2 title="1 Posts">powershell<small>(2)</small></a>
+<a rel=tag href=../../../tags/prometheus/ class=tag-link-8 title="1 Posts">prometheus<small>(8)</small></a>
+<a rel=tag href=../../../tags/pyqt/ class=tag-link-8 title="1 Posts">pyqt<small>(8)</small></a>
+<a rel=tag href=../../../tags/python/ class=tag-link-33 title="1 Posts">python<small>(33)</small></a>
+<a rel=tag href=../../../tags/pytorch/ class=tag-link-6 title="1 Posts">pytorch<small>(6)</small></a>
+<a rel=tag href=../../../tags/raspi/ class=tag-link-4 title="1 Posts">raspi<small>(4)</small></a>
+<a rel=tag href=../../../tags/redis/ class=tag-link-2 title="1 Posts">redis<small>(2)</small></a>
+<a rel=tag href=../../../tags/reflect/ class=tag-link-3 title="1 Posts">reflect<small>(3)</small></a>
+<a rel=tag href=../../../tags/responsive/ class=tag-link-2 title="1 Posts">responsive<small>(2)</small></a>
+<a rel=tag href=../../../tags/restful/ class=tag-link-6 title="1 Posts">restful<small>(6)</small></a>
+<a rel=tag href=../../../tags/rk3288/ class=tag-link-22 title="1 Posts">rk3288<small>(22)</small></a>
+<a rel=tag href=../../../tags/rk3399/ class=tag-link-9 title="1 Posts">rk3399<small>(9)</small></a>
+<a rel=tag href=../../../tags/route/ class=tag-link-2 title="1 Posts">route<small>(2)</small></a>
+<a rel=tag href=../../../tags/rsync/ class=tag-link-2 title="1 Posts">rsync<small>(2)</small></a>
+<a rel=tag href=../../../tags/rtmp/ class=tag-link-2 title="1 Posts">rtmp<small>(2)</small></a>
+<a rel=tag href=../../../tags/scikit/ class=tag-link-3 title="1 Posts">scikit<small>(3)</small></a>
+<a rel=tag href=../../../tags/scrapy/ class=tag-link-8 title="1 Posts">scrapy<small>(8)</small></a>
+<a rel=tag href=../../../tags/scss/ class=tag-link-2 title="1 Posts">scss<small>(2)</small></a>
+<a rel=tag href=../../../tags/sed/ class=tag-link-3 title="1 Posts">sed<small>(3)</small></a>
+<a rel=tag href=../../../tags/seo/ class=tag-link-5 title="1 Posts">seo<small>(5)</small></a>
+<a rel=tag href=../../../tags/shell/ class=tag-link-11 title="1 Posts">shell<small>(11)</small></a>
+<a rel=tag href=../../../tags/socket/ class=tag-link-3 title="1 Posts">socket<small>(3)</small></a>
+<a rel=tag href=../../../tags/sqlite/ class=tag-link-2 title="1 Posts">sqlite<small>(2)</small></a>
+<a rel=tag href=../../../tags/ssh/ class=tag-link-3 title="1 Posts">ssh<small>(3)</small></a>
+<a rel=tag href=../../../tags/stm32/ class=tag-link-11 title="1 Posts">stm32<small>(11)</small></a>
+<a rel=tag href=../../../tags/stm8/ class=tag-link-8 title="1 Posts">stm8<small>(8)</small></a>
+<a rel=tag href=../../../tags/swagger/ class=tag-link-2 title="1 Posts">swagger<small>(2)</small></a>
+<a rel=tag href=../../../tags/swarm/ class=tag-link-2 title="1 Posts">swarm<small>(2)</small></a>
+<a rel=tag href=../../../tags/sysbench/ class=tag-link-2 title="1 Posts">sysbench<small>(2)</small></a>
+<a rel=tag href=../../../tags/sysctl/ class=tag-link-2 title="1 Posts">sysctl<small>(2)</small></a>
+<a rel=tag href=../../../tags/systemctl/ class=tag-link-2 title="1 Posts">systemctl<small>(2)</small></a>
+<a rel=tag href=../../../tags/tc/ class=tag-link-2 title="1 Posts">tc<small>(2)</small></a>
+<a rel=tag href=../../../tags/tcpdump/ class=tag-link-2 title="1 Posts">tcpdump<small>(2)</small></a>
+<a rel=tag href=../../../tags/timezone/ class=tag-link-2 title="1 Posts">timezone<small>(2)</small></a>
+<a rel=tag href=../../../tags/tshark/ class=tag-link-2 title="1 Posts">tshark<small>(2)</small></a>
+<a rel=tag href=../../../tags/ubuntu/ class=tag-link-2 title="1 Posts">ubuntu<small>(2)</small></a>
+<a rel=tag href=../../../tags/ulimit/ class=tag-link-2 title="1 Posts">ulimit<small>(2)</small></a>
+<a rel=tag href=../../../tags/vim/ class=tag-link-14 title="1 Posts">vim<small>(14)</small></a>
+<a rel=tag href=../../../tags/webpack3/ class=tag-link-2 title="1 Posts">webpack3<small>(2)</small></a>
+<a rel=tag href=../../../tags/windows/ class=tag-link-18 title="1 Posts">windows<small>(18)</small></a>
+<a rel=tag href=../../../tags/wireshark/ class=tag-link-2 title="1 Posts">wireshark<small>(2)</small></a>
+<a rel=tag href=../../../tags/xidel/ class=tag-link-2 title="1 Posts">xidel<small>(2)</small></a>
+<a rel=tag href=../../../tags/xml/ class=tag-link-2 title="1 Posts">xml<small>(2)</small></a>
+<a rel=tag href=../../../tags/yaml/ class=tag-link-2 title="1 Posts">yaml<small>(2)</small></a>
+<a rel=tag href=../../../tags/yolo/ class=tag-link-13 title="1 Posts">yolo<small>(13)</small></a>
+<a rel=tag href=../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/ class=tag-link-2 title="1 Posts">微服务<small>(2)</small></a></div></div></div></div>`</div></div></div></div></div><script>var HUParams={"_disabled":[],"SmoothScroll":{"Enabled":true,"Options":{"touchpadSupport":false}},"centerAllImg":"1","timerOnScrollAllBrowsers":"1","extLinksStyle":"1","extLinksTargetExt":"1","extLinksSkipSelectors":{"classes":["btn","button"],"ids":[]},"imgSmartLoadEnabled":"1","imgSmartLoadOpts":{"parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],"opts":{"excludeImg":[".tc-holder-img"],"fadeIn_options":100}},"goldenRatio":"1.618","gridGoldenRatioLimit":"350","sbStickyUserSettings":{"desktop":true,"mobile":true},"isWPMobile":"","menuStickyUserSettings":{"desktop":"stick_up","mobile":"stick_up"},"isDevMode":"","ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1","frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},"userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},"isWelcomeNoteOn":"","welcomeContent":""};</script><script src=https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js></script><script src=https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js></script><script src=../../../front/js/scripts.js></script><footer id=footer><section class=container id=footer-bottom><div class=container-inner><a id=back-to-top href=#><i class="fa fa-angle-up"></i></a><div class="pad group"><div class="grid one-half"><div id=copyright><p>Copyright (c) 2017. All rights reserved. (版权所有) <a href=http://www.miitbeian.gov.cn/>鲁ICP备17074587号-1</a></div></div><div class="grid one-half last"><ul class=social-links><li><a class=social-tooltip title="On WeiBo" href=http://weibo.com/rinetd target=_blank><i class="fa fa-weibo"></i></a><li><a class=social-tooltip title="On Twitter" href=https://twitter.com/rinetd target=_blank><i class="fa fa-twitter"></i></a><li><a class=social-tooltip title="On GitHub" href=https://github.com/rinetd target=_blank><i class="fa fa-github"></i></a></ul></div></div></div></section></footer><div class=back-to-top id=back-to-top><i class="fa fa-angle-double-up"></i></div><script>$(".topbar-toggle-down").click(function(){$("#nav-topbar").css("overflow","visible");});</script><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height=0 width=0 style=display:none;visibility:hidden></iframe></noscript><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5HM5XM2');</script>
