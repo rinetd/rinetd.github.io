@@ -1,0 +1,719 @@
+<!doctype html><html lang=zh-cn class=no-js><title>clang linux kfifo ringbuffer</title><meta charset=utf-8><meta name=robots content=index,nofollow><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><meta http-equiv=x-dns-prefetch-control content=on><meta name=viewport content="width=device-width,initial-scale=1"><meta name=referrer content=origin-when-cross-origin><meta name=description content="git@github.com:dennis-musk/ringbuffer.git Description: 环形缓冲区的实现 Others: 1.min的妙用，(验证剩余有效空间和要求要读出或者写入空间 取最小值) 2.利用unsigned int 的回环,in 和 out一"><meta name=author content=rinetd><meta name=google-site-verification content=ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk><link rel=canonical href=../../../language/clang/clang-linux-kfifo-ringbuffer/><link rel=icon href=../../../public/favicon.ico><link rel="shortcut icon" href=../../../public/favicon.ico><link rel=stylesheet href=../../../front/css/main.min.css><link href=https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css rel=stylesheet><link rel=stylesheet href=//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css><body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome"><div id=wrapper><header id=header class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent"><nav class="nav-container group mobile-menu mobile-sticky" id=nav-mobile data-menu-id=header-1><div class=mobile-title-logo-in-header><p class=site-title><a class=custom-logo-link href rel=home title="Pytool | Home">Pytool</a></div><div class="ham__navbar-toggler-two collapsed" title=Menu aria-expanded=false><div class=ham__navbar-span-wrapper><span class="line line-1"></span><span class="line line-2"></span><span class="line line-3"></span></div></div><div class=nav-text>clang linux kfifo ringbuffer</div><div class="nav-wrap container"><ul class="nav container-inner group mobile-search"><li><form class="searchform themeform" action=https://demo-hueman.presscustomizr.com/><div><input class=search name=s onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"></div></form></ul><ul id=menu-topbar-menu class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href>Home</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/clang/>Clang</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/python/>Python</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/python/scrapy/>Scrapy</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/golang/>Golang</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/cgo/>Cgo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/hugo/>Hugo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/sys/>Sys</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/golang/goher/>Goher</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/java/>Java</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/java/hadoop/>Hadoop</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/php/>Php</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../language/php/magento/>Magento</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../language/android/>Android</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/shell/>Shell</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../macos/>Macos</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/math/>Math</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../windows/>Windows</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../work/>Work</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../weixin/>Weixin</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../edit/>Edit</a><li class=item><a class=text href=../../../series/>series</a><li class=item><a class=text href=../../../categories/>categories</a><li class=item><a class=text href=../../../tags/>tags</a><li class=item><a class=text href=../../../me/>about</a></ul></div></nav><nav class="nav-container group desktop-menu desktop-sticky" id=nav-topbar data-menu-id=header-2><div class=nav-text>clang linux kfifo ringbuffer</div><div class=topbar-toggle-down><i class="fas fa-angle-double-down" aria-hidden=true data-toggle=down title="Expand menu"></i><i class="fas fa-angle-double-up" aria-hidden=true data-toggle=up title="Collapse menu"></i></div><div class="nav-wrap container"><ul id=menu-topbar-menu-1 class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href=../../../>Home</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/clang/>Clang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/python/>Python</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/golang/>Golang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/java/>Java</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/php/>Php</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../language/android/>Android</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/shell/>Shell</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/git/>Git</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../macos/>Macos</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../post/>Post</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/english/>English</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/seo/>Seo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/life/>Life</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/wiki/>Wiki</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/software/>Software</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/basic/>Basic</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../post/reship/>Reship</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/math/>Math</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/css/>Css</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../windows/>Windows</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../work/>Work</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../weixin/>Weixin</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../edit/>Edit</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../series/>series</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../categories/>categories</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../tags/>tags</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../me/>about</a></ul></div></nav></header><div class=container id=page><div class=container-inner><div class=main><div class="main-inner group"><div class=content><div class="pad group page-title"><ul class="meta-single group"><li><span class="fa fa-folder-open"></span><li class=category><a href=../../../categories/clang/ rel="category tag">clang</a></ul></div><div class="pad group"><article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list"><div class="post-inner group"><h1 class=post-title>clang linux kfifo ringbuffer</h1><p class=post-byline>by · 2020年07月15日 · 2949 Words ·
+~6min reading time |
+<a href=https://gitlab.com/rinetd/blog/edit/master/language/clang/clang-linux-kfifo-ringbuffer.md target=_blank>Improve on <i class="fa fa-gitlab"></i></a><div class=clear></div><div class="entry themeform"><div class=entry-inner></br>原文链接：<a target=_blank href=../../../language/clang/clang-linux-kfifo-ringbuffer/> clang linux kfifo ringbuffer</a><p>git@github.com:dennis-musk/ringbuffer.git<br>Description: 环形缓冲区的实现<ul><li>Others: 1.min的妙用，(验证剩余有效空间和要求要读出或者写入空间 取最小值)<br><li>2.利用unsigned int 的回环,in 和 out一直在加，加到0xffffffff则归为0，任然满足计算偏移等。<br><li>3.分为2部进行copy，一为当前偏移到size-1 二为剩余部分0到(len减去一中的个数)<br><li>4.unsiged int下的(in - out)始终为in和out之间的距离，(in溢出后in:0x1 - out:0xffffffff = 2任然满足)(缓冲区中未脏的数据).<br><li>5.计算偏移(in) &amp; (size - 1) &lt;==&gt; in%size<br><br><br></ul><p>环形缓冲区经常被使用到,尤其在生产者和消费者的模型中,假设生产者专门用于产生数据,而消费者专门用于处理数据,由于各种原因,可能生产者和消费者产生数据和处理数据的速度不一,比如如果处理速度有慢又快,在慢的时候,消费者产生的数据来不及处理的可能被丢弃,或者强制让生产者降速等待,在快的时候,又有可能太快,而生产者供给不了,那么消费者也必须等待.正是由于快慢不一,缓冲区的存在则恰可以进行中和,协调生产者和消费者速度不一的问题.<h3 id=一-内核kfifo>一.内核kfifo</h3><p>首先学习一下linux内核是如何设计环形缓冲区的,毕竟内核代码精炼之至,令人叹为观止.<br>这里是linux2.6.27的代码<hr><p>1.kfifo的结构类型<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>struct kfifo {
+    unsigned char *buffer;  /* the buffer holding the data */
+    unsigned int size;  /* the size of the allocated buffer */
+    unsigned int in;    /* data is added at offset (in % size) */
+    unsigned int out;   /* data is extracted from off. (out % size) */
+    spinlock_t *lock;   /* protects concurrent modifications */
+};
+</code></pre><p>这里发现我们用in out描述put get操作fifo的位置,用的是unsigned int类型,后面如果我们想获得in实际在fifo的位置,用in&amp;(size-1),这就是size下面要采用用2的乘方的原因.<br>而牵涉到in,out一起计算的时候,不需要进行&amp;运算获取实际位置,即使有溢出问题也是满足的,可以使用补码进行验算,最后都是看成无符号的数.<br>在in out增加和减少,会自己溢出回归.<br>2.kfifo_init<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>struct kfifo *kfifo_init(unsigned char *buffer, unsigned int size,
+             gfp_t gfp_mask, spinlock_t *lock)
+{
+    struct kfifo *fifo;
+
+    /* size must be a power of 2 */
+    BUG_ON(!is_power_of_2(size));
+
+    fifo = kmalloc(sizeof(struct kfifo), gfp_mask);
+    if (!fifo)
+        return ERR_PTR(-ENOMEM);
+
+    fifo-&gt;buffer = buffer;
+    fifo-&gt;size = size;
+    fifo-&gt;in = fifo-&gt;out = 0;
+    fifo-&gt;lock = lock;
+
+    return fifo;
+}
+
+bool is_power_of_2(unsigned long n)
+{
+    return (n != 0 &amp;&amp; ((n &amp; (n - 1)) == 0));
+}
+</code></pre><p>申请分配一个kfifo的结构体指针,初始化buffer使用的是函数外部的空间,in,out为0,size其中必须为2的乘方,意义为下面size-1方便进行与运算.<p>3.kfifo_alloc<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>struct kfifo *kfifo_alloc(unsigned int size, gfp_t gfp_mask, spinlock_t *lock)
+{
+    unsigned char *buffer;
+    struct kfifo *ret;
+
+    /*
+     * round up to the next power of 2, since our 'let the indices
+     * wrap' tachnique works only in this case.
+     */
+    if (size &amp; (size - 1)) {
+        BUG_ON(size &gt; 0x80000000);
+        size = roundup_pow_of_two(size);
+    }
+
+    buffer = kmalloc(size, gfp_mask);
+    if (!buffer)
+        return ERR_PTR(-ENOMEM);
+
+    ret = kfifo_init(buffer, size, gfp_mask, lock);
+
+    if (IS_ERR(ret))
+        kfree(buffer);
+
+    return ret;
+}
+</code></pre><p>这个函数主要就是申请size的buffer空间,然后调用kfifo_init初始化.<br>4.kfifo_free<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>void kfifo_free(struct kfifo *fifo)
+{
+    kfree(fifo-&gt;buffer);
+    kfree(fifo);
+}
+</code></pre><p>这个函数和kfifo_alloc配合使用,用于释放内存,先释放buffer,再释放结构体指针fifo.<br>5.kfifo_reset<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>static inline void __kfifo_reset(struct kfifo *fifo)
+{
+    fifo-&gt;in = fifo-&gt;out = 0;
+}
+
+static inline void kfifo_reset(struct kfifo *fifo)
+{
+    unsigned long flags;
+    spin_lock_irqsave(fifo-&gt;lock, flags);
+    __kfifo_reset(fifo);
+    spin_unlock_irqrestore(fifo-&gt;lock, flags);
+}
+</code></pre><p>重置in out位置为0<br>6.kfifo_len<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>static inline unsigned int __kfifo_len(struct kfifo *fifo)
+{
+    return fifo-&gt;in - fifo-&gt;out;
+}
+
+static inline unsigned int kfifo_len(struct kfifo *fifo)
+{
+    unsigned long flags;
+    unsigned int ret;
+    spin_lock_irqsave(fifo-&gt;lock, flags);
+    ret = __kfifo_len(fifo);
+    spin_unlock_irqrestore(fifo-&gt;lock, flags);
+    return ret;
+}
+</code></pre><p>得到fifo中数据的长度,用<code>fifo-&gt;in - fifo-&gt;out</code>是没有问题的,即便在unsigned int型溢出时也是对的,具体可以使用补码进行运算.<br>7.kfifo_put<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>unsigned int __kfifo_put(struct kfifo *fifo,
+             unsigned char *buffer, unsigned int len)
+{
+    unsigned int l;
+    //put进去的字节数不能大于fifo剩余的字节数
+    len = min(len, fifo-&gt;size - fifo-&gt;in + fifo-&gt;out);
+    smp_mb();
+
+    /*fifo-&gt;in &amp; (fifo-&gt;size - 1)通过这个与运算,相当于把
+      fifo-&gt;in是size的倍数给去掉了,得到的是在size里的位
+      置,就是在这个buffer的位置.
+      而l所表示的是要put进去的字节数和从in开始到buffer
+      结尾字节数的小值,就是从in到buffer结尾能不能放下
+      目的字节数*/
+    l = min(len, fifo-&gt;size - (fifo-&gt;in &amp; (fifo-&gt;size - 1)));
+    /*如果放不下,copy分两部分,一部分从in在位置复制l字
+      节数.一部分从buffer开始复制len-l字节数,如果放得
+      下,那len-l为0,一样可以*/
+    memcpy(fifo-&gt;buffer + (fifo-&gt;in &amp; (fifo-&gt;size - 1)), buffer, l);
+    memcpy(fifo-&gt;buffer, buffer + l, len - l);
+    smp_wmb();
+    //更新in所在位置
+    fifo-&gt;in += len;
+
+    return len;
+}
+
+static inline unsigned int kfifo_put(struct kfifo *fifo,
+                     unsigned char *buffer, unsigned int len)
+{
+    unsigned long flags;
+    unsigned int ret;
+    spin_lock_irqsave(fifo-&gt;lock, flags);
+    ret = __kfifo_put(fifo, buffer, len);
+    spin_unlock_irqrestore(fifo-&gt;lock, flags);
+    return ret;
+}
+</code></pre><p>8.kfifo_get<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>unsigned int __kfifo_get(struct kfifo *fifo,
+             unsigned char *buffer, unsigned int len)
+{
+    unsigned int l;
+    //get的字节数和fifo buffer中字节数比较,len为最终要get的字节数
+    len = min(len, fifo-&gt;in - fifo-&gt;out);
+    smp_rmb();
+
+    //要get的字节数,和out所在位置到fifo buffer结尾字节数,比较
+    l = min(len, fifo-&gt;size - (fifo-&gt;out &amp; (fifo-&gt;size - 1)));
+    //和put同理,两部分,一部分copy l字节数,一部分copy len-l字节数,注意方向
+    memcpy(buffer, fifo-&gt;buffer + (fifo-&gt;out &amp; (fifo-&gt;size - 1)), l);
+    memcpy(buffer + l, fifo-&gt;buffer, len - l);
+    smp_mb();
+    //更新out位置
+    fifo-&gt;out += len;
+
+    return len;
+}
+
+static inline unsigned int kfifo_get(struct kfifo *fifo,
+                     unsigned char *buffer, unsigned int len)
+{
+    unsigned long flags;
+    unsigned int ret;
+
+    spin_lock_irqsave(fifo-&gt;lock, flags);
+
+    ret = __kfifo_get(fifo, buffer, len);
+    //如果没有数据,重置
+    if (fifo-&gt;in == fifo-&gt;out)
+        fifo-&gt;in = fifo-&gt;out = 0;
+
+    spin_unlock_irqrestore(fifo-&gt;lock, flags)
+     //返回get的字节数
+    return ret;
+}
+</code></pre><h3 id=二-仿造kfifo-编写的环形缓冲区ring-c-ring-h>二.仿造kfifo,编写的环形缓冲区ring.c ring.h</h3><hr><p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>/*ring.h*/
+#ifndef RING_H
+#define RING_H
+
+#include &lt;pthread.h&gt;
+
+struct ring{
+    unsigned char *buffer;  /* the buffer holding the data */
+    unsigned int size;  /* the size of the allocated buffer */
+    unsigned int in;    /* data is added at offset (in % size) */
+    unsigned int out;   /* data is extracted from off. (out % size) */
+    pthread_mutex_t *lock;  /* protects concurrent modifications */
+};
+
+extern struct ring *ring_init(unsigned char *buffer, unsigned int size,pthread_mutex_t *lock);
+extern struct ring *ring_alloc(unsigned int size,pthread_mutex_t *lock);
+extern void ring_free(struct ring *fifo);
+extern unsigned int __ring_put(struct ring *fifo,
+                unsigned char *buffer, unsigned int len);
+extern unsigned int __ring_get(struct ring *fifo,
+                unsigned char *buffer, unsigned int len);
+
+static inline void __ring_reset(struct ring *fifo)
+{
+    fifo-&gt;in = fifo-&gt;out = 0;
+}
+static inline void ring_reset(struct ring *fifo)
+{
+    unsigned long flags;
+
+    pthread_mutex_lock(fifo-&gt;lock);
+
+    __ring_reset(fifo);
+
+    pthread_mutex_unlock(fifo-&gt;lock);
+}
+
+static inline unsigned int __ring_len(struct ring *fifo)
+{
+    return fifo-&gt;in - fifo-&gt;out;
+}
+
+static inline unsigned int ring_len(struct ring *fifo)
+{
+    unsigned int ret;
+
+    pthread_mutex_lock(fifo-&gt;lock);
+
+    ret = __ring_len(fifo);
+
+    pthread_mutex_unlock(fifo-&gt;lock);
+
+    return ret;
+}
+
+static inline unsigned int ring_put(struct ring *fifo,
+                     unsigned char *buffer, unsigned int len)
+{
+    unsigned int ret;
+
+    pthread_mutex_lock(fifo-&gt;lock);
+
+    ret = __ring_put(fifo, buffer, len);
+
+    pthread_mutex_unlock(fifo-&gt;lock);
+
+    return ret;
+}
+
+static inline unsigned int ring_get(struct ring *fifo,
+                     unsigned char *buffer, unsigned int len)
+{
+    unsigned int ret;
+
+    pthread_mutex_lock(fifo-&gt;lock);
+
+    ret = __ring_get(fifo, buffer, len);
+
+    if (fifo-&gt;in == fifo-&gt;out)
+        fifo-&gt;in = fifo-&gt;out = 0;
+
+    pthread_mutex_unlock(fifo-&gt;lock);
+
+    return ret;
+}
+
+#endif
+</code></pre><hr><p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>/*ring.c*/
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+#include &quot;ring.h&quot;
+
+#define is_power_of_2(x) ((x) != 0 &amp;&amp; (((x) &amp; ((x) - 1)) == 0))
+#define min(x,y) ({ \
+    typeof(x) _x = (x); \
+    typeof(y) _y = (y); \
+    (void) (&amp;_x == &amp;_y);    \
+    _x &lt; _y ? _x : _y; })
+
+struct ring *ring_init(unsigned char *buffer, unsigned int size,
+                        pthread_mutex_t *lock)
+{
+    struct ring *fifo = NULL;
+
+    if(!is_power_of_2(size)){
+        printf(&quot;size is not power of 2\n&quot;);
+        return fifo;
+    }
+
+    fifo = (struct ring *)malloc(sizeof(struct ring));
+    if (!fifo){
+        printf(&quot;fifo malloc error\n&quot;);
+        return fifo;
+    }
+
+    fifo-&gt;buffer = buffer;
+    fifo-&gt;size = size;
+    fifo-&gt;in = fifo-&gt;out = 0;
+    fifo-&gt;lock = lock;
+
+    return fifo;
+}
+
+struct ring *ring_alloc(unsigned int size,pthread_mutex_t *lock)
+{
+    unsigned char *buffer = NULL;
+    struct ring *ret = NULL;
+
+
+    buffer = (unsigned char *)malloc(size);
+    if (!buffer){
+        printf(&quot;buffer malloc error\n&quot;);
+        return ret;
+    }
+
+    ret = ring_init(buffer, size, lock);
+
+    return ret;
+}
+void ring_free(struct ring *fifo)
+{
+    free(fifo-&gt;buffer);
+    free(fifo);
+}
+
+unsigned int __ring_put(struct ring *fifo,
+             unsigned char *buffer, unsigned int len)
+{
+    unsigned int l;
+
+    len = min(len, fifo-&gt;size - fifo-&gt;in + fifo-&gt;out);
+
+    l = min(len, fifo-&gt;size - (fifo-&gt;in &amp; (fifo-&gt;size - 1)));
+    memcpy(fifo-&gt;buffer + (fifo-&gt;in &amp; (fifo-&gt;size - 1)), buffer, l);
+    memcpy(fifo-&gt;buffer, buffer + l, len - l);
+
+    fifo-&gt;in += len;
+
+    return len;
+}
+
+unsigned int __ring_get(struct ring *fifo,
+             unsigned char *buffer, unsigned int len)
+{
+    unsigned int l;
+
+    len = min(len, fifo-&gt;in - fifo-&gt;out);
+
+    l = min(len, fifo-&gt;size - (fifo-&gt;out &amp; (fifo-&gt;size - 1)));
+    memcpy(buffer, fifo-&gt;buffer + (fifo-&gt;out &amp; (fifo-&gt;size - 1)), l);
+    memcpy(buffer + l, fifo-&gt;buffer, len - l);
+
+    fifo-&gt;out += len;
+    return len;
+}
+</code></pre><h3 id=三-测试>三.测试</h3><p>测试的main.c文件如下:<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>/*main.c*/
+#include &lt;stdio.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;signal.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+#include &quot;ring.h&quot;
+
+struct data{
+    int a;
+    time_t t;
+};
+
+pthread_t tid1;
+pthread_t tid2;
+
+void sig_handler(int sig)
+{
+    if(sig == SIGINT){
+
+        if(pthread_cancel(tid1) != 0){
+            perror(&quot;thread cancel fail&quot;);
+            exit(0);
+        }
+
+        if(pthread_cancel(tid2) != 0){
+            perror(&quot;thread cancel fail&quot;);
+            exit(0);
+        }
+        printf(&quot;\n\n 两个线程取消\n&quot;);
+   }
+}
+
+void * put_proc(void * arg)
+{
+    signal(SIGINT, sig_handler);
+    if(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,NULL) != 0){
+        perror(&quot;pthread set cancel state fail&quot;);
+        pthread_exit(NULL);
+        exit(0);
+    }
+    if(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL) != 0){
+        perror(&quot;pthread set cancel type fail&quot;);
+        pthread_exit(NULL);
+        exit(0);
+    }
+
+    int i = 0;
+    struct data data_put;
+    struct ring * ring_buf = (struct ring *)arg;
+    int len = sizeof(struct data);
+    int ret;
+    while(1){
+        data_put.a = i;
+        time(&amp;data_put.t);
+        ret = ring_put(ring_buf,(unsigned char *)&amp;data_put,len);
+        printf(&quot;ret put:%d\nput data:%d\ntime:%s\n\n&quot;,ret,data_put.a,ctime(&amp;data_put.t));
+        i++;
+        sleep(2);
+    }
+}
+
+void * get_proc(void * arg)
+{
+    signal(SIGINT, sig_handler);
+    if(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE,NULL) != 0){
+        perror(&quot;pthread set cancel state fail&quot;);
+        pthread_exit(NULL);
+        exit(0);
+    }
+    if(pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL) != 0){
+        perror(&quot;pthread set cancel type fail&quot;);
+        pthread_exit(NULL);
+        exit(0);
+    }
+
+    struct ring * ring_buf = (struct ring *)arg;
+    int len = sizeof(struct data);
+    struct data data_get;
+    int ret;
+    while(1){
+        ret = ring_get(ring_buf,(unsigned char *)&amp;data_get,len);
+        printf(&quot;ret get:%d\nget data:%d\ntime:%s\n\n&quot;,ret,data_get.a,ctime(&amp;data_get.t));
+        sleep(2);
+    }
+
+}
+
+int main(int argc, char const *argv[])
+{
+    signal(SIGINT, sig_handler);
+
+    pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+    struct ring * ring_buf = NULL;
+    ring_buf = ring_alloc(32,&amp;lock);
+
+    int err;
+
+    err = pthread_create(&amp;tid1, NULL, put_proc, ring_buf);
+    if(err){
+        printf(&quot;fail create thread 1\n&quot;);
+        goto end;
+    }
+    err = pthread_create(&amp;tid2, NULL, get_proc, ring_buf);
+    if(err){
+        printf(&quot;fail create thread 2\n&quot;);
+        goto end;
+    }
+    pthread_join(tid1,NULL);
+    pthread_join(tid2,NULL);
+
+    printf(&quot;program end\n&quot;);
+end:
+    ring_free(ring_buf);
+    return 0;
+}
+</code></pre><p>其中,建立了两个线程,一个用于向ring_buf写数据,一个用于向ring_buf读数据,数据定义时加上了时间信息便于查看.互斥量的使用主要用于线程同步,比如两个线程如果都向缓冲区写数据时,必须保证临界区的安全,当然也可以使用读写锁,其实更好一些,因为读的时候,也可以写.<br>信号处理函数,用于ctrl+c强制结束时,异步取消线程.<p>结果:<p><button class=VJbwyy type=button aria-label=复制代码><i aria-label="icon: copy" class="anticon anticon-copy"><svg viewBox="64 64 896 896" focusable="false" data-icon="copy" width="1em" height="1em" fill="currentcolor" aria-hidden="true"><path d="M832 64H296c-4.4.0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h496v688c0 4.4 3.6 8 8 8h56c4.4.0 8-3.6 8-8V96c0-17.7-14.3-32-32-32zM704 192H192c-17.7.0-32 14.3-32 32v530.7c0 8.5 3.4 16.6 9.4 22.6l173.3 173.3c2.2 2.2 4.7 4 7.4 5.5v1.9h4.2c3.5 1.3 7.2 2 11 2H704c17.7.0 32-14.3 32-32V224c0-17.7-14.3-32-32-32zM350 856.2 263.9 770H350v86.2zM664 888H414V746c0-22.1-17.9-40-40-40H232V264h432v624z"/></svg></i></button><pre><code>ret get:0
+get data:1032341248
+time:Sun Apr 21 12:30:00 4461252
+
+ret put:16
+put data:0
+time:Mon Jan  8 17:35:33 2018
+
+ret get:16
+get data:0
+time:Mon Jan  8 17:35:33 2018
+
+ret put:16
+put data:1
+time:Mon Jan  8 17:35:35 2018
+
+ret get:16
+get data:1
+time:Mon Jan  8 17:35:35 2018
+
+ret put:16
+put data:2
+time:Mon Jan  8 17:35:37 2018
+
+ret get:16
+get data:2
+time:Mon Jan  8 17:35:37 2018
+
+ret put:16
+put data:3
+time:Mon Jan  8 17:35:39 2018
+
+ret get:16
+get data:3
+time:Mon Jan  8 17:35:39 2018
+
+ret put:16
+put data:4
+time:Mon Jan  8 17:35:41 2018
+
+^C
+
+ 两个线程取消
+program end
+</code></pre><p>刚开始,get线程没有读出数据<br>后面就是put一个,get一个,没问题.</div><div class=clear></div></div></div></article><div class=clear></div><p class=post-tags><span class="fa fa-tags">Tags:</span>
+<a rel=tag href=../../../tags/clang>clang</a><div id=related-posts><div class=related-inner></div></div><section id=comments class=themeform></section><section id=comments class=themeform></section></div></div><div class="sidebar s1 collapsed" data-position=left data-layout=col-3cm data-sb-id=s1><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>Follow:<ul class=social-links><li><a class=social-tooltip href=mailto: title=Email><i class="fa fa-envelope"></i></a><li><a class=social-tooltip href=//github.com/ title=GitHub><i class="fa fa-github"></i></a><li><a class=social-tooltip title="RSS Feed" aria-label="RSS Feed" href=../../../feed target=_blank style=color:#ffffffb2><i class="fa fa-rss"></i></a></ul></div><ul class="post-nav group"><li class=previous><a href=../../../hardware/hezhou-i2c-am2320/ rel=prev><i class="fa fa-chevron-left"></i><strong>Previous Post</strong>
+<span>hezhou i2c</span></a></ul><div id=categories-2 class="widget widget_categories"><h3>分类</h3><ul><li class="cat-item cat-item-1"><a href=../../../categories/ai/>Ai</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/algorithm/>Algorithm</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/android/>Android</a>
+<small>(17)</small><li class="cat-item cat-item-1"><a href=../../../categories/ansible/>Ansible</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/beats/>Beats</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/busybox/>Busybox</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/caffe/>Caffe</a>
+<small>(21)</small><li class="cat-item cat-item-1"><a href=../../../categories/cgo/>Cgo</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../categories/clang/>Clang</a>
+<small>(32)</small><li class="cat-item cat-item-1"><a href=../../../categories/cmd/>Cmd</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/cpp/>Cpp</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/cross_compile/>Cross_compile</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/css/>Css</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/dart/>Dart</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/database/>Database</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/dataset/>Dataset</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/deeplearning/>Deeplearning</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/devops/>Devops</a>
+<small>(70)</small><li class="cat-item cat-item-1"><a href=../../../categories/docker/>Docker</a>
+<small>(18)</small><li class="cat-item cat-item-1"><a href=../../../categories/dts/>Dts</a>
+<small>(5)</small><li class="cat-item cat-item-1"><a href=../../../categories/elasticsearch/>Elasticsearch</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/english/>English</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/freertos/>Freertos</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/front-end/>Front-End</a>
+<small>(20)</small><li class="cat-item cat-item-1"><a href=../../../categories/golang/>Golang</a>
+<small>(135)</small><li class="cat-item cat-item-1"><a href=../../../categories/hacker/>Hacker</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hardware/>Hardware</a>
+<small>(16)</small><li class="cat-item cat-item-1"><a href=../../../categories/hi3519a/>Hi3519a</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hi3559/>Hi3559</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hisi/>Hisi</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/hisilicon/>Hisilicon</a>
+<small>(57)</small><li class="cat-item cat-item-1"><a href=../../../categories/jetson/>Jetson</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/js/>Js</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/jumpserver/>Jumpserver</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/kernel/>Kernel</a>
+<small>(14)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux/>Linux</a>
+<small>(94)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux-system/>Linux-System</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../../categories/linux-%E5%91%BD%E4%BB%A4/>Linux-命令</a>
+<small>(120)</small><li class="cat-item cat-item-1"><a href=../../../categories/mac/>Mac</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/machinelearn/>Machinelearn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/machinelearning/>Machinelearning</a>
+<small>(11)</small><li class="cat-item cat-item-1"><a href=../../../categories/macos/>Macos</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../../categories/math/>Math</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/matplotlib/>Matplotlib</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/mpp/>Mpp</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../../categories/mysql/>Mysql</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../categories/ncnn/>Ncnn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/network/>Network</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/nginx/>Nginx</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/nnie/>Nnie</a>
+<small>(13)</small><li class="cat-item cat-item-1"><a href=../../../categories/node/>Node</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/numpy/>Numpy</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/opencv/>Opencv</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../categories/pandas/>Pandas</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/platform/>Platform</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/post/>Post</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/pyqt/>Pyqt</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../../categories/python/>Python</a>
+<small>(31)</small><li class="cat-item cat-item-1"><a href=../../../categories/pytorch/>Pytorch</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../../categories/raspi/>Raspi</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/rk3288/>Rk3288</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../../categories/rk3399/>Rk3399</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/rtmp/>Rtmp</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/scikit/>Scikit</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/shell/>Shell</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/socket/>Socket</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/stm32/>Stm32</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../../categories/stm8/>Stm8</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../categories/weixin/>Weixin</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/windows/>Windows</a>
+<small>(22)</small><li class="cat-item cat-item-1"><a href=../../../categories/work/>Work</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/yolo/>Yolo</a>
+<small>(13)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/>前端技术</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%8D%8F%E8%AE%AE/>协议</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/>嵌入式</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B7%A5%E5%85%B7/>工具</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/>常用算法</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/>微服务</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/>排列组合</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/>数据库</a>
+<small>(37)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/>文本编辑</a>
+<small>(30)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/>正则表达式</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/>生活技巧</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/>程序员</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/>网络安全</a>
+<small>(40)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/>集群监控</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/>静态博客</a>
+<small>(15)</small><li class="cat-item cat-item-1"><a href=../../../categories/%E9%AB%98%E6%95%B0/>高数</a>
+<small>(2)</small></ul></div></div></div><div class="sidebar s2 collapsed" data-position=right data-layout=col-3cm data-sb-id=s2><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>More</div><ul class="post-nav group"><li class=next><a href=../../../language/clang/c-bithacker/ rel=next><i class="fa fa-chevron-right"></i><strong>Next post</strong>
+<span>c语言位操作黑科技bithacker</span></a></ul><div id=tag_cloud-2 class="widget widget_tag_cloud"><h3>标签云</h3><div class="tagcloud post-tags"><a rel=tag href=../../../tags/ai/ class=tag-link-7 title="1 Posts">ai<small>(7)</small></a>
+<a rel=tag href=../../../tags/ansible/ class=tag-link-19 title="1 Posts">ansible<small>(19)</small></a>
+<a rel=tag href=../../../tags/awesome/ class=tag-link-3 title="1 Posts">awesome<small>(3)</small></a>
+<a rel=tag href=../../../tags/bfc/ class=tag-link-2 title="1 Posts">bfc<small>(2)</small></a>
+<a rel=tag href=../../../tags/c/ class=tag-link-5 title="1 Posts">c<small>(5)</small></a>
+<a rel=tag href=../../../tags/caffe/ class=tag-link-21 title="1 Posts">caffe<small>(21)</small></a>
+<a rel=tag href=../../../tags/centos7/ class=tag-link-2 title="1 Posts">centos7<small>(2)</small></a>
+<a rel=tag href=../../../tags/cgo/ class=tag-link-10 title="1 Posts">cgo<small>(10)</small></a>
+<a rel=tag href=../../../tags/clang/ class=tag-link-32 title="1 Posts">clang<small>(32)</small></a>
+<a rel=tag href=../../../tags/cmd/ class=tag-link-2 title="1 Posts">cmd<small>(2)</small></a>
+<a rel=tag href=../../../tags/cpp/ class=tag-link-7 title="1 Posts">cpp<small>(7)</small></a>
+<a rel=tag href=../../../tags/cross_compile/ class=tag-link-9 title="1 Posts">cross_compile<small>(9)</small></a>
+<a rel=tag href=../../../tags/css/ class=tag-link-20 title="1 Posts">css<small>(20)</small></a>
+<a rel=tag href=../../../tags/css3/ class=tag-link-2 title="1 Posts">css3<small>(2)</small></a>
+<a rel=tag href=../../../tags/curd/ class=tag-link-3 title="1 Posts">curd<small>(3)</small></a>
+<a rel=tag href=../../../tags/curl/ class=tag-link-2 title="1 Posts">curl<small>(2)</small></a>
+<a rel=tag href=../../../tags/dataset/ class=tag-link-2 title="1 Posts">dataset<small>(2)</small></a>
+<a rel=tag href=../../../tags/devops/ class=tag-link-3 title="1 Posts">devops<small>(3)</small></a>
+<a rel=tag href=../../../tags/docker/ class=tag-link-21 title="1 Posts">docker<small>(21)</small></a>
+<a rel=tag href=../../../tags/drone/ class=tag-link-22 title="1 Posts">drone<small>(22)</small></a>
+<a rel=tag href=../../../tags/dts/ class=tag-link-6 title="1 Posts">dts<small>(6)</small></a>
+<a rel=tag href=../../../tags/elasticsearch/ class=tag-link-9 title="1 Posts">elasticsearch<small>(9)</small></a>
+<a rel=tag href=../../../tags/emacs/ class=tag-link-12 title="1 Posts">emacs<small>(12)</small></a>
+<a rel=tag href=../../../tags/encode/ class=tag-link-3 title="1 Posts">encode<small>(3)</small></a>
+<a rel=tag href=../../../tags/english/ class=tag-link-8 title="1 Posts">english<small>(8)</small></a>
+<a rel=tag href=../../../tags/es6/ class=tag-link-2 title="1 Posts">es6<small>(2)</small></a>
+<a rel=tag href=../../../tags/etcd/ class=tag-link-4 title="1 Posts">etcd<small>(4)</small></a>
+<a rel=tag href=../../../tags/flannel/ class=tag-link-2 title="1 Posts">flannel<small>(2)</small></a>
+<a rel=tag href=../../../tags/git/ class=tag-link-6 title="1 Posts">git<small>(6)</small></a>
+<a rel=tag href=../../../tags/github/ class=tag-link-2 title="1 Posts">github<small>(2)</small></a>
+<a rel=tag href=../../../tags/golang/ class=tag-link-149 title="1 Posts">golang<small>(149)</small></a>
+<a rel=tag href=../../../tags/gradle/ class=tag-link-3 title="1 Posts">gradle<small>(3)</small></a>
+<a rel=tag href=../../../tags/haproxy/ class=tag-link-5 title="1 Posts">haproxy<small>(5)</small></a>
+<a rel=tag href=../../../tags/hardware/ class=tag-link-16 title="1 Posts">hardware<small>(16)</small></a>
+<a rel=tag href=../../../tags/hexo/ class=tag-link-3 title="1 Posts">hexo<small>(3)</small></a>
+<a rel=tag href=../../../tags/hisilicon/ class=tag-link-57 title="1 Posts">hisilicon<small>(57)</small></a>
+<a rel=tag href=../../../tags/html/ class=tag-link-2 title="1 Posts">html<small>(2)</small></a>
+<a rel=tag href=../../../tags/http/ class=tag-link-6 title="1 Posts">http<small>(6)</small></a>
+<a rel=tag href=../../../tags/hugo/ class=tag-link-14 title="1 Posts">hugo<small>(14)</small></a>
+<a rel=tag href=../../../tags/imagemagick/ class=tag-link-2 title="1 Posts">imagemagick<small>(2)</small></a>
+<a rel=tag href=../../../tags/ip/ class=tag-link-3 title="1 Posts">ip<small>(3)</small></a>
+<a rel=tag href=../../../tags/iproute2/ class=tag-link-5 title="1 Posts">iproute2<small>(5)</small></a>
+<a rel=tag href=../../../tags/iptables/ class=tag-link-17 title="1 Posts">iptables<small>(17)</small></a>
+<a rel=tag href=../../../tags/javascript/ class=tag-link-19 title="1 Posts">javascript<small>(19)</small></a>
+<a rel=tag href=../../../tags/jetson/ class=tag-link-3 title="1 Posts">jetson<small>(3)</small></a>
+<a rel=tag href=../../../tags/jquery/ class=tag-link-12 title="1 Posts">jquery<small>(12)</small></a>
+<a rel=tag href=../../../tags/js/ class=tag-link-10 title="1 Posts">js<small>(10)</small></a>
+<a rel=tag href=../../../tags/jumpserver/ class=tag-link-2 title="1 Posts">jumpserver<small>(2)</small></a>
+<a rel=tag href=../../../tags/jwt/ class=tag-link-3 title="1 Posts">jwt<small>(3)</small></a>
+<a rel=tag href=../../../tags/kernel/ class=tag-link-14 title="1 Posts">kernel<small>(14)</small></a>
+<a rel=tag href=../../../tags/kubernetes/ class=tag-link-11 title="1 Posts">kubernetes<small>(11)</small></a>
+<a rel=tag href=../../../tags/linux/ class=tag-link-22 title="1 Posts">linux<small>(22)</small></a>
+<a rel=tag href=../../../tags/linux-system/ class=tag-link-8 title="1 Posts">linux-system<small>(8)</small></a>
+<a rel=tag href=../../../tags/lvs/ class=tag-link-8 title="1 Posts">lvs<small>(8)</small></a>
+<a rel=tag href=../../../tags/machinelearn/ class=tag-link-3 title="1 Posts">machinelearn<small>(3)</small></a>
+<a rel=tag href=../../../tags/machinelearning/ class=tag-link-11 title="1 Posts">machinelearning<small>(11)</small></a>
+<a rel=tag href=../../../tags/macos/ class=tag-link-14 title="1 Posts">macos<small>(14)</small></a>
+<a rel=tag href=../../../tags/makefile/ class=tag-link-2 title="1 Posts">makefile<small>(2)</small></a>
+<a rel=tag href=../../../tags/mariadb/ class=tag-link-9 title="1 Posts">mariadb<small>(9)</small></a>
+<a rel=tag href=../../../tags/math/ class=tag-link-7 title="1 Posts">math<small>(7)</small></a>
+<a rel=tag href=../../../tags/matplotlib/ class=tag-link-3 title="1 Posts">matplotlib<small>(3)</small></a>
+<a rel=tag href=../../../tags/maven/ class=tag-link-2 title="1 Posts">maven<small>(2)</small></a>
+<a rel=tag href=../../../tags/meteor/ class=tag-link-7 title="1 Posts">meteor<small>(7)</small></a>
+<a rel=tag href=../../../tags/ml/ class=tag-link-3 title="1 Posts">ml<small>(3)</small></a>
+<a rel=tag href=../../../tags/mpp/ class=tag-link-12 title="1 Posts">mpp<small>(12)</small></a>
+<a rel=tag href=../../../tags/mysql/ class=tag-link-61 title="1 Posts">mysql<small>(61)</small></a>
+<a rel=tag href=../../../tags/ncnn/ class=tag-link-3 title="1 Posts">ncnn<small>(3)</small></a>
+<a rel=tag href=../../../tags/netns/ class=tag-link-2 title="1 Posts">netns<small>(2)</small></a>
+<a rel=tag href=../../../tags/network/ class=tag-link-2 title="1 Posts">network<small>(2)</small></a>
+<a rel=tag href=../../../tags/nginx/ class=tag-link-28 title="1 Posts">nginx<small>(28)</small></a>
+<a rel=tag href=../../../tags/nmap/ class=tag-link-2 title="1 Posts">nmap<small>(2)</small></a>
+<a rel=tag href=../../../tags/nnie/ class=tag-link-13 title="1 Posts">nnie<small>(13)</small></a>
+<a rel=tag href=../../../tags/node/ class=tag-link-4 title="1 Posts">node<small>(4)</small></a>
+<a rel=tag href=../../../tags/nosql/ class=tag-link-8 title="1 Posts">nosql<small>(8)</small></a>
+<a rel=tag href=../../../tags/npm/ class=tag-link-3 title="1 Posts">npm<small>(3)</small></a>
+<a rel=tag href=../../../tags/numpy/ class=tag-link-4 title="1 Posts">numpy<small>(4)</small></a>
+<a rel=tag href=../../../tags/oauth2/ class=tag-link-2 title="1 Posts">oauth2<small>(2)</small></a>
+<a rel=tag href=../../../tags/opencv/ class=tag-link-10 title="1 Posts">opencv<small>(10)</small></a>
+<a rel=tag href=../../../tags/openssl/ class=tag-link-3 title="1 Posts">openssl<small>(3)</small></a>
+<a rel=tag href=../../../tags/pandoc/ class=tag-link-2 title="1 Posts">pandoc<small>(2)</small></a>
+<a rel=tag href=../../../tags/php/ class=tag-link-4 title="1 Posts">php<small>(4)</small></a>
+<a rel=tag href=../../../tags/post/ class=tag-link-4 title="1 Posts">post<small>(4)</small></a>
+<a rel=tag href=../../../tags/powershell/ class=tag-link-2 title="1 Posts">powershell<small>(2)</small></a>
+<a rel=tag href=../../../tags/prometheus/ class=tag-link-8 title="1 Posts">prometheus<small>(8)</small></a>
+<a rel=tag href=../../../tags/pyqt/ class=tag-link-8 title="1 Posts">pyqt<small>(8)</small></a>
+<a rel=tag href=../../../tags/python/ class=tag-link-33 title="1 Posts">python<small>(33)</small></a>
+<a rel=tag href=../../../tags/pytorch/ class=tag-link-6 title="1 Posts">pytorch<small>(6)</small></a>
+<a rel=tag href=../../../tags/raspi/ class=tag-link-4 title="1 Posts">raspi<small>(4)</small></a>
+<a rel=tag href=../../../tags/redis/ class=tag-link-2 title="1 Posts">redis<small>(2)</small></a>
+<a rel=tag href=../../../tags/reflect/ class=tag-link-3 title="1 Posts">reflect<small>(3)</small></a>
+<a rel=tag href=../../../tags/responsive/ class=tag-link-2 title="1 Posts">responsive<small>(2)</small></a>
+<a rel=tag href=../../../tags/restful/ class=tag-link-6 title="1 Posts">restful<small>(6)</small></a>
+<a rel=tag href=../../../tags/rk3288/ class=tag-link-22 title="1 Posts">rk3288<small>(22)</small></a>
+<a rel=tag href=../../../tags/rk3399/ class=tag-link-9 title="1 Posts">rk3399<small>(9)</small></a>
+<a rel=tag href=../../../tags/route/ class=tag-link-2 title="1 Posts">route<small>(2)</small></a>
+<a rel=tag href=../../../tags/rsync/ class=tag-link-2 title="1 Posts">rsync<small>(2)</small></a>
+<a rel=tag href=../../../tags/rtmp/ class=tag-link-2 title="1 Posts">rtmp<small>(2)</small></a>
+<a rel=tag href=../../../tags/scikit/ class=tag-link-3 title="1 Posts">scikit<small>(3)</small></a>
+<a rel=tag href=../../../tags/scrapy/ class=tag-link-8 title="1 Posts">scrapy<small>(8)</small></a>
+<a rel=tag href=../../../tags/scss/ class=tag-link-2 title="1 Posts">scss<small>(2)</small></a>
+<a rel=tag href=../../../tags/sed/ class=tag-link-3 title="1 Posts">sed<small>(3)</small></a>
+<a rel=tag href=../../../tags/seo/ class=tag-link-5 title="1 Posts">seo<small>(5)</small></a>
+<a rel=tag href=../../../tags/shell/ class=tag-link-11 title="1 Posts">shell<small>(11)</small></a>
+<a rel=tag href=../../../tags/socket/ class=tag-link-4 title="1 Posts">socket<small>(4)</small></a>
+<a rel=tag href=../../../tags/sqlite/ class=tag-link-2 title="1 Posts">sqlite<small>(2)</small></a>
+<a rel=tag href=../../../tags/ssh/ class=tag-link-3 title="1 Posts">ssh<small>(3)</small></a>
+<a rel=tag href=../../../tags/stm32/ class=tag-link-11 title="1 Posts">stm32<small>(11)</small></a>
+<a rel=tag href=../../../tags/stm8/ class=tag-link-9 title="1 Posts">stm8<small>(9)</small></a>
+<a rel=tag href=../../../tags/swagger/ class=tag-link-2 title="1 Posts">swagger<small>(2)</small></a>
+<a rel=tag href=../../../tags/swarm/ class=tag-link-2 title="1 Posts">swarm<small>(2)</small></a>
+<a rel=tag href=../../../tags/sysbench/ class=tag-link-2 title="1 Posts">sysbench<small>(2)</small></a>
+<a rel=tag href=../../../tags/sysctl/ class=tag-link-2 title="1 Posts">sysctl<small>(2)</small></a>
+<a rel=tag href=../../../tags/systemctl/ class=tag-link-2 title="1 Posts">systemctl<small>(2)</small></a>
+<a rel=tag href=../../../tags/tc/ class=tag-link-2 title="1 Posts">tc<small>(2)</small></a>
+<a rel=tag href=../../../tags/tcpdump/ class=tag-link-2 title="1 Posts">tcpdump<small>(2)</small></a>
+<a rel=tag href=../../../tags/timezone/ class=tag-link-2 title="1 Posts">timezone<small>(2)</small></a>
+<a rel=tag href=../../../tags/tshark/ class=tag-link-2 title="1 Posts">tshark<small>(2)</small></a>
+<a rel=tag href=../../../tags/ubuntu/ class=tag-link-2 title="1 Posts">ubuntu<small>(2)</small></a>
+<a rel=tag href=../../../tags/ulimit/ class=tag-link-2 title="1 Posts">ulimit<small>(2)</small></a>
+<a rel=tag href=../../../tags/vim/ class=tag-link-14 title="1 Posts">vim<small>(14)</small></a>
+<a rel=tag href=../../../tags/webpack3/ class=tag-link-2 title="1 Posts">webpack3<small>(2)</small></a>
+<a rel=tag href=../../../tags/windows/ class=tag-link-18 title="1 Posts">windows<small>(18)</small></a>
+<a rel=tag href=../../../tags/wireshark/ class=tag-link-2 title="1 Posts">wireshark<small>(2)</small></a>
+<a rel=tag href=../../../tags/xidel/ class=tag-link-2 title="1 Posts">xidel<small>(2)</small></a>
+<a rel=tag href=../../../tags/xml/ class=tag-link-2 title="1 Posts">xml<small>(2)</small></a>
+<a rel=tag href=../../../tags/yaml/ class=tag-link-2 title="1 Posts">yaml<small>(2)</small></a>
+<a rel=tag href=../../../tags/yolo/ class=tag-link-13 title="1 Posts">yolo<small>(13)</small></a>
+<a rel=tag href=../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/ class=tag-link-2 title="1 Posts">微服务<small>(2)</small></a></div></div></div></div>`</div></div></div></div></div><script>var HUParams={"_disabled":[],"SmoothScroll":{"Enabled":true,"Options":{"touchpadSupport":false}},"centerAllImg":"1","timerOnScrollAllBrowsers":"1","extLinksStyle":"1","extLinksTargetExt":"1","extLinksSkipSelectors":{"classes":["btn","button"],"ids":[]},"imgSmartLoadEnabled":"1","imgSmartLoadOpts":{"parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],"opts":{"excludeImg":[".tc-holder-img"],"fadeIn_options":100}},"goldenRatio":"1.618","gridGoldenRatioLimit":"350","sbStickyUserSettings":{"desktop":true,"mobile":true},"isWPMobile":"","menuStickyUserSettings":{"desktop":"stick_up","mobile":"stick_up"},"isDevMode":"","ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1","frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},"userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},"isWelcomeNoteOn":"","welcomeContent":""};</script><script src=https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js></script><script src=https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js></script><script src=../../../front/js/scripts.js></script><footer id=footer><section class=container id=footer-bottom><div class=container-inner><a id=back-to-top href=#><i class="fa fa-angle-up"></i></a><div class="pad group"><div class="grid one-half"><div id=copyright><p>Copyright (c) 2017. All rights reserved. (版权所有) <a href=http://www.miitbeian.gov.cn/>鲁ICP备17074587号-1</a></div></div><div class="grid one-half last"><ul class=social-links><li><a class=social-tooltip title="On WeiBo" href=http://weibo.com/rinetd target=_blank><i class="fa fa-weibo"></i></a><li><a class=social-tooltip title="On Twitter" href=https://twitter.com/rinetd target=_blank><i class="fa fa-twitter"></i></a><li><a class=social-tooltip title="On GitHub" href=https://github.com/rinetd target=_blank><i class="fa fa-github"></i></a></ul></div></div></div></section></footer><div class=back-to-top id=back-to-top><i class="fa fa-angle-double-up"></i></div><script>$(".topbar-toggle-down").click(function(){$("#nav-topbar").css("overflow","visible");});</script><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height=0 width=0 style=display:none;visibility:hidden></iframe></noscript><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5HM5XM2');</script>
