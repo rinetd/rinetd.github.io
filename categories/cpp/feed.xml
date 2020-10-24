@@ -5,13 +5,58 @@
 这是当前处理的CMakeLists.txt所在的目录&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;CMAKE_CURRENT_LIST_DIR&lt;/code&gt;&lt;br /&gt;
 (自2.8.3开始)这是当前正在处理的列表文件的目录&lt;/p&gt;
+&lt;h3 id=&#34;cmake-uninstall-卸载安装后的文件&#34;&gt;cmake uninstall 卸载安装后的文件&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;cat install_manifest.txt | sudo xargs rm&lt;/code&gt;&lt;/p&gt;
+&lt;h3 id=&#34;camke-静态编译-a-undefined-reference-to-routing-record&#34;&gt;camke 静态编译.a undefined reference to `routing_record&#39;&lt;/h3&gt;
+&lt;p&gt;collect2: error: ld returned 1 exit status&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;aux_source_directory(. DIR_SRCS)
+add_executable(${TARGETS} ${DIR_SRCS})
+target_link_libraries(${TARGETS} -Wl,--start-group) #
+foreach(findlib ${LIBNAMES})
+target_link_libraries(${TARGETS} ${findlib})
+endforeach()
+find_package(&amp;quot;Threads&amp;quot;)
+target_link_libraries(${TARGETS} ${CMAKE_THREAD_LIBS_INIT} )
+# set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} &amp;quot;-pthread&amp;quot;)
+target_link_libraries(${TARGETS} -Wl,--end-group )
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;#Set cross compilation information
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_PROCESSOR arm)
+# GCC toolchain prefix
+set(TOOLCHAIN_PREFIX &amp;quot;arm-none-eabi&amp;quot;)
+set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
+set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
+set(CMAKE_ASM_COMPILER ${TOOLCHAIN_PREFIX}-as)
+set(CMAKE_AR ${TOOLCHAIN_PREFIX}-ar)
+set(CMAKE_OBJCOPY ${TOOLCHAIN_PREFIX}-objcopy)
+set(CMAKE_OBJDUMP ${TOOLCHAIN_PREFIX}-objdump)
+enable_language(ASM)
+set(CPU &amp;quot;-mcpu=cortex-m4&amp;quot;)
+set(FPU &amp;quot;-mfpu=fpv4-sp-d16 -mfloat-abi=softfp&amp;quot;)
+set(CMAKE_ASM_FLAGS &amp;quot;${CMAKE_ASM_FLAGS} -mthumb ${CPU} ${FPU} -MD&amp;quot;)
+set(CMAKE_C_FLAGS &amp;quot;${CMAKE_C_FLAGS} -mthumb ${CPU} ${FPU} -std=gnu99 -Os -ffunction-sections -fdata-sections -MD -Wall -pedantic&amp;quot;)
+set(CMAKE_CXX_FLAGS &amp;quot;${CMAKE_CXX_FLAGS} -mthumb ${CPU} ${FPU} -Os -ffunction-sections -fdata-sections -MD -Wall -pedantic -fno-exceptions -fno-rtti&amp;quot;)
+set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS &amp;quot;&amp;quot;)
+set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS &amp;quot;&amp;quot;)
+set(CMAKE_EXE_LINKER_FLAGS &amp;quot;-T${PROJECT_SOURCE_DIR}/tm4c123g.ld -specs=${PROJECT_SOURCE_DIR}/tiva.specs&amp;quot;)
+# Processor specific definitions
+add_definitions(-DPART_TM4C123GH6PM)
+add_definitions(-DTARGET_IS_TM4C123_RA1)
+add_definitions(-Dgcc)
+set(FLASH_EXECUTABLE &amp;quot;lm4flash&amp;quot;)
+ADD_CUSTOM_TARGET(&amp;quot;flash&amp;quot; DEPENDS ${CMAKE_PROJECT_NAME}.axf
+COMMAND ${CMAKE_OBJCOPY} -O binary ${CMAKE_PROJECT_NAME}.axf ${CMAKE_PROJECT_NAME}.bin
+COMMAND ${FLASH_EXECUTABLE} ${CMAKE_PROJECT_NAME}.bin
+)
+&lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&#34;cmake-使用-cmake-install-prefix-来指定install的安装目录&#34;&gt;cmake：使用 CMAKE_INSTALL_PREFIX 来指定install的安装目录&lt;/h3&gt;
-&lt;p&gt;方法1-在执行cmake时指定：&lt;/p&gt;
-&lt;p&gt;cmake -DCMAKE_INSTALL_PREFIX=&amp;lt;你想要安装的路径&amp;gt;&lt;br /&gt;
-方法二-设置CMAKE_INSTALL_PREFIX 变量：&lt;/p&gt;
-&lt;p&gt;在 PROJECT(&amp;lt; project_name&amp;gt;) 之后。&lt;br /&gt;
-&lt;code&gt;SET(CMAKE_INSTALL_PREFIX /usr/local/)&lt;/code&gt;&lt;br /&gt;
- &lt;/p&gt;
+&lt;p&gt;方法1 在执行cmake时指定：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;cmake -DCMAKE_INSTALL_PREFIX=&amp;lt;你想要安装的路径&amp;gt;&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;方法二 设置CMAKE_INSTALL_PREFIX 变量：&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;在 PROJECT(&amp;lt; project_name&amp;gt;) 之后。`SET(CMAKE_INSTALL_PREFIX /usr/local/)`
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt; &lt;/p&gt;
 &lt;p&gt;在设置完install的安装目录之后，执行install时可以通过DESTINATION直接指定安装目录之下的目录&lt;/p&gt;
 &lt;p&gt;set(CMAKE_INSTALL_PREFIX /usr/local)&lt;br /&gt;
 install(TARGETS test DESTINATION bin) #将test安装到/usr/local/bin目录下&lt;/p&gt;
@@ -31,14 +76,27 @@ SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)&lt;/p&gt;
 &lt;p&gt;SET(CMAKE_C_COMPILER &amp;quot;编译器环境路径&amp;quot;)&lt;/p&gt;
 &lt;p&gt;直接把编译器的路径设置过去就可以了，CMAKE_C_COMPILER是C语言编译器，CMAKE_CXX_COMPILE是C++语言编译器。&lt;/p&gt;
 &lt;p&gt;所以 在工程主CMakeLists.txt 中&lt;strong&gt;首先&lt;/strong&gt;加入如下：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-m&#34;&gt;SET(CMAKE_SYSTEM_NAME Linux)
-SET(TOOLCHAIN_DIR &amp;quot;/opt/mv_pro_4.0/montavista/pro/devkit/arm/v5t_le&amp;quot;)
-SET(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN_DIR})
-SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-SET(CMAKE_C_COMPILER ${TOOLCHAIN_DIR}/bin/arm_v5t_le-gcc)
-SET(CMAKE_CXX_COMPILER ${TOOLCHAIN_DIR}/bin/arm_v5t_le-g++)
+&lt;pre&gt;&lt;code class=&#34;language-m&#34;&gt;
+SET ( CMAKE_SYSTEM_NAME Linux )
+SET ( CMAKE_SYSTEM_PROCESSOR arm )
+# when hislicon SDK was installed, toolchain was installed in the path as below:
+# SET ( CMAKE_C_COMPILER /opt/hisi-linux/x86-arm/arm-himix200-linux/bin/arm-himix200-linux-gcc )
+# SET ( CMAKE_CXX_COMPILER /opt/hisi-linux/x86-arm/arm-himix200-linux/bin/arm-himix200-linux-g++ )
+set(CMAKE_C_COMPILER &amp;quot;arm-none-linux-gnueabi-gcc&amp;quot;)
+set(CMAKE_CXX_COMPILER &amp;quot;arm-none-linux-gnueabi-g++&amp;quot;)
+# set searching rules for cross-compiler
+# SET(TOOLCHAIN_DIR &amp;quot;/opt/mv_pro_4.0/montavista/pro/devkit/arm/v5t_le&amp;quot;)
+# SET(CMAKE_FIND_ROOT_PATH ${TOOLCHAIN_DIR})
+SET ( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER )
+SET ( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY )
+SET ( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY )
+# set ${CMAKE_C_FLAGS} and ${CMAKE_CXX_FLAGS}flag for cross-compiled process
+SET ( CROSS_COMPILATION_ARM himix200 )
+SET ( CROSS_COMPILATION_ARCHITECTURE armv7-a )
+# set g++ param
+SET ( CMAKE_CXX_FLAGS &amp;quot;-std=c++11 -march=armv7-a -mfloat-abi=softfp -mfpu=neon-vfpv4 ${CMAKE_CXX_FLAGS}&amp;quot; )
+add_definitions(-D__ARM_NEON)
+# add_definitions(-D__ANDROID__)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code class=&#34;language-m&#34;&gt;cmake_minimum_required(VERSION 2.8)
 project( DisplayImage )

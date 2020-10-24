@@ -1,0 +1,557 @@
+<!doctype html><html lang=zh-cn class=no-js><title></title><meta charset=utf-8><meta name=robots content=index,nofollow><meta http-equiv=x-ua-compatible content="IE=edge,chrome=1"><meta http-equiv=x-dns-prefetch-control content=on><meta name=viewport content="width=device-width,initial-scale=1"><meta name=referrer content=origin-when-cross-origin><meta name=description content="ev_periodic Libev源码分析05：Libev中的绝对时间定时器 - gqtc - 博客园
+ev_periodic和ev_timer也是一种定时器，有时它们是可以通用的，有时也是有区别的。ev_timer不适用于长时间的超时，比如一周后、一个月后，它在一定程度上有延时的风险，回调的超时越大，这个时间就越不准。其实从命名上也能看出区别，ev_periodic适用于周期性的回调，比如每天早上5点需要清理冗余的数据。ev_periodic它是根据时刻来回调的，也就是说，只有本地时钟刚好走到了那个点才会触发回调。
+考虑一下特殊情况，如果设置了10分钟后的回调，再把本地时钟调到去年，那么这个回调就要等1年的时间了。如果把时钟往后调呢？这个回调就会立即触发。
+可使用的函数如下:
+ev_periodic_init(ev_periodic *, callback, ev_tstamp offset, ev_tstamp interval, reschedule_cb) ev_periodic_set(ev_periodic *, ev_tstamp offset, ev_tstamp interval, reschedule_cb) ev_periodic_again(loop, ev_periodic *) ev_tstamp ev_periodic_at(ev_periodic *)  符号定义:
+typedef double ev_tstamp; #if EV_MINPRI == EV_MAXPRI # define EV_DECL_PRIORITY #elif !defined (EV_DECL_PRIORITY) # define EV_DECL_PRIORITY int priority; #endif #ifndef EV_COMMON # define EV_COMMON void *data; #endif #ifndef EV_CB_DECLARE # define EV_CB_DECLARE(type) void (*cb)(EV_P_ struct type *w, int revents); #endif #define EV_WATCHER(type)	\ int active; /* private */	\ int pending; /* private */	\ EV_DECL_PRIORITY /* private */	\ EV_COMMON /* rw */	\ EV_CB_DECLARE (type) /* private */ #define EV_WATCHER_TIME(type)	\ EV_WATCHER (type)	\ ev_tstamp at; /* private */ #ifdef __cplusplus # define EV_CPP(x) x # if __cplusplus &gt;= 201103L # define EV_THROW noexcept # else # define EV_THROW throw () # endif #else # define EV_CPP(x) # define EV_THROW #endif typedef struct ev_periodic { EV_WATCHER_TIME (ev_periodic) ev_tstamp offset; /* rw */ ev_tstamp interval; /* rw */ ev_tstamp (*reschedule_cb)(struct ev_periodic *w, ev_tstamp now) EV_THROW; /* rw */ } ev_periodic;  #sample1"><meta name=author content=rinetd><meta name=google-site-verification content=ifeWsnNpU7w8vP3ii_Cjq-P9LKw3ngVitnMWv4XmJqk><link rel=canonical href=../../../../language/clang/libev/libev_periodic/><link rel=icon href=../../../../public/favicon.ico><link rel="shortcut icon" href=../../../../public/favicon.ico><link rel=stylesheet href=../../../../front/css/main.min.css><link href=https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css rel=stylesheet><link rel=stylesheet href=//cdn.bootcss.com/video.js/6.2.8/alt/video-js-cdn.min.css><body class="single single-post single-format-standard col-3cm full-width topbar-enabled chrome"><div id=wrapper><header id=header class="top-menu-mobile-on one-mobile-menu top_menu header-ads-desktop  topbar-transparent"><nav class="nav-container group mobile-menu mobile-sticky" id=nav-mobile data-menu-id=header-1><div class=mobile-title-logo-in-header><p class=site-title><a class=custom-logo-link href rel=home title="Pytool | Home">Pytool</a></div><div class="ham__navbar-toggler-two collapsed" title=Menu aria-expanded=false><div class=ham__navbar-span-wrapper><span class="line line-1"></span><span class="line line-2"></span><span class="line line-3"></span></div></div><div class=nav-text></div><div class="nav-wrap container"><ul class="nav container-inner group mobile-search"><li><form class="searchform themeform" action=https://demo-hueman.presscustomizr.com/><div><input class=search name=s onblur="if(this.value=='')this.value='To search type and hit enter';" onfocus="if(this.value=='To search type and hit enter')this.value='';" value="To search type and hit enter"></div></form></ul><ul id=menu-topbar-menu class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href>Home</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/clang/>Clang</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/golang/>Golang</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/golang/cgo/>Cgo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/golang/hugo/>Hugo</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/golang/sys/>Sys</a><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/golang/goher/>Goher</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/python/>Python</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/python/scrapy/>Scrapy</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/java/>Java</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/java/hadoop/>Hadoop</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/php/>Php</a><ul class=sub-menu><li class="menu-item menu-item-type-custom menu-item-object-custom"><a href=../../../../language/php/magento/>Magento</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../language/android/>Android</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/shell/>Shell</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/git/>Git</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../macos/>Macos</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../ai/math/>Math</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../frontend/css/>Css</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../windows/>Windows</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../work/>Work</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../weixin/>Weixin</a><li class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children"><a href=../../../../edit/>Edit</a><li class=item><a class=text href=../../../../series/>series</a><li class=item><a class=text href=../../../../categories/>categories</a><li class=item><a class=text href=../../../../tags/>tags</a><li class=item><a class=text href=../../../../me/>about</a></ul></div></nav><nav class="nav-container group desktop-menu desktop-sticky" id=nav-topbar data-menu-id=header-2><div class=nav-text></div><div class=topbar-toggle-down><i class="fas fa-angle-double-down" aria-hidden=true data-toggle=down title="Expand menu"></i><i class="fas fa-angle-double-up" aria-hidden=true data-toggle=up title="Collapse menu"></i></div><div class="nav-wrap container"><ul id=menu-topbar-menu-1 class="nav container-inner group"><li class="menu-item menu-item-type-custom menu-item-object-custom current-menu-item current_page_item menu-item-home"><a href=../../../../>Home</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../hardware/>Hardware</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/kernel/>Kernel</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/hisilicon/>Hisilicon</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/rtmp/>Rtmp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/rk3399/>Rk3399</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/dts/>Dts</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/rk3288/>Rk3288</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/%E8%BD%A6%E8%81%94%E7%BD%91/>车联网</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hardware/android-%E5%BA%95%E5%B1%82/>Android-底层</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../language/>Language</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/clang/>Clang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/golang/>Golang</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/cpp/>Cpp</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/python/>Python</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/java/>Java</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/awesome/>Awesome</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/php/>Php</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../language/android/>Android</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../linux/>Linux</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/shell/>Shell</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/cmd/>Cmd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/nginx/>Nginx</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/ip/>Ip</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/git/>Git</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/haproxy/>Haproxy</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../linux/lvs/>Lvs</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../macos/>Macos</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../post/>Post</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/english/>English</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/seo/>Seo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/life/>Life</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/wiki/>Wiki</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/software/>Software</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/basic/>Basic</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../post/reship/>Reship</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../ai/>Ai</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../ai/yolo/>Yolo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../ai/caffe/>Caffe</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../ai/math/>Math</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../ai/ncnn/>Ncnn</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../ai/dataset/>Dataset</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../ai/pytorch/>Pytorch</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../frontend/>Frontend</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../frontend/css/>Css</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../frontend/vue/>Vue</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../devops/>Devops</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/docker/>Docker</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/elk/>Elk</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/ansible/>Ansible</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/prometheus/>Prometheus</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/drone/>Drone</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/kubernetes/>Kubernetes</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/oauth2/>OAuth2</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/etcd/>Etcd</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/apidoc/>Apidoc</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../devops/%E7%B3%BB%E7%BB%9F%E7%9B%91%E6%8E%A7/>系统监控</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../database/>Database</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../database/mysql/>Mysql</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../database/mongo/>Mongo</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../database/redis/>Redis</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../windows/>Windows</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../hacker/>Hacker</a><ul class=sub-menu><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/01_%E7%AB%AF%E5%8F%A3%E6%89%AB%E6%8F%8F/>01_端口扫描</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/00_%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E9%9A%A7%E9%81%93/>00_端口转发(隧道)</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/01-info-gather/>01-Info-Gather</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/02-spoof/>02-Spoof</a><li class="menu-item menu-item-type-taxonomy menu-item-object-post_tag"><a href=../../../../hacker/shells/>Shells</a></ul><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../work/>Work</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../weixin/>Weixin</a><li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children"><a href=../../../../edit/>Edit</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../series/>series</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../categories/>categories</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../tags/>tags</a><li class="menu-item menu-item-type-post_type menu-item-object-page"><a href=../../../../me/>about</a></ul></div></nav></header><div class=container id=page><div class=container-inner><div class=main><div class="main-inner group"><div class=content><div class="pad group page-title"><ul class="meta-single group"><li><span class="fa fa-folder-open"></span></ul></div><div class="pad group"><article class="post type-post status-publish format-standard has-post-thumbnail hentry category-lifestyle tag-classical-grid tag-masonry-grid tag-standard-list"><div class="post-inner group"><h1 class=post-title></h1><p class=post-byline>by · 0001年01月01日 · 1247 Words ·
+~6min reading time |
+<a href=https://gitlab.com/rinetd/blog/edit/master/language/clang/libev/libev_periodic.md target=_blank>Improve on <i class="fa fa-gitlab"></i></a><div class=clear></div><div class="entry themeform"><div class=entry-inner></br>原文链接：<a target=_blank href=../../../../language/clang/libev/libev_periodic/></a><h1 id=ev-periodic-http-pod-tst-eu-http-cvs-schmorp-de-libev-ev-pod-code-ev-periodic-code-to-cron-or-not><a href=http://pod.tst.eu/http://cvs.schmorp.de/libev/ev.pod#code_ev_periodic_code_to_cron_or_not target=_blank>ev_periodic</a></h1><p><a href=https://www.cnblogs.com/gqtcgq/p/7247100.html target=_blank>Libev源码分析05：Libev中的绝对时间定时器 - gqtc - 博客园</a><p>ev_periodic和ev_timer也是一种定时器，有时它们是可以通用的，有时也是有区别的。ev_timer不适用于长时间的超时，比如一周后、一个月后，它在一定程度上有延时的风险，回调的超时越大，这个时间就越不准。其实从命名上也能看出区别，ev_periodic适用于周期性的回调，比如每天早上5点需要清理冗余的数据。ev_periodic它是根据时刻来回调的，也就是说，只有本地时钟刚好走到了那个点才会触发回调。<p>考虑一下特殊情况，如果设置了10分钟后的回调，再把本地时钟调到去年，那么这个回调就要等1年的时间了。如果把时钟往后调呢？这个回调就会立即触发。<p>可使用的函数如下:<pre><code>ev_periodic_init(ev_periodic *, callback, ev_tstamp offset, ev_tstamp interval, reschedule_cb)
+ev_periodic_set(ev_periodic *, ev_tstamp offset, ev_tstamp interval, reschedule_cb)
+ev_periodic_again(loop, ev_periodic *)
+ev_tstamp ev_periodic_at(ev_periodic *)
+</code></pre><p>符号定义:<pre><code>typedef double ev_tstamp;
+
+#if EV_MINPRI == EV_MAXPRI
+# define EV_DECL_PRIORITY
+#elif !defined (EV_DECL_PRIORITY)
+# define EV_DECL_PRIORITY int priority;
+#endif
+
+#ifndef EV_COMMON
+# define EV_COMMON void *data;
+#endif
+
+#ifndef EV_CB_DECLARE
+# define EV_CB_DECLARE(type) void (*cb)(EV_P_ struct type *w, int revents);
+#endif
+
+#define EV_WATCHER(type)				\
+  int active; /* private */				\
+  int pending; /* private */			\
+  EV_DECL_PRIORITY /* private */		\
+  EV_COMMON /* rw */					\
+  EV_CB_DECLARE (type) /* private */
+
+#define EV_WATCHER_TIME(type)	\
+  EV_WATCHER (type)				\
+  ev_tstamp at;     /* private */
+
+#ifdef __cplusplus
+# define EV_CPP(x) x
+# if __cplusplus &gt;= 201103L
+#  define EV_THROW noexcept
+# else
+#  define EV_THROW throw ()
+# endif
+#else
+# define EV_CPP(x)
+# define EV_THROW
+#endif
+
+typedef struct ev_periodic
+{
+	EV_WATCHER_TIME (ev_periodic)
+	ev_tstamp offset; /* rw */
+	ev_tstamp interval; /* rw */
+	ev_tstamp (*reschedule_cb)(struct ev_periodic *w, ev_tstamp now) EV_THROW; /* rw */
+} ev_periodic;
+</code></pre><p>#sample1<p>这个例子每5秒就调用一次clock_cb。<pre><code>void clock_cb(struct ev_loop *loop, ev_periodic *w, int revents)
+{
+    printf(&quot;clock_cb\n&quot;);
+}
+int main()
+{
+    struct ev_loop *loop = EV_DEFAULT;
+
+    ev_periodic tick;
+    ev_periodic_init(&amp;tick, clock_cb, 0., 5., 0);
+    ev_periodic_start(loop, &amp;tick);
+
+    ev_run (loop, 0);
+    return 0;
+}
+</code></pre><p>#sample2<p>这个例子和sample1一样，不过使用到了<code>ev_periodic_init</code>的最后一个参数，规则略微复杂。当执行<code>ev_run</code>之后立刻调用了<code>my_scheduler_cb</code>计算出下一次调用<code>clock_cb</code>的时间，此后，每次调用<code>clock_cb</code>之前都会调用<code>my_scheduler_cb</code>计算下一次回调<code>clock_cb</code>的时间。除了首次之外，它们都是依次调用的。这种写法可以满足不定长超时的回调，在<code>my_scheduler_cb</code>里边计算下次回调的时间即可。<p>严格来讲，这个例子的执行顺序是这样的。第0秒，调用<code>my_scheduler_cb</code>。第5秒，调用<code>my_scheduler_cb</code>后立即调用<code>clock_cb</code>。第10秒，调用<code>my_scheduler_cb</code>后立即调用<code>clock_cb</code>。依此类推。<p>注:<code>ev_periodic_init</code>设置了末参数的话，第3、4个参数就自动失效。<pre><code class=language-cpp>void clock_cb(struct ev_loop *loop, ev_periodic *w, int revents)
+{
+    printf(&quot;clock_cb\n&quot;);
+}
+ev_tstamp my_scheduler_cb(ev_periodic *w, ev_tstamp now)
+{
+    printf(&quot;my_scheduler_cb\n&quot;);
+    return now + 5;
+}
+int main()
+{
+    struct ev_loop *loop = EV_DEFAULT;
+
+    ev_periodic tick;
+    ev_periodic_init(&amp;tick, clock_cb, 0., 0., my_scheduler_cb);
+    ev_periodic_start(loop, &amp;tick);
+
+    ev_run(loop, 0);
+    return 0;
+}
+</code></pre><h1 id=sample3>sample3</h1><p>下面这个例子在整点的时候就会回调<code>clock_cb</code>。<pre><code>#include &lt;math.h&gt;
+void clock_cb(struct ev_loop *loop, ev_periodic *w, int revents)
+{
+    printf(&quot;clock_cb\n&quot;);
+}
+int main()
+{
+    struct ev_loop *loop = EV_DEFAULT;
+
+    ev_periodic tick;
+    ev_periodic_init(&amp;tick, clock_cb, fmod(ev_now(loop), 3600.), 3600., 0);
+    ev_periodic_start(loop, &amp;tick);
+
+    ev_run (loop, 0);
+    return 0;
+}
+</code></pre><p>Periodic监视器也是libev中定时器的一种，其功能很多，但实现较为复杂。与ev_timer不同，periodic监视器不是基于实时(或相对时间，即过去的物理时间)，而是基于钟表时间(绝对时间，及系统钟表过去的事件)。不同的是，钟表时间可能比实时时间跑得快或慢，时间跳跃并不罕见(例如，当你调整钟表时间)，通常更适合长时间的计时。<p>可以让periodic监视器在某个特定时间点后触发:例如，如果希望“在10秒内”触发(通过指定例如ev_now () + 10)。也就是说，绝对时间而不是延迟)，然后将系统时钟重置为前一年的1月，则需要一年或更长时间来触发事件(不像ev_timer，它在启动后仍会触发大约10秒，因为它使用相对超时)。<p>periodic监视器也可以用来实现更复杂的计时器，比如在每个“当地时间的午夜”触发一个事件，或者其他复杂的规则。这一点ev_timer watcher很难做到，因为无法对时间跳跃做出反应。<p>与计时器一样，回调保证只在应该触发的时间点过去时才被调用。如果多个定时器在同一个循环迭代中准备好了，那么具有更早超时值的定时器将在具有更晚超时值的定时器之前被调用(当回调递归调用ev_run时，情况就不同了)<p>主要函数：<p>ev_periodic_init (ev_periodic *, callback, ev_tstamp offset, ev_tstamp interval, reschedule_cb)<p>ev_periodic_set (ev_periodic *, ev_tstamp offset, ev_tstamp interval, reschedule_cb)<p>很多参数，实际上有三种操作模式，我们直接介绍操作模式，将从最简单到最复杂来解释：<p>1）绝对时间定时器：absolute timer (offset = absolute time, interval = 0, reschedule_cb = 0)<p>在这种配置中，检测器在时钟时间offset过去后触发一个事件。当发生时间跳跃时，它不会重复也不会调整，也就是说，如果它在2020年1月1日运行，那么当系统时钟达到或超过该时间点+offset时，它将被停止并调用。<p>2)重复间隔定时器：repeating interval timer (offset = offset within interval, interval &gt; 0, reschedule_cb = 0)<p>在这种模式下，监视器将总是被安排在下一个(offset + N * interval)时间超时(N为整数，它也可以是负的)，然后重复，而不管任何时间跳跃，偏移参数仅仅是间隔周期的偏移。可用于创建不随系统时钟漂移的定时器，例如，创建一个每小时触发的ev_periodic：<p>ev_periodic_set (&amp;periodic, 0., 3600., 0);<br>这并不意味着两次触发之间总是有3600秒的间隔，而只是当系统时间显示为一个完整小时(UTC)时，或者更准确地说，当系统时间可被3600整除时，才会调用回调。另一种更偏向数学的解释是ev_periodic将在下一个满足time = offset (mod interval)的时间运行回调，而不考虑任何时间跳跃。interval必须是正的，并且为了数值稳定，interval应该大于1/8192(大约100微秒)，offset应该大于0，并且最多应该具有与当前时间相似的幅度(比如说，在10倍之内)。offset的典型值实际上是0或介于0和interval之间的值，这也是推荐的范围。还要注意，定时器触发的频率是有上限的(例如，CPU速度)，所以如果间隔很小，那么定时稳定性当然会下降。Libev本身试图精确到大约一毫秒(如果操作系统支持并且机器足够快)。<p>3)手动重安排模式: manual reschedule mode (offset ignored, interval ignored, reschedule_cb = callback)<p>它必须根据过去的时间值(即大于第二个参数的最低时间值)返回下一次触发的时间。它通常在回调被触发之前被调用，但也可能在其他时间被调用。 注意:这个回调必须总是返回一个大于或等于现在传递值的时间。 这可以用来创建非常复杂的计时器，例如在“下一个午夜，当地时间”触发的计时器。要做到这一点，需要计算从现在起的下一个午夜，并返回时间戳值。下面是一个关于如何做到这一点的例子：<p>#include <time.h><p>static ev_tstamp<br>my_rescheduler (ev_periodic *w, ev_tstamp now)<br>{<pre><code> time_t tnow = (time_t)now;
+ struct tm tm;
+ localtime_r (&amp;tnow, &amp;tm);
+
+ tm.tm_sec = tm.tm_min = tm.tm_hour = 0; // midnight current day
+ ++tm.tm_mday; // midnight next day
+
+ return mktime (&amp;tm);
+</code></pre><p>}<br>最后给出一个例子很好的说明三种基本方法的使用：<pre><code class=language-cpp>#include &lt;ev.h&gt;
+#include &lt;pthread.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;math.h&gt; // for fmod
+ 
+#define TIMEOUT 4.
+struct ev_loop *loop = NULL;
+ev_periodic periodic_watcher;
+ 
+static void periodic_cb(struct ev_loop *loop, ev_periodic *w, int revents)
+{
+        printf(&quot;periodic_cb() call\n&quot;);
+}
+ 
+static ev_tstamp scheduler_cb(ev_periodic *w, ev_tstamp now)
+{
+        double mod = fmod(now, TIMEOUT);
+        printf(&quot;scheduler_cb() call, now = %lf, mod = %lf\n&quot;, now, mod);
+        return now + (TIMEOUT - mod);
+}
+ 
+void *ev_periodic_create(void *p)
+{
+        loop = ev_loop_new(EVFLAG_AUTO);
+ 
+        // 下面三种初始化方法都可以，实现的效果是一样的。
+        //ev_periodic_init(&amp;periodic_watcher, periodic_cb, 0., TIMEOUT, 0); //  periodic_cb每隔TIMEOUT秒被调用一次，对应基本方法1.
+        //ev_periodic_init(&amp;periodic_watcher, periodic_cb, fmod(ev_now(loop), TIMEOUT), TIMEOUT, 0); // periodic_cb每隔TIMEOUT秒被调用一次，对应基本方法2.
+        ev_periodic_init(&amp;periodic_watcher, periodic_cb, 0., 0., scheduler_cb); // periodic_cb每隔TIMEOUT秒被调用一次，对应基本方法3.
+ 
+         // 需要注意的是对于第三种初始化方法，执行下面这个方法后会主动去调用一次scheduler_cb函数(但此时并不触发periodic_cb函数)，以后就是每隔TIMEOUT秒后才调用scheduler_cb，并且触发periodic_cb。
+        ev_periodic_start(loop, &amp;periodic_watcher);
+        printf(&quot;ev_periodic_create() call, after start!\n&quot;);
+        ev_run(loop, 0);
+}
+ 
+int main()
+{
+        pthread_t tid;
+        pthread_create(&amp;tid, NULL, ev_periodic_create, NULL);
+        while(1)
+        {
+                static int count = 0;
+                printf(&quot;count = %d\n&quot;, count++);
+                sleep(1);
+        }
+        return 0;
+}
+</code></pre><p>其它函数：<p>ev_periodic_again (loop, ev_periodic *)：<p>只需停止并重新启动定期观察器。只有当更改了一些参数，或者重新计划回调返回的时间与上次调用的时间不同时(例如，在类似crond的程序中，当crontabs发生更改时)，这才是有用的。<p>ev_tstamp ev_periodic_at (ev_periodic *)：<p>激活时，返回观察者下一次触发的绝对时间。这与ev_periodic_set的offset参数不同，但实际上甚至在间隔和手动重新调度模式下也能工作。<p>ev_tstamp offset [read-write]：<p>重复时，它包含偏移值，否则这就是绝对时间点(偏移值传递给ev_periodic_set，尽管libev可能会修改此值以获得更好的数值稳定性)。 可以随时修改，但更改仅在定期计时器触发或再次调用ev _ periodic _时生效。<p>ev_tstamp interval [read-write]：<p>当前间隔值。可以随时修改，但更改仅在定期计时器触发或再次调用ev _ periodic _时生效。<p>ev_tstamp (*reschedule_cb)(ev_periodic *w, ev_tstamp now) [read-write]：<p>当前的重新计划回调，如果此功能被关闭，则为0。可以随时更改，但更改仅在定期计时器触发或再次调用ev _ periodic _时生效。<p>Libev源码分析05：Libev中的绝对时间定时器<pre><code>    Libev中的超时监视器ev_periodic，是绝对时间定时器，不同于ev_timer，它是基于日历时间的。比如如果指定一个ev_periodic在10秒之后触发（ev_now() + 10），然后将系统时间调整为去年的一月一号，则该定时器会在一年后才触发超时事件。（ev_timer依然会在10秒之后触发）
+</code></pre><p>一：数据结构<pre><code>     超时监视器ev_ periodic结构：
+</code></pre><p>typedef struct ev_periodic<br>{<pre><code>int active; 
+int pending;
+int priority;
+void *data;
+void (*cb)(struct ev_loop *loop, struct ev_periodic *w, int revents);  
+ev_tstamp at;
+
+ev_tstamp offset; /* rw */
+ev_tstamp interval; /* rw */
+ev_tstamp (*reschedule_cb)(struct ev_periodic *w, ev_tstamp now) EV_THROW; /* rw */
+</code></pre><p>} ev_periodic;<pre><code>     可见其中的前六个成员与ev_timer和ev_watcher_time是一样的。与ev_timer类似，ev_periodic中的active也标明该监视器在堆数组periodics中的下标；at表明超时事件触发的时间点，共有三种设置方法，而且offset、interval和reschedule_cb都是用来设置触发时间的，这个会在下面说明。
+</code></pre><p>二：监视器函数<p>1：设置超时监视器<p>#define ev_periodic<em>set(ev,ofs</em>,ival<em>,rcb</em>) do {<br>(ev)-&gt;offset = (ofs<em>);<br>(ev)-&gt;interval = (ival</em>);<br>(ev)-&gt;reschedule<em>cb = (rcb</em>);<br>}while (0)<p>#define ev_periodic_init(ev,cb,ofs,ival,rcb) do {<br>ev_init ((ev), (cb));<br>ev_periodic_set ((ev),(ofs),(ival),(rcb));<br>} while (0)<p>2：启动监视器ev_periodic_start<p>void ev_periodic_start (struct ev_loop *loop, ev_periodic *w)<br>{<pre><code>if (expect_false (ev_is_active (w)))
+    return;
+
+if (w-&gt;reschedule_cb)
+    ev_at (w) = w-&gt;reschedule_cb (w, ev_rt_now);
+else if (w-&gt;interval)
+{
+    assert ((&quot;libev: ev_periodic_start called with negative interval value&quot;, w-&gt;interval &gt;= 0.));
+    periodic_recalc (EV_A_ w);
+}
+else
+    ev_at (w) = w-&gt;offset;
+
+
+++periodiccnt;
+ev_start (EV_A_ (W)w, periodiccnt + HEAP0 - 1);
+array_needsize (ANHE, periodics, periodicmax, ev_active (w) + 1, EMPTY2);
+ANHE_w (periodics [ev_active (w)]) = (WT)w;
+ANHE_at_cache (periodics [ev_active (w)]);
+upheap (periodics, ev_active (w));
+</code></pre><p>}<pre><code>    共有三种设置超时时间at的方法：
+
+    a：如果reschedule_cb不为空，则忽略interval和offset，而使用reschedule_cb函数设置超时时间at，该函数以ev_rt_now为参数，设置下次超时事件触发的时间，每次重新设置at的时候（periodics_reschedule，periodics_reify），都会调用该函数。该函数的一个例子如下：
+</code></pre><p>static ev_tstamp my_rescheduler (ev_periodic *w, ev_tstamp now)<br>{<pre><code>return now + 60.;
+</code></pre><p>}<pre><code>    这就是将at设置为1分钟之后的时间点。
+
+
+
+    b：reschedule_cb为空，interval&gt;0，这种情况下，调用periodic_recalc设置at。该函数的作用就是将at置为下一个的offset + N*interval时间点，其中的offset一般处于[0, interval]范围内。比如置offset为0，interval为3600，意味着当系统时间是完整的1小时的时候，也就是系统时间可以被3600整除的时候，比如8:00，9:00等，就会触发超时事件。periodic_recalc的代码见下面。
+
+
+
+    c：如果reschedule_cb为空，interval为0，则直接将at置为offset。这是一种绝对值，这种情况下，该监视器不会重复触发，触发一次之后就会停止监视器；而且该监视器也会无视时间调整，比如置at为20110101000000，则只要系统日历时间超过了改时间，就会触发超时事件。
+
+
+
+    设置好at之后，就是将该监视器加入到堆periodics中，这与ev_timer的代码是一样的，不再赘述。
+</code></pre><p>3：periodic_recalc重新计算下一个触发时间点<p>void periodic_recalc (struct ev_loop *loop, ev_periodic *w)<br>{<pre><code>ev_tstamp interval = w-&gt;interval &gt; MIN_INTERVAL ? w-&gt;interval : MIN_INTERVAL;
+ev_tstamp at = w-&gt;offset + interval * ev_floor ((ev_rt_now - w-&gt;offset) / interval);
+
+while (at &lt;= ev_rt_now)
+{
+    ev_tstamp nat = at + w-&gt;interval;
+
+    if (expect_false (nat == at))
+    {
+        at = ev_rt_now;
+        break;
+    }
+
+    at = nat;
+}
+ev_at (w) = at;
+</code></pre><p>}<pre><code>     该函数的作用就是将at置为下一个的offset + N*interval时间点。ev_floor(x)返回小于x，且最接近x的整数。
+
+     举个例子可能会容易明白该代码：interval为10分钟（600），offset为2分钟（120），表示将at置为下一个分钟数为2的时间点。
+
+     假设当前为8:01:23，则最终会使得at为8:02:00。计算过程是 ：interval * ev_floor ((ev_rt_now - w-&gt;offset) / interval)就表示7:50:00，然后再加上offset就是7:52:00，进入循环，最终调整得at=8:02:00。
+
+     假设当前为8:03:56，则最终会使得at为8:12:00。计算过程是：interval * ev_floor ((ev_rt_now -w-&gt;offset) / interval)就表示8:00:00，然后再加上offset就是8:02:00，进入循环，最终调整得at=8:12:00。
+
+
+
+     4：停止超时监视器ev_periodic_stop
+</code></pre><p>void ev_periodic_stop (struct ev_loop *loop, ev_periodic *w)<br>{<pre><code>clear_pending (EV_A_ (W)w);
+if (expect_false (!ev_is_active (w)))
+    return;
+
+int active = ev_active (w);
+
+
+--periodiccnt;
+
+if (expect_true (active &lt; periodiccnt + HEAP0))
+{
+    periodics [active] = periodics [periodiccnt + HEAP0];
+    adjustheap (periodics, periodiccnt, active);
+}
+ev_stop (EV_A_ (W)w);
+</code></pre><p>}<pre><code>     代码与ev_timer_stop几乎完全一致，不再赘述。
+
+
+
+     5：重新调整超时时间periodics_reschedule
+</code></pre><p>static void periodics_reschedule (struct ev_loop *loop)<br>{<pre><code>int i;
+
+for (i = HEAP0; i &lt; periodiccnt + HEAP0; ++i)
+{
+    ev_periodic *w = (ev_periodic *)ANHE_w (periodics [i]);
+
+    if (w-&gt;reschedule_cb)
+        ev_at (w) = w-&gt;reschedule_cb (w, ev_rt_now);
+    else if (w-&gt;interval)
+        periodic_recalc (EV_A_ w);
+
+    ANHE_at_cache (periodics [i]);
+}
+
+reheap (periodics, periodiccnt);
+</code></pre><p>}<pre><code>     在time_update中，如果发现日历时间被调整了，则会调用periodics_reschedule函数，调整ev_periodic的超时时间点at。调整的方法跟ev_periodic_start中的一样，要么使用reschedule_cb函数调整，要么就是调用periodic_recalc重新计算at。最后，将periodics堆中所有元素都调整完毕后，调用reheap使periodics恢复堆结构。
+
+
+
+     6：将激活的超时事件排队periodics_reify
+</code></pre><p>void periodics_reify (struct ev_loop *loop)<br>{<pre><code>while (periodiccnt &amp;&amp; ANHE_at (periodics [HEAP0]) &lt; ev_rt_now)
+{
+    do{
+        ev_periodic *w = (ev_periodic *)ANHE_w (periodics [HEAP0]);
+
+        if (w-&gt;reschedule_cb)
+        {
+            ev_at (w) = w-&gt;reschedule_cb (w, ev_rt_now);
+            assert ((&quot;libev: ev_periodic reschedule callback returned time in the past&quot;, ev_at (w) &gt;= ev_rt_now));
+
+            ANHE_at_cache (periodics [HEAP0]);
+            downheap (periodics, periodiccnt, HEAP0);
+        }
+        else if (w-&gt;interval)
+        {
+            periodic_recalc (EV_A_ w);
+            ANHE_at_cache (periodics [HEAP0]);
+            downheap (periodics, periodiccnt, HEAP0);
+        }
+        else
+            ev_periodic_stop (EV_A_ w); 
+
+        feed_reverse (EV_A_ (W)w);
+    }
+    while (periodiccnt &amp;&amp; ANHE_at (periodics [HEAP0]) &lt; ev_rt_now);
+
+    feed_reverse_done (EV_A_ EV_PERIODIC);
+}
+</code></pre><p>}<pre><code>     主要流程跟timers_reify一样，只不过在重新计算下次触发时间点at的时候，计算方法跟ev_periodic_start中的一样。
+</code></pre><p>三：例子<p>ev_periodic pw;<p>void periodic_action(struct ev_loop *main_loop,ev_periodic *timer_w,int e)<br>{<pre><code>time_t now;
+now = time(NULL);
+printf(&quot;cur time is %s\n&quot;, ctime(&amp;now));
+</code></pre><p>}<p>static ev_tstamp my_rescheduler (ev_periodic *w, ev_tstamp now)<br>{<pre><code>return now+120;
+</code></pre><p>}<p>int main()<br>{<pre><code>time_t now;
+now = time(NULL);
+
+struct ev_loop *main_loop = ev_default_loop(0);
+
+ev_periodic_init(&amp;pw, periodic_action, 0, 0, my_rescheduler);   //1
+//ev_periodic_init(&amp;pw, periodic_action, 120, 600, NULL);           //2
+//ev_periodic_init(&amp;pw, periodic_action, now+20, 0, NULL);      //3
+ev_periodic_start(main_loop,&amp;pw);
+
+printf(&quot;begin time time is %s\n&quot;, ctime(&amp;now));
+
+ev_run(main_loop,0);
+return;
+</code></pre><p>}<pre><code>     采用第一种初始化方法：
+</code></pre><p>ev_periodic_init(&amp;pw, periodic_action, 0, 0, my_rescheduler);<pre><code>     结果是：
+</code></pre><p>begin time time is Thu Oct 29 21:33:05 2015<p>cur time is Thu Oct 29 21:35:05 2015<br>cur time is Thu Oct 29 21:37:05 2015<br>cur time is Thu Oct 29 21:39:05 2015<br>cur time is Thu Oct 29 21:41:05 2015<br>...<pre><code>     采用第二种初始化方法：
+</code></pre><p>ev_periodic_init(&amp;pw, periodic_action, 120, 600, NULL);<pre><code>     结果是：
+</code></pre><p>begin time time is Thu Oct 29 21:38:29 2015<p>cur time is Thu Oct 29 21:42:00 2015<br>cur time is Thu Oct 29 21:52:00 2015<br>cur time is Thu Oct 29 22:02:00 2015<br>cur time is Thu Oct 29 22:12:00 2015<br>cur time is Thu Oct 29 22:22:00 2015<br>...<pre><code>     采用第三种初始化方法：
+</code></pre><p>ev_periodic_init(&amp;pw, periodic_action, now+20, 0, NULL);<pre><code>     结果是：
+</code></pre><p>begin time time is Thu Oct 29 21:39:03 2015<p>cur time is Thu Oct 29 21:39:23 2015</div><div class=clear></div></div></div></article><div class=clear></div><p class=post-tags><span class="fa fa-tags">Tags:</span><div id=related-posts><div class=related-inner></div></div><section id=comments class=themeform></section><section id=comments class=themeform></section></div></div><div class="sidebar s1 collapsed" data-position=left data-layout=col-3cm data-sb-id=s1><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>Follow:<ul class=social-links><li><a class=social-tooltip href=mailto: title=Email><i class="fa fa-envelope"></i></a><li><a class=social-tooltip href=//github.com/ title=GitHub><i class="fa fa-github"></i></a><li><a class=social-tooltip title="RSS Feed" aria-label="RSS Feed" href=../../../../feed target=_blank style=color:#ffffffb2><i class="fa fa-rss"></i></a></ul></div><ul class="post-nav group"><li class=previous><a href=../../../../language/clang/libev/libev_signal/ rel=prev><i class="fa fa-chevron-left"></i><strong>Previous Post</strong>
+<span></span></a></ul><div id=categories-2 class="widget widget_categories"><h3>分类</h3><ul><li class="cat-item cat-item-1"><a href=../../../../categories/ai/>Ai</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../../categories/algorithm/>Algorithm</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/android/>Android</a>
+<small>(17)</small><li class="cat-item cat-item-1"><a href=../../../../categories/ansible/>Ansible</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/beats/>Beats</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/busybox/>Busybox</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/caffe/>Caffe</a>
+<small>(21)</small><li class="cat-item cat-item-1"><a href=../../../../categories/cgo/>Cgo</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../../categories/clang/>Clang</a>
+<small>(40)</small><li class="cat-item cat-item-1"><a href=../../../../categories/cmd/>Cmd</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/cpp/>Cpp</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../../categories/cross_compile/>Cross_compile</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../../categories/css/>Css</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/dart/>Dart</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/database/>Database</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/dataset/>Dataset</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/deeplearning/>Deeplearning</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/devops/>Devops</a>
+<small>(70)</small><li class="cat-item cat-item-1"><a href=../../../../categories/docker/>Docker</a>
+<small>(18)</small><li class="cat-item cat-item-1"><a href=../../../../categories/dts/>Dts</a>
+<small>(5)</small><li class="cat-item cat-item-1"><a href=../../../../categories/elasticsearch/>Elasticsearch</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../../categories/english/>English</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/freertos/>Freertos</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/front-end/>Front-End</a>
+<small>(20)</small><li class="cat-item cat-item-1"><a href=../../../../categories/golang/>Golang</a>
+<small>(136)</small><li class="cat-item cat-item-1"><a href=../../../../categories/hacker/>Hacker</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/hardware/>Hardware</a>
+<small>(22)</small><li class="cat-item cat-item-1"><a href=../../../../categories/hi3519a/>Hi3519a</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../../categories/hi3559/>Hi3559</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/hisi/>Hisi</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/hisilicon/>Hisilicon</a>
+<small>(57)</small><li class="cat-item cat-item-1"><a href=../../../../categories/jetson/>Jetson</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/js/>Js</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../../categories/jumpserver/>Jumpserver</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/kernel/>Kernel</a>
+<small>(15)</small><li class="cat-item cat-item-1"><a href=../../../../categories/libev/>Libev</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/linux/>Linux</a>
+<small>(94)</small><li class="cat-item cat-item-1"><a href=../../../../categories/linux-system/>Linux-System</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../../../categories/linux-%E5%91%BD%E4%BB%A4/>Linux-命令</a>
+<small>(120)</small><li class="cat-item cat-item-1"><a href=../../../../categories/mac/>Mac</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/machinelearn/>Machinelearn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/machinelearning/>Machinelearning</a>
+<small>(11)</small><li class="cat-item cat-item-1"><a href=../../../../categories/macos/>Macos</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../../../categories/math/>Math</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../../categories/matplotlib/>Matplotlib</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/mpp/>Mpp</a>
+<small>(12)</small><li class="cat-item cat-item-1"><a href=../../../../categories/mysql/>Mysql</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../../categories/ncnn/>Ncnn</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/network/>Network</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/nginx/>Nginx</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/nnie/>Nnie</a>
+<small>(13)</small><li class="cat-item cat-item-1"><a href=../../../../categories/node/>Node</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/numpy/>Numpy</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../../categories/opencpu/>Opencpu</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/opencv/>Opencv</a>
+<small>(10)</small><li class="cat-item cat-item-1"><a href=../../../../categories/pandas/>Pandas</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/platform/>Platform</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/post/>Post</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/pyqt/>Pyqt</a>
+<small>(8)</small><li class="cat-item cat-item-1"><a href=../../../../categories/python/>Python</a>
+<small>(31)</small><li class="cat-item cat-item-1"><a href=../../../../categories/pytorch/>Pytorch</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../../../categories/raspi/>Raspi</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../../categories/rk3288/>Rk3288</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../../../categories/rk3399/>Rk3399</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../../categories/rtmp/>Rtmp</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/scikit/>Scikit</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/shell/>Shell</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/socket/>Socket</a>
+<small>(5)</small><li class="cat-item cat-item-1"><a href=../../../../categories/stm32/>Stm32</a>
+<small>(6)</small><li class="cat-item cat-item-1"><a href=../../../../categories/stm8/>Stm8</a>
+<small>(9)</small><li class="cat-item cat-item-1"><a href=../../../../categories/weixin/>Weixin</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/windows/>Windows</a>
+<small>(22)</small><li class="cat-item cat-item-1"><a href=../../../../categories/work/>Work</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/yolo/>Yolo</a>
+<small>(16)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF/>前端技术</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%8D%8F%E8%AE%AE/>协议</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%B5%8C%E5%85%A5%E5%BC%8F/>嵌入式</a>
+<small>(23)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%B7%A5%E5%85%B7/>工具</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%B8%B8%E7%94%A8%E7%AE%97%E6%B3%95/>常用算法</a>
+<small>(2)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/>微服务</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88/>排列组合</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E6%95%B0%E6%8D%AE%E5%BA%93/>数据库</a>
+<small>(37)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91/>文本编辑</a>
+<small>(30)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F/>正则表达式</a>
+<small>(3)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E7%94%9F%E6%B4%BB%E6%8A%80%E5%B7%A7/>生活技巧</a>
+<small>(4)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E7%A8%8B%E5%BA%8F%E5%91%98/>程序员</a>
+<small>(1)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/>网络安全</a>
+<small>(40)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E9%9B%86%E7%BE%A4%E7%9B%91%E6%8E%A7/>集群监控</a>
+<small>(7)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E9%9D%99%E6%80%81%E5%8D%9A%E5%AE%A2/>静态博客</a>
+<small>(15)</small><li class="cat-item cat-item-1"><a href=../../../../categories/%E9%AB%98%E6%95%B0/>高数</a>
+<small>(2)</small></ul></div></div></div><div class="sidebar s2 collapsed" data-position=right data-layout=col-3cm data-sb-id=s2><a class=sidebar-toggle title="Expand Sidebar"><i class="fas icon-sidebar-toggle"></i></a><div class=sidebar-content><div class="sidebar-top group"><p>More</div><ul class="post-nav group"><li class=next><a href=../../../../language/clang/libev/libev_io/ rel=next><i class="fa fa-chevron-right"></i><strong>Next post</strong>
+<span></span></a></ul><div id=tag_cloud-2 class="widget widget_tag_cloud"><h3>标签云</h3><div class="tagcloud post-tags"><a rel=tag href=../../../../tags/ai/ class=tag-link-7 title="1 Posts">ai<small>(7)</small></a>
+<a rel=tag href=../../../../tags/ansible/ class=tag-link-19 title="1 Posts">ansible<small>(19)</small></a>
+<a rel=tag href=../../../../tags/awesome/ class=tag-link-3 title="1 Posts">awesome<small>(3)</small></a>
+<a rel=tag href=../../../../tags/bfc/ class=tag-link-2 title="1 Posts">bfc<small>(2)</small></a>
+<a rel=tag href=../../../../tags/c/ class=tag-link-5 title="1 Posts">c<small>(5)</small></a>
+<a rel=tag href=../../../../tags/caffe/ class=tag-link-21 title="1 Posts">caffe<small>(21)</small></a>
+<a rel=tag href=../../../../tags/centos7/ class=tag-link-2 title="1 Posts">centos7<small>(2)</small></a>
+<a rel=tag href=../../../../tags/cgo/ class=tag-link-10 title="1 Posts">cgo<small>(10)</small></a>
+<a rel=tag href=../../../../tags/clang/ class=tag-link-40 title="1 Posts">clang<small>(40)</small></a>
+<a rel=tag href=../../../../tags/cmd/ class=tag-link-2 title="1 Posts">cmd<small>(2)</small></a>
+<a rel=tag href=../../../../tags/cpp/ class=tag-link-7 title="1 Posts">cpp<small>(7)</small></a>
+<a rel=tag href=../../../../tags/cross_compile/ class=tag-link-9 title="1 Posts">cross_compile<small>(9)</small></a>
+<a rel=tag href=../../../../tags/css/ class=tag-link-20 title="1 Posts">css<small>(20)</small></a>
+<a rel=tag href=../../../../tags/css3/ class=tag-link-2 title="1 Posts">css3<small>(2)</small></a>
+<a rel=tag href=../../../../tags/curd/ class=tag-link-3 title="1 Posts">curd<small>(3)</small></a>
+<a rel=tag href=../../../../tags/curl/ class=tag-link-2 title="1 Posts">curl<small>(2)</small></a>
+<a rel=tag href=../../../../tags/dataset/ class=tag-link-2 title="1 Posts">dataset<small>(2)</small></a>
+<a rel=tag href=../../../../tags/devops/ class=tag-link-3 title="1 Posts">devops<small>(3)</small></a>
+<a rel=tag href=../../../../tags/docker/ class=tag-link-21 title="1 Posts">docker<small>(21)</small></a>
+<a rel=tag href=../../../../tags/drone/ class=tag-link-22 title="1 Posts">drone<small>(22)</small></a>
+<a rel=tag href=../../../../tags/dts/ class=tag-link-6 title="1 Posts">dts<small>(6)</small></a>
+<a rel=tag href=../../../../tags/elasticsearch/ class=tag-link-9 title="1 Posts">elasticsearch<small>(9)</small></a>
+<a rel=tag href=../../../../tags/emacs/ class=tag-link-12 title="1 Posts">emacs<small>(12)</small></a>
+<a rel=tag href=../../../../tags/encode/ class=tag-link-3 title="1 Posts">encode<small>(3)</small></a>
+<a rel=tag href=../../../../tags/english/ class=tag-link-8 title="1 Posts">english<small>(8)</small></a>
+<a rel=tag href=../../../../tags/es6/ class=tag-link-2 title="1 Posts">es6<small>(2)</small></a>
+<a rel=tag href=../../../../tags/etcd/ class=tag-link-4 title="1 Posts">etcd<small>(4)</small></a>
+<a rel=tag href=../../../../tags/flannel/ class=tag-link-2 title="1 Posts">flannel<small>(2)</small></a>
+<a rel=tag href=../../../../tags/git/ class=tag-link-6 title="1 Posts">git<small>(6)</small></a>
+<a rel=tag href=../../../../tags/github/ class=tag-link-2 title="1 Posts">github<small>(2)</small></a>
+<a rel=tag href=../../../../tags/golang/ class=tag-link-150 title="1 Posts">golang<small>(150)</small></a>
+<a rel=tag href=../../../../tags/gradle/ class=tag-link-3 title="1 Posts">gradle<small>(3)</small></a>
+<a rel=tag href=../../../../tags/haproxy/ class=tag-link-5 title="1 Posts">haproxy<small>(5)</small></a>
+<a rel=tag href=../../../../tags/hardware/ class=tag-link-22 title="1 Posts">hardware<small>(22)</small></a>
+<a rel=tag href=../../../../tags/hexo/ class=tag-link-3 title="1 Posts">hexo<small>(3)</small></a>
+<a rel=tag href=../../../../tags/hi3519a/ class=tag-link-4 title="1 Posts">hi3519a<small>(4)</small></a>
+<a rel=tag href=../../../../tags/hisilicon/ class=tag-link-57 title="1 Posts">hisilicon<small>(57)</small></a>
+<a rel=tag href=../../../../tags/html/ class=tag-link-2 title="1 Posts">html<small>(2)</small></a>
+<a rel=tag href=../../../../tags/http/ class=tag-link-6 title="1 Posts">http<small>(6)</small></a>
+<a rel=tag href=../../../../tags/hugo/ class=tag-link-14 title="1 Posts">hugo<small>(14)</small></a>
+<a rel=tag href=../../../../tags/imagemagick/ class=tag-link-2 title="1 Posts">imagemagick<small>(2)</small></a>
+<a rel=tag href=../../../../tags/ip/ class=tag-link-3 title="1 Posts">ip<small>(3)</small></a>
+<a rel=tag href=../../../../tags/iproute2/ class=tag-link-5 title="1 Posts">iproute2<small>(5)</small></a>
+<a rel=tag href=../../../../tags/iptables/ class=tag-link-17 title="1 Posts">iptables<small>(17)</small></a>
+<a rel=tag href=../../../../tags/javascript/ class=tag-link-19 title="1 Posts">javascript<small>(19)</small></a>
+<a rel=tag href=../../../../tags/jetson/ class=tag-link-3 title="1 Posts">jetson<small>(3)</small></a>
+<a rel=tag href=../../../../tags/jquery/ class=tag-link-12 title="1 Posts">jquery<small>(12)</small></a>
+<a rel=tag href=../../../../tags/js/ class=tag-link-10 title="1 Posts">js<small>(10)</small></a>
+<a rel=tag href=../../../../tags/jumpserver/ class=tag-link-2 title="1 Posts">jumpserver<small>(2)</small></a>
+<a rel=tag href=../../../../tags/jwt/ class=tag-link-3 title="1 Posts">jwt<small>(3)</small></a>
+<a rel=tag href=../../../../tags/kernel/ class=tag-link-15 title="1 Posts">kernel<small>(15)</small></a>
+<a rel=tag href=../../../../tags/kubernetes/ class=tag-link-11 title="1 Posts">kubernetes<small>(11)</small></a>
+<a rel=tag href=../../../../tags/libev/ class=tag-link-2 title="1 Posts">libev<small>(2)</small></a>
+<a rel=tag href=../../../../tags/linux/ class=tag-link-22 title="1 Posts">linux<small>(22)</small></a>
+<a rel=tag href=../../../../tags/linux-system/ class=tag-link-8 title="1 Posts">linux-system<small>(8)</small></a>
+<a rel=tag href=../../../../tags/lvs/ class=tag-link-8 title="1 Posts">lvs<small>(8)</small></a>
+<a rel=tag href=../../../../tags/machinelearn/ class=tag-link-3 title="1 Posts">machinelearn<small>(3)</small></a>
+<a rel=tag href=../../../../tags/machinelearning/ class=tag-link-11 title="1 Posts">machinelearning<small>(11)</small></a>
+<a rel=tag href=../../../../tags/macos/ class=tag-link-14 title="1 Posts">macos<small>(14)</small></a>
+<a rel=tag href=../../../../tags/makefile/ class=tag-link-2 title="1 Posts">makefile<small>(2)</small></a>
+<a rel=tag href=../../../../tags/mariadb/ class=tag-link-9 title="1 Posts">mariadb<small>(9)</small></a>
+<a rel=tag href=../../../../tags/math/ class=tag-link-7 title="1 Posts">math<small>(7)</small></a>
+<a rel=tag href=../../../../tags/matplotlib/ class=tag-link-3 title="1 Posts">matplotlib<small>(3)</small></a>
+<a rel=tag href=../../../../tags/maven/ class=tag-link-2 title="1 Posts">maven<small>(2)</small></a>
+<a rel=tag href=../../../../tags/meteor/ class=tag-link-7 title="1 Posts">meteor<small>(7)</small></a>
+<a rel=tag href=../../../../tags/ml/ class=tag-link-3 title="1 Posts">ml<small>(3)</small></a>
+<a rel=tag href=../../../../tags/mpp/ class=tag-link-12 title="1 Posts">mpp<small>(12)</small></a>
+<a rel=tag href=../../../../tags/mysql/ class=tag-link-61 title="1 Posts">mysql<small>(61)</small></a>
+<a rel=tag href=../../../../tags/ncnn/ class=tag-link-3 title="1 Posts">ncnn<small>(3)</small></a>
+<a rel=tag href=../../../../tags/netns/ class=tag-link-2 title="1 Posts">netns<small>(2)</small></a>
+<a rel=tag href=../../../../tags/network/ class=tag-link-2 title="1 Posts">network<small>(2)</small></a>
+<a rel=tag href=../../../../tags/nginx/ class=tag-link-28 title="1 Posts">nginx<small>(28)</small></a>
+<a rel=tag href=../../../../tags/nmap/ class=tag-link-2 title="1 Posts">nmap<small>(2)</small></a>
+<a rel=tag href=../../../../tags/nnie/ class=tag-link-13 title="1 Posts">nnie<small>(13)</small></a>
+<a rel=tag href=../../../../tags/node/ class=tag-link-4 title="1 Posts">node<small>(4)</small></a>
+<a rel=tag href=../../../../tags/nosql/ class=tag-link-8 title="1 Posts">nosql<small>(8)</small></a>
+<a rel=tag href=../../../../tags/npm/ class=tag-link-3 title="1 Posts">npm<small>(3)</small></a>
+<a rel=tag href=../../../../tags/numpy/ class=tag-link-4 title="1 Posts">numpy<small>(4)</small></a>
+<a rel=tag href=../../../../tags/oauth2/ class=tag-link-2 title="1 Posts">oauth2<small>(2)</small></a>
+<a rel=tag href=../../../../tags/opencv/ class=tag-link-10 title="1 Posts">opencv<small>(10)</small></a>
+<a rel=tag href=../../../../tags/openssl/ class=tag-link-3 title="1 Posts">openssl<small>(3)</small></a>
+<a rel=tag href=../../../../tags/pandoc/ class=tag-link-2 title="1 Posts">pandoc<small>(2)</small></a>
+<a rel=tag href=../../../../tags/php/ class=tag-link-4 title="1 Posts">php<small>(4)</small></a>
+<a rel=tag href=../../../../tags/post/ class=tag-link-4 title="1 Posts">post<small>(4)</small></a>
+<a rel=tag href=../../../../tags/powershell/ class=tag-link-2 title="1 Posts">powershell<small>(2)</small></a>
+<a rel=tag href=../../../../tags/prometheus/ class=tag-link-8 title="1 Posts">prometheus<small>(8)</small></a>
+<a rel=tag href=../../../../tags/pyqt/ class=tag-link-8 title="1 Posts">pyqt<small>(8)</small></a>
+<a rel=tag href=../../../../tags/python/ class=tag-link-33 title="1 Posts">python<small>(33)</small></a>
+<a rel=tag href=../../../../tags/pytorch/ class=tag-link-6 title="1 Posts">pytorch<small>(6)</small></a>
+<a rel=tag href=../../../../tags/raspi/ class=tag-link-4 title="1 Posts">raspi<small>(4)</small></a>
+<a rel=tag href=../../../../tags/redis/ class=tag-link-2 title="1 Posts">redis<small>(2)</small></a>
+<a rel=tag href=../../../../tags/reflect/ class=tag-link-3 title="1 Posts">reflect<small>(3)</small></a>
+<a rel=tag href=../../../../tags/responsive/ class=tag-link-2 title="1 Posts">responsive<small>(2)</small></a>
+<a rel=tag href=../../../../tags/restful/ class=tag-link-6 title="1 Posts">restful<small>(6)</small></a>
+<a rel=tag href=../../../../tags/rk3288/ class=tag-link-22 title="1 Posts">rk3288<small>(22)</small></a>
+<a rel=tag href=../../../../tags/rk3399/ class=tag-link-9 title="1 Posts">rk3399<small>(9)</small></a>
+<a rel=tag href=../../../../tags/route/ class=tag-link-2 title="1 Posts">route<small>(2)</small></a>
+<a rel=tag href=../../../../tags/rsync/ class=tag-link-2 title="1 Posts">rsync<small>(2)</small></a>
+<a rel=tag href=../../../../tags/rtmp/ class=tag-link-2 title="1 Posts">rtmp<small>(2)</small></a>
+<a rel=tag href=../../../../tags/scikit/ class=tag-link-3 title="1 Posts">scikit<small>(3)</small></a>
+<a rel=tag href=../../../../tags/scrapy/ class=tag-link-8 title="1 Posts">scrapy<small>(8)</small></a>
+<a rel=tag href=../../../../tags/scss/ class=tag-link-2 title="1 Posts">scss<small>(2)</small></a>
+<a rel=tag href=../../../../tags/sed/ class=tag-link-3 title="1 Posts">sed<small>(3)</small></a>
+<a rel=tag href=../../../../tags/seo/ class=tag-link-5 title="1 Posts">seo<small>(5)</small></a>
+<a rel=tag href=../../../../tags/shell/ class=tag-link-11 title="1 Posts">shell<small>(11)</small></a>
+<a rel=tag href=../../../../tags/socket/ class=tag-link-5 title="1 Posts">socket<small>(5)</small></a>
+<a rel=tag href=../../../../tags/sqlite/ class=tag-link-2 title="1 Posts">sqlite<small>(2)</small></a>
+<a rel=tag href=../../../../tags/ssh/ class=tag-link-3 title="1 Posts">ssh<small>(3)</small></a>
+<a rel=tag href=../../../../tags/stm32/ class=tag-link-11 title="1 Posts">stm32<small>(11)</small></a>
+<a rel=tag href=../../../../tags/stm8/ class=tag-link-9 title="1 Posts">stm8<small>(9)</small></a>
+<a rel=tag href=../../../../tags/swagger/ class=tag-link-2 title="1 Posts">swagger<small>(2)</small></a>
+<a rel=tag href=../../../../tags/swarm/ class=tag-link-2 title="1 Posts">swarm<small>(2)</small></a>
+<a rel=tag href=../../../../tags/sysbench/ class=tag-link-2 title="1 Posts">sysbench<small>(2)</small></a>
+<a rel=tag href=../../../../tags/sysctl/ class=tag-link-2 title="1 Posts">sysctl<small>(2)</small></a>
+<a rel=tag href=../../../../tags/systemctl/ class=tag-link-2 title="1 Posts">systemctl<small>(2)</small></a>
+<a rel=tag href=../../../../tags/tc/ class=tag-link-2 title="1 Posts">tc<small>(2)</small></a>
+<a rel=tag href=../../../../tags/tcpdump/ class=tag-link-2 title="1 Posts">tcpdump<small>(2)</small></a>
+<a rel=tag href=../../../../tags/timezone/ class=tag-link-2 title="1 Posts">timezone<small>(2)</small></a>
+<a rel=tag href=../../../../tags/tshark/ class=tag-link-2 title="1 Posts">tshark<small>(2)</small></a>
+<a rel=tag href=../../../../tags/ubuntu/ class=tag-link-2 title="1 Posts">ubuntu<small>(2)</small></a>
+<a rel=tag href=../../../../tags/ulimit/ class=tag-link-2 title="1 Posts">ulimit<small>(2)</small></a>
+<a rel=tag href=../../../../tags/vim/ class=tag-link-14 title="1 Posts">vim<small>(14)</small></a>
+<a rel=tag href=../../../../tags/webpack3/ class=tag-link-2 title="1 Posts">webpack3<small>(2)</small></a>
+<a rel=tag href=../../../../tags/windows/ class=tag-link-18 title="1 Posts">windows<small>(18)</small></a>
+<a rel=tag href=../../../../tags/wireshark/ class=tag-link-2 title="1 Posts">wireshark<small>(2)</small></a>
+<a rel=tag href=../../../../tags/xidel/ class=tag-link-2 title="1 Posts">xidel<small>(2)</small></a>
+<a rel=tag href=../../../../tags/xml/ class=tag-link-2 title="1 Posts">xml<small>(2)</small></a>
+<a rel=tag href=../../../../tags/yaml/ class=tag-link-2 title="1 Posts">yaml<small>(2)</small></a>
+<a rel=tag href=../../../../tags/yolo/ class=tag-link-16 title="1 Posts">yolo<small>(16)</small></a>
+<a rel=tag href=../../../../tags/%E5%BE%AE%E6%9C%8D%E5%8A%A1/ class=tag-link-2 title="1 Posts">微服务<small>(2)</small></a></div></div></div></div>`</div></div></div></div></div><script>var HUParams={"_disabled":[],"SmoothScroll":{"Enabled":true,"Options":{"touchpadSupport":false}},"centerAllImg":"1","timerOnScrollAllBrowsers":"1","extLinksStyle":"1","extLinksTargetExt":"1","extLinksSkipSelectors":{"classes":["btn","button"],"ids":[]},"imgSmartLoadEnabled":"1","imgSmartLoadOpts":{"parentSelectors":[".container .content",".container .sidebar","#footer","#header-widgets"],"opts":{"excludeImg":[".tc-holder-img"],"fadeIn_options":100}},"goldenRatio":"1.618","gridGoldenRatioLimit":"350","sbStickyUserSettings":{"desktop":true,"mobile":true},"isWPMobile":"","menuStickyUserSettings":{"desktop":"stick_up","mobile":"stick_up"},"isDevMode":"","ajaxUrl":"https:\/\/demo-hueman.presscustomizr.com\/?huajax=1","frontNonce":{"id":"HuFrontNonce","handle":"798e5956c0"},"userStarted":{"with":"before|1.0.4","on":{"date":"2017-05-22 16:30:22.000000","timezone_type":3,"timezone":"UTC"}},"isWelcomeNoteOn":"","welcomeContent":""};</script><script src=https://cdn.bootcss.com/lodash-compat/3.10.2/lodash.min.js></script><script src=https://cdn.bootcss.com/jquery/1.9.0/jquery.min.js></script><script src=../../../../front/js/scripts.js></script><footer id=footer><section class=container id=footer-bottom><div class=container-inner><a id=back-to-top href=#><i class="fa fa-angle-up"></i></a><div class="pad group"><div class="grid one-half"><div id=copyright><p>Copyright (c) 2017. All rights reserved. (版权所有) <a href=http://www.miitbeian.gov.cn/>鲁ICP备17074587号-1</a></div></div><div class="grid one-half last"><ul class=social-links><li><a class=social-tooltip title="On WeiBo" href=http://weibo.com/rinetd target=_blank><i class="fa fa-weibo"></i></a><li><a class=social-tooltip title="On Twitter" href=https://twitter.com/rinetd target=_blank><i class="fa fa-twitter"></i></a><li><a class=social-tooltip title="On GitHub" href=https://github.com/rinetd target=_blank><i class="fa fa-github"></i></a></ul></div></div></div></section></footer><div class=back-to-top id=back-to-top><i class="fa fa-angle-double-up"></i></div><script>$(".topbar-toggle-down").click(function(){$("#nav-topbar").css("overflow","visible");});</script><noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5HM5XM2" height=0 width=0 style=display:none;visibility:hidden></iframe></noscript><script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5HM5XM2');</script>
