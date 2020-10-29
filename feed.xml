@@ -1,4 +1,148 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>时光小栈 on 时光小栈</title><link>/</link><language>zh-CN</language><author>rinetd</author><rights>Copyright (c) 2015, rinetd; all rights reserved.</rights><updated>Tue, 20 Oct 2020 17:02:49 CST</updated><item><title>linux_c__attribute__pragma_pack</title><link>/language/clang/linux_c__attribute__pragma_pack/</link><pubDate>Tue, 20 Oct 2020 17:02:49 CST</pubDate><author>rinetd</author><guid>/language/clang/linux_c__attribute__pragma_pack/</guid><description>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>时光小栈 on 时光小栈</title><link>/</link><language>zh-CN</language><author>rinetd</author><rights>Copyright (c) 2015, rinetd; all rights reserved.</rights><updated>Wed, 28 Oct 2020 09:09:17 CST</updated><item><title>makefile hisi</title><link>/language/clang/makefile-hisi/</link><pubDate>Wed, 28 Oct 2020 09:09:17 CST</pubDate><author>rinetd</author><guid>/language/clang/makefile-hisi/</guid><description>&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;####################################
+# 所有与平台相关的编译参数全放在这里
+####################################
+#=======================================
+#plateform
+export CHIP_TYPE := HI_3531A
+#=======================================
+#tools chain
+ifeq ($(CHIP_TYPE), HI_3531A)
+TOOL_CHAIN_DIR := /home/share_disk/tool_chain/3531A_030/arm-hisiv300-linux/target/bin/
+export CROSS_COMPILE := $(TOOL_CHAIN_DIR)arm-hisiv300-linux-
+else
+endif
+#=======================================
+export CC := $(CROSS_COMPILE)gcc
+export CPP := $(CROSS_COMPILE)g++
+export AR := $(CROSS_COMPILE)ar
+export LD := $(CROSS_COMPILE)ld
+export STRIP := $(CROSS_COMPILE)strip
+export STRIPFLAGS:= -g --strip-unneeded
+export MAKEDEPEND =$(CC) -MM -MT
+export CFLAGS := -Wall
+export CPPFLAGS := -Wall
+export MACRO :=
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;include Makefile.param
+include Makefile.srcs
+include Makefile.libs
+TARGET := SmartVC
+all:$(TARGET)
+$(TARGET):$(OBJS_C) $(OBJS_CPP)
+$(CC) $(SRCS_MACRO) $(CFLAGS) $(CPPFLAGS) $(SRCS_INC) $(LIBS_INC) $(LIBS_LIB) $(OBJS_C) $(OBJS_CPP) $(LDFLAGS) -o $@ -g
+#$(STRIP) $(STRIPFLAGS) $@
+libmdd.so:$(OBJS_C) $(OBJS_CPP)
+$(CC) $(SRCS_MACRO) $(CFLAGS) $(CPPFLAGS) $(OBJS_C) $(OBJS_CPP) $(LDFLAGS) -o $@ -shared -fPIC
+#$(STRIP) $(STRIPFLAGS) $@
+libmdd.a:$(OBJS_C) $(OBJS_CPP)
+$(AR) rv $@ $(OBJS_C) $(OBJS_CPP)
+#$(STRIP) $(STRIPFLAGS) $@
+$(OBJS_C):%.o:%.c
+$(CC) -o $@ -c $&amp;lt; $(SRCS_MACRO) $(CFLAGS) $(CPPFLAGS) $(SRCS_INC) $(LIBS_INC)
+$(OBJS_CPP):%.o:%.cpp
+$(CC) -o $@ -c $&amp;lt; $(SRCS_MACRO) $(CFLAGS) $(CPPFLAGS) $(SRCS_INC) $(LIBS_INC)
+$(DEF_C):%.d:%.c
+$(MAKEDEPEND) $(&amp;lt;:.c=.o) $&amp;lt; $(SRCS_INC) $(LIBS_INC) &amp;gt; $@
+$(DEF_CPP):%.d:%.cpp
+$(MAKEDEPEND) $(&amp;lt;:.cpp=.o) $&amp;lt; $(SRCS_INC) $(LIBS_INC) &amp;gt; $@
+include $(DEF_C) $(DEF_CPP)
+clean:
+rm -rf $(OBJS_C) $(OBJS_CPP)
+rm -rf $(TARGET)
+depend:
+rm -rf $(DEF_C) $(DEF_CPP)
+distclean:
+rm -rf $(OBJS_C) $(OBJS_CPP)
+rm -rf $(TARGET)
+rm -rf $(DEF_C) $(DEF_CPP)
+install:
+cp src/*.h /home/disk2/zp/work_space/thirdlib/mdd/inc -rf
+cp *.so /home/disk2/zp/work_space/thirdlib/mdd/ -rf
+.PHONY:$(TARGET)
+.PHONY: clean
+.PHONY: depend
+.PHONY: distclean
+.PHONY: install
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;####################################
+# 所有与第三方库相关的参数全放在这里
+####################################
+##########include dir#############
+LIBS_INC :=
+#LIBS_INC += -I/home/disk2/sdk/Hi3531A_SDK_V1.0.3.0/mpp/include
+#LIBS_INC += -I/home/disk2/sdk/Hi3531A_SDK_V1.0.3.0/mpp/include/mkp
+#LIBS_INC += -I/home/disk2/zp/work_space/thirdlib/mdd/inc
+LIBS_INC += -I/home/share_disk/sdk/Hi3531A_SDK_V1.0.3.0/mpp/include
+LIBS_INC += -I/home/share_disk/sdk/Hi3531A_SDK_V1.0.3.0/mpp/include/mkp
+LIBS_INC += -I/home/share_disk/workspace/thirdlib/mdd/inc
+##########lib dir#############
+LIBS_LIB :=
+#LIBS_LIB += -L/home/disk2/sdk/Hi3531A_SDK_V1.0.3.0/mpp/lib
+#LIBS_LIB += -L/home/disk2/zp/work_space/thirdlib/mdd
+LIBS_LIB += -L/home/share_disk/sdk/Hi3531A_SDK_V1.0.3.0/mpp/lib
+LIBS_LIB += -L/home/share_disk/workspace/thirdlib/mdd
+##########load option#############
+LDFLAGS :=
+LDFLAGS += -lpthread -lm -lstdc++ -lmpi -ljpeg -lhdmi -ltde -lupvqe -lVoiceEngine -ldnvqe -ldl
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;####################################
+# 所有与源码相关的参数全放在这里
+####################################
+SRCS_INC :=
+SRCS_INC += -I.
+SRCS_C :=
+SRCS_C += $(wildcard ./*.c)
+SRCS_CPP :=
+SRCS_CPP += $(wildcard ./*.cpp)
+############public source code############
+#UTIL_TOOLS_DIR := /home/disk2/zp/work_space/code/util_tools/code
+UTIL_TOOLS_DIR := /home/share_disk/workspace/code/util_tools/code
+SRCS_INC += -I$(UTIL_TOOLS_DIR)/base64
+SRCS_INC += -I$(UTIL_TOOLS_DIR)/cJSON
+SRCS_INC += -I$(UTIL_TOOLS_DIR)/cross_platform
+SRCS_INC += -I$(UTIL_TOOLS_DIR)/error
+SRCS_INC += -I$(UTIL_TOOLS_DIR)/filefunc
+SRCS_INC += -I$(UTIL_TOOLS_DIR)/inirw
+SRCS_INC += -I$(UTIL_TOOLS_DIR)/list
+SRCS_INC += -I$(UTIL_TOOLS_DIR)/log
+SRCS_INC += -I$(UTIL_TOOLS_DIR)/strfunc
+SRCS_C += $(wildcard $(UTIL_TOOLS_DIR)/base64/*.c)
+SRCS_C += $(wildcard $(UTIL_TOOLS_DIR)/cJSON/*.c)
+SRCS_C += $(wildcard $(UTIL_TOOLS_DIR)/cross_platform/*.c)
+SRCS_C += $(wildcard $(UTIL_TOOLS_DIR)/error/*.c)
+SRCS_C += $(wildcard $(UTIL_TOOLS_DIR)/filefunc/*.c)
+SRCS_C += $(wildcard $(UTIL_TOOLS_DIR)/inirw/*.c)
+SRCS_C += $(wildcard $(UTIL_TOOLS_DIR)/list/*.c)
+SRCS_C += $(wildcard $(UTIL_TOOLS_DIR)/log/*.c)
+SRCS_C += $(wildcard $(UTIL_TOOLS_DIR)/strfunc/*.c)
+SRCS_CPP += $(wildcard $(UTIL_TOOLS_DIR)/base64/*.cpp)
+SRCS_CPP += $(wildcard $(UTIL_TOOLS_DIR)/cJSON/*.cpp)
+SRCS_CPP += $(wildcard $(UTIL_TOOLS_DIR)/cross_platform/*.cpp)
+SRCS_CPP += $(wildcard $(UTIL_TOOLS_DIR)/error/*.cpp)
+SRCS_CPP += $(wildcard $(UTIL_TOOLS_DIR)/filefunc/*.cpp)
+SRCS_CPP += $(wildcard $(UTIL_TOOLS_DIR)/inirw/*.cpp)
+SRCS_CPP += $(wildcard $(UTIL_TOOLS_DIR)/list/*.cpp)
+SRCS_CPP += $(wildcard $(UTIL_TOOLS_DIR)/log/*.cpp)
+SRCS_CPP += $(wildcard $(UTIL_TOOLS_DIR)/strfunc/*.cpp)
+OBJS_C :=
+OBJS_C += $(SRCS_C:.c=.o)
+OBJS_CPP :=
+OBJS_CPP += $(SRCS_CPP:.cpp=.o)
+DEF_C :=
+DEF_C += $(SRCS_C:.c=.d)
+DEF_CPP :=
+DEF_CPP += $(SRCS_CPP:.cpp=.d)
+SRCS_MACRO :=
+SRCS_MACRO += -DPLATFORM=1
+export SRCS_INC #source code directory
+export SRCS_C # c source code pathname
+export SRCS_CPP # cpp source code pathname
+export OBJS_C # The c suffix corresponding to the path name of the .o
+export OBJS_CPP # The cpp suffix corresponding to the path name of the .o
+export DEF_C # The c suffix corresponding to the path name of the .d
+export DEF_CPP # The cpp suffix corresponding to the path name of the .d
+export SRCS_MACRO # Source related macros
+&lt;/code&gt;&lt;/pre&gt;</description></item><item><title>linux_c__attribute__pragma_pack</title><link>/language/clang/linux_c__attribute__pragma_pack/</link><pubDate>Tue, 20 Oct 2020 17:02:49 CST</pubDate><author>rinetd</author><guid>/language/clang/linux_c__attribute__pragma_pack/</guid><description>
 &lt;h2 id=&#34;区别-pragma作用于结构内的成员变量-attribute-aligned-n-作用于结构体分配地址的对齐方式-和-结构体的大小&#34;&gt;【区别】 pragma作用于结构内的成员变量；attribute ((aligned(n)))作用于结构体分配地址的对齐方式 和 结构体的大小。&lt;/h2&gt;
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;typedef struct Student_t
 {
@@ -2430,154 +2574,4 @@ ${BSPDIR}/sources/meta-imx6-avi \
 &lt;p&gt;上一节简单介绍了Yocto是如何配置我们的项目，这一节开始分析具体的配置文件&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;local.conf&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;</description></item><item><title>go gin multipart</title><link>/language/golang/go-gin-multipart/</link><pubDate>Wed, 05 Aug 2020 16:42:23 CST</pubDate><author>rinetd</author><guid>/language/golang/go-gin-multipart/</guid><description>
-&lt;p&gt;如何获取所有的请求参数&lt;br /&gt;
-这个其实和gin框架没有啥关系，我刚开始使用的时候以为使用request.ParseForm，然后在request.Form中就能得到了。&lt;/p&gt;
-&lt;p&gt;结果发现当我的Content-type为multipart/form-data的时候，竟然解析不到数据。&lt;/p&gt;
-&lt;p&gt;追到ParseForm里面发现，http/request.go里面有这么一个部分代码&lt;/p&gt;
-&lt;p&gt;case ct == &amp;quot;multipart/form-data&amp;quot;:&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;// handled by ParseMultipartForm (which is calling us, or should be)
-// TODO(bradfitz): there are too many possible
-// orders to call too many functions here.
-// Clean this up and write more tests.
-// request_test.go contains the start of this,
-// in TestParseMultipartFormOrder and others.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;}&lt;br /&gt;
-我的golang版本是1.11.4。当content-type为multipart/form-data的时候是空的调用的。&lt;/p&gt;
-&lt;p&gt;当然注释也写很清楚了，建议使用ParseMultipartForm&lt;/p&gt;
-&lt;p&gt;所以获取http参数的函数我就写成这个样子：&lt;/p&gt;
-&lt;p&gt;// 这个函数只返回json化之后的数据，且不处理错误，错误就返回空字符串&lt;br /&gt;
-func getArgs(c *gin.Context) []byte {&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;if c.ContentType() == &amp;quot;multipart/form-data&amp;quot; {
-c.Request.ParseMultipartForm(defaultMemory)
-} else {
-c.Request.ParseForm()
-}
-args, _ := json.Marshal(c.Request.Form)
-return args
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;}&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt; router.POST(&amp;quot;/upload&amp;quot;, func(c *gin.Context) {
-c.Request.ParseMultipartForm(202020)
-if c.ContentType() == &amp;quot;multipart/form-data&amp;quot; {
-c.Request.ParseMultipartForm(1024 * 1024)
-} else {
-c.Request.ParseForm()
-}
-// args, _ := json.Marshal(c.Request.Form)
-fmt.Println(&amp;quot;c.Request.Form\n&amp;quot;, c.Request.Form)
-// fmt.Println(&amp;quot;c.Request.PostForm\n&amp;quot;, c.Request.PostForm)
-// fmt.Println(&amp;quot;c.Request.MultipartForm.Value\n&amp;quot;, c.Request.MultipartForm.Value)
-// c.Request.Form
-// map[battery:[3.998] dev_id:[356802050038933] firmware_version:[1.8.16_CAM100S21] signal:[-72dbm] temp_cpu:[42] temp_env:[42] timestamp:[1596616340]]
-// c.Request.PostForm
-// map[battery:[3.998] dev_id:[356802050038933] firmware_version:[1.8.16_CAM100S21] signal:[-72dbm] temp_cpu:[42] temp_env:[42] timestamp:[1596616340]]
-// c.Request.MultipartForm.Value
-// map[battery:[3.998] dev_id:[356802050038933] firmware_version:[1.8.16_CAM100S21] signal:[-72dbm] temp_cpu:[42] temp_env:[42] timestamp:[1596616340]]
-for key, file := range c.Request.MultipartForm.File {
-for k, f := range file {
-fmt.Println(&amp;quot;c.Request.MultipartForm.File&amp;quot;, key, k, f.Filename)
-}
-}
-// c.Request.MultipartForm.File upload0 0 20200805163835-30.jpg
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;golang-gin-打印所有的参数信息-gintest&#34;&gt;golang gin 打印所有的参数信息 gintest&lt;/h2&gt;
-&lt;pre&gt;&lt;code class=&#34;language-go&#34;&gt;package middlewares
-import (
-&amp;quot;bytes&amp;quot;
-&amp;quot;encoding/json&amp;quot;
-&amp;quot;fmt&amp;quot;
-&amp;quot;io/ioutil&amp;quot;
-&amp;quot;net/http&amp;quot;
-&amp;quot;strings&amp;quot;
-&amp;quot;github.com/gin-gonic/gin&amp;quot;
-&amp;quot;github.com/gin-gonic/gin/binding&amp;quot;
-)
-const DefaultMemory = 32 * 1024 * 1024
-//一些中间件 备用
-// GetHeaders ...
-func GetHeaders(head http.Header) map[string]string {
-hdr := make(map[string]string, len(head))
-for k, v := range head {
-hdr[k] = v[0]
-}
-return hdr
-}
-// GetIP ...
-func GetIP(c *gin.Context) string {
-ip := c.ClientIP()
-return ip
-}
-// GetMultiPartFormValue ...
-func GetMultiPartFormValue(c *http.Request) interface{} {
-var requestBody interface{}
-multipartForm := make(map[string]interface{})
-if err := c.ParseMultipartForm(DefaultMemory); err != nil {
-// handle error
-}
-if c.MultipartForm != nil {
-for key, values := range c.MultipartForm.Value {
-multipartForm[key] = strings.Join(values, &amp;quot;&amp;quot;)
-}
-for key, file := range c.MultipartForm.File {
-for k, f := range file {
-formKey := fmt.Sprintf(&amp;quot;%s%d&amp;quot;, key, k)
-multipartForm[formKey] = map[string]interface{}{&amp;quot;filename&amp;quot;: f.Filename, &amp;quot;size&amp;quot;: f.Size}
-}
-}
-if len(multipartForm) &amp;gt; 0 {
-requestBody = multipartForm
-}
-}
-return requestBody
-}
-// GetFormBody ...
-func GetFormBody(c *http.Request) interface{} {
-var requestBody interface{}
-form := make(map[string]string)
-if err := c.ParseForm(); err != nil {
-// handle error
-}
-for key, values := range c.PostForm {
-form[key] = strings.Join(values, &amp;quot;&amp;quot;)
-}
-if len(form) &amp;gt; 0 {
-requestBody = form
-}
-return requestBody
-}
-// GetRequestBody ...
-func GetRequestBody(c *gin.Context) interface{} {
-//multiPartFormValue := GetMultiPartFormValue(c.Request)
-//if multiPartFormValue != nil {
-// return multiPartFormValue
-//}
-//
-//formBody := GetFormBody(c.Request)
-//if formBody != nil {
-// return formBody
-//}
-method := c.Request.Method
-if method == &amp;quot;GET&amp;quot; {
-return nil
-}
-contentType := c.ContentType()
-body := c.Request.Body
-var model interface{}
-bodyContent, err := ioutil.ReadAll(body)
-if err != nil {
-return model
-}
-// Restore the io.ReadCloser to its original state
-c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(bodyContent))
-switch contentType {
-case binding.MIMEJSON:
-json.Unmarshal(bodyContent, &amp;amp;model)
-return model
-default:
-model = string(bodyContent)
-return model
-}
-}
-&lt;/code&gt;&lt;/pre&gt;</description></item></channel></rss>
+&lt;/ul&gt;</description></item></channel></rss>
