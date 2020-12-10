@@ -1,4 +1,221 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>时光小栈 on 时光小栈</title><link>/</link><language>zh-CN</language><author>rinetd</author><rights>Copyright (c) 2015, rinetd; all rights reserved.</rights><updated>Wed, 28 Oct 2020 09:09:17 CST</updated><item><title>makefile hisi</title><link>/language/clang/makefile-hisi/</link><pubDate>Wed, 28 Oct 2020 09:09:17 CST</pubDate><author>rinetd</author><guid>/language/clang/makefile-hisi/</guid><description>&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;####################################
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>时光小栈 on 时光小栈</title><link>/</link><language>zh-CN</language><author>rinetd</author><rights>Copyright (c) 2015, rinetd; all rights reserved.</rights><updated>Tue, 24 Nov 2020 15:03:00 CST</updated><item><title>linux kernel timer</title><link>/hardware/kernel/linux-kernel-timer/</link><pubDate>Tue, 24 Nov 2020 15:03:00 CST</pubDate><author>rinetd</author><guid>/hardware/kernel/linux-kernel-timer/</guid><description>&lt;p&gt;linux驱动之定时器的使用&lt;br /&gt;
+被文章摘自一下几位网友。非常感谢他们。&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;http://blog.sina.com.cn/s/blog_57330c3401011cq3.html&#34; target=&#34;_blank&#34;&gt;http://blog.sina.com.cn/s/blog_57330c3401011cq3.html&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Linux的内核中定义了一个定时器的结构：&lt;/p&gt;
+&lt;p&gt;#include&lt;linux/timer.h&gt;&lt;/p&gt;
+&lt;p&gt;struct timer_list&lt;/p&gt;
+&lt;p&gt;{&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; struct list_head list;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;　　unsigned long expires; //定时器到期时间&lt;/p&gt;
+&lt;p&gt;　　unsigned long data; //作为参数被传入定时器处理函数&lt;/p&gt;
+&lt;p&gt;　　void (*function)(unsigned long);&lt;/p&gt;
+&lt;p&gt;};&lt;/p&gt;
+&lt;p&gt;利用这个结构我们可以在驱动中很方便的使用定时器。&lt;/p&gt;
+&lt;p&gt;一： timer的API函数：&lt;/p&gt;
+&lt;p&gt;初始化定时器：&lt;/p&gt;
+&lt;p&gt;void init_timer(struct timer_list * timer);&lt;/p&gt;
+&lt;p&gt;增加定时器：&lt;/p&gt;
+&lt;p&gt;void add_timer(struct timer_list * timer);&lt;/p&gt;
+&lt;p&gt;删除定时器：&lt;/p&gt;
+&lt;p&gt;int del_timer(struct timer_list * timer);&lt;/p&gt;
+&lt;p&gt;修改定时器的expire：&lt;/p&gt;
+&lt;p&gt;int mod_timer(struct timer_list *timer, unsigned long expires);&lt;/p&gt;
+&lt;p&gt;二：使用定时器的一般流程为：&lt;/p&gt;
+&lt;p&gt;（1）创建timer、编写超时定时器处理函数function；&lt;/p&gt;
+&lt;p&gt;（2）为timer的expires、data、function赋值；&lt;/p&gt;
+&lt;p&gt;（3）调用add_timer将timer加入列表----添加一个定时器；&lt;/p&gt;
+&lt;p&gt;（4）在定时器到期时，function被执行；&lt;/p&gt;
+&lt;p&gt;（5）在程序中涉及timer控制的地方适当地调用del_timer、mod_timer删除timer或修改timer的expires。&lt;/p&gt;
+&lt;p&gt;三：下面看一个例子：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;linux/module.h&amp;gt;
+#include &amp;lt;linux/kernel.h&amp;gt;
+#include &amp;lt;linux/init.h&amp;gt;
+#include &amp;lt;linux/sched.h&amp;gt;//jiffies在此头文件中定义
+#include &amp;lt;linux/init.h&amp;gt;
+#include &amp;lt;linux/timer.h&amp;gt;
+struct timer_list mytimer;//定义一个定时器
+void mytimer_ok(unsigned long arg)
+{
+printk(&amp;quot;Mytimer is ok\n&amp;quot;);
+printk(&amp;quot;receive data from timer: %d\n&amp;quot;,arg);
+}
+static int __init hello_init (void)
+{
+printk(&amp;quot;hello,world\n&amp;quot;);
+init_timer(&amp;amp;mytimer); //初始化定时器
+mytimer.expires = jiffies+100;//设定超时时间，100代表1秒
+mytimer.data = 250; //传递给定时器超时函数的值
+mytimer.function = mytimer_ok;//设置定时器超时函数
+add_timer(&amp;amp;mytimer); //添加定时器，定时器开始生效
+return 0;
+}
+static void __exit hello_exit (void)
+{
+del_timer(&amp;amp;mytimer);//卸载模块时，删除定时器
+printk(&amp;quot;Hello module exit\n&amp;quot;);
+}
+module_init(hello_init);
+module_exit(hello_exit);
+MODULE_AUTHOR(&amp;quot;CXF&amp;quot;);
+MODULE_LICENSE(&amp;quot;Dual BSD/GPL&amp;quot;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;四：交叉编译后，放到开发板上：&lt;/p&gt;
+&lt;p&gt;#insmod timer.ko&lt;/p&gt;
+&lt;p&gt;可以发现过一秒后定时器过期函数被执行了，打印出了信息，250也被正确传递了。&lt;/p&gt;
+&lt;p&gt;#rmmod timer.ko&lt;/p&gt;
+&lt;p&gt;我们也可以用lsmod | grep timer 来查看是否加载了timer驱动。&lt;/p&gt;
+&lt;p&gt;可以用dmesg | tail -20 查看驱动打印的信息&lt;/p&gt;
+&lt;p&gt;dmesg -c 清楚信息&lt;/p&gt;
+&lt;p&gt;五：进一步理解定时器：&lt;/p&gt;
+&lt;p&gt;在上面的定时器超时函数mytimer_ok(unsigned long arg)中，添加如下代码：&lt;/p&gt;
+&lt;p&gt;mytimer.expires = jiffies+100;//设定超时时间，100代表1秒&lt;br /&gt;
+mytimer.function = mytimer_ok;//设置定时器超时函数&lt;/p&gt;
+&lt;p&gt;add_timer(&amp;amp;mytimer); //添加定时器，定时器开始生效&lt;/p&gt;
+&lt;p&gt;交叉编译后，放到开发板上&lt;/p&gt;
+&lt;p&gt;#insmod timer.o&lt;/p&gt;
+&lt;p&gt;发现每隔一秒，mytimer_ok函数就执行一次，这是因为每次定时器到期后，都&lt;/p&gt;
+&lt;p&gt;又重新给它设置了一个新的超时时间，并且新的超时函数指向自己，形成一个递&lt;/p&gt;
+&lt;p&gt;归，所以就会一直执行下去。&lt;/p&gt;
+&lt;p&gt;#rmmod timer&lt;/p&gt;
+&lt;p&gt;可以卸载模块，当然打印也就结束了，注意因为定时器超时函数不停的打印信息&lt;/p&gt;
+&lt;p&gt;，导致输入上面的命令时会被定时器超时函数不停的打印信息淹没，不用管他，&lt;/p&gt;
+&lt;p&gt;耐心的把上面的命令输完就可以成功卸载。&lt;/p&gt;</description></item><item><title>libev_ev_async</title><link>/language/clang/libev/libev_ev_async/</link><pubDate>Sat, 31 Oct 2020 21:52:25 CST</pubDate><author>rinetd</author><guid>/language/clang/libev/libev_ev_async/</guid><description>&lt;pre&gt;&lt;code&gt;// 在其它线程发通知事件给EV LOOP主线程
+ev_async async_w;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;pthread.h&amp;gt;
+#include &amp;lt;ev.h&amp;gt;
+struct ev_loop *loop = NULL;
+static ev_async async_watcher;
+static void async_cb(EV_P_ ev_async *w, int revents)
+{
+static int cb_count = 0;
+printf(&amp;quot;async_cb() call, cb_count = %d %d\n&amp;quot;, cb_count++,revents);
+}
+void *ev_create(void *p)
+{
+printf(&amp;quot;ev_create() call, start!\n&amp;quot;);
+loop = ev_loop_new(EVFLAG_AUTO);
+ev_async_init(&amp;amp;async_watcher, async_cb);
+ev_async_start(loop, &amp;amp;async_watcher);
+ev_run(loop, 0); // 如果不在回调中调用stop或者break方法，ev_run后面的代码就永远不会被执行。
+printf(&amp;quot;ev_create() call, ev_run end!\n&amp;quot;);
+}
+int main()
+{
+pthread_t tid;
+pthread_create(&amp;amp;tid, NULL, ev_create, NULL);
+sleep(1); // 要等子线程先注册完事件之后，才可以调用下面的ev_async_send函数，否则你懂的。
+while(1)
+{
+static int num = 0;
+printf(&amp;quot;num = %d\n&amp;quot;, num);
+ev_async_send(loop, &amp;amp;async_watcher); // 既然可以在这里ev_async_send，那么也可以在其他需要的地方ev_async_send
+sleep(2);
+num++;
+}
+return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;</description></item><item><title>linux c ipc eventfd</title><link>/language/clang/linux-c-ipc-eventfd/</link><pubDate>Sat, 31 Oct 2020 17:01:06 CST</pubDate><author>rinetd</author><guid>/language/clang/linux-c-ipc-eventfd/</guid><description>&lt;p&gt;1.新内核版本为什么要增加eventfd?&lt;/p&gt;
+&lt;p&gt;首先说明的一点是eventfd是用来实现多进程或多线程的之间的事件通知的，那么我们在没接触eventfd之前用到的事件通知机制都有那些？&lt;/p&gt;
+&lt;p&gt;1.条件变量&lt;br /&gt;
+2.管道&lt;/p&gt;
+&lt;p&gt;我们来逐一比较此俩中机制与eventfd的效果方面的好坏，首先，条件变量必须和互斥锁结合使用，使用起来麻烦，而且性能未必比eventfd好，其次条件变量不能像eventfd一样为I/O事件驱动，因此不能和服务器的I/O模式很好的融合，所以在某些时候不如eventfd好用&lt;/p&gt;
+&lt;p&gt;接着是管道，虽然管道能与I/O复用很好的融合，但很明显管道相比eventfd多用了一个文件描述符，而且管道的话内核还得给其管理的缓冲区，eventfd则不需要，所以单纯作为事件通知的话还是管道好用&lt;/p&gt;
+&lt;p&gt;2.event的主要接口&lt;/p&gt;
+&lt;p&gt;eventfd只有一个接口，形式如下&lt;/p&gt;
+&lt;p&gt;int eventfd(unsigned int initval, int flags); //成功返回事件驱动的文件描述符fd&lt;br /&gt;
+说明：initval的范围是0~0xfffffffffffffffe；flags的值可以是如下枚举值：&lt;/p&gt;
+&lt;p&gt;enum&lt;br /&gt;
+{&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;EFD_SEMAPHORE = 00000001, //since Linux 2.6.30
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;#define EFD_SEMAPHORE EFD_SEMAPHORE&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;EFD_CLOEXEC = 02000000, //since Linux 2.6.27
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;#define EFD_CLOEXEC EFD_CLOEXEC&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;EFD_NONBLOCK = 00004000 //since Linux 2.6.27
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;#define EFD_NONBLOCK EFD_NONBLOCK&lt;br /&gt;
+};&lt;/p&gt;
+&lt;p&gt;如果设置了EFD_SEMAPHORE，则不会出现粘包的情况，即write多少次，就需要read多少次；&lt;/p&gt;
+&lt;p&gt;如果设置了0（内核2.6.27版本之前必须设置为0），则会出现粘包的可能，write多次，可能read到的是若干次的值的和；&lt;/p&gt;
+&lt;p&gt;另外两种一般不需要，所以并未进行测试。&lt;/p&gt;
+&lt;p&gt;eventfd()创建一个文件描述符，这个文件描述符用户可以通过等待其可读来实现事件通知，该通知靠内核来响应用户空间的应用事件。上述接口的第一个参数是一个由内核来保持的64位计数器，这个计数器有参数initval来初始化，关于此计数器的影响我在下文中的具体实例中给大家演示，一般我们可将其设为0&lt;/p&gt;
+&lt;p&gt;第二个参数flags可以为EFD_NONBLOCK或EFD_CLOEXEC，其含义分别为阻塞文件描述符，和与普通文件的CLOEXEC标志一样的功能&lt;br /&gt;
+一般来说进程往往会调用fork函数来执行一个子进程，调用execve()执行其他程序，这时候可能就导致子进程中存在一些无用的文件描述符问题。&lt;br /&gt;
+父进程在fork函数的时候，子进程会拷贝跟父进程一样的地址空间，包括寄存器，文件描述符，堆，栈等。在一开始，父进程与子进程的文件描述符指向的是系统文件表中的同一项(包括文件状态，和文件偏移量)。&lt;br /&gt;
+当我们用execve执行其他程序的时候，全新的程序会替换子进程中的地址空间，数据段，堆栈，此时保存与父进程文件描述符也就不存在了，也无法进行关闭，这时候就需要FD_CLOEXEC, 表示子进程在执行exec的时候，该文件描述符就需要进行关闭。&lt;/p&gt;
+&lt;p&gt;通过fcntl设置FD_CLOEXEC标志有什么用？&lt;br /&gt;
+close on exec, not on-fork, 意为如果对描述符设置了FD_CLOEXEC，使用execl执行的程序里，此描述符被关闭，不能再使用它，但是在使用fork调用的子进程中，此描述符并不关闭，仍可使用。&lt;/p&gt;
+&lt;p&gt;实现代码如下：&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int fd=open(&amp;quot;1&amp;quot;,O_RDONLY);
+//获取当前文件描述符的相关标志位
+int flags=fcntl(fd,F_GETFD,NULL);
+flags|=FD_CLOEXEC;
+fcntl(fd,F_SETFD,flags);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;3.具体实例&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;#include &amp;lt;sys/eventfd.h&amp;gt;
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;pthread.h&amp;gt;
+#include &amp;lt;unistd.h&amp;gt;
+int fd;
+uint64_t buffer;
+void threadFunc(void) //线程函数
+{
+int t;
+while(1)
+{
+t = read(fd,&amp;amp;buffer,sizeof(buffer)); //阻塞等待fd可读，及通知事件发生
+if(sizeof(buffer) &amp;lt; 8)
+{
+printf(&amp;quot;buffer错误\n&amp;quot;);
+}
+printf(&amp;quot;t = %llu buffer = %llu\n&amp;quot;,t,buffer);
+if(t == 8)
+{
+printf(&amp;quot;唤醒成功\n&amp;quot;);
+}
+}
+}
+int main(void)
+{
+uint64_t buf = 1;
+int ret;
+pthread_t tid;
+int init_val =3;
+if((fd = eventfd(init_val,0)) == -1) //创建事件驱动的文件描述符
+{
+printf(&amp;quot;创建失败\n&amp;quot;);
+}
+//创建线程
+if(pthread_create(&amp;amp;tid,NULL,threadFunc,NULL) &amp;lt; 0)
+{
+printf(&amp;quot;线程创建失败\n&amp;quot;);
+}
+while(1)
+{
+ret = write(fd,&amp;amp;buf,sizeof(buf)); //通过往fd里写东西来进行事件通知
+if(ret != 8)
+{
+printf(&amp;quot;写错误\n&amp;quot;);
+}
+sleep(2); //没2s通知一次
+}
+return 0;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;上述代码中，我们创建一个线程，通过主线程往fd里写数据，来通知另一个线程。&lt;br /&gt;
+代码执行结果如下&lt;br /&gt;
+这里写图片描述&lt;/p&gt;
+&lt;p&gt;关于eventfd中的initval参数的作用，我的测试结果如下,前提把上述代码eventfd函数中的0改为3&lt;/p&gt;
+&lt;p&gt;这里写图片描述&lt;br /&gt;
+可以看出这个由内核管理的计数器，我们的初始化值，只会影响程序第一次buffer的值，后续buffer中的值依然为1.&lt;/p&gt;</description></item><item><title>gonggonghao</title><link>/wechat/gonggonghao/</link><pubDate>Sat, 31 Oct 2020 11:51:29 CST</pubDate><author>rinetd</author><guid>/wechat/gonggonghao/</guid><description>&lt;p&gt;订阅号：&lt;br /&gt;
+封面背景 4d8ddd&lt;/p&gt;
+&lt;p&gt;R 77 G 144 B 221 蓝色&lt;/p&gt;</description></item><item><title>makefile hisi</title><link>/language/clang/makefile-hisi/</link><pubDate>Wed, 28 Oct 2020 09:09:17 CST</pubDate><author>rinetd</author><guid>/language/clang/makefile-hisi/</guid><description>&lt;pre&gt;&lt;code class=&#34;language-makefile&#34;&gt;####################################
 # 所有与平台相关的编译参数全放在这里
 ####################################
 #=======================================
@@ -267,8 +484,8 @@ char x4;&lt;br /&gt;
 #define BUFFER_SIZE 1024
 #define MAX_CONNECTIONS 10
 struct ev_io *libevlist[MAX_CONNECTIONS] = {NULL};
-void socket_accept_callback(struct ev_loop *loop, struct ev_io *watcher, int revents);
-void socket_read_callback(struct ev_loop *loop, struct ev_io *watcher, int revents);
+void on_accept(struct ev_loop *loop, struct ev_io *watcher, int revents);
+void on_read(struct ev_loop *loop, struct ev_io *watcher, int revents);
 /*
 Server Client
 socket socket
@@ -326,14 +543,14 @@ printf(&amp;quot;setsockopt error in reuseaddr[%d]\n&amp;quot;, sd);
 return -1;
 }
 /* socket end */
-ev_io_init(socket_watcher, socket_accept_callback, sd, EV_READ);
+ev_io_init(socket_watcher, on_accept, sd, EV_READ);
 ev_io_start(loop, socket_watcher);
 while(1) {
 ev_run(loop, 0);
 }
 return 1;
 }
-void socket_accept_callback(struct ev_loop *loop, struct ev_io *watcher, int revents) {
+void on_accept(struct ev_loop *loop, struct ev_io *watcher, int revents) {
 printf(&amp;quot;I am: %d\n&amp;quot;, getpid());
 struct sockaddr_in client_addr;
 socklen_t client_len = sizeof(client_addr);
@@ -366,11 +583,11 @@ return;
 }
 printf(&amp;quot;client connected\n&amp;quot;);
 // listen new client
-ev_io_init(client_watcher, socket_read_callback, client_sd, EV_READ);
+ev_io_init(client_watcher, on_read, client_sd, EV_READ);
 ev_io_start(loop, client_watcher);
 libevlist[client_sd] = client_watcher;
 }
-void socket_read_callback(struct ev_loop *loop, struct ev_io *watcher, int revents) {
+void on_read(struct ev_loop *loop, struct ev_io *watcher, int revents) {
 char buffer[BUFFER_SIZE];
 ssize_t read;
 if (EV_ERROR &amp;amp; revents) {
@@ -402,6 +619,123 @@ printf(&amp;quot;receive message:%s\n&amp;quot;, buffer);
 // socket send to client
 send(watcher-&amp;gt;fd, buffer, read, 0);
 bzero(buffer, read);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
+#include &amp;lt;stdio.h&amp;gt;
+#include &amp;lt;stdlib.h&amp;gt;
+#include &amp;lt;string.h&amp;gt;
+#include &amp;lt;netinet/in.h&amp;gt;
+#include &amp;lt;arpa/inet.h&amp;gt; //inet_addr
+#include &amp;lt;unistd.h&amp;gt;
+#include &amp;lt;sys/types.h&amp;gt;
+#include &amp;lt;fcntl.h&amp;gt;
+#include &amp;lt;ev.h&amp;gt;
+#define PORT_NO 5000
+#define BUFFER_SIZE 10240
+#define MAX_BACKLOG 1024
+int total_clients = 0;
+void on_accept(struct ev_loop *loop, struct ev_io *watcher, int revents);
+void on_read(struct ev_loop *loop, struct ev_io *watcher, int revents);
+int new_tcp_server(const char *host, short port);
+int set_nonblock(int fd);
+int set_reuse_socket(int sock);
+int set_address (const char *host, short port, struct sockaddr_in *addr);
+int main(int argc , char *argv[])
+{
+struct ev_loop *loop = ev_default_loop(0);
+int port = PORT_NO;
+if(argc==2){
+port = atoi(argv[1]);
+}else if(argc &amp;gt; 2){
+fprintf(stderr, &amp;quot;usage: server_libev [port]\n&amp;quot;);
+return 1;
+}
+int fd = new_tcp_server(&amp;quot;0.0.0.0&amp;quot;, port);
+printf(&amp;quot;Starting tcp server on :%d\n&amp;quot;, port);
+ev_io listen_watcher;
+ev_io_init(&amp;amp;listen_watcher, on_accept, fd, EV_READ);
+ev_io_start(loop, &amp;amp;listen_watcher);
+ev_loop(loop, 0);
+return 0;
+}
+int new_tcp_server(const char *host, short port) {
+int fd;
+struct sockaddr_in address;
+fd = socket(AF_INET, SOCK_STREAM, 0);
+if (fd == -1) {
+perror(&amp;quot;socket&amp;quot;);
+return -1;
+}
+set_reuse_socket(fd);
+set_nonblock(fd);
+set_address(host, port, &amp;amp;address);
+if (bind(fd, (struct sockaddr*)&amp;amp;address, sizeof(address)) &amp;lt; 0) {
+perror(&amp;quot;bind&amp;quot;);
+close(fd);
+return -1;
+}
+if (listen(fd, MAX_BACKLOG) &amp;lt;0){
+perror(&amp;quot;listen&amp;quot;);
+close(fd);
+return -1;
+};
+return fd;
+}
+int set_address (const char *host, short port, struct sockaddr_in *addr)
+{
+memset(addr, 0, sizeof(*addr));
+addr-&amp;gt;sin_family = AF_INET;
+addr-&amp;gt;sin_addr.s_addr = inet_addr(host);
+addr-&amp;gt;sin_port = htons(port );
+return 0;
+}
+int set_nonblock(int fd) {
+return fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
+}
+int set_reuse_socket(int fd) {
+int ok = 1;
+return setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &amp;amp;ok, sizeof(ok));
+}
+void on_accept(struct ev_loop *loop, struct ev_io *watcher, int revents)
+{
+struct sockaddr_in client_addr;
+socklen_t client_len = sizeof(client_addr);
+struct ev_io *client_watcher = (struct ev_io*)malloc(sizeof(struct ev_io));
+if(EV_ERROR &amp;amp; revents) {
+perror(&amp;quot;invalid event&amp;quot;);
+return;
+}
+int client_fd = accept(watcher-&amp;gt;fd, (struct sockaddr*)&amp;amp;client_addr, &amp;amp;client_len);
+if (client_fd &amp;lt; 0) {
+perror(&amp;quot;accept&amp;quot;);
+return;
+}
+set_nonblock(client_fd);
+total_clients++;
+ev_io_init(client_watcher, on_read, client_fd, EV_READ);
+ev_io_start(loop, client_watcher);
+}
+void on_read(struct ev_loop *loop, struct ev_io *watcher, int revents)
+{
+char buffer[BUFFER_SIZE];
+ssize_t len;
+if(EV_ERROR &amp;amp; revents) {
+return;
+}
+len = recv(watcher-&amp;gt;fd, buffer, BUFFER_SIZE, 0);
+if (len &amp;lt; 0) {
+return;
+} else if (len == 0) {
+// disconnected
+ev_io_stop(loop, watcher);
+close(watcher-&amp;gt;fd);
+free(watcher);
+total_clients--;
+return;
+}
+send(watcher-&amp;gt;fd, buffer, len, 0);
+memset(buffer, 0, BUFFER_SIZE);
 }
 &lt;/code&gt;&lt;/pre&gt;</description></item><item><title>libev</title><link>/language/clang/libev/libev/</link><pubDate>Mon, 19 Oct 2020 16:01:15 CST</pubDate><author>rinetd</author><guid>/language/clang/libev/libev/</guid><description>
 &lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/weiwangchao_/article/details/52961041&#34; target=&#34;_blank&#34;&gt;libev教程一：libev简单入门_把握自己。-CSDN博客&lt;/a&gt;&lt;/p&gt;
@@ -1206,11 +1540,11 @@ printf(&amp;quot;程序退出...\n&amp;quot;);
 return(0);
 }
 &lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;方法一-long-clock&#34;&gt;方法一： long clock&lt;/h3&gt;
+&lt;h3 id=&#34;方法一-long-clock-t&#34;&gt;方法一： long clock_t&lt;/h3&gt;
 &lt;p&gt;#include&lt;time.h&gt;&lt;br /&gt;
-clock_t start = clock();&lt;br /&gt;
+&lt;code&gt;clock_t start = clock();&lt;/code&gt;&lt;br /&gt;
 需要计时的代码段&lt;br /&gt;
-clock_t end = clock();&lt;br /&gt;
+&lt;code&gt;clock_t end = clock();&lt;/code&gt;&lt;br /&gt;
 运行时间t ＝ end - start; (单位ms)&lt;/p&gt;
 &lt;p&gt;本方法有一定缺陷，在32bit机器上，运行时间较长达到（超过1小时），有可能出现计时错误。&lt;br /&gt;
 clock()文档说明如下：&lt;br /&gt;
@@ -1221,7 +1555,7 @@ Note that the time can wrap around. On a 32-bit system where CLOCKS_PER_SEC equa
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;#include &amp;lt;time.h&amp;gt;
 timeval start, end;
 gettimeofday(&amp;amp;start, null);
-&amp;lt;!-- 需要计时的代码段 --&amp;gt;
+...
 gettimeofday(&amp;amp;end, null);
 diffTime(start,end) * 0.001
 struct timeval tv_begin;
@@ -1342,10 +1676,10 @@ long tv_nsec; /* nanoseconds */
 &lt;/ul&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;更多详细信息请使用man手册。&lt;/p&gt;
-&lt;p&gt;string &amp;lt;-------- asctime() &amp;lt;------ struct tm&lt;br /&gt;
-string &amp;lt;-------- ctime() &amp;lt;--------- time_t&lt;/p&gt;
-&lt;p&gt;formatted string &amp;lt;----- strftime() &amp;lt;----- struct tm&lt;/p&gt;
-&lt;p&gt;struct tm &amp;lt;------- gmtime() / localtime &amp;lt;--- time_t&lt;/p&gt;
+&lt;p&gt;struct tm ----&amp;gt; asctime() ----&amp;gt; string&lt;br /&gt;
+time_t ----&amp;gt; ctime() ----&amp;gt; string&lt;/p&gt;
+&lt;p&gt;struct tm ---&amp;gt; strftime() ----&amp;gt; formatted string&lt;br /&gt;
+time_t ----&amp;gt; gmtime() / localtime() ----&amp;gt; struct tm&lt;/p&gt;
 &lt;h4 id=&#34;获取精确到毫秒的时间&#34;&gt;获取精确到毫秒的时间&lt;/h4&gt;
 &lt;hr /&gt;
 &lt;p&gt;可以结合&lt;code&gt;time, localtime, strftime&lt;/code&gt;得到本地时间，精确到秒。代码如下：&lt;/p&gt;
@@ -1638,6 +1972,9 @@ flush_hash_table(pair_map);
 return 0;
 }
 &lt;/code&gt;&lt;/pre&gt;</description></item><item><title>linux list_head</title><link>/language/clang/linux-list_head/</link><pubDate>Fri, 25 Sep 2020 20:23:58 CST</pubDate><author>rinetd</author><guid>/language/clang/linux-list_head/</guid><description>
+&lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/wanshilun/article/details/79747710&#34; target=&#34;_blank&#34;&gt;https://blog.csdn.net/wanshilun/article/details/79747710&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;xxx_init() 用来对一个数据结果对象赋初始值&lt;br /&gt;
+init_xxx 初始化一个对象&lt;/p&gt;
 &lt;h2 id=&#34;一起分析内核最重要的链表list-head&#34;&gt;一起分析内核最重要的链表list_head&lt;/h2&gt;
 &lt;h2 id=&#34;一-链表结构&#34;&gt;一、链表结构&lt;/h2&gt;
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct list_head {
@@ -1658,18 +1995,17 @@ list-&amp;gt;prev = list;
 &lt;p&gt;上面是各种不同的初始化或者定义并初始化链表的函数，我们都可以使用，&lt;br /&gt;
 例如：&lt;br /&gt;
 1）我们自己定义一个链表头,然后调用函数初始化：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct list_head name；
-LIST_HEAD_INIT(name)；
-//INIT_LIST_HEAD（name）;
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct list_head name = LIST_HEAD_INIT(name)；
+// INIT_LIST_HEAD（name）;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;2）或者使用下面宏定义并初始化一个双向循环链表头；&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;LIST_HEAD(name)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&#34;三-增-删-遍历接口&#34;&gt;三、增、删、遍历接口&lt;/h2&gt;
 &lt;p&gt;我们都知道链表是用来保存一下有意义的字段的，但是list_haed结构中并没有其他字段，所以内核使用该链表时，总是把它嵌套到一个宿主结构中来使用。例如：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct zj_list{
-int val ;
+&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;struct my_list{
 struct list_head mylist;
+int val ;
 }；
 &lt;/code&gt;&lt;/pre&gt;
 &lt;h2 id=&#34;3-1-增加节点&#34;&gt;3.1 增加节点&lt;/h2&gt;
@@ -1750,6 +2086,118 @@ printf(&amp;quot;%s\n&amp;quot;,entry-&amp;gt;username);
 }
 return 0;
 }
+#include &amp;quot;list.h&amp;quot;
+#include &amp;quot;time.h&amp;quot;
+struct rtc_alarm_dev
+{
+time_t expect;
+int repeat;
+volatile int interval;
+void *(*func)(void *);
+struct list_head list;
+} rtc_alarm_dev_t;
+struct list_head rtc_alarm_list;
+// #define _DEBUG
+int rtc_alarm_isActive(struct rtc_alarm_dev *timer);
+int rtc_alarm_add(struct rtc_alarm_dev *timer)
+{
+struct list_head *plist;
+struct rtc_alarm_dev *dev;
+if (rtc_alarm_isActive(timer))
+rtc_alarm_del(timer);
+if (list_empty(&amp;amp;rtc_alarm_list))
+{
+list_add(&amp;amp;timer-&amp;gt;list, &amp;amp;rtc_alarm_list);
+}
+else
+{
+list_for_each(plist, &amp;amp;rtc_alarm_list)
+{
+dev = list_entry(plist, struct rtc_alarm_dev, list);
+if (dev-&amp;gt;expect &amp;gt; timer-&amp;gt;expect)
+{
+list_add(&amp;amp;timer-&amp;gt;list, dev-&amp;gt;list.prev);
+break;
+}
+}
+if (plist == &amp;amp;rtc_alarm_list)
+list_add(&amp;amp;timer-&amp;gt;list, &amp;amp;dev-&amp;gt;list);
+}
+#ifdef _DEBUG
+list_for_each(plist, &amp;amp;rtc_alarm_list)
+{
+printf(&amp;quot;%s debug: dev-&amp;gt;expect = %d, dev = %08x list: %p %p\n&amp;quot;, __func__, dev-&amp;gt;expect, dev, plist, rtc_alarm_list);
+dev = list_entry(plist, struct rtc_alarm_dev, list);
+printf(&amp;quot;%s debug: dev-&amp;gt;expect = %d, dev = %08x list: %p\n&amp;quot;, __func__, dev-&amp;gt;expect, dev, plist);
+}
+// printf(&amp;quot;%s debug: dev-&amp;gt;expect = %d, dev = %08x list: %p\n&amp;quot;, __func__, dev-&amp;gt;expect, dev,plist);
+#endif
+// rtc_alarm_update();
+return 0;
+}
+int rtc_alarm_isActive(struct rtc_alarm_dev *timer)
+{
+struct list_head *plist;
+struct rtc_alarm_dev *dev;
+int active = 0;
+list_for_each(plist, &amp;amp;rtc_alarm_list)
+{
+dev = list_entry(plist, struct rtc_alarm_dev, list);
+if (dev == timer)
+{
+active = 1;
+break;
+}
+}
+return active;
+}
+int rtc_alarm_del(struct rtc_alarm_dev *timer)
+{
+struct list_head *plist;
+struct rtc_alarm_dev *dev;
+list_for_each(plist, &amp;amp;rtc_alarm_list)
+{
+dev = list_entry(plist, struct rtc_alarm_dev, list);
+if (dev == timer)
+{
+plist = plist-&amp;gt;prev;
+list_del(&amp;amp;dev-&amp;gt;list);
+break;
+}
+}
+return 0;
+}
+int main()
+{
+INIT_LIST_HEAD(&amp;amp;rtc_alarm_list);
+struct rtc_alarm_dev sample_dev_1;
+memset(&amp;amp;sample_dev_1, 0, sizeof(struct rtc_alarm_dev));
+sample_dev_1.func = NULL;
+sample_dev_1.repeat = 1;
+sample_dev_1.interval = 1 * 60; /* Sampling Cycle */
+// now = rtc_get_time();
+// tm = gmtime(&amp;amp;now);
+// expect = now - tm-&amp;gt;tm_sec + (2 - tm-&amp;gt;tm_min % 2) * 60;
+// expect = now + 10;
+// tm = gmtime(&amp;amp;expect);
+// logcat(&amp;quot;TGQingXie Expect: %s&amp;quot;, asctime(tm));
+sample_dev_1.expect = 10;
+rtc_alarm_add(&amp;amp;sample_dev_1);
+struct rtc_alarm_dev sample_dev_2;
+sample_dev_2.expect = 15;
+rtc_alarm_add(&amp;amp;sample_dev_2);
+struct list_head *plist;
+struct rtc_alarm_dev *dev;
+list_for_each(plist, &amp;amp;rtc_alarm_list)
+{
+dev = list_entry(plist, struct rtc_alarm_dev, list);
+printf(&amp;quot;%s debug: dev-&amp;gt;expect = %d, dev = %08x list: %p %p\n&amp;quot;, __func__, dev-&amp;gt;expect, dev, plist, &amp;amp;rtc_alarm_list);
+}
+printf(&amp;quot;%s debug: dev-&amp;gt;expect = %d, dev = %08x list: %p %p\n&amp;quot;, __func__, dev-&amp;gt;expect, dev, plist, &amp;amp;rtc_alarm_list);
+// main debug: dev-&amp;gt;expect = 10, dev = e439c2b0 list: 0x7ffee439c2c8 0x10b864040
+// main debug: dev-&amp;gt;expect = 15, dev = e439c288 list: 0x7ffee439c2a0 0x10b864040
+// main debug: dev-&amp;gt;expect = 15, dev = e439c288 list: 0x10b864040 0x10b864040
+}
 &lt;/code&gt;&lt;/pre&gt;</description></item><item><title>linux cross libuv</title><link>/language/clang/linux-cross-libuv/</link><pubDate>Mon, 21 Sep 2020 18:01:09 CST</pubDate><author>rinetd</author><guid>/language/clang/linux-cross-libuv/</guid><description>&lt;p&gt;交叉编译&lt;/p&gt;
 &lt;p&gt;git clone &lt;a href=&#34;https://github.com/libuv/libuv&#34; target=&#34;_blank&#34;&gt;https://github.com/libuv/libuv&lt;/a&gt;&lt;/p&gt;
 &lt;pre&gt;&lt;code class=&#34;language-sh&#34;&gt;sh autogen.sh
@@ -1765,813 +2213,4 @@ LDFLAGS=-L/opt/embedded/platform/usr/lib
 LIBS=-ludev
 ./configure --prefix=/opt/embedded/platform/usr/ --host=arm-linux
 make install
-&lt;/code&gt;&lt;/pre&gt;</description></item><item><title>linux c string</title><link>/language/clang/linux-c-string/</link><pubDate>Mon, 07 Sep 2020 17:43:15 CST</pubDate><author>rinetd</author><guid>/language/clang/linux-c-string/</guid><description>
-&lt;p&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html&#34; target=&#34;_blank&#34;&gt;C语言字符串操作 · ZMonster&#39;s Blog&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;目录&#34;&gt;目录&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline1&#34; target=&#34;_blank&#34;&gt;string.h&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline2&#34; target=&#34;_blank&#34;&gt;字符串拷贝(strcpy, strncpy)&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline3&#34; target=&#34;_blank&#34;&gt;strcpy&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline4&#34; target=&#34;_blank&#34;&gt;strncpy&lt;/a&gt;&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline5&#34; target=&#34;_blank&#34;&gt;字符串比较(strcmp, strncmp, strcasecmp, strncasecmp)&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline6&#34; target=&#34;_blank&#34;&gt;strcmp&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline7&#34; target=&#34;_blank&#34;&gt;strncmp&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline8&#34; target=&#34;_blank&#34;&gt;strcasecmp&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline9&#34; target=&#34;_blank&#34;&gt;strncasecmp&lt;/a&gt;&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline10&#34; target=&#34;_blank&#34;&gt;字符串连接(strcat, strncat)&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline11&#34; target=&#34;_blank&#34;&gt;strcat&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline12&#34; target=&#34;_blank&#34;&gt;strncat&lt;/a&gt;&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline13&#34; target=&#34;_blank&#34;&gt;字符查找(strchr, strrchr, strchrnul, strpbrk)&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline14&#34; target=&#34;_blank&#34;&gt;strchr&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline15&#34; target=&#34;_blank&#34;&gt;strrchr&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline16&#34; target=&#34;_blank&#34;&gt;strchrnul&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline17&#34; target=&#34;_blank&#34;&gt;strpbrk&lt;/a&gt;&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline18&#34; target=&#34;_blank&#34;&gt;字符串分割(strtok, strtok_r, strsep)&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline19&#34; target=&#34;_blank&#34;&gt;strtok&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline20&#34; target=&#34;_blank&#34;&gt;strtok_r&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline21&#34; target=&#34;_blank&#34;&gt;strsep&lt;/a&gt;&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline22&#34; target=&#34;_blank&#34;&gt;字符串匹配(strstr)&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline23&#34; target=&#34;_blank&#34;&gt;字符串副本创建(strdup, strndup, strdupa, strndupa)&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline24&#34; target=&#34;_blank&#34;&gt;strdup&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline25&#34; target=&#34;_blank&#34;&gt;strndup&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline26&#34; target=&#34;_blank&#34;&gt;strdupa&lt;/a&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://www.zmonster.me/2014/03/06/string-operation-in-c.html#orgheadline27&#34; target=&#34;_blank&#34;&gt;strndupa&lt;/a&gt;&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;string-h&#34;&gt;string.h&lt;/h2&gt;
-&lt;p&gt;其实在C语言的标准库中，也有非常丰富的字符串操作函数。当然了，由于C语言中 &lt;strong&gt;字符串&lt;/strong&gt; 并不是基本数据类型，也没有 &lt;strong&gt;类&lt;/strong&gt; 这个概念，相对来说操作上可能没有Python/Java之类的语言方便。不过了解一下C语言中的字符串操作还是有意义的。&lt;/p&gt;
-&lt;p&gt;C语言中的字符串操作函数在 &lt;strong&gt;string.h&lt;/strong&gt; 中，不过要了解都有什么函数，阅读string.h并不是什么好的方式。如果是在Unix/Linux系统下，只要执行：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;man string
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;就可以了解都有哪些字符串操作函数了，如下图所示：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.zmonster.me/assets/img/string_manual.png&#34; alt=&#34;string_manual.png&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;其中一些常用的函数及其大致功能如下(具体细节后面再细说)：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;字符串拷贝&lt;/p&gt;
-&lt;p&gt;stcpy, strncpy&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;字符串比较&lt;/p&gt;
-&lt;p&gt;strcmp, strncmp, strcasecmp, strncasecmp&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;字符串连接&lt;/p&gt;
-&lt;p&gt;strcat, strncat&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;字符查找&lt;/p&gt;
-&lt;p&gt;strchr, strrchr, strchrnul, strpbrk&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;建立字符串副本&lt;/p&gt;
-&lt;p&gt;strdup, strndup, strdupa, strndupa&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;字符串分割&lt;/p&gt;
-&lt;p&gt;strsep, strtok, strtok_r&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;字符串匹配&lt;/p&gt;
-&lt;p&gt;strstr&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;下面根据功能的不同来展示各个函数的用法。这里我会用一些实例来进行示范，同时，其结果由org-babel对代码块求值得到。&lt;/p&gt;
-&lt;h2 id=&#34;字符串拷贝-strcpy-strncpy&#34;&gt;字符串拷贝(strcpy, strncpy)&lt;/h2&gt;
-&lt;h3 id=&#34;strcpy&#34;&gt;strcpy&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strcpy(char *dest, const char *src);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char dest[1024] = {0};
-char *src = &amp;quot;abcde&amp;quot;;
-strcpy(dest, src);
-printf(&amp;quot;%s\n&amp;quot;, dest);
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;abcde
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strcpy()函数会将源字符串中的结束符(&#39;\0&#39;)也拷贝到目的字符串中。&lt;/p&gt;
-&lt;p&gt;注意，strcpy()可能会导致溢出。&lt;/p&gt;
-&lt;h3 id=&#34;strncpy&#34;&gt;strncpy&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strncpy(char *dest, const char *src, size_t n);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;该函数从源字符串中拷贝n个字符到目的字符串；如果源字符串长度不足，则用 &lt;strong&gt;NULL&lt;/strong&gt; 填充，以保证将n个字符写入目的字符串中；如果源字符串中前n个字符不包含字符串结束符，函数不会为目的字符串添加上结束符。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char dest[7] = {0};
-char *src = &amp;quot;abcde&amp;quot;;
-dest[5] = &#39;A&#39;;
-strncpy(dest, src, 5);
-printf(&amp;quot;%s\n&amp;quot;, dest);
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;abcdeA
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;所以如果有需要，应该在拷贝后自己在目的字符串尾部添加结束符。&lt;/p&gt;
-&lt;h2 id=&#34;字符串比较-strcmp-strncmp-strcasecmp-strncasecmp&#34;&gt;字符串比较(strcmp, strncmp, strcasecmp, strncasecmp)&lt;/h2&gt;
-&lt;h3 id=&#34;strcmp&#34;&gt;strcmp&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;intstrcmp(const char *s1, const char *s2);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;如果s1小于s2，函数返回一个负数；如果s1等于s2，函数返回0；否则返回一个正数。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s1 = &amp;quot;abcde&amp;quot;;
-char *s2 = &amp;quot;abcef&amp;quot;;
-char *s3 = &amp;quot;ad&amp;quot;;
-printf(&amp;quot;compare(%s, %s) -&amp;gt; %d\n&amp;quot;, s1, s2, strcmp(s1, s2));
-printf(&amp;quot;compare(%s, %s) -&amp;gt; %d\n&amp;quot;, s1, s3, strcmp(s1, s3));
-printf(&amp;quot;compare(%s, %s) -&amp;gt; %d\n&amp;quot;, s2, s3, strcmp(s2, s3));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;compare(abcde, abcef) -&amp;gt; -1
-compare(abcde, ad) -&amp;gt; -2
-compare(abcef, ad) -&amp;gt; -2
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;从这个结果可以发现，strcmp()是根据字典序来对字符串进行比较的。进一步的，还可以发现strcmp()的返回值是比较过程中最后一次比较时两个字符的值的差，如比较&amp;quot;abcde&amp;quot;和&amp;quot;abcef&amp;quot;，有：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;a - a = 0
-b - b = 0
-c - c = 0
-d - e = -1 #按字典序，大小已分，不再比较
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;strncmp&#34;&gt;strncmp&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;intstrncmp(const char *s1, const char *s2, size_t n);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;和strcmp()的区别是，strncmp()只对s1和s2的前n个字节进行比较。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s1 = &amp;quot;abcde&amp;quot;;
-char *s2 = &amp;quot;abcfg&amp;quot;;
-char *s3 = &amp;quot;abd&amp;quot;;
-printf(&amp;quot;compare(%s, %s, 4) -&amp;gt; %d\n&amp;quot;, s1, s2, strncmp(s1, s2, 4));
-printf(&amp;quot;compare(%s, %s, 2) -&amp;gt; %d\n&amp;quot;, s1, s3, strncmp(s1, s3, 2));
-printf(&amp;quot;compare(%s, %s, 3) -&amp;gt; %d\n&amp;quot;, s2, s3, strncmp(s2, s3, 3));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;compare(abcde, abcfg, 4) -&amp;gt; -2
-compare(abcde, abd, 2) -&amp;gt; 0
-compare(abcfg, abd, 3) -&amp;gt; -1
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;strcasecmp&#34;&gt;strcasecmp&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;intstrcasecmp(const char *s1, const char *s2);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strcasecmp()也是用来比较字符串的，和strcmp()有两点区别：&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;使用strcasecmp()应该包含 &lt;strong&gt;strings.h&lt;/strong&gt; 而不是 &lt;strong&gt;string.h&lt;/strong&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;strcasecmp()在比较时不区分大小写&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-#include &amp;lt;strings.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s1 = &amp;quot;AbcdE&amp;quot;;
-char *s2 = &amp;quot;abcdE&amp;quot;;
-printf(&amp;quot;compare(%s, %s) with case -&amp;gt; %d\n&amp;quot;, s1, s2, strcmp(s1, s2));
-printf(&amp;quot;compare(%s, %s) ignore case -&amp;gt; %d\n&amp;quot;, s1, s2, strcasecmp(s1, s2));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;compare(AbcdE, abcdE) with case -&amp;gt; -32
-compare(AbcdE, abcdE) ignore case -&amp;gt; 0
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;strncasecmp&#34;&gt;strncasecmp&lt;/h3&gt;
-&lt;p&gt;strncasecmp()之于strcasecmp()就如strncmp()之于strcmp()，不再赘述。&lt;/p&gt;
-&lt;h2 id=&#34;字符串连接-strcat-strncat&#34;&gt;字符串连接(strcat, strncat)&lt;/h2&gt;
-&lt;h3 id=&#34;strcat&#34;&gt;strcat&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strcat(char *dest, const char *src);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strcat()首先会覆盖掉目的字符串的结束符，然后把源字符串的内容追加到后面，并在最后添加结束符。如果目的字符串缓冲区长度不够，将导致溢出。&lt;/p&gt;
-&lt;p&gt;strcat()在操作完成后，返回目的字符串的首地址，这样可以方便地进行链式操作。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char dest[1024] = &amp;quot;hello &amp;quot;;
-char *src = &amp;quot;world!&amp;quot;;
-printf(&amp;quot;%s\n&amp;quot;, strcat(dest, src));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;hello world!
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;strncat&#34;&gt;strncat&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strncat(char *dest, const char *src, size_t n);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strncat()将最多n个字节的内容追加到目的字符串尾部，并且会在追加后添加终止符号。&lt;/p&gt;
-&lt;p&gt;同strcat()一样，它返回目的字符串的首地址。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char dest[1024] = &amp;quot;hello &amp;quot;;
-char *src = &amp;quot;world!lkjsdljsd&amp;quot;;
-printf(&amp;quot;%s\n&amp;quot;, strncat(dest, src, 6));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;hello world!
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;字符查找-strchr-strrchr-strchrnul-strpbrk&#34;&gt;字符查找(strchr, strrchr, strchrnul, strpbrk)&lt;/h2&gt;
-&lt;h3 id=&#34;strchr&#34;&gt;strchr&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strchr(const char *s, int c);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strchr()返回一个字符指针，指向指定字符在指定字符串中第一次出现的位置。如果在指定字符串中没有找到指定字符，则返回 &lt;strong&gt;NULL&lt;/strong&gt; 。该函数的第二个参数按理来说应当是一个字符，不过标准库中确实是int类型。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s = &amp;quot;hello world!&amp;quot;;
-char c = &#39;l&#39;;
-printf(&amp;quot;%s\n&amp;quot;, strchr(s, c));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;llo world!
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;strrchr&#34;&gt;strrchr&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strrchr(const char *s, int c);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strrchr()和strchr()类似，但它返回的是指定字符在指定字符串中最后一次出现的位置。如果未找到，同样返回 &lt;strong&gt;NULL&lt;/strong&gt; 。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s = &amp;quot;hello world!&amp;quot;;
-char c = &#39;l&#39;;
-printf(&amp;quot;%s\n&amp;quot;, strrchr(s, c));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;ld!
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;strchrnul&#34;&gt;strchrnul&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strchrnul(const char *s, int c);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strchrnul()的功能和strchr()只有细微的区别，那就是，当没有找到指定字符时，strchrnul()不返回 &lt;strong&gt;NULL&lt;/strong&gt; ，而是返回字符串结束符的位置。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s = &amp;quot;abcde&amp;quot;;
-char c = &#39;m&#39;;
-printf(&amp;quot;%p, %p\n&amp;quot;, s, strchrnul(s, c));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;0x40065c, 0x400661
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;这里由于strchrnul()的特性，没办法通过打印字符串来了解strchrnul()的操作，不过观察这两个指针的值，会发现：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;0x400661 - 0x40065c = 0x5
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;而字符串s的第六个元素(从0开始，5即第六个)，正好是结束符。&lt;/p&gt;
-&lt;h3 id=&#34;strpbrk&#34;&gt;strpbrk&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strpbrk(const char *s, const char *accept);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strpbrk()和strchr()的区别在于，strchr()是从字符串里搜索 &lt;strong&gt;一个字符&lt;/strong&gt; ，而strpbrk()则是在字符串里搜索 &lt;strong&gt;一个字符集中的字符&lt;/strong&gt; ，看第二个参数就明白了。strpbrk()遍历字符串，如果发现某个字符在指定的 &lt;strong&gt;字符集&lt;/strong&gt; 中，则立即返回指向该字符的指针。如果最后没有找到任何在指定字符集中的字符，则返回 &lt;strong&gt;NULL&lt;/strong&gt; 。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s = &amp;quot;Hello World!&amp;quot;;
-char *accept = &amp;quot;Wo&amp;quot;;
-printf(&amp;quot;%s\n&amp;quot;, strpbrk(s, accept));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;o World!
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;字符串分割-strtok-strtok-r-strsep&#34;&gt;字符串分割(strtok, strtok_r, strsep)&lt;/h2&gt;
-&lt;h3 id=&#34;strtok&#34;&gt;strtok&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strtok(char *str, const char *delim);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strtok()根据第二个参数指定的分隔符(可能存在多个不同的分隔符)将指定字符串分割成多个子串。通过多次调用strtok()，可以依次获得字符串的多个子串的首地址。要注意的是，除了第一次调用时将待分割字符串作为第一个参数，后续的调用要将第一个参数置为 &lt;strong&gt;NULL&lt;/strong&gt; 。当字符串已经无法再分割时，strtok()返回 &lt;strong&gt;NULL&lt;/strong&gt; 。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char s[1024] = &amp;quot;abc;lsdk:lskdj,;slsj&amp;quot;;
-char *delm = &amp;quot;;:,&amp;quot;;
-char *result = NULL;
-int len = strlen(s);
-int i = 0;
-result = strtok(s, delm);
-while (result != NULL) {
-printf(&amp;quot;Source:%s, Sub:%s\n&amp;quot;, s, result);
-result = strtok(NULL, delm);
-}
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;Source:abc Sub:abc
-Source:abc Sub:lsdk
-Source:abc Sub:lskdj
-Source:abc Sub:slsj
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;除了上面说过的strtok()的用法外，还要注意的是，作为待分割的字符串，它必须是 &lt;strong&gt;可更改的&lt;/strong&gt; 。否则虽然可以通过编译，但运行会出错。要理解这个现象，首先要了解strtok()的内部机制。&lt;/p&gt;
-&lt;p&gt;了解其机制，没必要去寻找其实现源代码，只要对它的操作过程进行剖析就知道了。先看下面的代码：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;int main(int argc, char *argv[])
-{
-char s[64] = &amp;quot;To be or not to be&amp;quot;;
-char *delm = &amp;quot; ,.&amp;quot;; /* 分隔符：空格 \*/
-char *result = NULL;
-int i = 0, len = strlen(s);
-for (i = 0; i &amp;lt; len; ++i) { /* 逐个打印s中的字符 \*/
-printf(&amp;quot;%c &amp;quot;, s[i]);
-}
-printf(&amp;quot;\n&amp;quot;);
-for (i = 0; i &amp;lt; len; ++i) { /* 逐个打印s中字符的数值 \*/
-printf(&amp;quot;%d &amp;quot;, (int)s[i]);
-}
-printf(&amp;quot;\n&amp;quot;);
-result = strtok(s, delm);
-while (result != NULL) { /* 观察s中字符数值的变化 \*/
-for (i = 0; i &amp;lt; len; ++i) {
-printf(&amp;quot;%d &amp;quot;, (int)s[i]);
-}
-printf(&amp;quot;\n&amp;quot;);
-result = strtok(NULL, delm);
-}
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;p&gt;&lt;colgroup&gt;&lt;br /&gt;
-&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;/p&gt;
-&lt;p&gt;&lt;col class=&#34;org-right&#34;&gt;&lt;br /&gt;
-&lt;/colgroup&gt;&lt;br /&gt;
-col 1 | col 2 | col 3 | col 4 | col 5 | col 6 | col 7 | col 8 | col 9 | col 10 | col 11 | col 12 | col 13 | col 14 | col 15 | col 16 | col 17 | col 18&lt;br /&gt;
------ | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ----- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------&lt;br /&gt;
-T | o | | b | e | | o | r | | n | o | t | | t | o | | b | e&lt;br /&gt;
-84 | 111 | 32 | 98 | 101 | 32 | 111 | 114 | 32 | 110 | 111 | 116 | 32 | 116 | 111 | 32 | 98 | 101&lt;br /&gt;
-84 | 111 | 0 | 98 | 101 | 32 | 111 | 114 | 32 | 110 | 111 | 116 | 32 | 116 | 111 | 32 | 98 | 101&lt;br /&gt;
-84 | 111 | 0 | 98 | 101 | 0 | 111 | 114 | 32 | 110 | 111 | 116 | 32 | 116 | 111 | 32 | 98 | 101&lt;br /&gt;
-84 | 111 | 0 | 98 | 101 | 0 | 111 | 114 | 0 | 110 | 111 | 116 | 32 | 116 | 111 | 32 | 98 | 101&lt;br /&gt;
-84 | 111 | 0 | 98 | 101 | 0 | 111 | 114 | 0 | 110 | 111 | 116 | 0 | 116 | 111 | 32 | 98 | 101&lt;br /&gt;
-84 | 111 | 0 | 98 | 101 | 0 | 111 | 114 | 0 | 110 | 111 | 116 | 0 | 116 | 111 | 0 | 98 | 101&lt;br /&gt;
-84 | 111 | 0 | 98 | 101 | 0 | 111 | 114 | 0 | 110 | 111 | 116 | 0 | 116 | 111 | 0 | 98 | 101&lt;/p&gt;
-&lt;p&gt;可以看到，s中的分隔符，逐次地被置为&#39;\0&#39;即字符串结束符。这就是strtok()分割字符串的内部原理了。而strtok()返回的指针，其实就是s中各个子串的起始位置了。如果s指向的内容是无法被修改的，那么strtok()自然也就无法将原先的分隔符置为字符结束符了。&lt;/p&gt;
-&lt;p&gt;当然了，由于源字符串会被修改，在实际中，如果需要，可以用strdup()来建立一个源字符串的副本。&lt;/p&gt;
-&lt;h3 id=&#34;strtok-r&#34;&gt;strtok_r&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strtok_r(char *str, const char *delim, char **saveptr);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strtok_r()是Linux下的strtok()的可重入版本(线程安全版本)，它比strtok()多了一个参数 &lt;strong&gt;saveptr&lt;/strong&gt; ，这个参数用于在分割字符串时保存上下文。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char s[64] = &amp;quot;Hello world&amp;quot;;
-char *delm = &amp;quot; &amp;quot;;
-char *result = NULL, *ptr = NULL;
-printf(&amp;quot;Source:%p\n&amp;quot;, s);
-result = strtok_r(s, delm, &amp;amp;ptr);
-while (result != NULL) {
-printf(&amp;quot;Result:%p\t&amp;quot;, result);
-printf(&amp;quot;Saveptr:%p\n&amp;quot;, ptr);
-printf(&amp;quot;---%s\t&amp;quot;, result);
-printf(&amp;quot;---%s\n&amp;quot;, ptr);
-result = strtok_r(NULL, delm, &amp;amp;ptr);
-}
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;Source:0x7fff180f3de0
-Result:0x7fff180f3de0 Saveptr:0x7fff180f3de6
----Hello ---world
-Result:0x7fff180f3de6 Saveptr:0x7fff180f3deb
----world ---
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;可以看到，saveptr这个指针在每次调用strtok_r()后就指向了未分割的部分的首地址。相对地，strtok()则是在内部有一个静态缓冲区，通过这个静态缓冲区来记录未处理的起始位置，所以strtok()不是线程安全的。&lt;/p&gt;
-&lt;h3 id=&#34;strsep&#34;&gt;strsep&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strsep(char **stringp, const char *delim);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strsep()同样是字符串分割函数，它和strtok()的不同之处在于，它会直接修改待分割的指针的值，让它始终指向未处理部分的起始位置。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char s[64] = &amp;quot;To be or not to be&amp;quot;;
-char *source = s;
-char *delm = &amp;quot; &amp;quot;;
-char *result = NULL;
-while (source != NULL) {
-printf(&amp;quot;Source:%s | &amp;quot;, source);
-result = strsep(&amp;amp;source, delm);
-printf(&amp;quot;result:%s\n&amp;quot;, result);
-}
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;Source:To be or not to be | result:To
-Source:be or not to be | result:be
-Source:or not to be | result: or
-Source:not to be | result: not
-Source:to be | result: to
-Source:be | result: be
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;因为和strtok()的这个不同之处，strsep不需要区分第一次调用后后续的连续调用，可以用统一的操作来对字符串进行分割。&lt;/p&gt;
-&lt;h2 id=&#34;字符串匹配-strstr&#34;&gt;字符串匹配(strstr)&lt;/h2&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strstr(const char *haystack, const char *needle);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strstr()返回字符串needle在字符串haystack中第一次出现的位置；如果没有匹配，则返回 &lt;strong&gt;NULL&lt;/strong&gt; 。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s = &amp;quot;To be or not to be.&amp;quot;;
-char *p = &amp;quot;be&amp;quot;;
-printf(&amp;quot;%s\n&amp;quot;, strstr(s, p));
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;be or not to be.
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h2 id=&#34;字符串副本创建-strdup-strndup-strdupa-strndupa&#34;&gt;字符串副本创建(strdup, strndup, strdupa, strndupa)&lt;/h2&gt;
-&lt;h3 id=&#34;strdup&#34;&gt;strdup&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strdup(const char *s);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strdup()调用malloc()分配一块内存并将字符串s的内容拷贝进去，产生s的副本。要注意的是，在最后应该调用free()来释放副本。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s = &amp;quot;abcde&amp;quot;;
-char *dup = strdup(s);
-printf(&amp;quot;%s\n&amp;quot;, dup);
-free(dup);
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;abcde
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;strndup&#34;&gt;strndup&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strndup(const char *s, size_t n);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strndup()和strdup()类似，但最多只拷贝s的前n个字节。如果s的长度大于n，还会在副本后添加终止符。&lt;/p&gt;
-&lt;p&gt;示例：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;
-#include &amp;lt;stdio.h&amp;gt;
-#include &amp;lt;string.h&amp;gt;
-int main(int argc, char *argv[])
-{
-char *s = &amp;quot;abcde&amp;quot;;
-char *dup = strndup(s, 4);
-printf(&amp;quot;%s\n&amp;quot;, dup);
-free(dup);
-return 0;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;结果：&lt;/p&gt;
-&lt;pre&gt;&lt;code&gt;abcd
-&lt;/code&gt;&lt;/pre&gt;
-&lt;h3 id=&#34;strdupa&#34;&gt;strdupa&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strdupa(const char *s);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strdupa()和strdup()类似，但在分配内存时，它使用alloca()而不是malloc()。&lt;/p&gt;
-&lt;h3 id=&#34;strndupa&#34;&gt;strndupa&lt;/h3&gt;
-&lt;p&gt;函数原型：&lt;/p&gt;
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;char *strndupa(const char *s, size_t n);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;strndupa()之于strdupa()就如strndup()之于strdup()，不再赘述。&lt;/p&gt;</description></item><item><title>SGM41511-bq2560</title><link>/hardware/sgm41511/</link><pubDate>Sat, 22 Aug 2020 17:03:59 CST</pubDate><author>rinetd</author><guid>/hardware/sgm41511/</guid><description>&lt;p&gt;bq2560x_charger&lt;/p&gt;</description></item><item><title>移远EC20 Opencpu方案调试记录</title><link>/hardware/opencpu/%E8%80%8C%E5%87%BA0/</link><pubDate>Thu, 13 Aug 2020 11:13:10 CST</pubDate><author>rinetd</author><guid>/hardware/opencpu/%E8%80%8C%E5%87%BA0/</guid><description>&lt;p&gt;&lt;a href=&#34;https://blog.csdn.net/qq_35570735/article/details/87180048?&amp;amp;depth_1-&#34; target=&#34;_blank&#34;&gt;(2条消息)移远EC20二次开发之4G图像传输_qq_35570735的博客-CSDN博客_ec20模块二次开发&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://github.com/pengphei/quectel-ec20&#34; target=&#34;_blank&#34;&gt;pengphei/quectel-ec20&lt;/a&gt; EC20 手册&lt;/p&gt;
-&lt;p&gt;EC20 SDK &lt;a href=&#34;https://github.com/czplove/linux_kernel_ec20/tree/master/ql-ol-sdk&#34; target=&#34;_blank&#34;&gt;https://github.com/czplove/linux_kernel_ec20/tree/master/ql-ol-sdk&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;移远EC20 Opencpu方案调试记录 - 打电话 发短信 接收短信 定位（郑州新正圆）&lt;/p&gt;
-&lt;p&gt;gaoqiang13513893373 2019-07-23 19:31:40 1088 收藏 1&lt;br /&gt;
-分类专栏： 调试记录&lt;br /&gt;
-版权&lt;br /&gt;
-microcom -s 115200 /dev/smd8 4G模块 Ctrl+x 退出&lt;/p&gt;
-&lt;p&gt;microcom -s 115200 /dev/smd7 GPS Ctrl+x 退出&lt;/p&gt;
-&lt;p&gt;ATD13803892789；&lt;/p&gt;
-&lt;p&gt;ATA 接通 ATH 挂断&lt;/p&gt;
-&lt;p&gt;AT+CLCC 查看来电显示&lt;/p&gt;
-&lt;p&gt;发送短信&lt;/p&gt;
-&lt;p&gt;AT+CMGF=1&lt;br /&gt;
-OK&lt;br /&gt;
-AT+CMGS=&amp;quot;13803892789&amp;quot;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;HELLO&lt;br /&gt;
-1A&lt;/p&gt;
-&lt;p&gt;+CMGS: 0&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;接收短信&lt;/p&gt;
-&lt;p&gt;AT+CMGR=0&lt;br /&gt;
-+CMGR: &amp;quot;REC READ&amp;quot;,&amp;quot;18606508762&amp;quot;,,&amp;quot;19/07/22,18:40:22+32&amp;quot;&lt;br /&gt;
-shax&lt;/p&gt;
-&lt;p&gt;OK&lt;br /&gt;
-AT+CMGR=1&lt;br /&gt;
-+CMGR: &amp;quot;REC UNREAD&amp;quot;,&amp;quot;18606508762&amp;quot;,,&amp;quot;19/07/22,18:40:37+32&amp;quot;&lt;br /&gt;
-2buw&lt;/p&gt;
-&lt;p&gt;查看短信&lt;/p&gt;
-&lt;p&gt;AT+CMGF=1&lt;br /&gt;
-OK&lt;br /&gt;
-AT+CMGR=1&lt;br /&gt;
-+CMGR: &amp;quot;REC READ&amp;quot;,&amp;quot;18606508762&amp;quot;,,&amp;quot;19/07/22,18:40:37+32&amp;quot;&lt;br /&gt;
-2buw&lt;/p&gt;
-&lt;p&gt;删除短信&lt;/p&gt;
-&lt;p&gt;AT+CMGD=0&lt;/p&gt;
-&lt;p&gt;定位&lt;/p&gt;
-&lt;p&gt;root@mdm9607-perf:/usrdata# microcom -s 115200 /dev/smd8&lt;br /&gt;
-AT+QGPSCFG=&amp;quot;outport&amp;quot;,&amp;quot;linuxsmd&amp;quot;&lt;br /&gt;
-OK&lt;br /&gt;
-AT+QGPS=1&lt;br /&gt;
-OK&lt;br /&gt;
-root@mdm9607-perf:/usrdata# microcom -s 115200 /dev/smd7&lt;br /&gt;
-$GPGSV,4,1,14,05,69,298,52,12,16,233,41,15,05,202,50,25,14,272,49*78&lt;br /&gt;
-$GPGSV,4,2,14,29,25,316,48,02,68,036,,06,31,092,,07,02,074,*7E&lt;br /&gt;
-$GPGSV,4,3,14,09,12,040,,13,28,174,,19,13,150,,30,02,104,*75&lt;br /&gt;
-$GPGSV,4,4,14,39,,,39,41,,,49*74&lt;br /&gt;
-$GPGGA,083737.00,3449.205308,N,11333.297982,E,1,05,1.7,145.8,M,-15.0,M,,*4C&lt;br /&gt;
-$GPVTG,0.0,T,4.2,M,0.0,N,0.0,K,A*25&lt;br /&gt;
-$GPRMC,083737.00,A,3449.205308,N,11333.297982,E,0.0,0.0,230719,4.2,W,A*2D&lt;br /&gt;
-$GPGSA,A,2,05,12,15,25,29,,,,,,,,1.9,1.7,0.8*3B&lt;br /&gt;
-$GPGSV,4,1,14,05,69,298,51,12,16,233,41,15,05,202,50,25,14,272,49*7B&lt;br /&gt;
-$GPGSV,4,2,14,29,25,316,47,02,68,036,,06,31,092,,07,02,074,*71&lt;br /&gt;
-$GPGSV,4,3,14,09,12,040,,13,28,174,,19,13,150,,30,02,104,*75&lt;br /&gt;
-$GPGSV,4,4,14,39,,,38,41,,,49*75&lt;br /&gt;
-$GPGGA,083738.00,3449.205442,N,11333.298279,E,1,05,1.7,145.7,M,-15.0,M,,*45&lt;br /&gt;
-$GPVTG,0.0,T,4.2,M,0.0,N,0.0,K,A*25&lt;br /&gt;
-$GPRMC,083738.00,A,3449.205442,N,11333.298279,E,0.0,0.0,230719,4.2,W,A*2B&lt;br /&gt;
-$GPGSA,A,2,05,12,15,25,29,,,,,,,,1.9,1.7,0.8*3B&lt;br /&gt;
-$GPGSV,4,1,14,05,69,298,51,12,16,233,41,15,05,202,50,19,13,150,25*7A&lt;br /&gt;
-$GPGSV,4,2,14,25,14,272,48,29,25,316,46,30,02,104,34,02,68,036,*73&lt;br /&gt;
-$GPGSV,4,3,14,06,31,092,,07,02,074,,09,12,040,,13,28,174,*76&lt;br /&gt;
-$GPGSV,4,4,14,39,,,39,41,,,49*74&lt;br /&gt;
-$GPGGA,083739.00,3449.205733,N,11333.298826,E,1,05,1.7,145.0,M,-15.0,M,,*46&lt;br /&gt;
-$GPVTG,0.0,T,4.2,M,0.0,N,0.0,K,A*25&lt;br /&gt;
-$GPRMC,083739.00,A,3449.205733,N,11333.298826,E,0.0,0.0,230719,4.2,W,A*2F&lt;br /&gt;
-$GPGSA,A,2,05,12,15,25,29,,,,,,,,1.9,1.7,0.8*3B&lt;br /&gt;
-$GPGSV,4,1,14,05,69,298,51,12,16,233,41,15,05,202,50,19,13,150,25*7A&lt;br /&gt;
-$GPGSV,4,2,14,25,14,272,49,29,25,316,46,30,02,104,33,02,68,036,*75&lt;br /&gt;
-$GPGSV,4,3,14,06,31,092,,07,02,074,,09,12,040,,13,28,174,*76&lt;br /&gt;
-$GPGSV,4,4,14,39,,,38,41,,,50*7D&lt;br /&gt;
-$GPGGA,083740.00,3449.206125,N,11333.29&lt;/p&gt;
-&lt;hr /&gt;
-&lt;p&gt;作者：GQ ；XN&lt;/p&gt;
-&lt;p&gt;微信交流 ： 18606508762&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;http://www.xzhengyuan.com/&#34; target=&#34;_blank&#34;&gt;http://www.xzhengyuan.com/&lt;/a&gt;&lt;/p&gt;</description></item><item><title>linux yocto bitbake poky</title><link>/hardware/linux-yocto-bitbake-poky/</link><pubDate>Tue, 11 Aug 2020 17:11:14 CST</pubDate><author>rinetd</author><guid>/hardware/linux-yocto-bitbake-poky/</guid><description>
-&lt;p&gt;&lt;a href=&#34;https://www.webfalse.com/read/205697/2299548.html&#34; target=&#34;_blank&#34;&gt;Yocto tips (6): Yocto中如何共享已经下载的文件&lt;/a&gt;&lt;/p&gt;
-&lt;h2 id=&#34;1-名词解释&#34;&gt;1.名词解释&lt;/h2&gt;
-&lt;ul&gt;
-&lt;li&gt;Yocto：Yocto是这个开源项目的名称，该项目旨在帮助我们自定义Linux系统&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;Poky：Poky有两个含义。第一个含义是用来构建Linux的构建系统，值得注意的该Poky仅仅是一个概念，而非一个实体：它包含了 BitBake工具、编译工具链、BSP、诸多程序包或层，可以认为Poky即是Yocto的本质；此外Poky还有另外一层意思，使用Poky系统得到的默认参考 Linux 发行版也叫Poky（当然，我们可以对此发行版随意命名）。Poky的两个含义千万不能混淆&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Metadata：元数据集，所谓元数据集就是发行版内各基本元素的描述与来源&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;Recipes：.bb/.bbappend文件，配方文件，描述了从哪获取软件源码，如何配置，如何编译。bbappend和bb的区别主要在于bbappend是基于bb的，功能是对相应的bb文件作补充和覆盖，有点类似于“重写”的概念&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;Class：.bbclass文件&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;Configuration：.conf文件，即配置文件，我们可以用它来改变构建方式&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Layers：即各种meta-xxx目录，将Metadata按层进行分类，有助于项目的维护&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Bitbake：一个任务执行引擎，用来解析并执行Metadata&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;Output：即各种输出image&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;&lt;strong&gt;总结：假如用烹饪一桌酒席来形容构建发行版，则Yocto就是饭店名，Poky就是厨房（以及提供作为参考的菜的搭配套餐），Metadata就是烹饪资源（.bb/.bbappend表示配方/配方上的贴士，.conf表示厨房里的管事的小组长），Layers就是菜谱的分类（如川菜谱、粤菜谱），Bitbake就是厨师，Output就是得到的一桌酒席&lt;/strong&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;2-yocto的架构&#34;&gt;2.Yocto的架构&lt;/h2&gt;
-&lt;p&gt;假设现在有一个已经构建好的Yocto环境。有关Yocto的具体操作和环境构建详见&lt;a href=&#34;http://blog.csdn.net/qq_28992301/article/details/52922314&#34; target=&#34;_blank&#34;&gt;Yocto的使用实例&lt;/a&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;假设我们的项目名称叫imx6_avi，那么进入我们的项目目录，查看，其结构为&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre&gt;&lt;code class=&#34;language-language-bash&#34;&gt;注意：该目录省略了很多不必要的细节，只把重要的文件显示了出来
-imx6_avi_super
-|__Makefile
-|__build
-| |__cache
-| |__conf
-| |__bblayers.conf
-| |__local.conf
-|
-|__sources
-|__base
-|__cache
-| |__conf
-| |__bblayers.conf(和build目录中的一样)
-| |__local.conf(和build目录中的一样）
-|
-|
-|__meta-avi(放硬件无关的内容，主要和文件系统相关的东西)
-| |__classes
-| |__conf
-| | |__distro
-| | | |__imx6.conf
-| | |__layer.conf
-| |
-| |__recipes-core
-| | |__busybox
-| | |__images
-| | | |__avi-common-package.inc
-| | | |__avi-image-core.inc
-| | | |__avi-image-core.bb
-| | | |__avi-image.inc
-| | |__ifupdown
-| | |__openssh-keys
-| |
-| |__recipes-qt
-| |__recipes-graphics
-| |__recipes-devtools
-|
-|
-|__meta-imx6-avi
-| |__conf
-| | |__machine
-| | |__layer.conf
-| | |__include
-| | |__imx6-avi-super.conf
-| | |__imx6-avi_mini.conf
-| |
-| |__recipes-bsp
-| | |__u-boot
-| | |__u-boot-imx6-avi.bb
-| |
-| |__recipes-core
-| | |__images
-| | |__avi-image-core.bbappend
-| |
-| |__recipes-kernel
-| |__linux
-| |__linux-imx6-avi/
-| | |__defconfig
-| |__linux-imx6-avi.bb
-|
-|
-|__meta-Exynos-avi
-|__meta-qt5-avi
-|__meta-fsl-arm
-|__meta-openembedded
-|__meta-qt5
-|__poky
-|__meta-skeketon
-|__meta-yocto
-|__meta
-|__classes
-|__conf
-|__recipes-bsp
-|
-|__recipes-connectivity
-| |__dhcp
-| |__nfs-utils
-|
-|__recipes-devtools
-|__recipes-core
-&lt;/code&gt;&lt;/pre&gt;
-&lt;ul&gt;
-&lt;li&gt;首先来分析一下目录结构，不难发现主要有三级构成：meta-xxx-&amp;gt;recipes-yyy-&amp;gt;zzz/ttt.bb。比如：meta-avi-&amp;gt; recipes-core-&amp;gt;openssh-keys&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;meta-xxx就是layer（菜谱的分类如川菜谱、粤菜谱），recipes-yyy就是Metadata（具体某一本菜谱），zzz就是菜谱上具体的一个配方&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;从目录中不难看出，主要有这么几个layer&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;meta-avi：由我们创建并维护。和avi有关的项目需要的配方。可以认为这个目录中的配方都是通用的、与平台无关的内容&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;meta-imx6-avi：由我们创建并维护。imx6平台avi项目需要的配方&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;meta-Exynos-avi：由我们创建并维护。Exynos平台avi项目需要的配方&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;meta-qt5-avi：由我们创建并维护。avi项目中qt5需要的配方&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;meta-fsl-arm：飞思卡尔官方推出的配方大全&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;meta-openembedded：openembedded推出的配方大全&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;meta-qt5：qt5官方推出的qt5配方大全&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;poky中的一堆meta：yocto官方推出的参考配方。虽然这些meta被放在了poky里面，但是还是不影响使用的，他们具有和上面那些meta相同的地位，如下图&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;不难看出，这里面很多的layer只是我们照搬过来的，目的是为了借用里面现成的配方（可以认为这些layer充当了“库”），而真正由我们维护的仅仅是几个名字中带有avi的layer，而且它们是依赖于那些充当“库”的layer的。如下图&lt;br /&gt;
-&lt;img src=&#34;https://img-blog.csdn.net/20161030093056033&#34; alt=&#34;【图二】&#34; /&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;介绍完了layer，那么问题来了，那么是否可以认为，这些layer全部被enable了呢？答案固然是否定的，我们的项目是imx6_avi_super，显然不可能去包含meta-Exynos-avi这个三星平台专用的layer&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;具体的layer选择由imx6_avi_super/sources/conf/bblayers.conf负责，直观位置在前面目录中可以体现。仔细观察该文件，重点在BBLAYERS这个变量，里面有一些layer，这些layer就被enable了。不难发现这里面并没有meta-Exynos-avi，这也恰好印证了我们建立开发环境（repo sync）时，从git仓库中拉的是imx6_avi_super这个项目对应的Poky。&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;pre&gt;&lt;code class=&#34;language-language-bash&#34;&gt;LCONF_VERSION = &amp;quot;6&amp;quot;
-BBPATH = &amp;quot;${TOPDIR}&amp;quot;
-BSPDIR := &amp;quot;/home/username/yocto/imx6_avi_super&amp;quot;
-BBFILES ?= &amp;quot;&amp;quot;
-BBLAYERS = &amp;quot; \
-${BSPDIR}/sources/poky/meta \
-${BSPDIR}/sources/poky/meta-yocto \
-\
-${BSPDIR}/sources/meta-openembedded/meta-oe \
-${BSPDIR}/sources/meta-openembedded/meta-multimedia \
-${BSPDIR}/sources/meta-qt5 \
-${BSPDIR}/sources/meta-qt5-avi \
-\
-${BSPDIR}/sources/meta-fsl-arm \
-\
-${BSPDIR}/sources/meta-avi \
-${BSPDIR}/sources/meta-imx6-avi \
-&amp;quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;https://img-blog.csdn.net/20161030094244533&#34; alt=&#34;这里写图片描述&#34; /&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;这些layer目前是被enable了，那么是否可以认为，这些layer中的配方也全部被使能了呢？答案固然是否定的，我们的发行版中不可能把所有的软件包放进去。在Yocto中，这个选择配置操作是由好多个conf、bb文件协同完成的，并不存在一个总的大纲，这也是和buildroot最大的不同之处（buildroot是由menuconfig来进行大纲式的配置）。可以理解为Yocto是“分封制”，皇帝说的不一定能落实，具体还是各种大小地方官说了算；而buildroot是“中央集权制”，皇帝一人说了算&lt;br /&gt;
-&lt;img src=&#34;https://img-blog.csdn.net/20161103135915315&#34; alt=&#34;&#34; /&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;如何理解Yocto的配置方法？这要从发行版的定制流程说起。我们的目的很简单，是要得到uboot、kernel、rootfs这三个image；Yocto的目的也很简单，它要经过一级一级配置，逐步缩小配方，直至得到uboot、kernel、rootfs这三个image。每一级需要哪些配方，由该级对应的配置文件（conf/bb）决定。越上级的配置是越笼统的，越下级的配置越细致。如果下级的配置项相对于上级有补充或者冲突，则以下级的内容为准，可以认为下级会对上级进行“重写”。这其实有点类似交通法规&lt;br /&gt;
-&lt;img src=&#34;https://img-blog.csdn.net/20161103133240153&#34; alt=&#34;这里写图片描述&#34; /&gt;&lt;br /&gt;
-&lt;img src=&#34;https://img-blog.csdn.net/20161103134617815&#34; alt=&#34;这里写图片描述&#34; /&gt;&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;有关构建的路线和流程：对于整个发行版构建，虽然每一级的配方由（conf/bb）决定，但是每一级路线和方向的选择，是由我们最终bitbake的对象决定的，比如我们最终&lt;code&gt;bitbake avi-image-core&lt;/code&gt;，我们想要获得rootfs.img，那么：&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;第一步Poky就会从local.conf开始，一路向下，一级一级配置，直到配置到和rootfs有关的那一堆bb，最终形成完整完全的配方&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;然后获取配方需要的资源，比如各种软件包，比如kernel的源码&lt;br /&gt;&lt;/li&gt;
-&lt;li&gt;最后把所有的资源编译出我们需要的镜像&lt;br /&gt;
-&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://img-blog.csdn.net/20161103133401016&#34; alt=&#34;&#34; /&gt;&lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt;最后说一下bitbake，比如我们要选择编译rootfs.img，那么使用&lt;code&gt;bitbake avi-image-core&lt;/code&gt;即可，但是很多时候并不直接采用这种做法。大多数情况下我们会在项目目录下写一个Makefile，里面包含各种各样的功能，内部以bitbake指令实现&lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h2 id=&#34;3-配置文件详解&#34;&gt;3.配置文件详解&lt;/h2&gt;
-&lt;p&gt;上一节简单介绍了Yocto是如何配置我们的项目，这一节开始分析具体的配置文件&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;local.conf&lt;br /&gt;&lt;/li&gt;
-&lt;/ul&gt;</description></item></channel></rss>
+&lt;/code&gt;&lt;/pre&gt;</description></item></channel></rss>
